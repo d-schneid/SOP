@@ -1,6 +1,5 @@
 import unittest
 
-from backend_library.src.main.backend.task import TaskState
 from backend_library.src.main.backend.task.TaskState import TaskState
 
 
