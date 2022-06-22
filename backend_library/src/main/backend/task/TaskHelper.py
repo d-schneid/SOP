@@ -5,8 +5,8 @@ import numpy as np
 
 class TaskHelper:
     @staticmethod
-    def save_error_csv(error_file_path: string, error: string) -> None:
-        error_message: string = str(error)
+    def save_error_csv(error_file_path: string, error_message: string) -> None:
+        error_message: string = error_message
         error_csv = open(error_file_path, 'w')
         writer = csv.writer(error_csv)
         writer.writerow(error_message)

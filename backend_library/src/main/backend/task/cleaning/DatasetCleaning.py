@@ -95,7 +95,7 @@ class DatasetCleaning(Task):
     # Saves the error_message as a csv file (error_file_path is given by TaskHelper.convert_to_error_csv_path())
     def save_error_file(self, error_message: string) -> None:
         error_file_path: string = TaskHelper.convert_to_error_csv_path(self.cleaned_dataset_path)
-        TaskHelper.save_error_csv(error_file_path, str(error_message))
+        TaskHelper.save_error_csv(error_file_path, error_message)
 
     def store_cleaned_dataset(self, cleaned_dataset: np.ndarray) -> None:
         DataIO.write_csv(self.cleaned_dataset_path, cleaned_dataset)
