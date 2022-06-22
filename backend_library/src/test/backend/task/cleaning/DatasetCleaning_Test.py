@@ -1,7 +1,11 @@
 import unittest
 
+from backend_library.src.main.backend.task.cleaning.DatasetCleaning import DatasetCleaning
 
-class MyTestCase(unittest.TestCase):
+
+class DatsetCleaningTest(unittest.TestCase):
+    DatasetCleaning()
+
     def test_something(self):
         self.assertEqual(True, False)  # add assertion here
 

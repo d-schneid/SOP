@@ -2,15 +2,19 @@ import string
 import numpy as np
 import numpy.typing as npt
 
+
 class DataIO:
-    def read_cleaned_csv(self, path: string) -> npt:
+    @staticmethod
+    def read_cleaned_csv(path: string) -> np.ndarray:
         # TODO: Implement
-        return None
+        return np.zeros(0)
 
-    def read_uncleaned_csv(self, path: string):
+    @staticmethod
+    def read_uncleaned_csv(path: string) -> np.ndarray:
         # TODO: Implement
-        return None
+        return np.zeros(0)
 
-    def write_csv(self, path: string, data):
+    @staticmethod
+    def write_csv(path: string, data: np.ndarray):
         # TODO: Implement
-        return None
+        pass
