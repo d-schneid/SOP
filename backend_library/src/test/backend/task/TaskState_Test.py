@@ -18,5 +18,13 @@ class TestTaskState(unittest.TestCase):
         self.assertEqual(TaskState.FINISHED.error_occurred(), False)
         self.assertEqual(TaskState.FINISHED_WITH_ERROR.error_occurred(), True)
 
+    def test_is_running(self):
+        self.assertEqual(TaskState.WAITING.is_running(), False)
+        self.assertEqual(TaskState.RUNNING.is_running(), True)
+        self.assertEqual(TaskState.RUNNING_WITH_ERROR.is_running(), True)
+        self.assertEqual(TaskState.FINISHED.is_running(), False)
+        self.assertEqual(TaskState.FINISHED_WITH_ERROR.is_running(), False)
+
+
 if __name__ == '__main__':
     unittest.main()
