@@ -48,6 +48,8 @@ class DatasetCleaning(Task):
         return self.user_id
 
     def do_work(self) -> None:
+        self.delete_old_error_file()
+
         dataset_to_clean: np.ndarray = self.load_original_dataset()
         cleaning_pipeline_result: Optional[np.ndarray] = self.run_cleaning_pipeline(dataset_to_clean)
         if cleaning_pipeline_result is None:
@@ -92,9 +94,15 @@ class DatasetCleaning(Task):
             return True
         return False
 
+    def delete_old_error_file(self) -> None:
+        error_file_path: string = TaskHelper().convert_to_error_csv_path(self.cleaned_dataset_path)
+        if os.path.isfile(error_file_path):
+            os.remove(error_file_path)
+
     def save_error_csv_file(self, error_message: string) -> None:
-        error_file_path = self.cleaned_dataset_path + ".error"  # creates the path for the csv with the error message
-        TaskHelper().save_error_csv(error_file_path, str(error_message))
+        th: TaskHelper = TaskHelper()
+        error_file_path: string = th.convert_to_error_csv_path(self.cleaned_dataset_path)
+        th.save_error_csv(error_file_path, str(error_message))
 
     def store_cleaned_dataset(self, cleaned_dataset: np.ndarray) -> None:
         DataIO.write_csv(self.cleaned_dataset_path, cleaned_dataset)
