@@ -1,21 +1,17 @@
-import csv
 import os
-import numpy as np
 import string
-from typing import List, Optional
+from collections.abc import Callable
+from typing import Optional
 
-import DatasetCleaningStep
-
-from backend_library.src.main.backend.task.Task import Task
-from backend_library.src.main.backend.task.TaskState import TaskState
-from backend_library.src.main.backend.task.TaskHelper import TaskHelper
-from backend_library.src.main.backend.DataIO import DataIO
+import numpy as np
 
 from CategoricalColumnRemover import CategoricalColumnRemover
 from ImputationMode import ImputationMode
 from MinMaxScaler import MinMaxScaler
-
-from collections.abc import Callable
+from backend_library.src.main.backend.DataIO import DataIO
+from backend_library.src.main.backend.task.Task import Task
+from backend_library.src.main.backend.task.TaskHelper import TaskHelper
+from backend_library.src.main.backend.task.TaskState import TaskState
 
 
 class DatasetCleaning(Task):
@@ -43,31 +39,35 @@ class DatasetCleaning(Task):
     def did_cleaning_finish(self) -> bool:
         return os.path.isfile(self.cleaned_dataset_path)
 
-    # scheduling
+    # scheduling #############################################
     def get_user_id(self) -> int:
         return self.user_id
+
+    def get_task_id(self) -> int:
+        return self.task_id
 
     def do_work(self) -> None:
         self.delete_old_error_file()
 
         dataset_to_clean: np.ndarray = self.load_original_dataset()
         cleaning_pipeline_result: Optional[np.ndarray] = self.run_cleaning_pipeline(dataset_to_clean)
-        if cleaning_pipeline_result is None:
+
+        if cleaning_pipeline_result is None:  # cleaning failed
             self.task_progress_callback(self.task_id, TaskState.FINISHED_WITH_ERROR, 1.0)
             return
 
         cleaned_dataset: np.ndarray = cleaning_pipeline_result.astype(
             np.float32)  # cast ndarray to float32 # TODO: Vllt copy=False
 
-        if self.is_float_csv(cleaned_dataset):
+        if TaskHelper.is_float_csv(cleaned_dataset):
             self.store_cleaned_dataset(cleaned_dataset)
             self.task_progress_callback(self.task_id, TaskState.FINISHED, 1.0)
         else:
             error_message: string = "Error: Type != float32 in cleaned_file"
-            self.save_error_csv_file(error_message)
+            self.save_error_file(error_message)
             self.task_progress_callback(self.task_id, TaskState.FINISHED_WITH_ERROR, 1.0)
 
-    # do_work
+    # do_work #############################################
     def load_original_dataset(self) -> np.ndarray:
         return DataIO.read_uncleaned_csv(self.original_dataset_path)
 
@@ -79,7 +79,7 @@ class DatasetCleaning(Task):
                 if cleaning_step is not None:
                     csv_to_clean = cleaning_step.do_cleaning(csv_to_clean)
             except Exception as e:  # catch *all* exceptions
-                self.save_error_csv_file(str(e))
+                self.save_error_file(str(e))
                 return None
 
             finished_cleaning_steps += 1
@@ -87,22 +87,15 @@ class DatasetCleaning(Task):
                                   0.99)  # compute and clamp progress
             self.task_progress_callback(self.task_id, TaskState.RUNNING, progress)
 
-    @staticmethod
-    def is_float_csv(csv_to_check) -> bool:
-        dtype: np.dtype = csv_to_check.dtype
-        if dtype == np.float32 or dtype == np.int32:
-            return True
-        return False
-
     def delete_old_error_file(self) -> None:
         error_file_path: string = TaskHelper().convert_to_error_csv_path(self.cleaned_dataset_path)
         if os.path.isfile(error_file_path):
             os.remove(error_file_path)
 
-    def save_error_csv_file(self, error_message: string) -> None:
-        th: TaskHelper = TaskHelper()
-        error_file_path: string = th.convert_to_error_csv_path(self.cleaned_dataset_path)
-        th.save_error_csv(error_file_path, str(error_message))
+    # Saves the error_message as a csv file (error_file_path is given by TaskHelper.convert_to_error_csv_path())
+    def save_error_file(self, error_message: string) -> None:
+        error_file_path: string = TaskHelper.convert_to_error_csv_path(self.cleaned_dataset_path)
+        TaskHelper.save_error_csv(error_file_path, str(error_message))
 
     def store_cleaned_dataset(self, cleaned_dataset: np.ndarray) -> None:
         DataIO.write_csv(self.cleaned_dataset_path, cleaned_dataset)
