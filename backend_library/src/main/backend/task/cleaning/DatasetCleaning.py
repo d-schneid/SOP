@@ -23,8 +23,8 @@ class DatasetCleaning(Task, Schedulable):
         Task.__init__(self, user_id, task_id, task_progress_callback)
         if cleaning_steps is None:
             cleaning_steps = [CategoricalColumnRemover(), ImputationMode(), MinMaxScaler()]  # Default Cleaning-Pipeline
-        self.original_dataset_path = original_dataset_path
-        self.cleaned_dataset_path = cleaned_dataset_path
+        self.original_dataset_path: string = original_dataset_path
+        self.cleaned_dataset_path: string = cleaned_dataset_path
         self.cleaning_steps = cleaning_steps  # DatasetCleaningStep[]
 
     def schedule(self) -> None:
