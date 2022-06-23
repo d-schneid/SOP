@@ -4,9 +4,6 @@ from collections.abc import Callable
 
 
 class Task:
-    user_id: int
-    task_id: int
-    task_progress_callback: Callable = None
 
     def __init__(self, user_id: int, task_id: int, task_progress_callback: Callable):
         self.user_id = user_id

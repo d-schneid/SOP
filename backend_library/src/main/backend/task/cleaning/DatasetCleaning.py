@@ -12,12 +12,11 @@ from backend_library.src.main.backend.DataIO import DataIO
 from backend_library.src.main.backend.task.Task import Task
 from backend_library.src.main.backend.task.TaskHelper import TaskHelper
 from backend_library.src.main.backend.task.TaskState import TaskState
+from backend_library.src.main.backend.scheduler.Scheduler import Scheduler
+from backend_library.src.main.backend.scheduler.Schedulable import Schedulable
 
 
-class DatasetCleaning(Task):
-    original_dataset_path: string
-    cleaned_dataset_path: string
-    cleaning_steps = []  # DatasetCleaningStep[]
+class DatasetCleaning(Task, Schedulable):
 
     def __init__(self, user_id: int, task_id: int, task_progress_callback: Callable, original_dataset_path: string,
                  cleaned_dataset_path: string, cleaning_steps=None):
@@ -26,13 +25,14 @@ class DatasetCleaning(Task):
             cleaning_steps = [CategoricalColumnRemover(), ImputationMode(), MinMaxScaler()]  # Default Cleaning-Pipeline
         self.original_dataset_path = original_dataset_path
         self.cleaned_dataset_path = cleaned_dataset_path
-        self.cleaning_steps = cleaning_steps
+        self.cleaning_steps = cleaning_steps  # DatasetCleaningStep[]
 
     def schedule(self) -> None:
         if self.did_cleaning_finish():
             self.task_progress_callback(self.task_id, TaskState.FINISHED, 1.0)
             return None
-        # TODO: Insert into Scheduler
+        scheduler: Scheduler = Scheduler.get_instance()
+        scheduler.schedule(DatasetCleaning)
 
     def did_cleaning_finish(self) -> bool:
         return os.path.isfile(self.cleaned_dataset_path)
