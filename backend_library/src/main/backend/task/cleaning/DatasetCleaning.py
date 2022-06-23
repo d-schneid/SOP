@@ -34,8 +34,6 @@ class DatasetCleaning(Task):
             return None
         # TODO: Insert into Scheduler
 
-        return None
-
     def did_cleaning_finish(self) -> bool:
         return os.path.isfile(self.cleaned_dataset_path)
 
@@ -64,7 +62,7 @@ class DatasetCleaning(Task):
             self.task_progress_callback(self.task_id, TaskState.FINISHED, 1.0)
         else:
             error_message: string = "Error: Type != float32 in cleaned_file"
-            self.save_error_file(error_message)
+            TaskHelper.save_error_csv(self.cleaned_dataset_path, error_message)
             self.task_progress_callback(self.task_id, TaskState.FINISHED_WITH_ERROR, 1.0)
 
     # do_work #############################################
@@ -79,7 +77,7 @@ class DatasetCleaning(Task):
                 if cleaning_step is not None:
                     csv_to_clean = cleaning_step.do_cleaning(csv_to_clean)
             except Exception as e:  # catch *all* exceptions
-                self.save_error_file(str(e))
+                TaskHelper.save_error_csv(self.cleaned_dataset_path, str(e))
                 return None
 
             finished_cleaning_steps += 1
@@ -88,14 +86,9 @@ class DatasetCleaning(Task):
             self.task_progress_callback(self.task_id, TaskState.RUNNING, progress)
 
     def delete_old_error_file(self) -> None:
-        error_file_path: string = TaskHelper().convert_to_error_csv_path(self.cleaned_dataset_path)
+        error_file_path: string = TaskHelper.convert_to_error_csv_path(self.cleaned_dataset_path)
         if os.path.isfile(error_file_path):
             os.remove(error_file_path)
-
-    # Saves the error_message as a csv file (error_file_path is given by TaskHelper.convert_to_error_csv_path())
-    def save_error_file(self, error_message: string) -> None:
-        error_file_path: string = TaskHelper.convert_to_error_csv_path(self.cleaned_dataset_path)
-        TaskHelper.save_error_csv(error_file_path, error_message)
 
     def store_cleaned_dataset(self, cleaned_dataset: np.ndarray) -> None:
         DataIO.write_csv(self.cleaned_dataset_path, cleaned_dataset)
