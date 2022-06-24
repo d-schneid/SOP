@@ -1,4 +1,5 @@
 import csv
+import os
 import string
 import numpy as np
 
@@ -23,3 +24,9 @@ class TaskHelper:
         if dtype == np.float32 or dtype == np.int32:
             return True
         return False
+
+    @staticmethod
+    def create_directory(path: string) -> None:
+        if not os.path.isdir(path):
+            new_directory = os.path.join(path)  # TODO: Test this
+            os.mkdir(new_directory)
