@@ -12,10 +12,10 @@ from backend_library.src.main.backend.task.execution.subspace.SubspaceGeneration
 from backend_library.src.main.backend.task.execution.core.ExecutionSubspace import ExecutionSubspace
 from backend_library.src.main.backend.scheduler.Scheduler import Scheduler
 from backend_library.src.main.backend.task.execution.ResultZipper import ResultZipper
+from backend_library.src.main.backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 
 
 class Execution(Task):
-
     cache_dataset_lock = multiprocessing.Lock()
     execution_element_finished_lock = multiprocessing.Lock()
 
@@ -30,6 +30,7 @@ class Execution(Task):
         self.metric_callback: Callable = metric_callback
 
         # on created logic
+        self.fill_algorithms_directory_name()
         self.generate_file_system_structure()
         self.zipped_result_path: string = self.result_path + ".zip"
         # further private variables
@@ -41,6 +42,21 @@ class Execution(Task):
         self.total_execution_element_count: int = self.subspaces.len() * algorithms.len()
         # TODO generate shared memory
         self.shared_memory_name: string = ""
+
+    def fill_algorithms_directory_name(self):
+        algorithm_display_name_dict: dict = {}
+
+        for algorithm in self.algorithms:
+            algorithm: ParameterizedAlgorithm = algorithm  # Done to get the type hint
+            display_name: string = algorithm.display_name
+
+            if (algorithm_display_name_dict.get(display_name)) is None:
+                algorithm.directory_name_in_execution = display_name
+            else:
+                algorithm.directory_name_in_execution = display_name + " (" \
+                                                        + algorithm_display_name_dict[display_name] + ")"
+
+            algorithm_display_name_dict[algorithm.directory_name_in_execution] += 1
 
     # Generates all missing folders of the file system structure of this execution
     def generate_file_system_structure(self) -> None:
@@ -59,14 +75,16 @@ class Execution(Task):
     def generate_execution_details_in_filesystem(self) -> None:
         details_path: string = self.result_path + 'details.json'
 
-        # create JSON-string that will be saved
-        execution_details: string = self.subspace_generation.to_json() + "\n"
+        # create dictionary that will be saved as a JSON-string
+        details_dict = {'subspace_generation_information': self.subspace_generation.to_json()}
         for algorithm in self.algorithms:
-            execution_details += algorithm.to_json() + "\n"
+            algorithm: ParameterizedAlgorithm = algorithm  # To get the type hint
+            details_dict[algorithm.directory_name_in_execution] += algorithm.to_json()
 
         # save JSON-string
+        details_json_string: string = json.dumps(details_dict)  # maybe set indent=4
         with open(details_path, 'w') as f:  # TODO: Test if this is correct
-            json.dump(execution_details, f)
+            json.dump(details_json_string, f)
 
     def generate_execution_subspaces(self) -> None:
         for subspace in self.subspaces:
@@ -81,7 +99,7 @@ class Execution(Task):
         scheduler.schedule(Execution)
 
     def does_zip_exists(self) -> bool:
-        return os.path.isfile(self.get_zip_path())
+        return os.path.isfile(self.zipped_result_path)
 
     def compute_progress(self) -> float:
         execution_element_progress: float = self.finished_execution_element_count / self.total_execution_element_count;
