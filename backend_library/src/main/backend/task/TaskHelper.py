@@ -4,9 +4,10 @@ import string
 import numpy as np
 from collections.abc import Iterable
 
+
 class TaskHelper:
     @staticmethod
-    #Converts file_path into the error_file_path and saves the error-csv-file there.
+    # Converts file_path into the error_file_path and saves the error-csv-file there.
     def save_error_csv(path: string, error_message: string) -> None:
         error_file_path: string = TaskHelper.convert_to_error_csv_path(path)
         error_message: string = error_message

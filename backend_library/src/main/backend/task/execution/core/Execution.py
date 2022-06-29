@@ -29,7 +29,7 @@ class Execution(Task):
         self._dataset_path: string = dataset_path
         self._result_path: string = result_path
         self._subspace_generation: SubspaceGenerationDescription = subspace_generation
-        self._algorithms = algorithms
+        self._algorithms: Iterable[ParameterizedAlgorithm] = algorithms
         self._metric_callback: Callable = metric_callback
 
         # on created logic
@@ -112,10 +112,13 @@ class Execution(Task):
         return progress
 
     # getter for ExecutionSubspace
-    def get_user_id(self) -> int:
+    # TODO: Prüf ob man die in Schedulable auch als Property realisieren kann
+    @property
+    def user_id(self) -> int:
         return self._user_id
 
-    def get_task_id(self) -> int:
+    @property
+    def task_id(self) -> int:
         return self._task_id
 
     def cache_dataset(self) -> string:
@@ -147,3 +150,16 @@ class Execution(Task):
                                                    self._zipped_result_path)
         scheduler: Scheduler = Scheduler.get_instance()
         scheduler.schedule(result_zipper)
+
+    # getter for metric
+    @property
+    def algorithms(self) -> Iterable[ParameterizedAlgorithm]:
+        return self._algorithms
+
+    @property
+    def subspaces(self) -> Iterable[Subspace]:
+        return self._subspaces
+
+    @property
+    def result_path(self) -> string:
+        return self._result_path
