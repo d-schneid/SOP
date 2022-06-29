@@ -2,7 +2,7 @@ import csv
 import os
 import string
 import numpy as np
-
+from collections.abc import Iterable
 
 class TaskHelper:
     @staticmethod
@@ -30,3 +30,7 @@ class TaskHelper:
         if not os.path.isdir(path):
             new_directory = os.path.join(path)  # TODO: Test this
             os.mkdir(new_directory)
+
+    @staticmethod
+    def iterable_length(iterable: Iterable) -> int:
+        return sum(1 for e in iterable)
