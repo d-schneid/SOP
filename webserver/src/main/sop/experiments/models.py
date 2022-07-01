@@ -1,3 +1,17 @@
 from django.db import models
 
-# Create your models here.
+
+class DatasetModel(models.Model):
+    pass
+
+
+class AlgorithmModel(models.Model):
+    pass
+
+
+class ExperimentModel(models.Model):
+    pass
+
+
+class ExecutionModel(models.Model):
+    pass
