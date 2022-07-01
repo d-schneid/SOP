@@ -1,6 +1,9 @@
+import multiprocessing
 import string
 from collections.abc import Iterable
 from typing import List
+
+import numpy as np
 
 from backend_library.src.main.backend.task.execution.core.Execution import Execution
 from backend_library.src.main.backend.task.execution.subspace.Subspace import Subspace
@@ -9,7 +12,10 @@ from backend_library.src.main.backend.task.TaskHelper import TaskHelper
 from backend_library.src.main.backend.task.execution.core.ExecutionElement import ExecutionElement
 from backend_library.src.main.backend.scheduler.Scheduler import Scheduler
 
+
 class ExecutionSubspace:
+    _cache_subset_lock = multiprocessing.Lock()
+
     def __init__(self, execution: Execution, subspace: Subspace):
         self._execution: Execution = execution
         self._subspace: Subspace = subspace
@@ -46,3 +52,25 @@ class ExecutionSubspace:
     @property
     def task_id(self) -> int:
         return self._execution.task_id
+
+    def get_subspace_data_for_processing(self) -> np.ndarray:
+        if self._subspace_shared_memory_name is None:
+            self.__load_subspace_from_dataset()
+
+        # TODO Tobias: numpy array aus shared_memory ausgeben
+        pass
+
+    def __load_subspace_from_dataset(self) -> np.ndarray:
+        self._cache_subset_lock.acquire()
+        # TODO Tobias
+        self._cache_subset_lock.release()
+
+    def execution_element_is_finished(self, error_occurred: bool) -> None:
+        self._finished_execution_element_count += 1
+        if self._finished_execution_element_count >= self._total_execution_element_count:
+            self.__unload_subspace_shared_memory()
+        self._execution.on_execution_element_finished(error_occurred)
+
+    def __unload_subspace_shared_memory(self):
+        # TODO Tobias
+        pass

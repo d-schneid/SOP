@@ -19,8 +19,8 @@ from backend_library.src.main.backend.task.execution.subspace.Subspace import Su
 
 
 class Execution(Task):
-    cache_dataset_lock = multiprocessing.Lock()
-    execution_element_finished_lock = multiprocessing.Lock()
+    _cache_dataset_lock = multiprocessing.Lock()
+    _execution_element_finished_lock = multiprocessing.Lock()
 
     def __init__(self, user_id: int, task_id: int, task_progress_callback: Callable, dataset_path: string,
                  result_path: string, subspace_generation: SubspaceGenerationDescription, algorithms,
@@ -112,7 +112,6 @@ class Execution(Task):
         return progress
 
     # getter for ExecutionSubspace
-    # TODO: Prüf ob man die in Schedulable auch als Property realisieren kann
     @property
     def user_id(self) -> int:
         return self._user_id
@@ -122,23 +121,23 @@ class Execution(Task):
         return self._task_id
 
     def cache_dataset(self) -> string:
-        Execution.cache_dataset_lock.acquire()
+        Execution._cache_dataset_lock.acquire()
         # TODO: Tobias
-        Execution.cache_dataset_lock.release()
+        Execution._cache_dataset_lock.release()
         pass
 
     def on_execution_element_finished(self, error: bool):
         if not self._has_failed_element and error:
             self._has_failed_element = True
 
-        Execution.execution_element_finished_lock.acquire()
+        Execution._execution_element_finished_lock.acquire()
         self._finished_execution_element_count += 1
         if self._finished_execution_element_count == self._total_execution_element_count:
             self.__unload_dataset()
             self._metric_callback(self)
             self._metric_finished = True
             self.__schedule_result_zipping()
-        Execution.execution_element_finished_lock.release()
+        Execution._execution_element_finished_lock.release()
 
     def __unload_dataset(self):
         # TODO: Tobias
