@@ -7,6 +7,7 @@ import numpy as np
 
 from backend_library.src.main.backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 from backend_library.src.main.backend.scheduler.Schedulable import Schedulable
+from backend_library.src.main.backend.DataIO import DataIO
 
 
 class ExecutionElement(Schedulable, ABC):
@@ -31,7 +32,7 @@ class ExecutionElement(Schedulable, ABC):
     def do_work(self) -> None:
         run_algo_result: np.ndarray = self.__run_algorithm()
         result_to_save: np.ndarray = self.__convert_result_to_csv(run_algo_result)
-        self.__save_result(self._result_path, result_to_save)
+        DataIO.write_csv(self._result_path, result_to_save)
 
     # do_work()
     def __run_algorithm(self) -> np.ndarray:
@@ -41,7 +42,3 @@ class ExecutionElement(Schedulable, ABC):
     def __convert_result_to_csv(self, run_algo_result: np.ndarray) -> np.ndarray:
         # TODO: Tobias
         return np.zeros(0)
-
-    def __save_result(self, path: string, result: np.ndarray) -> None:
-        # TODO: Tobias
-        pass
