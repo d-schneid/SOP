@@ -11,8 +11,9 @@ class ParameterizedAlgorithm(object):
         self._directory_name_in_execution: string = ""
 
     def to_json(self) -> string:
-        to_json_dict = {'display_name': self._display_name, 'hyper_parameter': self._hyper_parameter}
-        json_string = json.dumps(to_json_dict)  # maybe set indent=4
+        to_json_dict = {'display_name': self._display_name, 'directory_name': self._directory_name_in_execution,
+                        'hyper_parameter': self._hyper_parameter}
+        json_string = json.dumps(to_json_dict, indent=4)
         return json_string
 
     @property
