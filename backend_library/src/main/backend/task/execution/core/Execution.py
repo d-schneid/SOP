@@ -84,7 +84,7 @@ class Execution(Task):
             details_dict[algorithm.directory_name_in_execution] += algorithm.to_json()
 
         # save JSON-string
-        details_json_string: string = json.dumps(details_dict)  # maybe set indent=4
+        details_json_string: string = json.dumps(details_dict, indent=4)
         with open(details_path, 'w') as f:  # TODO: Test if this is correct
             json.dump(details_json_string, f)
 
