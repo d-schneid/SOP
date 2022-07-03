@@ -178,6 +178,13 @@ class Execution(Task, ABC):
         """
         return self._task_id
 
+    @property
+    def result_path(self) -> string:
+        """
+        :return: The absolute path where the Execution result-directory is stored.
+        """
+        return self._result_path
+
     def cache_dataset(self) -> string:
         """
         Load the cleaned dataset, if it isn't loaded into the shared memory yet.
@@ -190,7 +197,7 @@ class Execution(Task, ABC):
 
     def on_execution_element_finished(self, error: bool) -> None:
         """
-        The Execution gets notified by corresponding ExecutionSubspace if an ExecutionElement finished
+        The Execution gets notified by the corresponding ExecutionSubspace when an ExecutionElement finished
         by calling this method.
         :param error: True if the ExecutionElement finished with an error. Is otherwise False.
         :return: None
