@@ -12,6 +12,11 @@ class Schedulable(ABC):
     def task_id(self) -> int:
         return -1
 
+    @property
+    @abstractmethod
+    def priority(self) -> int:
+        return 0
+
     @abstractmethod
     def do_work(self) -> None:
         return None

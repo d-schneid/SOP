@@ -1,23 +1,32 @@
 import multiprocessing
+import os
 import string
+import sys
 from collections.abc import Iterable
 from typing import List
 
 import numpy as np
 
-from backend_library.src.main.backend.task.execution.core.Execution import Execution
+import backend_library.src.main.backend.task.execution.core.Execution as e
+import backend_library.src.main.backend.task.execution.core.ExecutionElement as ee
 from backend_library.src.main.backend.task.execution.subspace.Subspace import Subspace
 from backend_library.src.main.backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 from backend_library.src.main.backend.task.TaskHelper import TaskHelper
-from backend_library.src.main.backend.task.execution.core.ExecutionElement import ExecutionElement
 from backend_library.src.main.backend.scheduler.Scheduler import Scheduler
 
 
 class ExecutionSubspace:
+    """
+    Manages the computations of all algorithms of an Execution, that compute their results on the same Subspace.
+    """
     _cache_subset_lock = multiprocessing.Lock()
 
-    def __init__(self, execution: Execution, subspace: Subspace):
-        self._execution: Execution = execution
+    def __init__(self, execution: e.Execution, subspace: Subspace):
+        """
+        :param execution: The Execution this ExecutionSubspace belongs to.
+        :param subspace: The Subspace whose ExecutionElements are managed by this ExecutionSubspace.
+        """
+        self._execution: e.Execution = execution
         self._subspace: Subspace = subspace
 
         algorithms: Iterable[ParameterizedAlgorithm] = execution.algorithms
@@ -25,7 +34,7 @@ class ExecutionSubspace:
         # further private variables
         self._finished_execution_element_count: int = 0
         self._total_execution_element_count: int = TaskHelper.iterable_length(algorithms)
-        self._execution_elements: List[ExecutionElement] = list()
+        self._execution_elements: List[ee.ExecutionElement] = list()
 
         # shared memory
         self._subspace_shared_memory_name: string = ""
@@ -35,10 +44,21 @@ class ExecutionSubspace:
         self.__schedule_execution_elements()
 
     def __generate_execution_elements(self, algorithms: Iterable[ParameterizedAlgorithm]) -> None:
+        """
+        :param algorithms: All algorithms that are selected for the Execution.
+        :return: None
+        """
         for algorithm in algorithms:
-            self._execution_elements.append(ExecutionElement(self, algorithm))
+            result_path: string = sys.path.append \
+                (os.path.join(self._execution.zip_result_path,
+                              algorithm.directory_name_in_execution))  # TODO: TEST THIS!
+            self._execution_elements.append(ee.ExecutionElement(self, algorithm, result_path))
 
     def __schedule_execution_elements(self) -> None:
+        """
+        Insert all ExecutionElements of this ExecutionSubspace into the Scheduler. \n
+        :return: None
+        """
         scheduler: Scheduler = Scheduler.get_instance()
         if scheduler is not None:
             for execution_element in self._execution_elements:
@@ -47,30 +67,54 @@ class ExecutionSubspace:
     # getter for ExecutionSubspace
     @property
     def user_id(self) -> int:
+        """
+        :return: The ID of the user belonging to this Execution.
+        """
         return self._execution.user_id
 
     @property
     def task_id(self) -> int:
+        """
+        :return: The ID of the task.
+        """
         return self._execution.task_id
 
     def get_subspace_data_for_processing(self) -> np.ndarray:
+        """
+        Returns the dataset for this subset from shared_memory. \n
+        :return: The subspace_dataset (from shared_memory).
+        """
         if self._subspace_shared_memory_name is None:
             self.__load_subspace_from_dataset()
 
         # TODO Tobias: numpy array aus shared_memory ausgeben
-        pass
+        return np.zeros((0, 0))
 
     def __load_subspace_from_dataset(self) -> np.ndarray:
+        """
+        :return: Loads the dataset for this subspace into shared_memory, if it isn't loaded into the shared_memory yet.
+        """
         self._cache_subset_lock.acquire()
         # TODO Tobias
         self._cache_subset_lock.release()
+        return np.zeros((0, 0))
 
     def execution_element_is_finished(self, error_occurred: bool) -> None:
+        """
+        The ExecutionSubspace gets notified by an ExecutionElement when it finishes by calling this method. \n
+        Passes the notification on to the Execution. \n
+        :param error_occurred: True if the ExecutionElement finished with an error. Is otherwise False.
+        :return: None
+        """
         self._finished_execution_element_count += 1
         if self._finished_execution_element_count >= self._total_execution_element_count:
             self.__unload_subspace_shared_memory()
         self._execution.on_execution_element_finished(error_occurred)
 
-    def __unload_subspace_shared_memory(self):
+    def __unload_subspace_shared_memory(self) -> None:
+        """
+        Unlinks the dataset from the subspace from shared_memory. \n
+        :return: None
+        """
         # TODO Tobias
-        pass
+        return None
