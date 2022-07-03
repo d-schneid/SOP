@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import multiprocessing
 import os
@@ -22,9 +24,9 @@ class Execution(Task):
     _cache_dataset_lock = multiprocessing.Lock()
     _execution_element_finished_lock = multiprocessing.Lock()
 
-    def __init__(self, user_id: int, task_id: int, task_progress_callback: Callable, dataset_path: string,
-                 result_path: string, subspace_generation: SubspaceGenerationDescription, algorithms,
-                 metric_callback: Callable):
+    def __init__(self, user_id: int, task_id: int, task_progress_callback: Callable[[int, TaskState, float], None],
+                 dataset_path: string, result_path: string, subspace_generation: SubspaceGenerationDescription,
+                 algorithms: Iterable[ParameterizedAlgorithm], metric_callback: Callable[[Execution], None]):
         Task.__init__(self, user_id, task_id, task_progress_callback)
         self._dataset_path: string = dataset_path
         self._result_path: string = result_path
@@ -43,7 +45,7 @@ class Execution(Task):
         # generate subspaces
         self._subspaces: Iterable[Subspace] = self._subspace_generation.generate()
         self._subspaces_count = TaskHelper.iterable_length(self._subspaces)
-        self._total_execution_element_count: int = self._subspaces_count * algorithms.len()
+        self._total_execution_element_count: int = self._subspaces_count * TaskHelper.iterable_length(algorithms)
         # generate execution_subspaces
         self._execution_subspaces: List[ExecutionSubspace] = list()
         self.__generate_execution_subspaces()

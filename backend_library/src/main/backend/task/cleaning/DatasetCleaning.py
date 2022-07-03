@@ -19,8 +19,9 @@ from DatasetCleaningStep import DatasetCleaningStep
 
 class DatasetCleaning(Task, Schedulable):
 
-    def __init__(self, user_id: int, task_id: int, task_progress_callback: Callable, original_dataset_path: string,
-                 cleaned_dataset_path: string, cleaning_steps: Iterable[DatasetCleaningStep] = None):
+    def __init__(self, user_id: int, task_id: int, task_progress_callback: Callable[[int, TaskState, float], None],
+                 original_dataset_path: string, cleaned_dataset_path: string,
+                 cleaning_steps: Iterable[DatasetCleaningStep] = None):
         Task.__init__(self, user_id, task_id, task_progress_callback)
         if cleaning_steps is None:
             cleaning_steps = [CategoricalColumnRemover(), ImputationMode(), MinMaxScaler()]  # Default Cleaning-Pipeline
