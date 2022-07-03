@@ -134,6 +134,9 @@ class DatasetCleaning(Task, Schedulable, ABC):
         :param csv_to_clean: The dataset that should be cleaned.
         :return: None if the cleaning failed. Otherwise, returns the cleaned dataset.
         """
+        if self.__empty_cleaning_result_handler(csv_to_clean):  # csv is empty
+            return None
+
         finished_cleaning_steps: int = 0
 
         for cleaning_step in self._cleaning_steps:
@@ -143,7 +146,8 @@ class DatasetCleaning(Task, Schedulable, ABC):
             except Exception as e:  # catch all exceptions
                 TaskHelper.save_error_csv(self._cleaned_dataset_path, str(e))
                 return None
-
+            if self.__empty_cleaning_result_handler(csv_to_clean):  # csv is empty
+                return None
             finished_cleaning_steps += 1
             progress: float = min(finished_cleaning_steps / self._cleaning_steps_count,
                                   0.99)  # compute and clamp progress
@@ -155,3 +159,15 @@ class DatasetCleaning(Task, Schedulable, ABC):
         :return: None
         """
         DataIO.write_csv(self._cleaned_dataset_path, cleaned_dataset)
+
+    def __empty_cleaning_result_handler(self, csv_to_check: np.ndarray) -> bool:
+        """
+        Checks if the cleaning result is empty. If this is the case create and store the error file and return True.
+        :param csv_to_check: The array that should be checked.
+        :return: True, if the array is empty. Otherwise, return False.
+        """
+        if csv_to_check.shape[0] == 0 or csv_to_check.shape[1] == 0:
+            error: string = "Cleaning resulted in empty dataset"
+            TaskHelper.save_error_csv(self._cleaned_dataset_path, str(error))
+            return True
+        return False
