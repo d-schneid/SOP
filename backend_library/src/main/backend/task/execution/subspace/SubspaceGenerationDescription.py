@@ -9,7 +9,7 @@ class SubspaceGenerationDescription(ABC):
     @abstractmethod
     def generate(self) -> Iterable[Subspace]:
         """
-        Generates the Subspaces deterministically.
+        Generates the Subspaces deterministically. \n
         :return: The generated Subspaces.
         """
         return iter([])
@@ -18,7 +18,7 @@ class SubspaceGenerationDescription(ABC):
     def to_json(self) -> string:
         """
         Converts the important information of the SubspaceGenerationDescription into a JSON-string, so that the
-        Subspace generation can be understood and reproduced.
+        Subspace generation can be understood and reproduced. \n
         :return:
         """
         return ""

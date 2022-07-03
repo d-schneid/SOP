@@ -71,10 +71,10 @@ class Execution(Task, ABC):
 
     def __fill_algorithms_directory_name(self) -> None:
         """
-        Fills all algorithms with their corresponding directory name in the Execution result folder.
+        Fills all algorithms with their corresponding directory name in the Execution result folder.  \n
         This is done to allow having multiple algorithms of the same kind in the same Execution.
         Without setting their name individually, algorithms with the same display_name would write their results
-        into the same folder, overwriting the results of the other.
+        into the same folder, overwriting the results of the other.  \n
         :return: None
         """
         algorithm_display_name_dict: dict = {}
@@ -94,7 +94,7 @@ class Execution(Task, ABC):
     # Generates all missing folders of the file system structure of this execution
     def __generate_file_system_structure(self) -> None:
         """
-        Creates all necessary directories to store the Execution results.
+        Creates all necessary directories to store the Execution results. \n
         :return: None
         """
         # if os.path.exists(self.result_path):
@@ -106,8 +106,8 @@ class Execution(Task, ABC):
 
     def __generate_execution_details_in_filesystem(self) -> None:
         """
-        Create and store the details.JSON file of the Execution.
-        It includes information so that the Execution results could be understood and reconstructed.
+        Create and store the details.JSON file of the Execution. \n
+        It includes information so that the Execution results could be understood and reconstructed.  \n
         :return: None
         """
         details_path: string = self._result_path + 'details.json'
@@ -125,7 +125,7 @@ class Execution(Task, ABC):
 
     def __generate_execution_subspaces(self) -> None:
         """
-        Creates all ExecutionSubspaces that are part of this Execution.
+        Creates all ExecutionSubspaces that are part of this Execution. \n
         :return: None
         """
         for subspace in self._subspaces:
@@ -134,7 +134,7 @@ class Execution(Task, ABC):
     # schedule
     def schedule(self) -> None:
         """
-        Inserts the Task into the Scheduler for processing.
+        Inserts the Task into the Scheduler for processing. \n
         :return: None
         """
         if self.__does_zip_exists():
@@ -146,15 +146,16 @@ class Execution(Task, ABC):
     def __does_zip_exists(self) -> bool:
         """
         The ZIP-file for the result only exists for finished Executions. So it can be extracted if the Execution
-        is finished by checking for the finished ZIP-file.
+        is finished by checking for the finished ZIP-file. \n
         :return: True if the ZIP-file of the Execution-result exists. Otherwise, return False.
         """
         return os.path.exists(self._zipped_result_path)
 
     def __compute_progress(self) -> float:
         """
+        Note: returning float==1 doesn't necessary mean that the Execution is finished. Use TaskState for checking
+        if a Task is finished. \n
         :return: A float in [0,1] which indicates the progress of the Execution.
-            Note: float==1 doesn't necessary mean that the Execution is finished. Use TaskState for this.
         """
         execution_element_progress: float = self._finished_execution_element_count / self._total_execution_element_count
         progress: float = max(execution_element_progress, 0.98)  # clamp the progress to be more accurate
@@ -187,7 +188,7 @@ class Execution(Task, ABC):
 
     def cache_dataset(self) -> string:
         """
-        Load the cleaned dataset, if it isn't loaded into the shared memory yet.
+        Load the cleaned dataset, if it isn't loaded into the shared memory yet. \n
         :return: The shared_memory_name of the cleaned dataset.
         """
         Execution._cache_dataset_lock.acquire()
@@ -198,7 +199,7 @@ class Execution(Task, ABC):
     def on_execution_element_finished(self, error: bool) -> None:
         """
         The Execution gets notified by the corresponding ExecutionSubspace when an ExecutionElement finished
-        by calling this method.
+        by calling this method. \n
         :param error: True if the ExecutionElement finished with an error. Is otherwise False.
         :return: None
         """
@@ -216,7 +217,7 @@ class Execution(Task, ABC):
 
     def __unload_dataset(self) -> None:
         """
-        Unloads the cleaned dataset from shared_memory
+        Unloads the cleaned dataset from shared_memory. \n
         :return: None
         """
         # TODO: Tobias
@@ -225,7 +226,7 @@ class Execution(Task, ABC):
 
     def __schedule_result_zipping(self) -> None:
         """
-        Create and schedule the ResultZipping of the Execution into the Scheduler.
+        Create and schedule the ResultZipping of the Execution into the Scheduler. \n
         :return: None
         """
         result_zipper: ResultZipper = ResultZipper(self._user_id, self._task_id, self._has_failed_element,

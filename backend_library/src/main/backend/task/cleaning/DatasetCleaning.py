@@ -50,7 +50,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
 
     def schedule(self) -> None:
         """
-        Inserts the Task into the Scheduler for processing.
+        Inserts the Task into the Scheduler for processing. \n
         :return: None
         """
         if self.__did_cleaning_finish():
@@ -89,7 +89,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
 
     def do_work(self) -> None:
         """
-        Is called by the scheduler to do the dataset cleaning.
+        Is called by the scheduler to do the dataset cleaning. \n
         :return: None
         """
         self.__delete_old_error_file()
@@ -115,7 +115,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
     # do_work #############################################
     def __delete_old_error_file(self) -> None:
         """
-        If there exists an old error file belonging to this DatasetCleaning, it will be deleted.
+        If there exists an old error file belonging to this DatasetCleaning, it will be deleted. \n
         :return: None
         """
         error_file_path: string = TaskHelper.convert_to_error_csv_path(self._cleaned_dataset_path)
@@ -123,14 +123,14 @@ class DatasetCleaning(Task, Schedulable, ABC):
             os.remove(error_file_path)
 
     def __load_original_dataset(self) -> np.ndarray:
-        """ Loads the uncleaned dataset which will be cleaned.
+        """ Loads the uncleaned dataset which will be cleaned. \n
         :return: The loaded uncleaned dataset.
         """
         return DataIO.read_uncleaned_csv(self._original_dataset_path)
 
     def __run_cleaning_pipeline(self, csv_to_clean: np.ndarray) -> Optional[np.ndarray]:
         """
-        Runs each DatasetToClean of the cleaning_pipline on the uncleaned dataset sequentially.
+        Runs each DatasetToClean of the cleaning_pipline on the uncleaned dataset sequentially. \n
         :param csv_to_clean: The dataset that should be cleaned.
         :return: None if the cleaning failed. Otherwise, returns the cleaned dataset.
         """
@@ -150,7 +150,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
             self._task_progress_callback(self._task_id, TaskState.RUNNING, progress)
 
     def __store_cleaned_dataset(self, cleaned_dataset: np.ndarray) -> None:
-        """ Stores the cleaned dataset in the FileStorage.
+        """ Stores the cleaned dataset in the FileStorage. \n
         :param cleaned_dataset: Dataset that should be stored
         :return: None
         """

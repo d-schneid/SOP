@@ -7,7 +7,7 @@ from backend_library.src.main.backend.task.TaskState import TaskState
 
 class Task(ABC):
     """
-    An abstract class which sets the structure for all tasks that are computed by the BackendLibrary.
+    An abstract class which sets the structure for all tasks that are computed by the BackendLibrary. \n
     The subclasses are created from outside (e.g. webserver). They also call the schedule() method.
     """
 
@@ -24,7 +24,7 @@ class Task(ABC):
     @abstractmethod
     def schedule(self) -> None:
         """
-        Inserts the Task into the Scheduler for processing.
+        Inserts the Task into the Scheduler for processing. \n
         :return: None
         """
         return None

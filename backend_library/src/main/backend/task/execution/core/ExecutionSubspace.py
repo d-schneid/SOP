@@ -56,7 +56,7 @@ class ExecutionSubspace:
 
     def __schedule_execution_elements(self) -> None:
         """
-        Insert all ExecutionElements of this ExecutionSubspace into the Scheduler.
+        Insert all ExecutionElements of this ExecutionSubspace into the Scheduler. \n
         :return: None
         """
         scheduler: Scheduler = Scheduler.get_instance()
@@ -81,7 +81,7 @@ class ExecutionSubspace:
 
     def get_subspace_data_for_processing(self) -> np.ndarray:
         """
-        Returns the dataset for this subset from shared_memory.
+        Returns the dataset for this subset from shared_memory. \n
         :return: The subspace_dataset (from shared_memory).
         """
         if self._subspace_shared_memory_name is None:
@@ -101,8 +101,8 @@ class ExecutionSubspace:
 
     def execution_element_is_finished(self, error_occurred: bool) -> None:
         """
-        The ExecutionSubspace gets notified by an ExecutionElement when it finishes by calling this method.
-        Passes the notification on to the Execution.
+        The ExecutionSubspace gets notified by an ExecutionElement when it finishes by calling this method. \n
+        Passes the notification on to the Execution. \n
         :param error_occurred: True if the ExecutionElement finished with an error. Is otherwise False.
         :return: None
         """
@@ -113,7 +113,7 @@ class ExecutionSubspace:
 
     def __unload_subspace_shared_memory(self) -> None:
         """
-        Unlinks the dataset from the subspace from shared_memory.
+        Unlinks the dataset from the subspace from shared_memory. \n
         :return: None
         """
         # TODO Tobias

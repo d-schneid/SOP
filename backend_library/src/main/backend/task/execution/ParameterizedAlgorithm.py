@@ -11,8 +11,8 @@ class ParameterizedAlgorithm(object):
     def __init__(self, path: string, hyper_parameter: dict, display_name: string):
         """
         :param path: The absolute path where the algorithm is located.
-        :param hyper_parameter: The hyperparameter of the algorithm with the selected values.
-        Each parameter gets his own dictionary entry.
+        :param hyper_parameter: The hyperparameter of the algorithm with the selected values. Each parameter gets
+         his own dictionary entry.
         :param display_name: The name of the algorithm that is shown to the user.
         """
         self._path: string = path
@@ -22,7 +22,8 @@ class ParameterizedAlgorithm(object):
 
     def to_json(self) -> string:
         """
-        Converts the ParameterizedAlgorithm object into a JSON string.
+        Converts the ParameterizedAlgorithm object into a JSON string. \n
+        :return: The important information of the algorithm as JSON-string.
         """
         to_json_dict = {'display_name': self._display_name, 'directory_name': self._directory_name_in_execution,
                         'hyper_parameter': self._hyper_parameter}
@@ -39,8 +40,8 @@ class ParameterizedAlgorithm(object):
     @property
     def hyper_parameter(self) -> dict:
         """
-        :return: The hyperparameter of the algorithm with the selected values.
-        Each parameter gets his own dictionary entry.
+        :return: The hyperparameter of the algorithm with the selected values. Each parameter
+         gets his own dictionary entry.
         """
         return self._hyper_parameter
 

@@ -32,7 +32,7 @@ class ExecutionElement(Schedulable, ABC):
     def finished_result_exists(self) -> bool:
         """
         (If the finished result already exists the ExecutionElements doesn't need to be computed again.
-        -> Used for performance improvement.)
+        -> Used for performance improvement.) \n
         :return: True if the finished result exists. Otherwise, return False.
         """
         return os.path.isfile(self._result_path)
@@ -61,8 +61,8 @@ class ExecutionElement(Schedulable, ABC):
 
     def do_work(self) -> None:
         """
-        Is called by the Scheduler.
-        Will compute and store the result of the ExecutionElement.
+        Is called by the Scheduler. \n
+        Will compute and store the result of the ExecutionElement. \n
         :return: None
         """
         run_algo_result: np.ndarray = self.__run_algorithm()
@@ -72,7 +72,7 @@ class ExecutionElement(Schedulable, ABC):
     # do_work()
     def __run_algorithm(self) -> np.ndarray:
         """
-        Computes the algorithms on the subspace.
+        Computes the algorithms on the subspace. \n
         :return: Returns the result of the algorithm on the subspace.
         """
         # TODO: Tobias
@@ -80,7 +80,7 @@ class ExecutionElement(Schedulable, ABC):
 
     def __convert_result_to_csv(self, run_algo_result: np.ndarray) -> np.ndarray:
         """
-        Converts the algorithm result into the csv-file that will be stored.
+        Converts the algorithm result into the csv-file that will be stored. \n
         :param run_algo_result: The unchanged result of the algorithm.
         :return: The result-csv-file of this ExecutionElement.
         """
