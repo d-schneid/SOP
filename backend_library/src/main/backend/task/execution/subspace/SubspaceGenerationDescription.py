@@ -6,12 +6,19 @@ from backend_library.src.main.backend.task.execution.subspace.Subspace import Su
 
 
 class SubspaceGenerationDescription(ABC):
-    # returns a Subspace[]
     @abstractmethod
     def generate(self) -> Iterable[Subspace]:
+        """
+        Generates the Subspaces deterministically.
+        :return: The generated Subspaces.
+        """
         return iter([])
 
-    # Create a dictionary first with all values that should be visualized and convert it into the json
     @abstractmethod
     def to_json(self) -> string:
+        """
+        Converts the important information of the SubspaceGenerationDescription into a JSON-string, so that the
+        Subspace generation can be understood and reproduced.
+        :return:
+        """
         return ""
