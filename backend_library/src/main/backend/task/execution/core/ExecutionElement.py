@@ -2,7 +2,7 @@ import os
 import string
 from abc import ABC
 
-from ExecutionSubspace import ExecutionSubspace
+import ExecutionSubspace as es
 import numpy as np
 
 from backend_library.src.main.backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
@@ -11,8 +11,8 @@ from backend_library.src.main.backend.DataIO import DataIO
 
 
 class ExecutionElement(Schedulable, ABC):
-    def __init__(self, execution_subspace: ExecutionSubspace, algorithm: ParameterizedAlgorithm, result_path: string):
-        self._execution_subspace: ExecutionSubspace = execution_subspace
+    def __init__(self, execution_subspace: es.ExecutionSubspace, algorithm: ParameterizedAlgorithm, result_path: string):
+        self._execution_subspace: es.ExecutionSubspace = execution_subspace
         self._algorithm: ParameterizedAlgorithm = algorithm
         self._result_path: string = result_path
 

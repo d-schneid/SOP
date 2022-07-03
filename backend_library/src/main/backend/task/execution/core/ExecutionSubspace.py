@@ -5,19 +5,19 @@ from typing import List
 
 import numpy as np
 
-from backend_library.src.main.backend.task.execution.core.Execution import Execution
+import backend_library.src.main.backend.task.execution.core.Execution as e
+import backend_library.src.main.backend.task.execution.core.ExecutionElement as ee
 from backend_library.src.main.backend.task.execution.subspace.Subspace import Subspace
 from backend_library.src.main.backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 from backend_library.src.main.backend.task.TaskHelper import TaskHelper
-from backend_library.src.main.backend.task.execution.core.ExecutionElement import ExecutionElement
 from backend_library.src.main.backend.scheduler.Scheduler import Scheduler
 
 
 class ExecutionSubspace:
     _cache_subset_lock = multiprocessing.Lock()
 
-    def __init__(self, execution: Execution, subspace: Subspace):
-        self._execution: Execution = execution
+    def __init__(self, execution: e.Execution, subspace: Subspace):
+        self._execution: e.Execution = execution
         self._subspace: Subspace = subspace
 
         algorithms: Iterable[ParameterizedAlgorithm] = execution.algorithms
@@ -25,7 +25,7 @@ class ExecutionSubspace:
         # further private variables
         self._finished_execution_element_count: int = 0
         self._total_execution_element_count: int = TaskHelper.iterable_length(algorithms)
-        self._execution_elements: List[ExecutionElement] = list()
+        self._execution_elements: List[ee.ExecutionElement] = list()
 
         # shared memory
         self._subspace_shared_memory_name: string = ""
@@ -36,7 +36,7 @@ class ExecutionSubspace:
 
     def __generate_execution_elements(self, algorithms: Iterable[ParameterizedAlgorithm]) -> None:
         for algorithm in algorithms:
-            self._execution_elements.append(ExecutionElement(self, algorithm))
+            self._execution_elements.append(ee.ExecutionElement(self, algorithm))
 
     def __schedule_execution_elements(self) -> None:
         scheduler: Scheduler = Scheduler.get_instance()
@@ -58,12 +58,13 @@ class ExecutionSubspace:
             self.__load_subspace_from_dataset()
 
         # TODO Tobias: numpy array aus shared_memory ausgeben
-        pass
+        return np.zeros((0, 0))
 
     def __load_subspace_from_dataset(self) -> np.ndarray:
         self._cache_subset_lock.acquire()
         # TODO Tobias
         self._cache_subset_lock.release()
+        return np.zeros((0, 0))
 
     def execution_element_is_finished(self, error_occurred: bool) -> None:
         self._finished_execution_element_count += 1
@@ -73,4 +74,4 @@ class ExecutionSubspace:
 
     def __unload_subspace_shared_memory(self):
         # TODO Tobias
-        pass
+        return None
