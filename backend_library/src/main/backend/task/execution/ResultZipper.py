@@ -26,5 +26,12 @@ class ResultZipper(Schedulable):
     def task_id(self) -> int:
         return self._task_id
 
+    @property
+    def priority(self) -> int:
+        """
+        :return: The priority for the Scheduler.
+        """
+        return 50
+
     def do_work(self) -> None:
         return None

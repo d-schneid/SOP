@@ -52,6 +52,13 @@ class ExecutionElement(Schedulable, ABC):
         """
         return self._task_id
 
+    @property
+    def priority(self) -> int:
+        """
+        :return: The priority for the Scheduler.
+        """
+        return 0
+
     def do_work(self) -> None:
         """
         Is called by the Scheduler.
