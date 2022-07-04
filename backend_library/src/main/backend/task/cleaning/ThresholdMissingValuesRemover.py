@@ -27,9 +27,7 @@ class ThresholdMissingValuesRemover(MissingValuesRemover, ABC):
         :return: The cleaned dataset.
         """
         column_count: int = dataset_to_clean.shape[1]
-        #absolute_threshold: int = max(0, math.ceil(self._threshold * row_count))
         absolute_threshold: int = max(0, math.ceil(self._threshold * column_count))
         df: pd.DataFrame = pd.DataFrame(dataset_to_clean)
-        print(absolute_threshold)
         return df.dropna(how='any', thresh=absolute_threshold).to_numpy()
 
