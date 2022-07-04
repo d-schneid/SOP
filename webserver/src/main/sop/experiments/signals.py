@@ -3,7 +3,7 @@ import os
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
 
-from experiments.models.algorithm import AlgorithmModel
+from experiments.models import Algorithm
 
 
 def _delete_file(path):
@@ -17,7 +17,7 @@ def _delete_file(path):
 # Delete all algorithm files (.py) of a user when user gets deleted by catching the signals from CASCADE
 # If algorithm on its own gets deleted, this will trigger as well
 # Triggers on any delete operations of an algorithm
-@receiver(post_delete, sender=AlgorithmModel)
+@receiver(post_delete, sender=Algorithm)
 def delete_algorithm_file(instance):
     if instance.path:
         _delete_file(instance.path.path)

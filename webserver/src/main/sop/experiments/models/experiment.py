@@ -3,11 +3,11 @@ from datetime import datetime
 from django.conf import settings
 from django.db import models
 
-from experiments.models import AlgorithmModel
-from experiments.models import DatasetModel
+from experiments.models import Algorithm
+from experiments.models import Dataset
 
 
-class ExperimentModel(models.Model):
+class Experiment(models.Model):
     """
     Database model of an experiment
     """
@@ -15,9 +15,9 @@ class ExperimentModel(models.Model):
     _user = models.ForeignKey(to=settings.AUTH_USER_MODEL,
                               on_delete=models.CASCADE)
     # We do not allow deletion of a dataset if it's used in an experiment
-    _dataset = models.ForeignKey(to=DatasetModel, on_delete=models.PROTECT,
+    _dataset = models.ForeignKey(to=Dataset, on_delete=models.PROTECT,
                                  related_name="experiment")
-    _algorithms = models.ManyToManyField(to=AlgorithmModel)
+    _algorithms = models.ManyToManyField(to=Algorithm)
     _creation_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -37,7 +37,7 @@ class ExperimentModel(models.Model):
         return self._user
 
     @property
-    def dataset(self) -> DatasetModel:
+    def dataset(self) -> Dataset:
         return self._dataset
 
     @property

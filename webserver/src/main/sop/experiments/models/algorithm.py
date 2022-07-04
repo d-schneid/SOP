@@ -11,7 +11,7 @@ def _get_algorithm_upload_path(instance, filename) -> str:
     return f"algorithms/user_{instance.user.id}/{filename}"
 
 
-class AlgorithmModel(models.Model):
+class Algorithm(models.Model):
     """
     Database model of an algorithm
     """

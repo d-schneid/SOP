@@ -1,5 +1,5 @@
 from django.db import models
 
 
-class ExecutionModel(models.Model):
+class Execution(models.Model):
     pass

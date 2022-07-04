@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import models
 
 
-class DatasetModel(models.Model):
+class Dataset(models.Model):
     _name = models.CharField(max_length=80)
     _description = models.TextField()
     _user = models.ForeignKey(to=settings.AUTH_USER_MODEL,
