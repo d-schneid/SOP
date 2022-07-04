@@ -2,12 +2,11 @@
 
 import django.core.validators
 from django.db import migrations, models
-import experiments.models.algorithm
-import experiments.validators
+
+from experiments.models.algorithm import _get_algorithm_upload_path
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('experiments', '0003_rename_algorithmmodel_algorithm_and_more'),
     ]
@@ -16,6 +15,9 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='algorithm',
             name='_path',
-            field=models.FileField(upload_to=experiments.models.algorithm._get_algorithm_upload_path, validators=[experiments.validators.validate_file_extension, django.core.validators.FileExtensionValidator(allowed_extensions=['py'])]),
+            field=models.FileField(
+                upload_to=_get_algorithm_upload_path,
+                validators=[django.core.validators.FileExtensionValidator(
+                    allowed_extensions=['py'])]),
         ),
     ]

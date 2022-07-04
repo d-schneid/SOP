@@ -5,8 +5,7 @@ import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
 
-import experiments.models
-import experiments.validators
+from experiments.models.algorithm import _get_algorithm_upload_path
 
 
 class Migration(migrations.Migration):
@@ -21,7 +20,8 @@ class Migration(migrations.Migration):
             name='AlgorithmModel',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True,
-                                           serialize=False, verbose_name='ID')),
+                                           serialize=False,
+                                           verbose_name='ID')),
                 ('_name', models.CharField(max_length=80)),
                 ('_group', models.CharField(
                     choices=[('Linear Model', 'Linear Model'),
@@ -31,10 +31,9 @@ class Migration(migrations.Migration):
                              ('Other', 'Other')], max_length=80)),
                 ('_signature', models.CharField(max_length=80)),
                 ('_path', models.FileField(
-                    upload_to=experiments.models.algorithm._get_algorithm_upload_path,
-                    validators=[experiments.validators.validate_file_extension,
-                                django.core.validators.FileExtensionValidator(
-                                    allowed_extensions=['.py'])])),
+                    upload_to=_get_algorithm_upload_path,
+                    validators=[django.core.validators.FileExtensionValidator(
+                        allowed_extensions=['.py'])])),
                 ('_description', models.TextField()),
                 ('_user',
                  models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
@@ -48,21 +47,24 @@ class Migration(migrations.Migration):
             name='DatasetModel',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True,
-                                           serialize=False, verbose_name='ID')),
+                                           serialize=False,
+                                           verbose_name='ID')),
             ],
         ),
         migrations.CreateModel(
             name='ExecutionModel',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True,
-                                           serialize=False, verbose_name='ID')),
+                                           serialize=False,
+                                           verbose_name='ID')),
             ],
         ),
         migrations.CreateModel(
             name='ExperimentModel',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True,
-                                           serialize=False, verbose_name='ID')),
+                                           serialize=False,
+                                           verbose_name='ID')),
                 ('_display_name', models.CharField(max_length=80)),
                 ('_creation_date', models.DateTimeField(auto_now_add=True)),
                 ('_algorithms',
