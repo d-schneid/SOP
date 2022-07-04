@@ -31,7 +31,7 @@ class Algorithm(models.Model):
     _path = models.FileField(upload_to=_get_algorithm_upload_path,
                              validators=(validate_file_extension,
                                          FileExtensionValidator(
-                                             allowed_extensions=[".py"]),))
+                                             allowed_extensions=["py"]),))
     _description = models.TextField()
     _user = models.ForeignKey(to=settings.AUTH_USER_MODEL,
                               on_delete=models.CASCADE)
