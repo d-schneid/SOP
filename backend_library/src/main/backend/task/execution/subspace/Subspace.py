@@ -19,7 +19,8 @@ class Subspace:
         return counter
 
     def get_subspace_identifier(self) -> str:
-        return bytes.decode(base64.urlsafe_b64encode(np.packbits(self.mask)))[:math.ceil(self.mask.size/6)]
+        encoded_bytes = base64.urlsafe_b64encode(np.packbits(self.mask).tobytes())
+        return bytes.decode(encoded_bytes)[:math.ceil(self.mask.size / 6)]
 
     def get_size_of_subspace_buffer(self, full_dataset: np.array) -> int:
         pass
