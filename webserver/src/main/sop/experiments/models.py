@@ -1,15 +1,19 @@
-from django.db import models
+from datetime import datetime
+
 from django.conf import settings
 from django.core.validators import FileExtensionValidator
+from django.db import models
+from django.db.models.fields.files import FieldFile
 
-from .validators import validate_file_extension
 from .managers import AlgorithmManager
+from .validators import validate_file_extension
 
 
 class DatasetModel(models.Model):
     _name = models.CharField(max_length=80)
     _description = models.TextField()
-    _user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    _user = models.ForeignKey(to=settings.AUTH_USER_MODEL,
+                              on_delete=models.CASCADE)
     _datapoints_total = models.IntegerField()
     _dimensions_total = models.IntegerField()
     _path_original = models.FileField()
@@ -42,9 +46,11 @@ class AlgorithmModel(models.Model):
     _signature = models.CharField(max_length=80)
     _path = models.FileField(upload_to=_get_algorithm_upload_path,
                              validators=(validate_file_extension,
-                                         FileExtensionValidator(allowed_extensions=[".py"]),))
+                                         FileExtensionValidator(
+                                             allowed_extensions=[".py"]),))
     _description = models.TextField()
-    _user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    _user = models.ForeignKey(to=settings.AUTH_USER_MODEL,
+                              on_delete=models.CASCADE)
 
     objects = AlgorithmManager()
 
@@ -62,19 +68,19 @@ class AlgorithmModel(models.Model):
         self._name = value
 
     @property
-    def group(self) -> models.CharField:
+    def group(self) -> str:
         return self._group
 
     @property
-    def signature(self) -> models.CharField:
+    def signature(self) -> str:
         return self._signature
 
     @property
-    def path(self) -> models.FileField:
+    def path(self) -> FieldFile:
         return self._path
 
     @property
-    def description(self) -> models.TextField:
+    def description(self) -> str:
         return self._description
 
     @property
@@ -115,7 +121,7 @@ class ExperimentModel(models.Model):
         return self._user
 
     @property
-    def dataset(self) -> models.ForeignKey:
+    def dataset(self) -> DatasetModel:
         return self._dataset
 
     @property
@@ -123,7 +129,7 @@ class ExperimentModel(models.Model):
         return self._algorithms
 
     @property
-    def creation_date(self) -> models.DateTimeField:
+    def creation_date(self) -> datetime:
         return self._creation_date
 
     def __str__(self) -> str:
