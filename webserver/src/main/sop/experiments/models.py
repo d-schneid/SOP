@@ -9,7 +9,7 @@ from .managers import AlgorithmManager
 class DatasetModel(models.Model):
     pass
 
-def get_algorithm_upload_path(instance, filename) -> str:
+def _get_algorithm_upload_path(instance, filename) -> str:
     return f"algorithms/user_{instance.user.id}/{filename}"
 
 class AlgorithmModel(models.Model):
@@ -29,7 +29,7 @@ class AlgorithmModel(models.Model):
     _name = models.CharField(max_length=80)
     _group = models.CharField(max_length=80, choices=AlgorithmGroup.choices)
     _signature = models.CharField(max_length=80)
-    _path = models.FileField(upload_to=get_algorithm_upload_path,
+    _path = models.FileField(upload_to=_get_algorithm_upload_path,
                              validators=(validate_file_extension,
                                          FileExtensionValidator(allowed_extensions=[".py"]),))
     _description = models.TextField()
