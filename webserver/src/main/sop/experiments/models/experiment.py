@@ -3,8 +3,8 @@ from datetime import datetime
 from django.conf import settings
 from django.db import models
 
-from experiments.models.algorithm import AlgorithmModel
-from experiments.models.dataset import DatasetModel
+from experiments.models import AlgorithmModel
+from experiments.models import DatasetModel
 
 
 class ExperimentModel(models.Model):

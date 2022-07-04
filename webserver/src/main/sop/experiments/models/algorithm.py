@@ -3,7 +3,7 @@ from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.db.models.fields.files import FieldFile
 
-from experiments.managers import AlgorithmManager
+from experiments.models.managers import AlgorithmManager
 from experiments.validators import validate_file_extension
 
 
