@@ -19,16 +19,16 @@ class Scheduler(ABC):
         return Scheduler._instance
 
     @abstractmethod
-    def schedule(self, to_schedule) -> None:
+    def schedule(self, to_schedule: Schedulable) -> None:
         pass
 
     @abstractmethod
     def abort_by_task(self, task_id: int) -> None:
-        raise NotImplementedError
+        pass
 
     @abstractmethod
     def abort_by_user(self, user_id: int) -> None:
-        raise NotImplementedError
+        pass
 
     @abstractmethod
     def hard_shutdown(self) -> None:
@@ -36,8 +36,8 @@ class Scheduler(ABC):
 
     @abstractmethod
     def graceful_shutdown(self, on_shutdown_completed: Callable) -> None:
-        raise NotImplementedError
+        pass
 
     @abstractmethod
     def is_shutting_down(self) -> bool:
-        return False
+        pass
