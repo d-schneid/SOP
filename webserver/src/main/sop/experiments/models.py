@@ -7,10 +7,21 @@ from .managers import AlgorithmManager
 
 
 class DatasetModel(models.Model):
-    pass
+    _name = models.CharField(max_length=80)
+    _description = models.TextField()
+    _user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    _datapoints_total = models.IntegerField()
+    _dimensions_total = models.IntegerField()
+    _path_original = models.FileField()
+    _path_cleaned = models.FilePathField()
+    _is_cleaned = models.BooleanField()
+    # TODO
+    objects = ...
+
 
 def _get_algorithm_upload_path(instance, filename) -> str:
     return f"algorithms/user_{instance.user.id}/{filename}"
+
 
 class AlgorithmModel(models.Model):
     """
@@ -39,7 +50,7 @@ class AlgorithmModel(models.Model):
 
     class Meta:
         # TODO: use UniqueConstraint instead
-        unique_together =["_name", "_user"]
+        unique_together = ["_name", "_user"]
 
     @property
     def name(self) -> models.CharField:
