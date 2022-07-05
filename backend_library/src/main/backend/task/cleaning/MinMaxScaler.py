@@ -24,8 +24,6 @@ class MinMaxScaler(FeatureScaler, ABC):
         eh.check_non_empty_array(dataset_to_clean, "MinMaxScaler")
         eh.check_non_none_column(dataset_to_clean, "MinMaxScaler")
 
-        print(dataset_to_clean)
-
         # MinMaxScaling logic
         scaler: mms = mms()
         scaler.fit(dataset_to_clean)

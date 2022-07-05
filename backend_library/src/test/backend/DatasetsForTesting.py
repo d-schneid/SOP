@@ -7,8 +7,7 @@ class Datasets:
     _dataset1: np.ndarray = np.array([[-132., None, None], [0., 7., None], [1., 0., None]])
     _dataset2: np.ndarray = \
         np.array([[None, None, None, None, None], [0., 1., 0., 0., 4.], [0., 0., 1., 0., 2.]])
-    _dataset3: np.ndarray = \
-        np.array([[None, None, None, None, None], [None, None, None, None, None], [None, None, None, None, None]])
+    _dataset3: np.ndarray = np.array([[-1, 2], [-0.5, 6], [0, 2], [-1, 18]])
     _dataset4: np.ndarray = np.array([[-213., 0., 541., 1., 0., 0., 4., 341.], [0., 0., 1., 0., 2., 1491., 213., 432.]])
     _dataset5: np.ndarray = np.array([[-1, 2], [-0.5, 6], [0, 10], [1, 18]])
 
