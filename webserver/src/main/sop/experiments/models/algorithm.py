@@ -5,7 +5,6 @@ from django.db.models.fields.files import FieldFile
 from django.urls import reverse
 
 from experiments.models.managers import AlgorithmManager
-from experiments.validators import validate_file_extension
 
 
 def _get_algorithm_upload_path(instance, filename) -> str:
@@ -30,9 +29,8 @@ class Algorithm(models.Model):
     _group = models.CharField(max_length=80, choices=AlgorithmGroup.choices)
     _signature = models.CharField(max_length=80)
     _path = models.FileField(upload_to=_get_algorithm_upload_path,
-                             validators=(validate_file_extension,
-                                         FileExtensionValidator(
-                                             allowed_extensions=["py"]),))
+                             validators=(FileExtensionValidator(
+                                 allowed_extensions=["py"]),))
     _description = models.TextField()
     _user = models.ForeignKey(to=settings.AUTH_USER_MODEL,
                               on_delete=models.CASCADE)
