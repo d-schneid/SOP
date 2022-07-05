@@ -2,6 +2,7 @@ from django.conf import settings
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.db.models.fields.files import FieldFile
+from django.urls import reverse
 
 from experiments.models.managers import AlgorithmManager
 from experiments.validators import validate_file_extension
@@ -71,5 +72,12 @@ class Algorithm(models.Model):
     def user(self) -> models.ForeignKey:
         return self._user
 
+    @user.setter
+    def user(self, value):
+        self._user = value
+
     def __str__(self) -> str:
         return str(self.name) + "|" + str(self.group)
+
+    def get_absolute_url(self):
+        return reverse('home')
