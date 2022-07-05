@@ -4,11 +4,16 @@ from django.db import models
 from django.db.models.fields.files import FieldFile
 from django.urls import reverse
 
+from authentication.models import User
 from experiments.models.managers import AlgorithmManager
 
 
 def _get_algorithm_upload_path(instance, filename) -> str:
     return f"algorithms/user_{instance.user.id}/{filename}"
+
+
+def get_absolute_url():
+    return reverse('home')
 
 
 class Algorithm(models.Model):
@@ -42,7 +47,7 @@ class Algorithm(models.Model):
         unique_together = ["_name", "_user"]
 
     @property
-    def name(self) -> models.CharField:
+    def name(self) -> str:
         return self._name
 
     @name.setter
@@ -67,7 +72,7 @@ class Algorithm(models.Model):
         return self._description
 
     @property
-    def user(self) -> models.ForeignKey:
+    def user(self) -> User:
         return self._user
 
     @user.setter
@@ -76,6 +81,3 @@ class Algorithm(models.Model):
 
     def __str__(self) -> str:
         return str(self.name) + "|" + str(self.group)
-
-    def get_absolute_url(self):
-        return reverse('home')
