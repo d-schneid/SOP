@@ -19,6 +19,5 @@ def _delete_file(path):
 # Triggers on any delete operations of an algorithm
 @receiver(post_delete, sender=Algorithm)
 def delete_algorithm_file(sender, instance, *args, **kwargs):
-    print("Signal received!")
     if instance.path:
         _delete_file(instance.path.path)
