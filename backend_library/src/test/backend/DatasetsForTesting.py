@@ -16,9 +16,17 @@ class Datasets:
     _df_empty: pd.DataFrame = pd.DataFrame({'empty': []})
     _empty_dataset: np.ndarray = _df_empty.to_numpy()
 
+    # create a numpy array that has only None-values
+    _none_dataset: np.ndarray = np.empty((5, 5))
+    _none_dataset[:] = np.NaN
+
     @property
     def empty_dataset(self) -> np.ndarray:
         return self._empty_dataset
+
+    @property
+    def none_dataset(self) -> np.ndarray:
+        return self._none_dataset
 
     @property
     def dataset0(self) -> np.ndarray:
@@ -35,3 +43,11 @@ class Datasets:
     @property
     def dataset3(self) -> np.ndarray:
         return self._dataset3
+
+    @property
+    def dataset4(self) -> np.ndarray:
+        return self._dataset4
+
+    @property
+    def dataset5(self) -> np.ndarray:
+        return self._dataset5
