@@ -1,9 +1,8 @@
 from django.contrib.auth.mixins import LoginRequiredMixin as DjangoLoginRequiredMixin
 
+
 class LoginRequiredMixin(DjangoLoginRequiredMixin):
     """
     Custom LoginRequiredMixin.
     """
-
-    pass
-
+    login_url = "/login/"
