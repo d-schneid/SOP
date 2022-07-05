@@ -15,6 +15,6 @@ urlpatterns = [
          name="algorithm_upload"),
 
     # Dataset URLs
-    path('dataset/overview', DatasetOverview.as_view(), name="dataset_overview"),
-    path('dataset/<int:pk>', DatasetDetailView.as_view(), name="dataset_detail_view")
+    path('dataset/overview/', DatasetOverview.as_view(), name="dataset_overview"),
+    path('dataset/<int:pk>/', DatasetDetailView.as_view(), name="dataset_detail_view")
 ]
