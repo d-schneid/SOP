@@ -1,9 +1,15 @@
 from django.urls import path
-from .views import AlgorithmUploadView, AlgorithmOverview, AlgorithmDeleteView
 
+from .views.algorithm import AlgorithmEditView, AlgorithmUploadView, \
+    AlgorithmDeleteView, AlgorithmOverview
 
 urlpatterns = [
-    path('overview_algorithms/', AlgorithmOverview.as_view(), name="overview_algorithms"),
-    path('delete_algorithm/<int:pk>', AlgorithmDeleteView.as_view(), name="delete_algorithm"),
-    path('upload_algorithm/', AlgorithmUploadView.as_view(), name="upload_algorithm"),
+    path('algorithm/overview/', AlgorithmOverview.as_view(),
+         name="algorithm_overview"),
+    path('algorithm/<int:pk>/delete/', AlgorithmDeleteView.as_view(),
+         name="algorithm_delete"),
+    path('algorithm/<int:pk>/edit/', AlgorithmEditView.as_view(),
+         name="algorithm_edit"),
+    path('algorithm/upload/', AlgorithmUploadView.as_view(),
+         name="algorithm_upload"),
 ]

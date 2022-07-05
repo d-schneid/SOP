@@ -26,7 +26,7 @@
 </head>
 
 <body>
-<header class="p-3 bg-dark text-white navbar navbar-expand-md navbar-dark bg-dark">
+<header class="p-3 bg-dark text-white navbar navbar-expand-md navbar-dark bg-dark flex-wrap>
     <a href="{% url 'home' %}" class="navbar-brand">Subspace Outlier Profiling</a>
 
     {% if user.is_authenticated %}
@@ -38,7 +38,7 @@
                 <li><a href="#"
                        class="nav-link px-2 ml-2 {% if 'dataset' in url_name %}text-secondary{% else %}text-white{% endif %}">Datasets</a>
                 </li>
-                <li><a href="{% url 'upload_algorithm' %}"
+                <li><a href="{% url 'algorithm_overview' %}"
                        class="nav-link px-2 ml-2 {% if 'algorithm' in url_name %}text-secondary{% else %}text-white{% endif %}">Algorithms</a>
                 </li>
             {% endwith %}
