@@ -15,6 +15,7 @@ class AlgorithmUploadView(CreateView):
     model = Algorithm
     form_class = UploadAlgorithmForm
     template_name = 'algorithm_upload.html'
+    success_url = reverse_lazy('algorithm_overview')
 
     def form_valid(self, form) -> HttpResponseRedirect:
         form.instance.user = self.request.user

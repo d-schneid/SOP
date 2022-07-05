@@ -12,10 +12,6 @@ def _get_algorithm_upload_path(instance, filename) -> str:
     return f"algorithms/user_{instance.user.id}/{filename}"
 
 
-def get_absolute_url():
-    return reverse('home')
-
-
 class Algorithm(models.Model):
     """
     Database model of an algorithm
