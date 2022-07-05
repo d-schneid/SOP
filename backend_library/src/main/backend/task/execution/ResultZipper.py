@@ -1,4 +1,4 @@
-import string
+
 from typing import Callable
 
 from backend_library.src.main.backend.scheduler.Schedulable import Schedulable
@@ -10,13 +10,13 @@ class ResultZipper(Schedulable):
     """
     def __init__(self, user_id: int, task_id: int, error_occurred: bool,
                  task_progress_callback: Callable[[int, TaskState, float], None],
-                 path_to_zip: string, zipped_file_path: string):
+                 path_to_zip: str, zipped_file_path: str):
         self._user_id: int = user_id
         self._task_id: int = task_id
         self._error_occurred: bool = error_occurred
         self._task_progress_callback: Callable = task_progress_callback
-        self._path_to_zip: string = path_to_zip
-        self._zipped_file_path: string = zipped_file_path
+        self._path_to_zip: str = path_to_zip
+        self._zipped_file_path: str = zipped_file_path
 
     @property
     def user_id(self) -> int:

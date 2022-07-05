@@ -1,5 +1,5 @@
 import os
-import string
+
 from abc import ABC
 
 import ExecutionSubspace as es
@@ -16,7 +16,7 @@ class ExecutionElement(Schedulable, ABC):
     Consists of the computation of one algorithm on exactly one subspace.
     """
     def __init__(self, execution_subspace: es.ExecutionSubspace, algorithm: ParameterizedAlgorithm,
-                 result_path: string):
+                 result_path: str):
         """
         :param execution_subspace: The ExecutionSubspace that belongs to this ExecutionElement.
         :param algorithm: The algorithm that should be computed on the subspace.
@@ -24,7 +24,7 @@ class ExecutionElement(Schedulable, ABC):
         """
         self._execution_subspace: es.ExecutionSubspace = execution_subspace
         self._algorithm: ParameterizedAlgorithm = algorithm
-        self._result_path: string = result_path
+        self._result_path: str = result_path
 
         self._user_id = self._execution_subspace.user_id
         self._task_id = self._execution_subspace.task_id

@@ -1,6 +1,6 @@
 import multiprocessing
 import os
-import string
+
 import sys
 from collections.abc import Iterable
 from typing import List
@@ -37,7 +37,7 @@ class ExecutionSubspace:
         self._execution_elements: List[ee.ExecutionElement] = list()
 
         # shared memory
-        self._subspace_shared_memory_name: string = ""
+        self._subspace_shared_memory_name: str = ""
 
         # initialisation functions
         self.__generate_execution_elements(algorithms)
@@ -49,7 +49,7 @@ class ExecutionSubspace:
         :return: None
         """
         for algorithm in algorithms:
-            result_path: string = sys.path.append \
+            result_path: str = sys.path.append \
                 (os.path.join(self._execution.zip_result_path,
                               algorithm.directory_name_in_execution))  # TODO: TEST THIS!
             self._execution_elements.append(ee.ExecutionElement(self, algorithm, result_path))
