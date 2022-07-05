@@ -15,7 +15,7 @@ from DatasetCleaningStep import DatasetCleaningStep
 from CategoricalColumnRemover import CategoricalColumnRemover
 from ImputationMode import ImputationMode
 from MinMaxScaler import MinMaxScaler
-from RowThresholdMissingValuesRemover import RowThresholdMissingValuesRemover
+from RowOrColumnMissingValuesRemover import RowThresholdMissingValuesRemover
 
 
 class DatasetCleaning(Task, Schedulable, ABC):
