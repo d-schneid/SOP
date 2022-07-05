@@ -15,7 +15,7 @@ from DatasetCleaningStep import DatasetCleaningStep
 from CategoricalColumnRemover import CategoricalColumnRemover
 from ImputationMode import ImputationMode
 from MinMaxScaler import MinMaxScaler
-from ThresholdMissingValuesRemover import ThresholdMissingValuesRemover
+from RowThresholdMissingValuesRemover import RowThresholdMissingValuesRemover
 
 
 class DatasetCleaning(Task, Schedulable, ABC):
@@ -40,7 +40,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
         """
         Task.__init__(self, user_id, task_id, task_progress_callback)
         if cleaning_steps is None:
-            cleaning_steps = [ThresholdMissingValuesRemover(), CategoricalColumnRemover(),
+            cleaning_steps = [RowThresholdMissingValuesRemover(), CategoricalColumnRemover(),
                               ImputationMode(), MinMaxScaler()]  # Default Cleaning-Pipeline
         self._original_dataset_path: str = original_dataset_path
         self._cleaned_dataset_path: str = cleaned_dataset_path

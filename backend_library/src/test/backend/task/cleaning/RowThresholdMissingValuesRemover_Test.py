@@ -3,16 +3,16 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from backend_library.src.main.backend.task.cleaning.ThresholdMissingValuesRemover import ThresholdMissingValuesRemover
+from backend_library.src.main.backend.task.cleaning.RowThresholdMissingValuesRemover import RowThresholdMissingValuesRemover
 from backend_library.src.test.backend.DatasetsForTesting import Datasets as ds
 
 
 class ThresholdMissingValuesRemoverTest(unittest.TestCase):
     def setUp(self) -> None:
         self._ds: ds = ds()
-        self._one_threshold_remover: ThresholdMissingValuesRemover = ThresholdMissingValuesRemover(threshold=1)
-        self._zero_threshold_remover: ThresholdMissingValuesRemover = ThresholdMissingValuesRemover(threshold=0)
-        self._half_threshold_remover: ThresholdMissingValuesRemover = ThresholdMissingValuesRemover(threshold=0.5)
+        self._one_threshold_remover: RowThresholdMissingValuesRemover = RowThresholdMissingValuesRemover(threshold=1)
+        self._zero_threshold_remover: RowThresholdMissingValuesRemover = RowThresholdMissingValuesRemover(threshold=0)
+        self._half_threshold_remover: RowThresholdMissingValuesRemover = RowThresholdMissingValuesRemover(threshold=0.5)
 
     def tearDown(self) -> None:
         self._one_threshold_remover = None
@@ -34,8 +34,9 @@ class ThresholdMissingValuesRemoverTest(unittest.TestCase):
         cleaned_dataset2: np.ndarray = np.array([[0., 1., 0., 0., 4.], [0., 0., 1., 0., 2.]])
         self.assertTrue(np.array_equal(cleaned_dataset2, self._one_threshold_remover.do_cleaning(self._ds.dataset2)), True)
 
-        # All rows consists of only None values -> Remove all rows
-        self.assertEqual(self._one_threshold_remover.do_cleaning(self._ds.empty_dataset).shape[0], 0)
+        # Raise exception when empty dataset is inputted
+        with self.assertRaises(ValueError) as context:
+            self._half_threshold_remover.do_cleaning(self._ds.empty_dataset)
 
     def test_threshold_value_zero(self):
         """
@@ -47,8 +48,10 @@ class ThresholdMissingValuesRemoverTest(unittest.TestCase):
                                        self._zero_threshold_remover.do_cleaning(self._ds.dataset1)), True)
         self.assertTrue(np.array_equal(self._ds.dataset2, 
                                        self._zero_threshold_remover.do_cleaning(self._ds.dataset2)), True)
-        self.assertTrue(np.array_equal(self._ds.empty_dataset,
-                                       self._zero_threshold_remover.do_cleaning(self._ds.empty_dataset)), True)
+
+        # Raise exception when empty dataset is inputted
+        with self.assertRaises(ValueError) as context:
+            self._half_threshold_remover.do_cleaning(self._ds.empty_dataset)
 
     def test_threshold_half(self):
         """
@@ -70,8 +73,9 @@ class ThresholdMissingValuesRemoverTest(unittest.TestCase):
         self.assertTrue(np.array_equal(cleaned_dataset2, self._half_threshold_remover.do_cleaning(self._ds.dataset2)),
                         True)
 
-        # All rows consists of only None values -> Remove all rows
-        self.assertEqual(self._half_threshold_remover.do_cleaning(self._ds.empty_dataset).shape[0], 0)
+        # Raise exception when empty dataset is inputted
+        with self.assertRaises(ValueError) as context:
+            self._half_threshold_remover.do_cleaning(self._ds.empty_dataset)
 
 
 if __name__ == '__main__':

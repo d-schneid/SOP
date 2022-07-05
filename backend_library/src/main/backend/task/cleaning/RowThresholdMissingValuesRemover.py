@@ -5,9 +5,11 @@ import numpy as np
 import pandas as pd
 
 from backend_library.src.main.backend.task.cleaning.MissingValuesRemover import MissingValuesRemover
+from backend_library.src.main.backend.task.cleaning.DatasetCleaningStepExceptionHanding \
+    import DatasetCleaningStepExceptionHandling as eh
 
 
-class ThresholdMissingValuesRemover(MissingValuesRemover, ABC):
+class RowThresholdMissingValuesRemover(MissingValuesRemover, ABC):
     """
     A cleaning_step for the dataset cleaning that rows that have to many missing values.
     """
@@ -26,6 +28,10 @@ class ThresholdMissingValuesRemover(MissingValuesRemover, ABC):
         :param dataset_to_clean: The dataset that will be cleaned in this cleaning_step.
         :return: The cleaned dataset.
         """
+        # exception logic
+        eh.check_non_empty_array(dataset_to_clean, "RowThresholdMissingValuesRemover")
+
+        # ThresholdMissingValuesRemover logic
         column_count: int = dataset_to_clean.shape[1]
         absolute_threshold: int = max(0, math.ceil(self._threshold * column_count))
         df: pd.DataFrame = pd.DataFrame(dataset_to_clean)

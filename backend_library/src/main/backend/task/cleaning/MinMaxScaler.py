@@ -21,7 +21,6 @@ class MinMaxScaler(FeatureScaler, ABC):
         :return: The cleaned dataset.
         """
         # exception handling
-        eh.check_non_empty_array(dataset_to_clean, "MinMaxScaler")
         eh.check_non_none_column(dataset_to_clean, "MinMaxScaler")
 
         # MinMaxScaling logic
