@@ -3,12 +3,13 @@ from django.urls import reverse_lazy
 from django.http import HttpResponseRedirect
 
 from experiments.models import Algorithm
-from .forms import UploadAlgorithmForm
+from experiments.forms import UploadAlgorithmForm
 
 
 class AlgorithmOverview(ListView):
     model = Algorithm
     template_name = 'test_overview_algorithms.html'
+
 
 class AlgorithmUploadView(CreateView):
     model = Algorithm
@@ -18,6 +19,7 @@ class AlgorithmUploadView(CreateView):
     def form_valid(self, form) -> HttpResponseRedirect:
         form.instance.user = self.request.user
         return super(AlgorithmUploadView, self).form_valid(form)
+
 
 class AlgorithmDeleteView(DeleteView):
     model = Algorithm

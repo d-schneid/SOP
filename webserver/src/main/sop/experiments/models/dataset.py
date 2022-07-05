@@ -21,6 +21,9 @@ class Dataset(models.Model):
     _objects = DatasetManager()
 
     class Meta:
+        """
+        Contains meta-information about Dataset Model
+        """
         unique_together = ["_name", "_user"]
 
     @property
