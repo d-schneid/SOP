@@ -17,7 +17,6 @@ def _delete_file(path):
 # Delete all algorithm files (.py) of a user when user gets deleted by catching the signals from CASCADE
 # If algorithm on its own gets deleted, this will trigger as well
 # Triggers on any delete operations of an algorithm
-# TODO: does not work, signal is not even received wtf?!
 @receiver(post_delete, sender=Algorithm)
 def delete_algorithm_file(sender, instance, *args, **kwargs):
     print("Signal received!")
