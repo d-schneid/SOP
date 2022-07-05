@@ -2,9 +2,11 @@ from datetime import datetime
 
 from django.conf import settings
 from django.db import models
+from django.db.models import Manager
 
 from experiments.models import Algorithm
 from experiments.models import Dataset
+from authentication.models import User
 
 
 class Experiment(models.Model):
@@ -24,7 +26,7 @@ class Experiment(models.Model):
         unique_together = ["_display_name", "_user"]
 
     @property
-    def display_name(self) -> models.CharField:
+    def display_name(self) -> str:
         return self._display_name
 
     @display_name.setter
@@ -33,7 +35,7 @@ class Experiment(models.Model):
         self._display_name = value
 
     @property
-    def user(self) -> models.ForeignKey:
+    def user(self) -> User:
         return self._user
 
     @property
@@ -41,7 +43,7 @@ class Experiment(models.Model):
         return self._dataset
 
     @property
-    def algorithms(self) -> models.ManyToManyField:
+    def algorithms(self) -> Manager:
         return self._algorithms
 
     @property
