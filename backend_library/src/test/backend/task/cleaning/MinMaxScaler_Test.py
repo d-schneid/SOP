@@ -1,5 +1,7 @@
 import unittest
 
+import numpy as np
+
 from backend_library.src.main.backend.task.cleaning.MinMaxScaler import MinMaxScaler
 from backend_library.src.test.backend.DatasetsForTesting import Datasets as ds
 
@@ -13,13 +15,17 @@ class MinMaxScalerTest(unittest.TestCase):
         self._min_max_scaler = None
 
     def test_min_max_scaler(self):
-        print("Test")
-        print(self._min_max_scaler.do_cleaning(ds._dataset5))
-        #print(self._min_max_scaler.do_cleaning(ds._dataset0))
-        #print(self._min_max_scaler.do_cleaning(ds._dataset1))
-        #print(self._min_max_scaler.do_cleaning(ds._dataset2))
-        #print(self._min_max_scaler.do_cleaning(ds._dataset3))
-        # print(self._min_max_scaler.do_cleaning(ds._empty_dataset))
+        # Test Min Max Scaling on normal array
+        cleaned_dataset5: np.ndarray = np.array([[0., 0.], [0.25, 0.25], [0.5, 0.5], [1., 1.]])
+        self.assertTrue(np.array_equal(cleaned_dataset5, self._min_max_scaler.do_cleaning(ds._dataset5), True))
+
+        # Raise exception when empty dataset is inputted
+        with self.assertRaises(ValueError) as context:
+            self._min_max_scaler.do_cleaning(ds._empty_dataset)
+
+        # Raise exception when column with only None is inputted
+        with self.assertRaises(ValueError) as context:
+            self._min_max_scaler.do_cleaning(ds._dataset1)
         self.assertEqual(1, 1)
 
 
