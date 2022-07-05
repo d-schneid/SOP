@@ -11,6 +11,10 @@ class Datasets:
     _dataset4: np.ndarray = np.array([[-213., 0., 541., 1., 0., 0., 4., 341.], [0., 0., 1., 0., 2., 1491., 213., 432.]])
     _dataset5: np.ndarray = np.array([[-1, 2], [-0.5, 6], [0, 10], [1, 18]])
 
+    # categorical
+    _cat_dataset1: np.ndarray = np.array([[-132., 'PSE', None], [0., 'IST', None], [1., 'SUPER', None]])
+    _cat_dataset2: np.ndarray = np.array([['Größter', 'PSE', 'fan'], [2., 0., None], [1., 99981., None]])
+
     # create a numpy array that is empty
     _df_empty: pd.DataFrame = pd.DataFrame({'empty': []})
     _empty_dataset: np.ndarray = _df_empty.to_numpy()
@@ -50,3 +54,11 @@ class Datasets:
     @property
     def dataset5(self) -> np.ndarray:
         return self._dataset5
+
+    @property
+    def cat_dataset1(self) -> np.ndarray:
+        return self._cat_dataset1
+
+    @property
+    def cat_dataset2(self) -> np.ndarray:
+        return self._cat_dataset2
