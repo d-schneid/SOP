@@ -6,7 +6,8 @@ from experiments.models.managers import AlgorithmManager, AlgorithmQuerySet
 
 
 def _get_algorithm_upload_path(instance, filename) -> str:
-    return f"algorithms/user_{instance.user.id}/{filename}"
+    user_id = instance.user.id if instance.user is not None else 0
+    return f"algorithms/user_{user_id}/{filename}"
 
 
 class Algorithm(models.Model):
@@ -31,7 +32,7 @@ class Algorithm(models.Model):
                                 allowed_extensions=["py"]),))
     description = models.TextField()
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE)
+                             on_delete=models.CASCADE, blank=True, null=True)
 
     objects = AlgorithmManager.from_queryset(AlgorithmQuerySet)()
 
