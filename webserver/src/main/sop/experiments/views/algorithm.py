@@ -4,7 +4,7 @@ from django.views.generic import CreateView, ListView, DeleteView, UpdateView, D
 
 from authentication.mixins import LoginRequiredMixin
 
-from experiments.forms import UploadAlgorithmForm
+from experiments.forms import UploadAlgorithmForm, AlgorithmEditForm
 from experiments.models import Algorithm
 
 
@@ -44,7 +44,7 @@ class AlgorithmEditView(LoginRequiredMixin, UpdateView):
     redirect_field_name = 'next'
 
     model = Algorithm
-    fields = ['name', 'description']
+    form_class = AlgorithmEditForm
     template_name = 'algorithm_edit.html'
     success_url = reverse_lazy('algorithm_overview')
 

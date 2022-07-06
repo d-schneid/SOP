@@ -13,3 +13,9 @@ class UploadAlgorithmForm(forms.ModelForm):
             'group': forms.Select(attrs={'class': 'form-control'}),
             'path': forms.FileInput(attrs={'accept': ".py"}),
         }
+
+
+class AlgorithmEditForm(forms.ModelForm):
+    class Meta:
+        model = Algorithm
+        fields = ('name', 'description', 'group')
