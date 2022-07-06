@@ -1,5 +1,11 @@
+import os
+import random
+import string
+from typing import Optional
+
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models import Q
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import (
     CreateView,
@@ -10,9 +16,12 @@ from django.views.generic import (
 )
 
 from authentication.mixins import LoginRequiredMixin
+from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from experiments.forms.create import AlgorithmUploadForm
 from experiments.forms.edit import AlgorithmEditForm
 from experiments.models import Algorithm
+from experiments.models.algorithm import _get_algorithm_upload_path as get_upload_path
+from sop.settings import MEDIA_ROOT
 
 
 class AlgorithmOverview(LoginRequiredMixin, ListView):
@@ -31,6 +40,28 @@ class AlgorithmOverview(LoginRequiredMixin, ListView):
         return context
 
 
+def save_temporary_algorithm(instance: Algorithm, file: InMemoryUploadedFile) -> str:
+    # create temp_path
+    temp_path = MEDIA_ROOT / (
+        get_upload_path(instance, file.name)
+        + "."
+        + "".join(random.choice(string.ascii_lowercase) for i in range(6))
+    )
+    # save contents of uploaded file into temp file
+    with open(temp_path, "wb") as temp_file:
+        for chunk in file.chunks():
+            temp_file.write(chunk)
+
+    return str(temp_path)
+
+
+def delete_temporary_algorithm(path: str):
+    try:
+        os.remove(path)
+    except FileNotFoundError:
+        print("Couldn't delete file")
+
+
 class AlgorithmUploadView(LoginRequiredMixin, CreateView):
     login_url = "/login/"
     redirect_field_name = "next"
@@ -40,9 +71,23 @@ class AlgorithmUploadView(LoginRequiredMixin, CreateView):
     template_name = "algorithm_upload.html"
     success_url = reverse_lazy("algorithm_overview")
 
-    def form_valid(self, form) -> HttpResponseRedirect:
+    def form_valid(self, form) -> HttpResponse:
         form.instance.user = self.request.user
-        return super(AlgorithmUploadView, self).form_valid(form)
+        file: InMemoryUploadedFile = self.request.FILES["path"]
+
+        # save the contents of the uploaded file in a temporary file and check
+        # it for a valid implementation of BaseDetector
+        temp_path: str = save_temporary_algorithm(form.instance, file)
+        error: Optional[str] = AlgorithmLoader.is_algorithm_valid(temp_path)
+        delete_temporary_algorithm(temp_path)
+
+        if error is not None:
+            # add the error to the form and display it as invalid
+            form.errors.update({"path": [error]})
+            return super(AlgorithmUploadView, self).form_invalid(form)
+
+        elif error is None:
+            return super(AlgorithmUploadView, self).form_valid(form)
 
 
 class AlgorithmDeleteView(LoginRequiredMixin, DeleteView):
