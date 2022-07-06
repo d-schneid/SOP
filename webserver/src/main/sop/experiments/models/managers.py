@@ -29,4 +29,7 @@ class ExecutionManager(models.Manager):
 
 
 class DatasetManager(models.Manager):
+    def get_sorted_by_name(self):
+        return super().get_queryset().order_by(Lower("name"))
+
     pass

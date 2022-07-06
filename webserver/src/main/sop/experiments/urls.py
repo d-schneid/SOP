@@ -1,12 +1,17 @@
 from django.urls import path
 from django.views.generic import RedirectView
 
-from experiments.views.dataset import DatasetOverview, DatasetDetailView
-from .views.algorithm import (
+from experiments.views.algorithm import (
     AlgorithmEditView,
     AlgorithmUploadView,
     AlgorithmDeleteView,
     AlgorithmOverview,
+)
+from experiments.views.dataset import (
+    DatasetOverview,
+    DatasetUploadView,
+    DatasetDeleteView,
+    DatasetEditView
 )
 
 urlpatterns = [
@@ -41,6 +46,9 @@ urlpatterns = [
     # Dataset URLs
     path("dataset/overview/", DatasetOverview.as_view(),
          name="dataset_overview"),
-    path("dataset/<int:pk>/", DatasetDetailView.as_view(),
-         name="dataset_detail_view"),
+    path("dataset/upload/", DatasetUploadView.as_view(),
+         name="dataset_upload"),
+    path("dataset/<int:pk>/delete/", DatasetDeleteView.as_view(), name="dataset_delete"),
+    path("dataset/<int:pk>/edit/", DatasetEditView.as_view(), name="dataset_edit"),
+    path("dataset/", RedirectView.as_view(pattern_name="dataset_overview", permanent=True)),
 ]

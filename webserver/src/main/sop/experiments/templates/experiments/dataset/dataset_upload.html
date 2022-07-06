@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block content %}
-    <form method="post">{% csrf_token %}
+    <form method="post" enctype="multipart/form-data">{% csrf_token %}
         {{ form.as_p }}
         <div class="d-flex">
             <a href="{% url 'dataset_overview' %}" class="btn btn-dark">Cancel</a>

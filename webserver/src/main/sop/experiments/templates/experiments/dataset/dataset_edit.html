@@ -6,10 +6,35 @@
 
 {% block content %}
     <form method="post">{% csrf_token %}
-        {{ form.as_p }}
-        <div class="d-flex">
-            <a href="{% url 'dataset_overview' %}" class="btn btn-dark">Cancel</a>
-            <input class="btn btn-dark ml-auto" type="submit" value="Update">
+        {{ form.non_field_errors }}
+        <div class="card shadow mt-2">
+            <div class="card-header bg-dark d-flex" id="dataset_{{ dataset.pk }}">
+                <div>{{ form.name.errors }}</div>
+                <div><label for="{{ form.name.id_for_label }}"></label></div>
+                <div class="flex-fill mr-5">{{ form.name }}</div>
+
+                <div>{{ form.group.errors }}</div>
+                <div><label for="{{ form.group.id_for_label }}"></label></div>
+                <div class="ml-auto">{{ form.group }}</div>
+            </div>
+
+            <div id="collapse_{{ dataset.pk }}"
+                 class="collapse show"
+                 aria-labelledby="dataset_{{ dataset.pk }}"
+                 data-parent="#dataset_accordion">
+                <div class="card-body d-flex flex-column">
+                    {{ form.description }}
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <div class="d-flex">
+                            <a href="{% url 'dataset_overview' %}"
+                               class="btn btn-dark">Cancel</a>
+                            <input class="btn btn-warning ml-auto" type="submit" value="Update">
+                        </div>
+                    </li>
+                </ul>
+            </div>
         </div>
     </form>
 {% endblock %}
