@@ -20,7 +20,6 @@ from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from experiments.forms.create import AlgorithmUploadForm
 from experiments.forms.edit import AlgorithmEditForm
 from experiments.models import Algorithm
-from experiments.models.algorithm import _get_algorithm_upload_path as get_upload_path
 from sop.settings import MEDIA_ROOT
 
 
@@ -40,19 +39,23 @@ class AlgorithmOverview(LoginRequiredMixin, ListView):
         return context
 
 
-def save_temporary_algorithm(instance: Algorithm, file: InMemoryUploadedFile) -> str:
+def save_temporary_algorithm(instance: Algorithm,
+                             file: InMemoryUploadedFile) -> str:
     # create temp_path
-    temp_path = MEDIA_ROOT / (
-        get_upload_path(instance, file.name)
-        + "."
-        + "".join(random.choice(string.ascii_lowercase) for i in range(6))
+    temp_dir = MEDIA_ROOT / "algorithms/temp"
+    temp_file_path = temp_dir / "".join(
+        random.choice(string.ascii_lowercase) for i in range(10)
     )
+
+    if not os.path.exists(temp_dir):
+        os.makedirs(temp_dir)
+
     # save contents of uploaded file into temp file
-    with open(temp_path, "wb") as temp_file:
+    with open(temp_file_path, "wb") as temp_file:
         for chunk in file.chunks():
             temp_file.write(chunk)
 
-    return str(temp_path)
+    return str(temp_file_path)
 
 
 def delete_temporary_algorithm(path: str):
