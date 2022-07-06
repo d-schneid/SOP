@@ -4,7 +4,6 @@ import string
 from typing import Optional
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.db.models import Q
 from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import (
@@ -41,9 +40,8 @@ class AlgorithmOverview(LoginRequiredMixin, ListView):
             sorted_list = Algorithm.objects.get_sorted_by_name()
 
         # Filter algorithms to only show own and public algorithms
-        sorted_list = sorted_list.filter(
-            Q(user_id__exact=self.request.user.id) | Q(user_id__exact=None)
-        )
+        sorted_list = sorted_list.get_by_user_and_public(self.request.user)
+
         context.update({"models_list": sorted_list})
         return context
 

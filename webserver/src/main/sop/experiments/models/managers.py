@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.db.models.functions import Lower
 
 
@@ -14,6 +15,10 @@ class AlgorithmQuerySet(models.QuerySet):
     def get_with_group(self, group):
         return self.filter(group=group)
 
+    def get_by_user_and_public(self, user):
+        return self.filter(
+            Q(user_id__exact=user.id) | Q(user_id__exact=None)
+        )
 
 class AlgorithmManager(models.Manager):
     pass
