@@ -18,7 +18,7 @@ class Dataset(models.Model):
     _path_original = models.FileField()
     _path_cleaned = models.FilePathField()
     _is_cleaned = models.BooleanField()
-    _objects = DatasetManager()
+    objects = DatasetManager()
 
     class Meta:
         """
@@ -57,10 +57,6 @@ class Dataset(models.Model):
     @property
     def is_cleaned(self) -> bool:
         return self._is_cleaned
-
-    @property
-    def objects(self) -> DatasetManager:
-        return self._objects
 
     def __str__(self) -> str:
         return str(self._name) + "|" + str(self._user)

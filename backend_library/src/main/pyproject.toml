@@ -1,0 +1,11 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sop-backend"
+version = "0.0.1"
+dependencies = [
+    "numpy",
+    "pandas",
+]
