@@ -1,10 +1,11 @@
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, ListView, DeleteView, UpdateView, DetailView
+from django.views.generic import CreateView, ListView, DeleteView, \
+    UpdateView, DetailView
 
 from authentication.mixins import LoginRequiredMixin
-
-from experiments.forms import UploadAlgorithmForm, AlgorithmEditForm
+from experiments.forms.create import AlgorithmUploadForm
+from experiments.forms.edit import AlgorithmEditForm
 from experiments.models import Algorithm
 
 
@@ -21,7 +22,7 @@ class AlgorithmUploadView(LoginRequiredMixin, CreateView):
     redirect_field_name = 'next'
 
     model = Algorithm
-    form_class = UploadAlgorithmForm
+    form_class = AlgorithmUploadForm
     template_name = 'algorithm_upload.html'
     success_url = reverse_lazy('algorithm_overview')
 
@@ -47,6 +48,7 @@ class AlgorithmEditView(LoginRequiredMixin, UpdateView):
     form_class = AlgorithmEditForm
     template_name = 'algorithm_edit.html'
     success_url = reverse_lazy('algorithm_overview')
+
 
 class AlgorithmDetailView(LoginRequiredMixin, DetailView):
     login_url = '/login/'
