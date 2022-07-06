@@ -5,6 +5,11 @@
 {% endblock %}
 
 {% block content %}
+    <style>
+        .hand {
+            cursor: pointer;
+        }
+    </style>
     <div class="d-flex">
         <h2 class="mt-3 mb-3">Eigene Algorithmen</h2>
         <a href="{% url 'algorithm_upload' %}" class="ml-auto mt-3 mb-3 btn btn-outline-dark">Algorithmus hochladen</a>
@@ -12,7 +17,7 @@
     <div id="algorithm_accordion">
         {% for algorithm in sorted_by_group %}
             <div class="card shadow mt-2">
-                <div class="card-header bg-dark d-flex"
+                <div class="card-header bg-dark d-flex hand"
                      data-toggle="collapse"
                      data-target="#collapse_{{ algorithm.pk }}"
                      id="algorithm_{{ algorithm.pk }}">
