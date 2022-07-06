@@ -12,10 +12,10 @@ class UniformSubspaceDistribution(SubspaceSizeDistribution):
 
     def get_subspace_sizes(self, requested_subspace_count: int, dataset_dimension_count: int) -> Dict[int, int]:
         assert self._subspace_size_max <= dataset_dimension_count
-        size_count = self._subspace_size_max - self._subspace_size_min + 1
-        number_of_subspaces_per_size = math.floor(requested_subspace_count / size_count)
-        sizes_up_to_there_is_one_more_subspace = (requested_subspace_count % size_count) + self._subspace_size_min
-        result = dict()
+        size_count: int = self._subspace_size_max - self._subspace_size_min + 1
+        number_of_subspaces_per_size: int = math.floor(requested_subspace_count / size_count)
+        sizes_up_to_there_is_one_more_subspace: int = (requested_subspace_count % size_count) + self._subspace_size_min
+        result: Dict[int, int] = dict()
         for i in range(self._subspace_size_min, self._subspace_size_max + 1):
             result[i] = number_of_subspaces_per_size + (1 if i < sizes_up_to_there_is_one_more_subspace else 0)
         return result
