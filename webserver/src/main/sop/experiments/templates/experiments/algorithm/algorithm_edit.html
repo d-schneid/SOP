@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Edit algorithm
+{% endblock %}
+
+{% block content %}
+    <form method="post">{% csrf_token %}
+        {{ form.non_field_errors }}
+        <div class="card shadow mt-2">
+            <div class="card-header bg-dark d-flex" id="algorithm_{{ algorithm.pk }}">
+                <div>{{ form.name.errors }}</div>
+                <div><label for="{{ form.name.id_for_label }}"></label></div>
+                <div class="flex-fill mr-5">{{ form.name }}</div>
+
+                <div>{{ form.group.errors }}</div>
+                <div><label for="{{ form.group.id_for_label }}"></label></div>
+                <div class="ml-auto">{{ form.group }}</div>
+            </div>
+
+            <div id="collapse_{{ algorithm.pk }}"
+                 class="collapse show"
+                 aria-labelledby="algorithm_{{ algorithm.pk }}"
+                 data-parent="#algorithm_accordion">
+                <div class="card-body d-flex flex-column">
+                    {{ form.description }}
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <div class="d-flex">
+                            <a href="{% url 'algorithm_overview' %}"
+                               class="btn btn-dark">Cancel</a>
+                            <input class="btn btn-warning ml-auto" type="submit" value="Update">
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </form>
+{% endblock %}

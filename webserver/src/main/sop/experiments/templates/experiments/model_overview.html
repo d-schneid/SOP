@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    List Overview
+{% endblock %}
+
+{% block content %}
+    <style>
+        .hand {
+            cursor: pointer;
+        }
+    </style>
+    <div class="d-flex">
+        {% block heading %}{% endblock heading %}
+    </div>
+    <div id="model_accordion">
+        {% for model in models_list %}
+            <div class="card shadow mt-2">
+                <div class="card-header bg-dark d-flex hand"
+                     data-toggle="collapse"
+                     data-target="#collapse_{{ model.pk }}"
+                     id="model_{{ model.pk }}">
+                    {% block card-header %}{% endblock card-header %}
+                </div>
+
+                <div id="collapse_{{ model.pk }}"
+                     class="collapse{% if forloop.first %} show{% endif %}"
+                     aria-labelledby="model_{{ model.pk }}"
+                     data-parent="#model_accordion">
+                    <div class="card-body">
+                        {% block card-body %}{% endblock card-body %}
+                    </div>
+                    {% block card-footer %}{% endblock card-footer %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

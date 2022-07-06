@@ -17,68 +17,120 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='AlgorithmModel',
+            name="AlgorithmModel",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True,
-                                           serialize=False,
-                                           verbose_name='ID')),
-                ('_name', models.CharField(max_length=80)),
-                ('_group', models.CharField(
-                    choices=[('Linear Model', 'Linear Model'),
-                             ('Proximity-based', 'Proximity Based'),
-                             ('Probabilistic', 'Probabilistic'),
-                             ('Outlier Ensembles', 'Outlier Ensembles'),
-                             ('Other', 'Other')], max_length=80)),
-                ('_signature', models.CharField(max_length=80)),
-                ('_path', models.FileField(
-                    upload_to=_get_algorithm_upload_path,
-                    validators=[django.core.validators.FileExtensionValidator(
-                        allowed_extensions=['.py'])])),
-                ('_description', models.TextField()),
-                ('_user',
-                 models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
-                                   to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("_name", models.CharField(max_length=80)),
+                (
+                    "_group",
+                    models.CharField(
+                        choices=[
+                            ("Linear Model", "Linear Model"),
+                            ("Proximity-based", "Proximity Based"),
+                            ("Probabilistic", "Probabilistic"),
+                            ("Outlier Ensembles", "Outlier Ensembles"),
+                            ("Other", "Other"),
+                        ],
+                        max_length=80,
+                    ),
+                ),
+                ("_signature", models.CharField(max_length=80)),
+                (
+                    "_path",
+                    models.FileField(
+                        upload_to=_get_algorithm_upload_path,
+                        validators=[
+                            django.core.validators.FileExtensionValidator(
+                                allowed_extensions=[".py"]
+                            )
+                        ],
+                    ),
+                ),
+                ("_description", models.TextField()),
+                (
+                    "_user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('_name', '_user')},
+                "unique_together": {("_name", "_user")},
             },
         ),
         migrations.CreateModel(
-            name='DatasetModel',
+            name="DatasetModel",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True,
-                                           serialize=False,
-                                           verbose_name='ID')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='ExecutionModel',
+            name="ExecutionModel",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True,
-                                           serialize=False,
-                                           verbose_name='ID')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='ExperimentModel',
+            name="ExperimentModel",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True,
-                                           serialize=False,
-                                           verbose_name='ID')),
-                ('_display_name', models.CharField(max_length=80)),
-                ('_creation_date', models.DateTimeField(auto_now_add=True)),
-                ('_algorithms',
-                 models.ManyToManyField(to='experiments.algorithmmodel')),
-                ('_dataset',
-                 models.ForeignKey(on_delete=django.db.models.deletion.PROTECT,
-                                   related_name='experiment',
-                                   to='experiments.datasetmodel')),
-                ('_user',
-                 models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
-                                   to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("_display_name", models.CharField(max_length=80)),
+                ("_creation_date", models.DateTimeField(auto_now_add=True)),
+                (
+                    "_algorithms",
+                    models.ManyToManyField(to="experiments.algorithmmodel"),
+                ),
+                (
+                    "_dataset",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="experiment",
+                        to="experiments.datasetmodel",
+                    ),
+                ),
+                (
+                    "_user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('_display_name', '_user')},
+                "unique_together": {("_display_name", "_user")},
             },
         ),
     ]

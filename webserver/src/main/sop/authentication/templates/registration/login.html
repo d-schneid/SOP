@@ -8,14 +8,59 @@
 {% endblock %}
 
 {% block content %}
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
 
-    <h1>Login...</h1>
-    <div class="form-group">
-        <form method="POST">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button class="btn btn-secondary">Login</button>
-        </form>
+        .body-login {
+            display: flex;
+            align-items: center;
+            padding-top: 40px;
+            padding-bottom: 40px;
+        }
+
+        .form-signin {
+            max-width: 330px;
+            padding: 15px;
+        }
+
+        .form-signin .form-floating:focus-within {
+            z-index: 2;
+        }
+
+        .form-signin input[type="username"] {
+            margin-bottom: -1px;
+            border-bottom-right-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        .form-signin input[type="password"] {
+            margin-bottom: 10px;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
+    </style>
+
+    <div class="text-center body-login">
+        <div class="form-signin w-100 m-auto">
+            <form data-bitwarden-watching="1" method="POST">
+                {% csrf_token %}
+                <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+                <div class="form-floating">
+                    {{ form.username.errors }}
+                    {{ form.username }}
+                </div>
+                <div class="form-floating">
+                    {{ form.password.errors }}
+                    {{ form.password }}
+                </div>
+                {{ form.non_field_errors }}
+                <button class="w-100 btn btn-lg btn-primary mb-2">Sign in</button>
+            </form>
+        </div>
     </div>
+
 
 {% endblock %}

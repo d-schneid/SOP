@@ -1,17 +1,18 @@
-from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.views import LoginView as DjangoLoginView
+from django.contrib.auth.views import LogoutView as DjangoLogoutView
 
-from .forms import LoginForm
+from authentication.forms import LoginForm
 
-class SOPLoginView(LoginView):
+
+class LoginView(DjangoLoginView):
     """
     Custom LoginView.
     """
 
     form_class = LoginForm
 
-class SOPLogoutView(LogoutView):
+
+class LogoutView(DjangoLogoutView):
     """
     Custom LogoutView.
     """
-
-    pass
