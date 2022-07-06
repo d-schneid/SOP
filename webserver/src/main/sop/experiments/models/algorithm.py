@@ -15,12 +15,13 @@ class Algorithm(models.Model):
     Database model of an algorithm
     """
 
-    # TODO: more groups to be added
     class AlgorithmGroup(models.TextChoices):
-        LINEAR_MODEL = "Linear Model"
-        PROXIMITY_BASED = "Proximity-based"
         PROBABILISTIC = "Probabilistic"
+        LINEAR_MODEL = "Linear Model"
+        PROXIMITY_BASED = "Proximity-Based"
         OUTLIER_ENSEMBLES = "Outlier Ensembles"
+        NEURAL_NETWORKS = "Neural Networks"
+        COMBINATION = "Combination"
         OTHER = "Other"
 
     # TODO: check max_length, blank, and null
