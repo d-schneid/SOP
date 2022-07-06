@@ -44,7 +44,7 @@ class AlgorithmEditView(LoginRequiredMixin, UpdateView):
     redirect_field_name = 'next'
 
     model = Algorithm
-    fields = ['_name', '_description']
+    fields = ['name', 'description']
     template_name = 'algorithm_edit.html'
     success_url = reverse_lazy('algorithm_overview')
 
