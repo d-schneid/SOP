@@ -35,7 +35,7 @@
                 <li><a href="#"
                        class="nav-link px-2 ml-2 {% if 'experiment' in url_name %}text-secondary{% else %}text-white{% endif %}">Experiments</a>
                 </li>
-                <li><a href="#"
+                <li><a href="{% url 'dataset_overview' %}"
                        class="nav-link px-2 ml-2 {% if 'dataset' in url_name %}text-secondary{% else %}text-white{% endif %}">Datasets</a>
                 </li>
                 <li><a href="{% url 'algorithm_overview' %}"
