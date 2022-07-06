@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Type
 
 from backend_library.src.main.backend.scheduler.Schedulable import Schedulable
 from backend_library.src.main.backend.scheduler.Scheduler import Scheduler
@@ -20,5 +20,5 @@ class DebugScheduler(Scheduler):
     def is_shutting_down(self) -> bool:
         return False
 
-    def schedule(self, to_schedule: Schedulable) -> None:
+    def schedule(self, to_schedule: Type[Schedulable]) -> None:
         to_schedule.do_work()

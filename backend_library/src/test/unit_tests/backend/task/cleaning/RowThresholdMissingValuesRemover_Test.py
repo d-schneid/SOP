@@ -1,10 +1,9 @@
 import unittest
 
 import numpy as np
-import pandas as pd
 
 from backend_library.src.main.backend.task.cleaning.ThresholdMissingValuesRemover import ThresholdMissingValuesRemover
-from backend_library.src.test.backend.DatasetsForTesting import Datasets as ds
+from backend_library.src.test.unit_tests.backend.DatasetsForTesting import Datasets as ds
 
 
 class ThresholdMissingValuesRemoverTest(unittest.TestCase):
