@@ -76,4 +76,4 @@ class Algorithm(models.Model):
         self._user = value
 
     def __str__(self) -> str:
-        return str(self.name) + "|" + str(self.group)
+        return str(self.name) + " | " + str(self.group)
