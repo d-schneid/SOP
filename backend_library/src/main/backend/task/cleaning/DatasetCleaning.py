@@ -11,11 +11,12 @@ from backend_library.src.main.backend.task.TaskHelper import TaskHelper
 from backend_library.src.main.backend.task.TaskState import TaskState
 from backend_library.src.main.backend.scheduler.Scheduler import Scheduler
 from backend_library.src.main.backend.scheduler.Schedulable import Schedulable
-from DatasetCleaningStep import DatasetCleaningStep
-from CategoricalColumnRemover import CategoricalColumnRemover
-from ImputationMode import ImputationMode
-from MinMaxScaler import MinMaxScaler
-from RowOrColumnMissingValuesRemover import RowOrColumnMissingValuesRemover as none_roc_remover
+from backend_library.src.main.backend.task.cleaning.DatasetCleaningStep import DatasetCleaningStep
+from backend_library.src.main.backend.task.cleaning.CategoricalColumnRemover import CategoricalColumnRemover
+from backend_library.src.main.backend.task.cleaning.ImputationMode import ImputationMode
+from backend_library.src.main.backend.task.cleaning.MinMaxScaler import MinMaxScaler
+from backend_library.src.main.backend.task.cleaning.RowOrColumnMissingValuesRemover \
+    import RowOrColumnMissingValuesRemover as none_roc_remover
 
 
 class DatasetCleaning(Task, Schedulable, ABC):
@@ -26,7 +27,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
     """
     def __init__(self, user_id: int, task_id: int, task_progress_callback: Callable[[int, TaskState, float], None],
                  original_dataset_path: str, cleaned_dataset_path: str,
-                 cleaning_steps: Iterable[DatasetCleaningStep] = None):
+                 cleaning_steps: Iterable[DatasetCleaningStep] = None, priority: int = 100):
         """
         :param user_id: The ID of the user belonging to the DatasetCleaning.
         :param task_id: The ID of the task.
@@ -37,6 +38,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
         (The path contains the dataset name and ends with .csv)
         :param cleaning_steps: Specifies the cleaning pipeline that will be used for cleaning. If None is inputted the
         default cleaning pipeline is used.
+        :param priority: The priority of the task for the Scheduling.
         """
         Task.__init__(self, user_id, task_id, task_progress_callback)
         if cleaning_steps is None:
@@ -46,6 +48,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
         self._cleaned_dataset_path: str = cleaned_dataset_path
         self._cleaning_steps: Iterable[DatasetCleaningStep] = cleaning_steps
         self._cleaning_steps_count: int = TaskHelper.iterable_length(self._cleaning_steps)
+        self._priority = priority
 
     def schedule(self) -> None:
         """
@@ -84,7 +87,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
         """
         :return: The priority for the Scheduler.
         """
-        return 100
+        return self._priority
 
     def do_work(self) -> None:
         """

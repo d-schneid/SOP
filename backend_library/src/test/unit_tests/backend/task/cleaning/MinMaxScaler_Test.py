@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 
 from backend_library.src.main.backend.task.cleaning.MinMaxScaler import MinMaxScaler
-from backend_library.src.test.unit_tests.backend.DatasetsForTesting import Datasets as ds
+from backend_library.src.test.DatasetsForTesting import Datasets as ds
 
 
 class MinMaxScalerTest(unittest.TestCase):
