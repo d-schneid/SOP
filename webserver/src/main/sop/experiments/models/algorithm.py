@@ -30,15 +30,11 @@ class Algorithm(models.Model):
     path = models.FileField(upload_to=_get_algorithm_upload_path,
                             validators=(FileExtensionValidator(
                                 allowed_extensions=["py"]),))
-    description = models.TextField()
+    description = models.TextField(blank=True)
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE, blank=True, null=True)
 
     objects = AlgorithmManager.from_queryset(AlgorithmQuerySet)()
-
-    class Meta:
-        # TODO: use UniqueConstraint instead
-        unique_together = ["name", "user"]
 
     def __str__(self) -> str:
         return str(self.name) + " | " + str(self.group)
