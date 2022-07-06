@@ -1,6 +1,6 @@
 import csv
 import os
-import string
+
 import numpy as np
 from collections.abc import Iterable
 
@@ -10,20 +10,20 @@ class TaskHelper:
     Static helping methods for the subclasses of Task.
     """
     @staticmethod
-    def save_error_csv(path: string, error_message: string) -> None:
+    def save_error_csv(path: str, error_message: str) -> None:
         """ Converts path into the error_file_path and saves the error-csv-file there.
         :param path: The absolute path where the csv will be stored (contains the name of the csv and ends with .csv).
         :param error_message: The error message that will be written into the error_csv file.
         :return: None
         """
-        error_file_path: string = TaskHelper.convert_to_error_csv_path(path)
-        error_message: string = error_message
+        error_file_path: str = TaskHelper.convert_to_error_csv_path(path)
+        error_message: str = error_message
         error_csv = open(error_file_path, 'w')
         writer = csv.writer(error_csv)
         writer.writerow(error_message)
 
     @staticmethod
-    def convert_to_error_csv_path(path: string) -> string:
+    def convert_to_error_csv_path(path: str) -> str:
         """ Converts the path to the path where the error_csv will be stored.
         :param path: The absolute path that will be converted.
         :return: The converted path into the error_csv path.
@@ -42,7 +42,7 @@ class TaskHelper:
         return False
 
     @staticmethod
-    def create_directory(path: string) -> None:
+    def create_directory(path: str) -> None:
         """
         :param path: The absolute path where the new directory will be created
         :return: None

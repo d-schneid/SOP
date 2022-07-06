@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 
 from backend_library.src.main.backend.task.cleaning.CategoricalDataHandler import CategoricalDataHandler
+from backend_library.src.main.backend.task.cleaning.DatasetCleaningStepExceptionHanding \
+    import DatasetCleaningStepExceptionHandling as eh
 
 
 class CategoricalColumnRemover(CategoricalDataHandler, ABC):
@@ -17,5 +19,16 @@ class CategoricalColumnRemover(CategoricalDataHandler, ABC):
         :param dataset_to_clean: The dataset that will be cleaned in this cleaning_step.
         :return: The cleaned dataset.
         """
+        # exception logic
+        eh.check_non_empty_array(dataset_to_clean, "CategoricalColumnRemover")
+
+        # CategoricalColumnRemover logic
         df = pd.DataFrame(dataset_to_clean)
-        return df.select_dtypes(exclude=['char']).to_numpy()
+        columns_to_drop = []
+        for column in df:
+            column_df: pd.DataFrame = pd.DataFrame(df[column])
+            if column_df.applymap(type).eq(str).any().any():
+                columns_to_drop.append(column)
+                continue
+
+        return df.drop(df.columns[columns_to_drop], axis=1).to_numpy()

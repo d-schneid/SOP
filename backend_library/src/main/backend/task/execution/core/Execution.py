@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import multiprocessing
 import os
-import string
+
 from abc import ABC
 from typing import Callable, Optional
 from typing import List
@@ -30,7 +30,7 @@ class Execution(Task, ABC):
     _execution_element_finished_lock = multiprocessing.Lock()
 
     def __init__(self, user_id: int, task_id: int, task_progress_callback: Callable[[int, TaskState, float], None],
-                 dataset_path: string, result_path: string, subspace_generation: SubspaceGenerationDescription,
+                 dataset_path: str, result_path: str, subspace_generation: SubspaceGenerationDescription,
                  algorithms: Iterable[ParameterizedAlgorithm], metric_callback: Callable[[Execution], None]):
         """
         :param user_id: The ID of the user belonging to the Execution.
@@ -45,8 +45,8 @@ class Execution(Task, ABC):
         :param metric_callback: Called after the Execution-computation is complete. Carries out the metricizes.
         """
         Task.__init__(self, user_id, task_id, task_progress_callback)
-        self._dataset_path: string = dataset_path
-        self._result_path: string = result_path
+        self._dataset_path: str = dataset_path
+        self._result_path: str = result_path
         self._subspace_generation: SubspaceGenerationDescription = subspace_generation
         self._algorithms: Iterable[ParameterizedAlgorithm] = algorithms
         self._metric_callback: Callable = metric_callback
@@ -54,7 +54,7 @@ class Execution(Task, ABC):
         # on created logic
         self.__fill_algorithms_directory_name()
         self.__generate_file_system_structure()
-        self._zipped_result_path: string = self._result_path + ".zip"
+        self._zipped_result_path: str = self._result_path + ".zip"
         # further private variables
         self._has_failed_element: bool = False
         self._finished_execution_element_count: int = 0
@@ -67,7 +67,7 @@ class Execution(Task, ABC):
         self._execution_subspaces: List[es.ExecutionSubspace] = list()
         self.__generate_execution_subspaces()
         # shared memory
-        self._shared_memory_name: string = ""
+        self._shared_memory_name: str = ""
 
     def __fill_algorithms_directory_name(self) -> None:
         """
@@ -81,7 +81,7 @@ class Execution(Task, ABC):
 
         for algorithm in self._algorithms:
             algorithm: ParameterizedAlgorithm = algorithm  # Done to get the type hint
-            display_name: string = algorithm.display_name
+            display_name: str = algorithm.display_name
 
             if (algorithm_display_name_dict.get(display_name)) is None:
                 algorithm.directory_name_in_execution = display_name
@@ -101,7 +101,7 @@ class Execution(Task, ABC):
         if os.path.isdir(self._result_path):
             TaskHelper.create_directory(self._result_path)
             for algorithm in self._algorithms:
-                algorithm_directory_path: string = self._result_path + '\\' + algorithm.display_name
+                algorithm_directory_path: str = self._result_path + '\\' + algorithm.display_name
                 TaskHelper.create_directory(algorithm_directory_path)
 
     def __generate_execution_details_in_filesystem(self) -> None:
@@ -110,18 +110,18 @@ class Execution(Task, ABC):
         It includes information so that the Execution results could be understood and reconstructed.  \n
         :return: None
         """
-        details_path: string = self._result_path + 'details.json'
+        details_path: str = self._result_path + 'details.json'
 
-        # create dictionary that will be saved as a JSON-string
+        # create dictionary that will be saved as a JSON-str
         details_dict = {'subspace_generation_information': self._subspace_generation.to_json()}
         for algorithm in self._algorithms:
             algorithm: ParameterizedAlgorithm = algorithm  # To get the type hint
             details_dict[algorithm.directory_name_in_execution] += algorithm.to_json()
 
-        # save JSON-string
-        details_json_string: string = json.dumps(details_dict, indent=4)
+        # save JSON-str
+        details_json_str: str = json.dumps(details_dict, indent=4)
         with open(details_path, 'w') as f:  # TODO: Test if this is correct
-            json.dump(details_json_string, f)
+            json.dump(details_json_str, f)
 
     def __generate_execution_subspaces(self) -> None:
         """
@@ -180,13 +180,13 @@ class Execution(Task, ABC):
         return self._task_id
 
     @property
-    def result_path(self) -> string:
+    def result_path(self) -> str:
         """
         :return: The absolute path where the Execution result-directory is stored.
         """
         return self._result_path
 
-    def cache_dataset(self) -> string:
+    def cache_dataset(self) -> str:
         """
         Load the cleaned dataset, if it isn't loaded into the shared memory yet. \n
         :return: The shared_memory_name of the cleaned dataset.
@@ -251,7 +251,7 @@ class Execution(Task, ABC):
         return self._subspaces
 
     @property
-    def zip_result_path(self) -> string:
+    def zip_result_path(self) -> str:
         """
         :return: The absolute path where the ZIP-file of the result of this Execution can be found.
         """

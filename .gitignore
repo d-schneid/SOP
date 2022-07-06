@@ -177,3 +177,4 @@ Include/
 *.sublime-project
 *.sublime-workspace
 *.cfg
+media/

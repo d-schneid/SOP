@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Algorithm Overview
+{% endblock %}
+
+{% block content %}
+    <div class="d-flex">
+        <h2 class="mt-3 mb-3">Eigene Algorithmen</h2>
+        <a href="{% url 'algorithm_upload' %}" class="ml-auto mt-3 mb-3 btn btn-outline-dark">Algorithmus hochladen</a>
+    </div>
+    <div id="algorithm_accordion">
+        {% for algorithm in sorted_by_group %}
+            <div class="card shadow mt-2">
+                <div class="card-header bg-dark d-flex" id="algorithm_{{ algorithm.pk }}">
+                    <h5 class="mb-0 w-80">
+                        <a class="btn-link btn-block text-white{% if not forloop.first %} collapsed{% endif %}"
+                           data-toggle="collapse"
+                           data-target="#collapse_{{ algorithm.pk }}"
+                           aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+                           aria-controls="collapse_{{ algorithm.pk }}">
+                            {{ algorithm.name }}
+                        </a>
+                    </h5>
+                    <a class="text-white ml-auto">{{ algorithm.group }}</a>
+                </div>
+
+                <div id="collapse_{{ algorithm.pk }}"
+                     class="collapse{% if forloop.first %} show{% endif %}"
+                     aria-labelledby="algorithm_{{ algorithm.pk }}"
+                     data-parent="#algorithm_accordion">
+                    <div class="card-body">
+                        <p>{{ algorithm.description }}</p>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <div class="d-flex flex-row-reverse">
+                                <a href="{% url 'algorithm_delete' algorithm.pk %}"
+                                   class="btn btn-danger mr-3">Delete</a>
+                                <a href="{% url 'algorithm_edit' algorithm.pk %}"
+                                   class="btn btn-warning mr-3">Edit</a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
