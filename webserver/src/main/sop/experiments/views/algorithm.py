@@ -20,39 +20,50 @@ from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from experiments.forms.create import AlgorithmUploadForm
 from experiments.forms.edit import AlgorithmEditForm
 from experiments.models import Algorithm
-from experiments.models.algorithm import _get_algorithm_upload_path as get_upload_path
 from sop.settings import MEDIA_ROOT
 
 
 class AlgorithmOverview(LoginRequiredMixin, ListView):
     model = Algorithm
-    login_url = "/login/"
-    redirect_field_name = "next"
     template_name = "algorithm_overview.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
-        context = super(AlgorithmOverview, self).get_context_data(**kwargs)
-        sorted_by_group = Algorithm.objects.get_sorted_by_group_and_name()
-        sorted_by_group = sorted_by_group.filter(
+        context = super().get_context_data(**kwargs)
+        # Get sort by variable and get sorted set
+        sort_by = self.kwargs["sort"]
+        if sort_by == "group":
+            sorted_list = Algorithm.objects.get_sorted_by_group_and_name()
+        elif sort_by == "creation_date":
+            # TODO: implement creation date for algorithm and
+            #  get_sorted_by_creation_date() method in manager
+            raise NotImplementedError
+        else:
+            sorted_list = Algorithm.objects.get_sorted_by_name()
+
+        # Filter algorithms to only show own and public algorithms
+        sorted_list = sorted_list.filter(
             Q(user_id__exact=self.request.user.id) | Q(user_id__exact=None)
         )
-        context.update({"sorted_by_group": sorted_by_group})
+        context.update({"models_list": sorted_list})
         return context
 
 
-def save_temporary_algorithm(instance: Algorithm, file: InMemoryUploadedFile) -> str:
+def save_temporary_algorithm(file: InMemoryUploadedFile) -> str:
     # create temp_path
-    temp_path = MEDIA_ROOT / (
-        get_upload_path(instance, file.name)
-        + "."
-        + "".join(random.choice(string.ascii_lowercase) for i in range(6))
+    temp_dir = MEDIA_ROOT / "algorithms/temp"
+    temp_file_path = temp_dir / "".join(
+        random.choice(string.ascii_lowercase) for i in range(10)
     )
+
+    if not os.path.exists(temp_dir):
+        os.makedirs(temp_dir)
+
     # save contents of uploaded file into temp file
-    with open(temp_path, "wb") as temp_file:
+    with open(temp_file_path, "wb") as temp_file:
         for chunk in file.chunks():
             temp_file.write(chunk)
 
-    return str(temp_path)
+    return str(temp_file_path)
 
 
 def delete_temporary_algorithm(path: str):
@@ -63,9 +74,6 @@ def delete_temporary_algorithm(path: str):
 
 
 class AlgorithmUploadView(LoginRequiredMixin, CreateView):
-    login_url = "/login/"
-    redirect_field_name = "next"
-
     model = Algorithm
     form_class = AlgorithmUploadForm
     template_name = "algorithm_upload.html"
@@ -77,7 +85,7 @@ class AlgorithmUploadView(LoginRequiredMixin, CreateView):
 
         # save the contents of the uploaded file in a temporary file and check
         # it for a valid implementation of BaseDetector
-        temp_path: str = save_temporary_algorithm(form.instance, file)
+        temp_path: str = save_temporary_algorithm(file)
         error: Optional[str] = AlgorithmLoader.is_algorithm_valid(temp_path)
         delete_temporary_algorithm(temp_path)
 
@@ -91,18 +99,12 @@ class AlgorithmUploadView(LoginRequiredMixin, CreateView):
 
 
 class AlgorithmDeleteView(LoginRequiredMixin, DeleteView):
-    login_url = "/login/"
-    redirect_field_name = "next"
-
     model = Algorithm
     template_name = "algorithm_delete.html"
     success_url = reverse_lazy("algorithm_overview")
 
 
 class AlgorithmEditView(LoginRequiredMixin, UpdateView):
-    login_url = "/login/"
-    redirect_field_name = "next"
-
     model = Algorithm
     form_class = AlgorithmEditForm
     template_name = "algorithm_edit.html"
@@ -110,9 +112,6 @@ class AlgorithmEditView(LoginRequiredMixin, UpdateView):
 
 
 class AlgorithmDetailView(LoginRequiredMixin, DetailView):
-    login_url = "/login/"
-    redirect_field_name = "next"
-
     model = Algorithm
     # TODO: template?
     # template_name =

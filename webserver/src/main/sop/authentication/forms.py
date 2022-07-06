@@ -10,7 +10,7 @@ class LoginForm(AuthenticationForm):
 
     username = UsernameField(
         widget=forms.TextInput(
-            attrs={"autofocus": True, 'class': 'form-control', 'placeholder': 'Username', 'type': 'username'}))
+            attrs={"autofocus": True, "class": "form-control", "placeholder": "Username", "type": "username"}))
     password = forms.CharField(
         label=_("Password"),
         strip=False,
@@ -18,7 +18,3 @@ class LoginForm(AuthenticationForm):
             attrs={"autocomplete": "current-password", "type": "password", "class": "form-control",
                    "placeholder": "Password"}),
     )
-
-    class Meta:
-        widgets = {'username': forms.TextInput(attrs={"autofocus": True, 'class': 'form-control'}),
-                   'password': forms.PasswordInput(attrs={"autocomplete": "current-password", 'class': 'form-control'})}
