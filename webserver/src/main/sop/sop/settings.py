@@ -55,10 +55,9 @@ ROOT_URLCONF = 'sop.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR,
-                              'experiments/templates/experiments/algorithm'),
-                 os.path.join(BASE_DIR,
-                              'experiments/templates/experiments/dataset')
+        'DIRS': [BASE_DIR / 'experiments/templates/experiments/algorithm',
+                 BASE_DIR / 'experiments/templates/experiments/dataset',
+                 BASE_DIR / 'experiments/templates/experiments',
                  ],
         'APP_DIRS': True,
         'OPTIONS': {

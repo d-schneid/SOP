@@ -36,7 +36,7 @@ class AlgorithmOverview(LoginRequiredMixin, ListView):
         sorted_by_group = sorted_by_group.filter(
             Q(user_id__exact=self.request.user.id) | Q(user_id__exact=None)
         )
-        context.update({"sorted_by_group": sorted_by_group})
+        context.update({"models_list": sorted_by_group})
         return context
 
 
