@@ -8,8 +8,11 @@ class AlgorithmQuerySet(models.QuerySet):
     def get_sorted_by_group_and_name(self):
         return self.order_by('group', Lower('name'))
 
+    def get_sorted_by_name(self):
+        return self.order_by(Lower('name'))
+
     def get_with_group(self, group):
-        return self.filter(group = group)
+        return self.filter(group=group)
 
 
 class AlgorithmManager(models.Manager):

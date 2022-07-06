@@ -29,11 +29,22 @@ class AlgorithmOverview(LoginRequiredMixin, ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        sorted_by_group = Algorithm.objects.get_sorted_by_group_and_name()
-        sorted_by_group = sorted_by_group.filter(
+        # Get sort by variable and get sorted set
+        sort_by = self.kwargs["sort"]
+        if sort_by == "group":
+            sorted_list = Algorithm.objects.get_sorted_by_group_and_name()
+        elif sort_by == "creation_date":
+            # TODO: implement creation date for algorithm and
+            #  get_sorted_by_creation_date() method in manager
+            raise NotImplementedError
+        else:
+            sorted_list = Algorithm.objects.get_sorted_by_name()
+
+        # Filter algorithms to only show own and public algorithms
+        sorted_list = sorted_list.filter(
             Q(user_id__exact=self.request.user.id) | Q(user_id__exact=None)
         )
-        context.update({"models_list": sorted_by_group})
+        context.update({"models_list": sorted_list})
         return context
 
 
