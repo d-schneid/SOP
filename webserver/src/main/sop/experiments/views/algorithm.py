@@ -1,34 +1,73 @@
+from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, ListView, DeleteView, UpdateView
+from django.views.generic import (
+    CreateView,
+    ListView,
+    DeleteView,
+    UpdateView,
+    DetailView,
+)
 
-from experiments.forms import UploadAlgorithmForm
+from authentication.mixins import LoginRequiredMixin
+from experiments.forms.create import AlgorithmUploadForm
+from experiments.forms.edit import AlgorithmEditForm
 from experiments.models import Algorithm
 
 
-class AlgorithmOverview(ListView):
+class AlgorithmOverview(LoginRequiredMixin, ListView):
     model = Algorithm
-    template_name = 'algorithm_overview.html'
+    login_url = "/login/"
+    redirect_field_name = "next"
+    template_name = "algorithm_overview.html"
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super(AlgorithmOverview, self).get_context_data(**kwargs)
+        sorted_by_group = Algorithm.objects.get_sorted_by_group_and_name()
+        sorted_by_group = sorted_by_group.filter(
+            Q(user_id__exact=self.request.user.id) | Q(user_id__exact=None)
+        )
+        context.update({"sorted_by_group": sorted_by_group})
+        return context
 
 
-class AlgorithmUploadView(CreateView):
+class AlgorithmUploadView(LoginRequiredMixin, CreateView):
+    login_url = "/login/"
+    redirect_field_name = "next"
+
     model = Algorithm
-    form_class = UploadAlgorithmForm
-    template_name = 'algorithm_upload.html'
+    form_class = AlgorithmUploadForm
+    template_name = "algorithm_upload.html"
+    success_url = reverse_lazy("algorithm_overview")
 
     def form_valid(self, form) -> HttpResponseRedirect:
         form.instance.user = self.request.user
         return super(AlgorithmUploadView, self).form_valid(form)
 
 
-class AlgorithmDeleteView(DeleteView):
+class AlgorithmDeleteView(LoginRequiredMixin, DeleteView):
+    login_url = "/login/"
+    redirect_field_name = "next"
+
     model = Algorithm
-    template_name = 'algorithm_delete.html'
-    success_url = reverse_lazy('algorithm_overview')
+    template_name = "algorithm_delete.html"
+    success_url = reverse_lazy("algorithm_overview")
 
 
-class AlgorithmEditView(UpdateView):
+class AlgorithmEditView(LoginRequiredMixin, UpdateView):
+    login_url = "/login/"
+    redirect_field_name = "next"
+
     model = Algorithm
-    fields = ['_name', '_description']
-    template_name = 'algorithm_edit.html'
-    success_url = reverse_lazy('algorithm_overview')
+    form_class = AlgorithmEditForm
+    template_name = "algorithm_edit.html"
+    success_url = reverse_lazy("algorithm_overview")
+
+
+class AlgorithmDetailView(LoginRequiredMixin, DetailView):
+    login_url = "/login/"
+    redirect_field_name = "next"
+
+    model = Algorithm
+    # TODO: template?
+    # template_name =
