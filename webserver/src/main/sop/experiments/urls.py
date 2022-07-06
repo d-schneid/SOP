@@ -23,7 +23,7 @@ urlpatterns = [
         name="algorithm_overview",
     ),
     path(
-        "algorithms/overview/sort-by=<str:sort>/",
+        "algorithm/overview/sort-by=<str:sort>/",
         AlgorithmOverview.as_view(),
         name="algorithm_overview_sorted",
     ),
