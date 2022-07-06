@@ -15,7 +15,7 @@ class AlgorithmLoader:
     @staticmethod
     def set_algorithm_root_dir(directory: str):
         if directory[-1] in ['/', '\\']:
-            directory=directory[:-1]
+            directory = directory[:-1]
         AlgorithmLoader._root_dir = directory
 
     @staticmethod
@@ -28,15 +28,17 @@ class AlgorithmLoader:
     def get_algorithm_class(path: str) -> Type[BaseDetector]:
         assert os.path.isfile(path), 'path is not an existing file'
         assert os.path.splitext(path)[1] == '.py', 'path must be a python file'
-        classname: str = os.path.splitext(path)[0]
+        class_name: str = os.path.splitext(os.path.basename(path))[0]
+        lower_class_name = class_name.lower()
         AlgorithmLoader.ensure_root_dir_in_path()
         path_obj: pathlib.Path = pathlib.Path(path)
-        assert not path_obj.is_relative_to(AlgorithmLoader._root_dir), 'path must be contained in root dir'
+        assert path_obj.is_relative_to(AlgorithmLoader._root_dir), 'path must be contained in root dir'
         import_path: tuple[str, ...] = path_obj.parent.relative_to(AlgorithmLoader._root_dir).parts
         assert len(import_path) > 0, 'the file must not be directly in the root dir'
-        module: ModuleType= importlib.import_module('.'.join(import_path)+'.' + classname)
-        assert hasattr(module, classname), 'the file does not contain a python class of the same name'
-        return getattr(module, classname)
+        module: ModuleType = importlib.import_module(('.'.join(import_path)) + '.' + class_name)
+        class_name: str = next((x for x in dir(module) if x.lower() == lower_class_name), None)
+        assert class_name is not None, 'file does not contain a class of the same name'
+        return getattr(module, class_name)
 
     @staticmethod
     def get_algorithm_object(path: str, parameters: Dict[str, object]) -> BaseDetector:
