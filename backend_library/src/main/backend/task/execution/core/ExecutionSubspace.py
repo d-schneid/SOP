@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import multiprocessing
 import os
 
@@ -7,8 +9,8 @@ from typing import List
 
 import numpy as np
 
-import backend_library.src.main.backend.task.execution.core.Execution as e
-import backend_library.src.main.backend.task.execution.core.ExecutionElement as ee
+from backend_library.src.main.backend.task.execution.core import ExecutionElement
+from backend_library.src.main.backend.task.execution.core import Execution
 from backend_library.src.main.backend.task.execution.subspace.Subspace import Subspace
 from backend_library.src.main.backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 from backend_library.src.main.backend.task.TaskHelper import TaskHelper
@@ -21,12 +23,12 @@ class ExecutionSubspace:
     """
     _cache_subset_lock = multiprocessing.Lock()
 
-    def __init__(self, execution: e.Execution, subspace: Subspace):
+    def __init__(self, execution: Execution, subspace: Subspace):
         """
         :param execution: The Execution this ExecutionSubspace belongs to.
         :param subspace: The Subspace whose ExecutionElements are managed by this ExecutionSubspace.
         """
-        self._execution: e.Execution = execution
+        self._execution: Execution = execution
         self._subspace: Subspace = subspace
 
         algorithms: Iterable[ParameterizedAlgorithm] = execution.algorithms
@@ -34,7 +36,7 @@ class ExecutionSubspace:
         # further private variables
         self._finished_execution_element_count: int = 0
         self._total_execution_element_count: int = TaskHelper.iterable_length(algorithms)
-        self._execution_elements: List[ee.ExecutionElement] = list()
+        self._execution_elements: List[ExecutionElement] = list()
 
         # shared memory
         self._subspace_shared_memory_name: str = ""
@@ -52,7 +54,7 @@ class ExecutionSubspace:
             result_path: str = sys.path.append \
                 (os.path.join(self._execution.zip_result_path,
                               algorithm.directory_name_in_execution))  # TODO: TEST THIS!
-            self._execution_elements.append(ee.ExecutionElement(self, algorithm, result_path))
+            self._execution_elements.append(ExecutionElement.ExecutionElement(self, algorithm, result_path))
 
     def __schedule_execution_elements(self) -> None:
         """
