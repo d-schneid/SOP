@@ -10,7 +10,7 @@
         <a href="{% url 'algorithm_upload' %}" class="ml-auto mt-3 mb-3 btn btn-outline-dark">Algorithmus hochladen</a>
     </div>
     <div id="algorithm_accordion">
-        {% for algorithm in algorithm_list %}
+        {% for algorithm in sorted_by_group %}
             <div class="card shadow mt-2">
                 <div class="card-header bg-dark d-flex" id="algorithm_{{ algorithm.pk }}">
                     <h5 class="mb-0 w-80">

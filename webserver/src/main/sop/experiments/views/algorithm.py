@@ -16,6 +16,12 @@ class AlgorithmOverview(LoginRequiredMixin, ListView):
     model = Algorithm
     template_name = 'algorithm_overview.html'
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super(AlgorithmOverview, self).get_context_data(**kwargs)
+        sorted_by_group = Algorithm.objects.get_sorted_by_group_and_name()
+        context.update({'sorted_by_group': sorted_by_group})
+        return context
+
 
 class AlgorithmUploadView(LoginRequiredMixin, CreateView):
     login_url = '/login/'
@@ -55,4 +61,5 @@ class AlgorithmDetailView(LoginRequiredMixin, DetailView):
     redirect_field_name = 'next'
 
     model = Algorithm
+    # TODO: template?
     # template_name =
