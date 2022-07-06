@@ -9,23 +9,23 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('experiments', '0004_alter_algorithm__path'),
+        ("experiments", "0004_alter_algorithm__path"),
     ]
 
     operations = [
         migrations.AlterModelManagers(
-            name='dataset',
+            name="dataset",
             managers=[
-                ('_objects', django.db.models.manager.Manager()),
+                ("_objects", django.db.models.manager.Manager()),
             ],
         ),
         migrations.AlterField(
-            model_name='dataset',
-            name='_description',
+            model_name="dataset",
+            name="_description",
             field=models.TextField(max_length=255),
         ),
         migrations.AlterUniqueTogether(
-            name='dataset',
-            unique_together={('_name', '_user')},
+            name="dataset",
+            unique_together={("_name", "_user")},
         ),
     ]

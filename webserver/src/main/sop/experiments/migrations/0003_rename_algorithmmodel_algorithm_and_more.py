@@ -8,24 +8,24 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('experiments', '0002_datasetmodel__datapoints_total_and_more'),
+        ("experiments", "0002_datasetmodel__datapoints_total_and_more"),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='AlgorithmModel',
-            new_name='Algorithm',
+            old_name="AlgorithmModel",
+            new_name="Algorithm",
         ),
         migrations.RenameModel(
-            old_name='DatasetModel',
-            new_name='Dataset',
+            old_name="DatasetModel",
+            new_name="Dataset",
         ),
         migrations.RenameModel(
-            old_name='ExecutionModel',
-            new_name='Execution',
+            old_name="ExecutionModel",
+            new_name="Execution",
         ),
         migrations.RenameModel(
-            old_name='ExperimentModel',
-            new_name='Experiment',
+            old_name="ExperimentModel",
+            new_name="Experiment",
         ),
     ]

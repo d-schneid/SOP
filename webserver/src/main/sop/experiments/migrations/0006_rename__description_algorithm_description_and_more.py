@@ -7,43 +7,45 @@ from django.db import migrations
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('experiments',
-         '0005_alter_dataset_managers_alter_dataset__description_and_more'),
+        (
+            "experiments",
+            "0005_alter_dataset_managers_alter_dataset__description_and_more",
+        ),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='algorithm',
-            old_name='_description',
-            new_name='description',
+            model_name="algorithm",
+            old_name="_description",
+            new_name="description",
         ),
         migrations.RenameField(
-            model_name='algorithm',
-            old_name='_group',
-            new_name='group',
+            model_name="algorithm",
+            old_name="_group",
+            new_name="group",
         ),
         migrations.RenameField(
-            model_name='algorithm',
-            old_name='_name',
-            new_name='name',
+            model_name="algorithm",
+            old_name="_name",
+            new_name="name",
         ),
         migrations.RenameField(
-            model_name='algorithm',
-            old_name='_path',
-            new_name='path',
+            model_name="algorithm",
+            old_name="_path",
+            new_name="path",
         ),
         migrations.RenameField(
-            model_name='algorithm',
-            old_name='_signature',
-            new_name='signature',
+            model_name="algorithm",
+            old_name="_signature",
+            new_name="signature",
         ),
         migrations.RenameField(
-            model_name='algorithm',
-            old_name='_user',
-            new_name='user',
+            model_name="algorithm",
+            old_name="_user",
+            new_name="user",
         ),
         migrations.AlterUniqueTogether(
-            name='algorithm',
-            unique_together={('name', 'user')},
+            name="algorithm",
+            unique_together={("name", "user")},
         ),
     ]
