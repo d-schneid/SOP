@@ -2,7 +2,7 @@ from django.conf import settings
 from django.core.validators import FileExtensionValidator
 from django.db import models
 
-from experiments.models.managers import DatasetManager
+from experiments.models.managers import DatasetManager, DatasetQueryset
 
 
 def _get_dataset_upload_path(instance, filename) -> str:
@@ -25,7 +25,7 @@ class Dataset(models.Model):
                                      validators=(FileExtensionValidator(allowed_extensions=["csv"]),))
     path_cleaned = models.FileField(null=True)
     is_cleaned = models.BooleanField(default=False)
-    objects = DatasetManager()
+    objects = DatasetManager.from_queryset(DatasetQueryset)()
 
     class Meta:
         """
