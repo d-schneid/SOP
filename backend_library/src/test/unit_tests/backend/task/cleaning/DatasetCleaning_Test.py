@@ -91,7 +91,6 @@ class DatasetCleaningTestDoWork(unittest.TestCase):
         (original dataset is empty)
         """
         self._dc.do_work()
-        self.assertTrue(True)
         # TODO CHECK FOR ERROR FILE
 
 
