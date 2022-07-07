@@ -76,11 +76,11 @@ migrations:
   script:
     - source venv/bin/activate
     - cd webserver/src/main/sop
-    - python3 manage.py makemigrations --settings=sop.settings_ci
+    - python3.10 manage.py makemigrations --settings=sop.settings_ci
     # - python3 manage.py makemigrations myapp
-    - python3 manage.py migrate --settings=sop.settings_ci
-    - python3 manage.py showmigrations --settings=sop.settings_ci
-    - python3 manage.py check --settings=sop.settings_ci
+    - python3.10 manage.py migrate --settings=sop.settings_ci
+    - python3.10 manage.py showmigrations --settings=sop.settings_ci
+    - python3.10 manage.py check --settings=sop.settings_ci
 
 
 django-tests:
@@ -90,5 +90,5 @@ django-tests:
     # The MYSQL user only gets permissions for MYSQL_DB, so Django can't create a test database.
     - echo "GRANT ALL on *.* to '${MYSQL_USER}';"| mysql -u root --password="${MYSQL_ROOT_PASSWORD}" -h mysql
     # use python3 explicitly. see https://wiki.ubuntu.com/Python/3
-    - python3 manage.py showmigrations --settings=sop.settings_ci
-    - python3 manage.py test --settings=sop.settings_ci
+    - python3.10 manage.py showmigrations --settings=sop.settings_ci
+    - python3.10 manage.py test --settings=sop.settings_ci
