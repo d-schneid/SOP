@@ -1,4 +1,4 @@
-                               # This file is a template, and might need editing before it works on your project.
+# This file is a template, and might need editing before it works on your project.
 # This example is for testing Django with MySQL.
 #
 # The test CI/CD variables MYSQL_DB, MYSQL_USER and MYSQL_PASS can be set in the project settings at:
@@ -41,6 +41,12 @@ variables:
 
 default:
   image: ubuntu:20.04
+
+  cache:
+    key: build-cache
+    paths:
+      - venv/
+      - ~/.cache/pip/
   #
   # Pick zero or more services to be used on all builds.
   # Only needed when using a docker container to run your tests in.
@@ -50,9 +56,6 @@ default:
   #
   # This folder is cached between builds
   # http://docs.gitlab.com/ee/ci/yaml/README.html#cache
-  cache:
-    paths:
-      - ~/.cache/pip/
   before_script:
     - apt -y update
     - apt-get -yq install software-properties-common
@@ -60,24 +63,24 @@ default:
     - apt -y install apt-utils
     - apt -y install net-tools python3.10 python3-pip mysql-client libmysqlclient-dev
     - apt -y upgrade
-    - pip3 install virtualenv
-    - virtualenv venv
+    - "[ ! -d 'venv' ] && pip3 install virtualenv && virtualenv venv"
+    - ls
     - source venv/bin/activate
     - pip3 install -r requirements.txt
     - pip3 install mysqlclient
     - pip3 install -e backend_library/src/main
     - python3.10 -V
 
-
 migrations:
   stage: build
   script:
+    - source venv/bin/activate
     - cd webserver/src/main/sop
-    - python3 manage.py makemigrations
+    - python3 manage.py makemigrations --settings=sop.settings_test
     # - python3 manage.py makemigrations myapp
-    - python3 manage.py migrate
-    - python3 manage.py showmigrations
-    - python3 manage.py check
+    - python3 manage.py migrate --settings=sop.settings_test
+    - python3 manage.py showmigrations --settings=sop.settings_test
+    - python3 manage.py check --settings=sop.settings_test
 
 
 django-tests:
@@ -87,4 +90,5 @@ django-tests:
     # The MYSQL user only gets permissions for MYSQL_DB, so Django can't create a test database.
     - echo "GRANT ALL on *.* to '${MYSQL_USER}';"| mysql -u root --password="${MYSQL_ROOT_PASSWORD}" -h mysql
     # use python3 explicitly. see https://wiki.ubuntu.com/Python/3
+    - python3 manage.py showmigrations --settings=sop.settings_test
     - python3 manage.py test --settings=sop.settings_ci
