@@ -1,5 +1,4 @@
 asgiref==3.5.2
-backports.zoneinfo==0.2.1
 Django==4.0.6
 joblib==1.1.0
 numpy==1.22.4
