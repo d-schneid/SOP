@@ -95,7 +95,8 @@ class AlgorithmUploadView(LoginRequiredMixin, CreateView):
         temp_path: str = save_temporary_algorithm(file)
         error: Optional[str] = AlgorithmLoader.is_algorithm_valid(temp_path)
 
-        form.instance.signature = get_signature_of_algorithm(temp_path)
+        if error is None:
+            form.instance.signature = get_signature_of_algorithm(temp_path)
 
         delete_temporary_algorithm(temp_path)
 
