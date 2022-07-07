@@ -16,8 +16,8 @@ class DatasetCleaningTestDoWork(unittest.TestCase):
 
     finished_cleaning: bool = False
 
-    user_id: int = -13113
-    task_id: int = -2143
+    user_id: int = -1
+    task_id: int = -1
     priority: int = 9999
 
     def setUp(self) -> None:
@@ -87,8 +87,8 @@ class DatasetCleaningTestInvalidValues(unittest.TestCase):
 
     finished_cleaning: bool = False
 
-    user_id: int = -13113
-    task_id: int = -2143
+    user_id: int = -1
+    task_id: int = -1
     priority: int = 9999
 
     def task_progress_callback(self, task_id: int, task_state: TaskState, progress: float) -> None:

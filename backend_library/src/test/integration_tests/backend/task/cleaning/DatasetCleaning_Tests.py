@@ -15,8 +15,8 @@ class DatasetCleaningTestCleaningFinished(unittest.TestCase):
 
     finished_cleaning: bool = False
 
-    user_id: int = -13113
-    task_id: int = -2143
+    user_id: int = -1
+    task_id: int = -1
     priority: int = 9999
 
     def setUp(self) -> None:
@@ -57,8 +57,8 @@ class DatasetCleaningTestNoUncleanedDataset(unittest.TestCase):
     uncleaned_dataset_path: str = os.path.join(dir_name, "uncleaned_dataset.csv")
     cleaned_dataset_path: str = os.path.join(dir_name, "cleaned_dataset.csv")
 
-    user_id: int = -13113
-    task_id: int = -2143
+    user_id: int = -1
+    task_id: int = -1
     priority: int = 9999
 
     def setUp(self) -> None:
