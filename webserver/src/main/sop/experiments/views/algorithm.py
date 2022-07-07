@@ -32,7 +32,7 @@ class AlgorithmOverview(LoginRequiredMixin, ListView):
         sort_by = self.kwargs["sort"]
         if sort_by == "group":
             sorted_list = Algorithm.objects.get_sorted_by_group_and_name()
-        elif sort_by == "creation_date":
+        elif sort_by == "upload_date":
             sorted_list = Algorithm.objects.get_sorted_by_upload_date()
         else:
             sorted_list = Algorithm.objects.get_sorted_by_name()
