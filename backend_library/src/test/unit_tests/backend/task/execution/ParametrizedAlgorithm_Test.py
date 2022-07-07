@@ -1,3 +1,4 @@
+import json
 import unittest
 
 from backend_library.src.main.backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
@@ -25,6 +26,12 @@ class ParameterizedAlgorithmTests(unittest.TestCase):
         self.assertEqual(parameterized_algorithm2.directory_name_in_execution, "")
         parameterized_algorithm2.directory_name_in_execution = "new_directory_name"
         self.assertEqual(parameterized_algorithm2.directory_name_in_execution, "new_directory_name")
+
+    def test_to_json(self):
+        to_json_dict = {'display_name': self.display_name, 'directory_name': "",
+                        'hyper_parameter': self.hyper_parameter}
+        json_str = json.dumps(to_json_dict, indent=4)
+        self.assertEqual(json_str, self._parameterized_algorithm.to_json())
 
 
 if __name__ == '__main__':
