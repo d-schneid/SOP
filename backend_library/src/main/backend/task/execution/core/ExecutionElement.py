@@ -1,13 +1,15 @@
+from __future__ import annotations
+
 import os
 
 from abc import ABC
 
-import ExecutionSubspace as es
 import numpy as np
 
 from backend_library.src.main.backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 from backend_library.src.main.backend.scheduler.Schedulable import Schedulable
 from backend_library.src.main.backend.DataIO import DataIO
+from backend_library.src.main.backend.task.execution.core import ExecutionSubspace
 
 
 class ExecutionElement(Schedulable, ABC):
@@ -15,14 +17,14 @@ class ExecutionElement(Schedulable, ABC):
     Is the smallest unit of an Execution.
     Consists of the computation of one algorithm on exactly one subspace.
     """
-    def __init__(self, execution_subspace: es.ExecutionSubspace, algorithm: ParameterizedAlgorithm,
-                 result_path: str):
+
+    def __init__(self, execution_subspace: ExecutionSubspace, algorithm: ParameterizedAlgorithm, result_path: str):
         """
         :param execution_subspace: The ExecutionSubspace that belongs to this ExecutionElement.
         :param algorithm: The algorithm that should be computed on the subspace.
         :param result_path: The directory where the result-csv-file of the ExecutionElement-computation will be stored.
         """
-        self._execution_subspace: es.ExecutionSubspace = execution_subspace
+        self._execution_subspace: ExecutionSubspace = execution_subspace
         self._algorithm: ParameterizedAlgorithm = algorithm
         self._result_path: str = result_path
 

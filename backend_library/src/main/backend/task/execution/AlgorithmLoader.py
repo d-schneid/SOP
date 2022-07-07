@@ -38,7 +38,9 @@ class AlgorithmLoader:
         module: ModuleType = importlib.import_module(('.'.join(import_path)) + '.' + class_name)
         class_name: str = next((x for x in dir(module) if x.lower() == lower_class_name), None)
         assert class_name is not None, 'file does not contain a class of the same name'
-        return getattr(module, class_name)
+        requested_class = getattr(module, class_name)
+        assert issubclass(requested_class, BaseDetector)
+        return requested_class
 
     @staticmethod
     def get_algorithm_object(path: str, parameters: Dict[str, object]) -> BaseDetector:
@@ -46,7 +48,12 @@ class AlgorithmLoader:
 
     @staticmethod
     def is_algorithm_valid(path: str) -> Optional[str]:
-        return None
+        try:
+            AlgorithmLoader.get_algorithm_class(path)
+        except Exception as ex:
+            return str(ex)
+        else:
+            return None
 
     @staticmethod
     def get_algorithm_parameters(path: str) -> inspect.Signature.parameters:

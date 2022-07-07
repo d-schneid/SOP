@@ -14,7 +14,7 @@ from backend_library.src.main.backend.task.TaskState import TaskState
 from backend_library.src.main.backend.task.TaskHelper import TaskHelper
 from backend_library.src.main.backend.task.execution.subspace.SubspaceGenerationDescription import \
     SubspaceGenerationDescription
-import backend_library.src.main.backend.task.execution.core.ExecutionSubspace as es
+from backend_library.src.main.backend.task.execution.core import ExecutionSubspace
 from backend_library.src.main.backend.scheduler.Scheduler import Scheduler
 from backend_library.src.main.backend.task.execution.ResultZipper import ResultZipper
 from backend_library.src.main.backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
@@ -64,7 +64,7 @@ class Execution(Task, ABC):
         self._subspaces_count = TaskHelper.iterable_length(self._subspaces)
         self._total_execution_element_count: int = self._subspaces_count * TaskHelper.iterable_length(algorithms)
         # generate execution_subspaces
-        self._execution_subspaces: List[es.ExecutionSubspace] = list()
+        self._execution_subspaces: List[ExecutionSubspace] = list()
         self.__generate_execution_subspaces()
         # shared memory
         self._shared_memory_name: str = ""
@@ -129,7 +129,7 @@ class Execution(Task, ABC):
         :return: None
         """
         for subspace in self._subspaces:
-            self._execution_subspaces.append(es.ExecutionSubspace(self, subspace))
+            self._execution_subspaces.append(ExecutionSubspace.ExecutionSubspace(self, subspace))
 
     # schedule
     def schedule(self) -> None:

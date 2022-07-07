@@ -22,14 +22,15 @@ from django.conf import settings
 
 
 def home(request):
-    return render(request, 'home.html', {})
+    return render(request, "home.html", {})
 
 
 urlpatterns = [
-                  path('admin/', admin.site.urls),
-                  path('', home, name="home"),
-                  # path('', include('django.contrib.auth.urls')),
-                  path('', include('experiments.urls')),
-                  path('', include('authentication.urls')),
-              ] + static(settings.MEDIA_URL,
-                         document_root=settings.MEDIA_ROOT)  # !!will not work in production, only in development!!
+    path("admin/", admin.site.urls),
+    path("", home, name="home"),
+    # path('', include('django.contrib.auth.urls')),
+    path("", include("experiments.urls")),
+    path("", include("authentication.urls")),
+] + static(
+    settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
+)  # !!will not work in production, only in development!!

@@ -4,7 +4,6 @@ import string
 from typing import Optional
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.db.models import Q
 from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import (
@@ -25,64 +24,43 @@ from sop.settings import MEDIA_ROOT
 
 class AlgorithmOverview(LoginRequiredMixin, ListView):
     model = Algorithm
-    login_url = "/login/"
-    redirect_field_name = "next"
     template_name = "algorithm_overview.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
-        context = super(AlgorithmOverview, self).get_context_data(**kwargs)
-        sorted_by_group = Algorithm.objects.get_sorted_by_group_and_name()
-        sorted_by_group = sorted_by_group.filter(
-            Q(user_id__exact=self.request.user.id) | Q(user_id__exact=None)
-        )
-        context.update({"models_list": sorted_by_group})
+        context = super().get_context_data(**kwargs)
+        # Get sort by variable and get sorted set
+        sort_by = self.kwargs["sort"]
+        if sort_by == "group":
+            sorted_list = Algorithm.objects.get_sorted_by_group_and_name()
+        elif sort_by == "upload_date":
+            sorted_list = Algorithm.objects.get_sorted_by_upload_date()
+        else:
+            sorted_list = Algorithm.objects.get_sorted_by_name()
+
+        # Filter algorithms to only show own and public algorithms
+        sorted_list = sorted_list.get_by_user_and_public(self.request.user)
+
+        context.update({"models_list": sorted_list})
         return context
 
 
-def save_temporary_algorithm(instance: Algorithm,
-                             file: InMemoryUploadedFile) -> str:
-    # create temp_path
-    temp_dir = MEDIA_ROOT / "algorithms/temp"
-    temp_file_path = temp_dir / "".join(
-        random.choice(string.ascii_lowercase) for i in range(10)
-    )
-
-    if not os.path.exists(temp_dir):
-        os.makedirs(temp_dir)
-
-    # save contents of uploaded file into temp file
-    with open(temp_file_path, "wb") as temp_file:
-        for chunk in file.chunks():
-            temp_file.write(chunk)
-
-    return str(temp_file_path)
-
-
-def delete_temporary_algorithm(path: str):
-    try:
-        os.remove(path)
-    except FileNotFoundError:
-        print("Couldn't delete file")
+def get_signature_of_algorithm(path: str) -> str:
+    algorithm_parameters = AlgorithmLoader.get_algorithm_parameters(path)
+    keys_values = algorithm_parameters.items()
+    string_dict = {key: str(value) for key, value in keys_values}
+    return ",".join(string_dict.values())
 
 
 class AlgorithmUploadView(LoginRequiredMixin, CreateView):
-    login_url = "/login/"
-    redirect_field_name = "next"
-
     model = Algorithm
     form_class = AlgorithmUploadForm
     template_name = "algorithm_upload.html"
     success_url = reverse_lazy("algorithm_overview")
 
     def form_valid(self, form) -> HttpResponse:
-        form.instance.user = self.request.user
-        file: InMemoryUploadedFile = self.request.FILES["path"]
+        temp_path: str = self.request.FILES["path"].temporary_file_path()
 
-        # save the contents of the uploaded file in a temporary file and check
-        # it for a valid implementation of BaseDetector
-        temp_path: str = save_temporary_algorithm(form.instance, file)
         error: Optional[str] = AlgorithmLoader.is_algorithm_valid(temp_path)
-        delete_temporary_algorithm(temp_path)
 
         if error is not None:
             # add the error to the form and display it as invalid
@@ -90,22 +68,18 @@ class AlgorithmUploadView(LoginRequiredMixin, CreateView):
             return super(AlgorithmUploadView, self).form_invalid(form)
 
         elif error is None:
+            form.instance.user = self.request.user
+            form.instance.signature = get_signature_of_algorithm(temp_path)
             return super(AlgorithmUploadView, self).form_valid(form)
 
 
 class AlgorithmDeleteView(LoginRequiredMixin, DeleteView):
-    login_url = "/login/"
-    redirect_field_name = "next"
-
     model = Algorithm
     template_name = "algorithm_delete.html"
     success_url = reverse_lazy("algorithm_overview")
 
 
 class AlgorithmEditView(LoginRequiredMixin, UpdateView):
-    login_url = "/login/"
-    redirect_field_name = "next"
-
     model = Algorithm
     form_class = AlgorithmEditForm
     template_name = "algorithm_edit.html"
@@ -113,9 +87,6 @@ class AlgorithmEditView(LoginRequiredMixin, UpdateView):
 
 
 class AlgorithmDetailView(LoginRequiredMixin, DetailView):
-    login_url = "/login/"
-    redirect_field_name = "next"
-
     model = Algorithm
     # TODO: template?
     # template_name =

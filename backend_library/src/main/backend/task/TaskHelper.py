@@ -18,9 +18,9 @@ class TaskHelper:
         """
         error_file_path: str = TaskHelper.convert_to_error_csv_path(path)
         error_message: str = error_message
-        error_csv = open(error_file_path, 'w')
-        writer = csv.writer(error_csv)
-        writer.writerow(error_message)
+        with open(error_file_path, 'w') as error_csv:
+            writer = csv.writer(error_csv)
+            writer.writerow(error_message)
 
     @staticmethod
     def convert_to_error_csv_path(path: str) -> str:
@@ -32,12 +32,13 @@ class TaskHelper:
 
     @staticmethod
     def is_float_csv(csv_to_check: np.ndarray) -> bool:
-        """ Checks if the array only contains float_32
+        """ Checks if the array only contains float_32.
+        The parsing of the values into float_32 has to be done before calling this method.
         :param csv_to_check: The array that should be checked.
         :return: True if only float_32
         """
         dtype: np.dtype = csv_to_check.dtype
-        if dtype == np.float32 or dtype == np.int32:
+        if dtype == np.float32:
             return True
         return False
 

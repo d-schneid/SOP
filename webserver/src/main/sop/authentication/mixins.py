@@ -5,4 +5,5 @@ class LoginRequiredMixin(DjangoLoginRequiredMixin):
     """
     Custom LoginRequiredMixin.
     """
+
     login_url = "/login/"

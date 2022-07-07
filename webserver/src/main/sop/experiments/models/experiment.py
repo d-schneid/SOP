@@ -13,12 +13,13 @@ class Experiment(models.Model):
     """
     Database model of an experiment
     """
+
     _display_name = models.CharField(max_length=80)
-    _user = models.ForeignKey(to=settings.AUTH_USER_MODEL,
-                              on_delete=models.CASCADE)
+    _user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     # We do not allow deletion of a dataset if it's used in an experiment
-    _dataset = models.ForeignKey(to=Dataset, on_delete=models.PROTECT,
-                                 related_name="experiment")
+    _dataset = models.ForeignKey(
+        to=Dataset, on_delete=models.PROTECT, related_name="experiment"
+    )
     _algorithms = models.ManyToManyField(to=Algorithm)
     _creation_date = models.DateTimeField(auto_now_add=True)
 

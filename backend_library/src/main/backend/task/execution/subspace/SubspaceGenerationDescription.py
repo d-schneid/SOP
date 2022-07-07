@@ -1,4 +1,3 @@
-
 from collections.abc import Iterable
 from abc import ABC, abstractmethod
 
@@ -17,8 +16,8 @@ class SubspaceGenerationDescription(ABC):
     @abstractmethod
     def to_json(self) -> str:
         """
-        Converts the important information of the SubspaceGenerationDescription into a JSON-str, so that the
+        Converts the important information of the SubspaceGenerationDescription into a JSON-string, so that the
         Subspace generation can be understood and reproduced. \n
-        :return:
+        :return: the JSON-string
         """
         return ""

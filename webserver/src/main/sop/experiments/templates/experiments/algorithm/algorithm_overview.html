@@ -4,7 +4,13 @@
 
 {% block heading %}
     <h2 class="mt-3 mb-3">Eigene Algorithmen</h2>
-    <a href="{% url 'algorithm_upload' %}" class="ml-auto mt-3 mb-3 btn btn-outline-dark">Algorithmus hochladen</a>
+    <button class="btn btn-outline-dark mt-3 mb-3 ml-auto mr-3 dropdown-toggle" id="sortByButton" data-toggle="dropdown"
+            aria-haspopup="true" aria-expanded="false">Sort by {{ view.kwargs.sort }}</button>
+    <ul class="dropdown-menu mr-5" aria-labelledby="sortByButton">
+        <li><a href="{% url 'algorithm_overview_sorted' 'name' %}" class="dropdown-item btn-secondary">Name</a></li>
+        <li><a href="{% url 'algorithm_overview_sorted' 'group' %}" class="dropdown-item btn-secondary">Group</a></li>
+    </ul>
+    <a href="{% url 'algorithm_upload' %}" class="mt-3 mb-3 btn btn-outline-dark">Algorithmus hochladen</a>
 {% endblock %}
 
 {% block card-header %}

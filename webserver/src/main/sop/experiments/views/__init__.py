@@ -1,1 +1,5 @@
-from experiments.views.algorithm import AlgorithmOverview, AlgorithmUploadView, AlgorithmDeleteView
+from experiments.views.algorithm import (
+    AlgorithmOverview,
+    AlgorithmUploadView,
+    AlgorithmDeleteView,
+)
