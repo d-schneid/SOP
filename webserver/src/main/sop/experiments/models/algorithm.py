@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.conf import settings
 from django.core.validators import FileExtensionValidator
 from django.db import models
@@ -32,6 +34,7 @@ class Algorithm(models.Model):
                             validators=(FileExtensionValidator(
                                 allowed_extensions=["py"]),))
     description = models.TextField(blank=True)
+    upload_date = models.DateField(default=date.today)
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE, blank=True, null=True)
 

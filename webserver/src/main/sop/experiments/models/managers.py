@@ -20,6 +20,11 @@ class AlgorithmQuerySet(models.QuerySet):
             Q(user_id__exact=user.id) | Q(user_id__exact=None)
         )
 
+    def get_sorted_by_upload_date(self):
+        # latest uploaded algorithms first
+        return self.order_by('-upload_date')
+
+
 class AlgorithmManager(models.Manager):
     pass
 

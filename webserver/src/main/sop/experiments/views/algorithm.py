@@ -1,7 +1,6 @@
 import os
 import random
 import string
-import inspect
 from typing import Optional
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -34,9 +33,7 @@ class AlgorithmOverview(LoginRequiredMixin, ListView):
         if sort_by == "group":
             sorted_list = Algorithm.objects.get_sorted_by_group_and_name()
         elif sort_by == "creation_date":
-            # TODO: implement creation date for algorithm and
-            #  get_sorted_by_creation_date() method in manager
-            raise NotImplementedError
+            sorted_list = Algorithm.objects.get_sorted_by_upload_date()
         else:
             sorted_list = Algorithm.objects.get_sorted_by_name()
 
