@@ -8,6 +8,7 @@ from .models import User
 # Not needed, an admin (superuser) of the system shall have all possible permissions
 admin.site.unregister(Group)
 
+
 @admin.register(User)
 class UserAdmin(DjangoUserAdmin):
     """
@@ -26,7 +27,6 @@ class UserAdmin(DjangoUserAdmin):
                 "fields": (
                     # blocks a User
                     "is_active",
-
                     # assigns admin status to a User
                     "is_superuser",
                 ),

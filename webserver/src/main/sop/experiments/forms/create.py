@@ -9,8 +9,7 @@ class AlgorithmUploadForm(forms.ModelForm):
         fields = ("name", "description", "group", "path")
         widgets = {
             "name": forms.TextInput(
-                attrs={"class": "form-control",
-                       "placeholder": "algorithm name"}
+                attrs={"class": "form-control", "placeholder": "algorithm name"}
             ),
             "description": forms.Textarea(
                 attrs={
@@ -29,8 +28,7 @@ class DatasetUploadForm(forms.ModelForm):
         fields = ("name", "description", "path_original")
         widgets = {
             "name": forms.TextInput(
-                attrs={"class": "form-control",
-                       "placeholder": "Dataset name"}
+                attrs={"class": "form-control", "placeholder": "Dataset name"}
             ),
             "description": forms.Textarea(
                 attrs={

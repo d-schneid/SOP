@@ -9,8 +9,7 @@ class AlgorithmEditForm(forms.ModelForm):
         fields = ("name", "description", "group")
         widgets = {
             "name": forms.TextInput(
-                attrs={"class": "form-control",
-                       "placeholder": "Algorithm name"}
+                attrs={"class": "form-control", "placeholder": "Algorithm name"}
             ),
             "group": forms.Select(attrs={"class": "form-control"}),
         }
@@ -21,7 +20,9 @@ class DatasetEditForm(forms.ModelForm):
         model = Dataset
         fields = ("name", "description")
         widgets = {
-            "name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Dataset name"})
+            "name": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "Dataset name"}
+            )
         }
 
 

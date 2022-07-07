@@ -18,8 +18,7 @@ urlpatterns = [
     # Algorithm URLs
     path(
         "algorithm/",
-        RedirectView.as_view(pattern_name="algorithm_overview",
-                             permanent=True),
+        RedirectView.as_view(pattern_name="algorithm_overview", permanent=True),
     ),
     path(
         "algorithm/overview/",
@@ -39,8 +38,7 @@ urlpatterns = [
         name="algorithm_delete",
     ),
     path(
-        "algorithm/<int:pk>/edit/", AlgorithmEditView.as_view(),
-        name="algorithm_edit"
+        "algorithm/<int:pk>/edit/", AlgorithmEditView.as_view(), name="algorithm_edit"
     ),
     path("algorithm/upload/", AlgorithmUploadView.as_view(),
          name="algorithm_upload"),
