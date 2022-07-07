@@ -44,33 +44,6 @@ class AlgorithmOverview(LoginRequiredMixin, ListView):
         return context
 
 
-def save_temporary_algorithm(file: InMemoryUploadedFile) -> str:
-    # create temp_path
-    temp_dir = MEDIA_ROOT / "algorithms/temp"
-    temp_file_path = temp_dir / "".join(
-        random.choice(string.ascii_lowercase) for i in range(10)
-    )
-    # Backend library expects a python file (.py)
-    temp_file_path = temp_file_path.parent / (temp_file_path.name + ".py")
-
-    if not os.path.exists(temp_dir):
-        os.makedirs(temp_dir)
-
-    # save contents of uploaded file into temp file
-    with open(temp_file_path, "wb") as temp_file:
-        for chunk in file.chunks():
-            temp_file.write(chunk)
-
-    return str(temp_file_path)
-
-
-def delete_temporary_algorithm(path: str):
-    try:
-        os.remove(path)
-    except FileNotFoundError:
-        print("Couldn't delete file")
-
-
 def get_signature_of_algorithm(path: str) -> str:
     algorithm_parameters = AlgorithmLoader.get_algorithm_parameters(path)
     keys_values = algorithm_parameters.items()
@@ -85,17 +58,14 @@ class AlgorithmUploadView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy("algorithm_overview")
 
     def form_valid(self, form) -> HttpResponse:
-        file: InMemoryUploadedFile = self.request.FILES["path"]
+        temp_path: str = self.request.FILES["path"].temporary_file_path()
 
         # save the contents of the uploaded file in a temporary file and check
         # it for a valid implementation of BaseDetector
-        temp_path: str = save_temporary_algorithm(file)
         error: Optional[str] = AlgorithmLoader.is_algorithm_valid(temp_path)
 
         if error is None:
             form.instance.signature = get_signature_of_algorithm(temp_path)
-
-        delete_temporary_algorithm(temp_path)
 
         if error is not None:
             # add the error to the form and display it as invalid
