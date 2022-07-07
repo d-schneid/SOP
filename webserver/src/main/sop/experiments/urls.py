@@ -15,6 +15,7 @@ from experiments.views.dataset import (
 )
 
 urlpatterns = [
+    # Algorithm URLs
     path(
         "algorithm/",
         RedirectView.as_view(pattern_name="algorithm_overview",
@@ -43,12 +44,14 @@ urlpatterns = [
     ),
     path("algorithm/upload/", AlgorithmUploadView.as_view(),
          name="algorithm_upload"),
+
     # Dataset URLs
-    path("dataset/overview/", DatasetOverview.as_view(),
+    path("dataset/", RedirectView.as_view(pattern_name="dataset_overview", permanent=True)),
+    path("dataset/overview/", DatasetOverview.as_view(), {"sort": "name"},
          name="dataset_overview"),
+    path("dataset/overview/sort-by=<str:sort>/", DatasetOverview.as_view(), name="dataset_overview_sorted"),
     path("dataset/upload/", DatasetUploadView.as_view(),
          name="dataset_upload"),
     path("dataset/<int:pk>/delete/", DatasetDeleteView.as_view(), name="dataset_delete"),
     path("dataset/<int:pk>/edit/", DatasetEditView.as_view(), name="dataset_edit"),
-    path("dataset/", RedirectView.as_view(pattern_name="dataset_overview", permanent=True)),
 ]

@@ -9,6 +9,8 @@ from experiments.models import Dataset
 
 import pandas as pd
 
+from experiments.models.managers import DatasetQueryset
+
 
 class DatasetUploadView(LoginRequiredMixin, CreateView):
     model = Dataset
@@ -35,8 +37,16 @@ class DatasetOverview(LoginRequiredMixin, ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        sorted_by_name = Dataset.objects.get_sorted_by_name().filter(user=self.request.user)
-        context.update({"models_list": sorted_by_name})
+        datasets: DatasetQueryset = Dataset.objects.get_by_user(self.request.user)
+
+        # Sorting
+        sort_by: str = self.kwargs["sort"]
+        if sort_by == "upload_time":
+            datasets = datasets.get_sorted_by_upload_time()
+        else:
+            datasets = datasets.get_sorted_by_name()
+
+        context.update({"models_list": datasets})
         return context
 
 

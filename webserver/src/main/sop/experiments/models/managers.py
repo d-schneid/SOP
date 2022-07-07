@@ -2,6 +2,8 @@ from django.db import models
 from django.db.models import Q
 from django.db.models.functions import Lower
 
+from authentication.models import User
+
 
 class AlgorithmQuerySet(models.QuerySet):
 
@@ -34,7 +36,16 @@ class ExecutionManager(models.Manager):
 
 
 class DatasetManager(models.Manager):
-    def get_sorted_by_name(self):
-        return super().get_queryset().order_by(Lower("name"))
-
     pass
+
+
+class DatasetQueryset(models.QuerySet):
+    def get_sorted_by_name(self):
+        return self.order_by(Lower('name'))
+
+    def get_sorted_by_upload_time(self):
+        # TODO: implement
+        return self.order_by("name")
+
+    def get_by_user(self, request_user: User):
+        return self.filter(user=request_user)
