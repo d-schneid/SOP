@@ -29,8 +29,8 @@ class DatasetCleaning(Task, Schedulable, ABC):
                  uncleaned_dataset_path: str, cleaned_dataset_path: str,
                  cleaning_steps: Iterable[DatasetCleaningStep] = None, priority: int = 100):
         """
-        :param user_id: The ID of the user belonging to the DatasetCleaning.
-        :param task_id: The ID of the task.
+        :param user_id: The ID of the user belonging to the DatasetCleaning. Has to be at least -1.
+        :param task_id: The ID of the task. Has to be at least -1.
         :param task_progress_callback: The DatasetCleaning uses this callback to return its progress.
         :param uncleaned_dataset_path: The absolute path where the DatasetCleaning can find the uncleaned dataset
         which will be cleaned. (The path contains the dataset name and ends with .csv)

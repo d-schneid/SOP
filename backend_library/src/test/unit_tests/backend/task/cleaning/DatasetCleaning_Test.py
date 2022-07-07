@@ -80,5 +80,50 @@ class DatasetCleaningTestDoWork(unittest.TestCase):
                                       self._uncleaned_array)
 
 
+class DatasetCleaningTestInvalidValues(unittest.TestCase):
+    dir_name: str = os.getcwd()
+    uncleaned_dataset_path: str = os.path.join(dir_name, "uncleaned_dataset.csv")
+    cleaned_dataset_path: str = os.path.join(dir_name, "cleaned_dataset.csv")
+
+    finished_cleaning: bool = False
+
+    user_id: int = -13113
+    task_id: int = -2143
+    priority: int = 9999
+
+    def task_progress_callback(self, task_id: int, task_state: TaskState, progress: float) -> None:
+        # Empty callback
+        pass
+
+    def test_invalid_user_id(self):
+        # has to be >= 0
+
+        # No Error:
+        DatasetCleaning(-1, 0,
+                        self.task_progress_callback, self.uncleaned_dataset_path,
+                        self.cleaned_dataset_path, iter([]), self.priority)
+
+        # <-1 -> exception
+        with self.assertRaises(AssertionError) as context:
+            DatasetCleaning(-2, 0,
+                            self.task_progress_callback, self.uncleaned_dataset_path,
+                            self.cleaned_dataset_path, iter([]), self.priority)
+
+    def test_invalid_task_id(self):
+        # has to be >= 0
+
+        # No Error:
+        DatasetCleaning(0, -1,
+                        self.task_progress_callback, self.uncleaned_dataset_path,
+                        self.cleaned_dataset_path, iter([]), self.priority)
+
+        # <-1 -> exception
+        with self.assertRaises(AssertionError) as context:
+            DatasetCleaning(0, -2,
+                            self.task_progress_callback, self.uncleaned_dataset_path,
+                            self.cleaned_dataset_path, iter([]), self.priority)
+
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -33,8 +33,8 @@ class Execution(Task, ABC):
                  dataset_path: str, result_path: str, subspace_generation: SubspaceGenerationDescription,
                  algorithms: Iterable[ParameterizedAlgorithm], metric_callback: Callable[[Execution], None]):
         """
-        :param user_id: The ID of the user belonging to the Execution.
-        :param task_id: The ID of the task.
+        :param user_id: The ID of the user belonging to the Execution. Has to be at least -1.
+        :param task_id: The ID of the task. Has to be at least -1.
         :param task_progress_callback: The Execution uses this callback to return its progress.
         :param dataset_path: The absolute path to the cleaned dataset which will be used for cleaning.
         (path ends with .csv)
