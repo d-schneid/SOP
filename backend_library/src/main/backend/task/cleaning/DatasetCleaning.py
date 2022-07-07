@@ -26,13 +26,13 @@ class DatasetCleaning(Task, Schedulable, ABC):
     stores the cleaned dataset separately in cleaned_dataset_path.
     """
     def __init__(self, user_id: int, task_id: int, task_progress_callback: Callable[[int, TaskState, float], None],
-                 original_dataset_path: str, cleaned_dataset_path: str,
+                 uncleaned_dataset_path: str, cleaned_dataset_path: str,
                  cleaning_steps: Iterable[DatasetCleaningStep] = None, priority: int = 100):
         """
         :param user_id: The ID of the user belonging to the DatasetCleaning.
         :param task_id: The ID of the task.
         :param task_progress_callback: The DatasetCleaning uses this callback to return its progress.
-        :param original_dataset_path: The absolute path where the DatasetCleaning can find the uncleaned dataset
+        :param uncleaned_dataset_path: The absolute path where the DatasetCleaning can find the uncleaned dataset
         which will be cleaned. (The path contains the dataset name and ends with .csv)
         :param cleaned_dataset_path: The absolute path where the DatasetCleaning will store the cleaned dataset.
         (The path contains the dataset name and ends with .csv)
@@ -44,7 +44,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
         if cleaning_steps is None:
             cleaning_steps = [CategoricalColumnRemover(), none_roc_remover(1), none_roc_remover(0),
                               ImputationMode(), MinMaxScaler()]  # Default Cleaning-Pipeline
-        self._original_dataset_path: str = original_dataset_path
+        self._uncleaned_dataset_path: str = uncleaned_dataset_path
         self._cleaned_dataset_path: str = cleaned_dataset_path
         self._cleaning_steps: Iterable[DatasetCleaningStep] = cleaning_steps
         self._cleaning_steps_count: int = TaskHelper.iterable_length(self._cleaning_steps)
@@ -96,7 +96,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
         """
         self.__delete_old_error_file()
 
-        dataset_to_clean: np.ndarray = self.__load_original_dataset()
+        dataset_to_clean: np.ndarray = self.__load_uncleaned_dataset()
         cleaning_pipeline_result: Optional[np.ndarray] = self.__run_cleaning_pipeline(dataset_to_clean)
 
         if cleaning_pipeline_result is None:  # cleaning failed
@@ -124,11 +124,11 @@ class DatasetCleaning(Task, Schedulable, ABC):
         if os.path.isfile(error_file_path):
             os.remove(error_file_path)
 
-    def __load_original_dataset(self) -> np.ndarray:
+    def __load_uncleaned_dataset(self) -> np.ndarray:
         """ Loads the uncleaned dataset which will be cleaned. \n
         :return: The loaded uncleaned dataset.
         """
-        return DataIO.read_uncleaned_csv(self._original_dataset_path)
+        return DataIO.read_uncleaned_csv(self._uncleaned_dataset_path)
 
     def __run_cleaning_pipeline(self, csv_to_clean: np.ndarray) -> Optional[np.ndarray]:
         """
@@ -168,7 +168,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
         :param csv_to_check: The array that should be checked.
         :return: True, if the array is empty. Otherwise, return False.
         """
-        if csv_to_check.shape[0] == 0 or csv_to_check.shape[1] == 0:
+        if csv_to_check.size == 0:
             error: str = "Cleaning resulted in empty dataset"
             TaskHelper.save_error_csv(self._cleaned_dataset_path, str(error))
             return True
