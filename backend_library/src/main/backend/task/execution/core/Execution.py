@@ -141,7 +141,8 @@ class Execution(Task, ABC):
             self._task_progress_callback(self._task_id, TaskState.FINISHED, 1.0)
             return
         scheduler: Scheduler = Scheduler.get_instance()
-        scheduler.schedule(Execution)
+        # you can not schedule something that is not schedulable
+        # scheduler.schedule(Execution)
 
     def __does_zip_exists(self) -> bool:
         """

@@ -59,7 +59,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
             self._task_progress_callback(self._task_id, TaskState.FINISHED, 1.0)
             return None
         scheduler: Scheduler = Scheduler.get_instance()
-        scheduler.schedule(DatasetCleaning)
+        scheduler.schedule(self)
 
     def __did_cleaning_finish(self) -> bool:
         """

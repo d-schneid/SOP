@@ -4,7 +4,6 @@ from typing import Callable
 
 from backend_library.src.main.backend.scheduler.Schedulable import Schedulable
 from abc import ABC, abstractmethod
-from typing import Type
 
 
 class Scheduler(ABC):
@@ -20,7 +19,7 @@ class Scheduler(ABC):
         return Scheduler._instance
 
     @abstractmethod
-    def schedule(self, to_schedule: Type[Schedulable]) -> None:
+    def schedule(self, to_schedule: Schedulable) -> None:
         pass
 
     @abstractmethod
