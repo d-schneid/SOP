@@ -9,18 +9,17 @@ class AlgorithmQuerySet(models.QuerySet):
 
     # TODO: type hints
     def get_sorted_by_group_and_name(self):
-        return self.order_by('group', Lower('name'))
+        return self.order_by("group", Lower("name"))
 
     def get_sorted_by_name(self):
-        return self.order_by(Lower('name'))
+        return self.order_by(Lower("name"))
 
     def get_with_group(self, group):
         return self.filter(group=group)
 
     def get_by_user_and_public(self, user):
-        return self.filter(
-            Q(user_id__exact=user.id) | Q(user_id__exact=None)
-        )
+        return self.filter(Q(user_id__exact=user.id) | Q(user_id__exact=None))
+
 
     def get_sorted_by_upload_date(self):
         # latest uploaded algorithms first
