@@ -1,7 +1,6 @@
 import json
 
 
-
 class ParameterizedAlgorithm(object):
     """
     Used to describe one algorithm that is used in an execution.
