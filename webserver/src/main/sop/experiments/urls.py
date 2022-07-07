@@ -45,8 +45,8 @@ urlpatterns = [
 
     # Dataset URLs
     path("dataset/", RedirectView.as_view(pattern_name="dataset_overview", permanent=True)),
-    path("dataset/overview/", DatasetOverview.as_view(), {"sort": "name"},
-         name="dataset_overview"),
+    path("dataset/overview/", RedirectView.as_view(pattern_name="dataset_overview_sorted", permanent=True),
+         {"sort": "name"}, name="dataset_overview"),
     path("dataset/overview/sort-by=<str:sort>/", DatasetOverview.as_view(), name="dataset_overview_sorted"),
     path("dataset/upload/", DatasetUploadView.as_view(),
          name="dataset_upload"),

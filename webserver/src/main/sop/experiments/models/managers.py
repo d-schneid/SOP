@@ -43,8 +43,7 @@ class DatasetQueryset(models.QuerySet):
         return self.order_by(Lower('name'))
 
     def get_sorted_by_upload_time(self):
-        # TODO: implement
-        return self.order_by("name")
+        return self.order_by("-upload_date")
 
     def get_by_user(self, request_user: User):
         return self.filter(user=request_user)

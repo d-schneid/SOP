@@ -41,7 +41,7 @@ class DatasetOverview(LoginRequiredMixin, ListView):
 
         # Sorting
         sort_by: str = self.kwargs["sort"]
-        if sort_by == "upload_time":
+        if sort_by == "upload_date":
             datasets = datasets.get_sorted_by_upload_time()
         else:
             datasets = datasets.get_sorted_by_name()
