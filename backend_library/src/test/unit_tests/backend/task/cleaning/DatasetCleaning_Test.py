@@ -70,8 +70,19 @@ class DatasetCleaningTestDoWork(unittest.TestCase):
                                                         self.task_progress_callback, self.original_dataset_path,
                                                         self.cleaned_dataset_path, iter([]), self.priority)
 
+    def tearDown(self) -> None:
+        if os.path.isfile(self.original_dataset_path):
+            os.remove(self.original_dataset_path)
+        if os.path.isfile(self.cleaned_dataset_path):
+            os.remove(self.cleaned_dataset_path)
+        self._dc = None
+
     def task_progress_callback(self, task_id: int, task_state: TaskState, progress: float) -> None:
         # Implement
+        pass
+
+    def test_delete_old_error_file(self):
+        # TODO
         pass
 
     def test_empty_to_clean(self):
