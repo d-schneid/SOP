@@ -20,5 +20,5 @@ class DebugScheduler(Scheduler):
     def is_shutting_down(self) -> bool:
         return False
 
-    def schedule(self, to_schedule: Type[Schedulable]) -> None:
+    def schedule(self, to_schedule: Schedulable) -> None:
         to_schedule.do_work()
