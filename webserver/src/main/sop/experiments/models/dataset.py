@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from django.conf import settings
 from django.core.validators import FileExtensionValidator
 from django.db import models
@@ -34,6 +32,12 @@ class Dataset(models.Model):
         """
         Contains meta-information about Dataset Model
         """
+
+    @property
+    def is_deletable(self) -> bool:
+        # Import this here to avoid circular import
+        from experiments.models import Experiment
+        return not Experiment.objects.get_with_dataset(self).exists()
 
     def __str__(self) -> str:
         return str(self.name) + " | " + str(self.user)
