@@ -17,8 +17,8 @@ class UserAdmin(DjangoUserAdmin):
 
     model = User
 
-    list_filter = ("is_superuser", "is_active")
-    list_display = ("username", "is_superuser", "is_active")
+    list_filter = ("is_superuser", "is_active", "is_staff")
+    list_display = ("username", "is_superuser", "is_active", "is_staff")
     fieldsets = (
         (None, {"fields": ("username", "password")}),
         (
@@ -27,8 +27,10 @@ class UserAdmin(DjangoUserAdmin):
                 "fields": (
                     # blocks a User
                     "is_active",
-                    # assigns admin status to a User
+                    # User has all available permissions
                     "is_superuser",
+                    # User can log in to admin site
+                    "is_staff",
                 ),
             },
         ),
