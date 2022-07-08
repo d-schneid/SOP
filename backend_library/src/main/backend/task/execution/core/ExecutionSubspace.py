@@ -9,12 +9,12 @@ from typing import List
 
 import numpy as np
 
-from backend_library.src.main.backend.task.execution.core import ExecutionElement
-from backend_library.src.main.backend.task.execution.core import Execution
-from backend_library.src.main.backend.task.execution.subspace.Subspace import Subspace
-from backend_library.src.main.backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
-from backend_library.src.main.backend.task.TaskHelper import TaskHelper
-from backend_library.src.main.backend.scheduler.Scheduler import Scheduler
+from backend.task.execution.core import ExecutionElement
+from backend.task.execution.core import Execution
+from backend.task.execution.subspace.Subspace import Subspace
+from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
+from backend.task.TaskHelper import TaskHelper
+from backend.scheduler.Scheduler import Scheduler
 
 
 class ExecutionSubspace:

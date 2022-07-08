@@ -5,17 +5,17 @@ from typing import Optional
 
 import numpy as np
 
-from backend_library.src.main.backend.DataIO import DataIO
-from backend_library.src.main.backend.task.Task import Task
-from backend_library.src.main.backend.task.TaskHelper import TaskHelper
-from backend_library.src.main.backend.task.TaskState import TaskState
-from backend_library.src.main.backend.scheduler.Scheduler import Scheduler
-from backend_library.src.main.backend.scheduler.Schedulable import Schedulable
-from backend_library.src.main.backend.task.cleaning.DatasetCleaningStep import DatasetCleaningStep
-from backend_library.src.main.backend.task.cleaning.CategoricalColumnRemover import CategoricalColumnRemover
-from backend_library.src.main.backend.task.cleaning.ImputationMode import ImputationMode
-from backend_library.src.main.backend.task.cleaning.MinMaxScaler import MinMaxScaler
-from backend_library.src.main.backend.task.cleaning.RowOrColumnMissingValuesRemover \
+from backend.DataIO import DataIO
+from backend.task.Task import Task
+from backend.task.TaskHelper import TaskHelper
+from backend.task.TaskState import TaskState
+from backend.scheduler.Scheduler import Scheduler
+from backend.scheduler.Schedulable import Schedulable
+from backend.task.cleaning.DatasetCleaningStep import DatasetCleaningStep
+from backend.task.cleaning.CategoricalColumnRemover import CategoricalColumnRemover
+from backend.task.cleaning.ImputationMode import ImputationMode
+from backend.task.cleaning.MinMaxScaler import MinMaxScaler
+from backend.task.cleaning.RowOrColumnMissingValuesRemover \
     import RowOrColumnMissingValuesRemover as none_roc_remover
 
 

@@ -1,7 +1,7 @@
 import numpy as np
 from abc import ABC, abstractmethod
 
-from backend_library.src.main.backend.task.cleaning.DatasetCleaningStep import DatasetCleaningStep
+from backend.task.cleaning.DatasetCleaningStep import DatasetCleaningStep
 
 
 class MissingValuesRemover(DatasetCleaningStep, ABC):

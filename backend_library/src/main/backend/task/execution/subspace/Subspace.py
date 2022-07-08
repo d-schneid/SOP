@@ -23,4 +23,4 @@ class Subspace:
         return bytes.decode(encoded_bytes)[:math.ceil(self.mask.size / 6)]
 
     def make_subspace_array(self, full_dataset: np.array) -> np.array:
-        pass
+        return full_dataset[:, self._mask]

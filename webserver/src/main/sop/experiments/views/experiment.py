@@ -1,12 +1,13 @@
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 
+from authentication.mixins import LoginRequiredMixin
 from experiments.forms.edit import ExperimentEditForm
-from experiments.models import Experiment
+from experiments.models import Experiment, Execution
 from experiments.models.managers import ExperimentQueryset
 
 
-class ExperimentOverview(ListView):
+class ExperimentOverview(LoginRequiredMixin, ListView):
     model = Experiment
     template_name = "experiments/experiment/experiment_overview.html"
 
@@ -23,13 +24,17 @@ class ExperimentOverview(ListView):
         else:
             experiments = experiments.get_sorted_by_name()
 
-        context.update({"models_list": experiments})
+        # Executions
+        execution_set = Execution.objects.all()
+
+        context.update({"models_list": experiments, "execution_set": execution_set})
         return context
 
 
-class ExperimentCreateView(CreateView):
+class ExperimentCreateView(LoginRequiredMixin, CreateView):
     model = Experiment
     template_name = "experiments/experiment/experiment_create.html"
+    # TODO: use ExperimentCreateForm
     fields = ("display_name", "dataset", "algorithms")
     success_url = reverse_lazy("experiment_overview")
 
@@ -38,14 +43,14 @@ class ExperimentCreateView(CreateView):
         return super(ExperimentCreateView, self).form_valid(form)
 
 
-class ExperimentEditView(UpdateView):
+class ExperimentEditView(LoginRequiredMixin, UpdateView):
     model = Experiment
     form_class = ExperimentEditForm
     template_name = "experiments/experiment/experiment_edit.html"
     success_url = reverse_lazy("experiment_overview")
 
 
-class ExperimentDeleteView(DeleteView):
+class ExperimentDeleteView(LoginRequiredMixin, DeleteView):
     model = Experiment
     template_name = "experiments/experiment/experiment_delete.html"
     success_url = reverse_lazy("experiment_overview")

@@ -45,7 +45,7 @@ default:
   cache:
     key: build-cache
     paths:
-      - venv/
+      - venv3.10/
       - ~/.cache/pip/
   #
   # Pick zero or more services to be used on all builds.
@@ -61,26 +61,26 @@ default:
     - apt-get -yq install software-properties-common
     - add-apt-repository -y ppa:deadsnakes/ppa
     - apt -y install apt-utils
-    - apt -y install net-tools python3 python3-pip mysql-client libmysqlclient-dev
+    - apt -y install net-tools python3.10 python3-pip mysql-client libmysqlclient-dev python3.10-distutils python3.10-dev
     - apt -y upgrade
-    - "[ ! -d 'venv' ] && pip3 install virtualenv && virtualenv venv"
+    - "[ ! -d 'venv3.10' ] && pip3 install virtualenv && virtualenv venv3.10 -p python3.10"
     - ls
-    - source venv/bin/activate
+    - source venv3.10/bin/activate
     - pip3 install -r requirements.txt
     - pip3 install mysqlclient
     - pip3 install -e backend_library/src/main
-    - python3 -V
+    - python3.10 -V
 
 migrations:
   stage: build
   script:
-    - source venv/bin/activate
+    - source venv3.10/bin/activate
     - cd webserver/src/main/sop
-    - python3 manage.py makemigrations --settings=sop.settings_ci
+    - python3.10 manage.py makemigrations --settings=sop.settings_ci
     # - python3 manage.py makemigrations myapp
-    - python3 manage.py migrate --settings=sop.settings_ci
-    - python3 manage.py showmigrations --settings=sop.settings_ci
-    - python3 manage.py check --settings=sop.settings_ci
+    - python3.10 manage.py migrate --settings=sop.settings_ci
+    - python3.10 manage.py showmigrations --settings=sop.settings_ci
+    - python3.10 manage.py check --settings=sop.settings_ci
 
 
 django-tests:
@@ -90,5 +90,5 @@ django-tests:
     # The MYSQL user only gets permissions for MYSQL_DB, so Django can't create a test database.
     - echo "GRANT ALL on *.* to '${MYSQL_USER}';"| mysql -u root --password="${MYSQL_ROOT_PASSWORD}" -h mysql
     # use python3 explicitly. see https://wiki.ubuntu.com/Python/3
-    - python3 manage.py showmigrations --settings=sop.settings_ci
-    - python3 manage.py test --settings=sop.settings_ci
+    - python3.10 manage.py showmigrations --settings=sop.settings_ci
+    - python3.10 manage.py test --settings=sop.settings_ci

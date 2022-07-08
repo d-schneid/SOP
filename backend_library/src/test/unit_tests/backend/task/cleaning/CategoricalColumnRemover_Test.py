@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from backend_library.src.main.backend.task.cleaning.CategoricalColumnRemover import CategoricalColumnRemover as ccr
+from backend.task.cleaning.CategoricalColumnRemover import CategoricalColumnRemover as ccr
 from backend_library.src.test.DatasetsForTesting import Datasets as ds
 
 

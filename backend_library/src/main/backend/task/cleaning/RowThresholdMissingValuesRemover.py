@@ -4,7 +4,7 @@ from abc import ABC
 import numpy as np
 import pandas as pd
 
-from backend_library.src.main.backend.task.cleaning.MissingValuesRemover import MissingValuesRemover
+from backend.task.cleaning.MissingValuesRemover import MissingValuesRemover
 
 
 class ThresholdMissingValuesRemover(MissingValuesRemover, ABC):

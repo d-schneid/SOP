@@ -64,3 +64,11 @@ class ExperimentQueryset(models.QuerySet):
 
 class ExecutionManager(models.Manager):
     pass
+
+
+class ExecutionQueryset(models.QuerySet):
+    def get_sorted_by_creation_date(self):
+        return self.order_by("-creation_date")
+
+    def get_by_user(self, request_user: User):
+        return self.filter(user=request_user)
