@@ -1,6 +1,6 @@
 from django import forms
 
-from experiments.models import Algorithm, Dataset
+from experiments.models import Algorithm, Dataset, Execution
 
 
 class AlgorithmUploadForm(forms.ModelForm):
@@ -45,4 +45,6 @@ class ExperimentCreateForm(forms.ModelForm):
 
 
 class ExecutionCreateForm(forms.ModelForm):
-    pass
+    class Meta:
+        model = Execution
+        fields = ("algorithm_parameters", "subspaces_min", "subspaces_max", "subspace_amount")
