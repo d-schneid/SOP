@@ -3,8 +3,8 @@ import unittest
 
 import numpy as np
 
-from backend.task.cleaning.DatasetCleaning import DatasetCleaning
-from backend.task.TaskState import TaskState
+from backend_library.src.main.backend.task.cleaning.DatasetCleaning import DatasetCleaning
+from backend_library.src.main.backend.task.TaskState import TaskState
 
 
 class DatasetCleaningTestCleaningFinished(unittest.TestCase):

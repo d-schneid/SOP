@@ -1,8 +1,8 @@
 
 from typing import Callable
 
-from backend.scheduler.Schedulable import Schedulable
-from backend.task.TaskState import TaskState
+from backend_library.src.main.backend.scheduler.Schedulable import Schedulable
+from backend_library.src.main.backend.task.TaskState import TaskState
 
 
 class ResultZipper(Schedulable):

@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 from abc import ABC, abstractmethod
 
-from backend.task.execution.subspace.Subspace import Subspace
+from backend_library.src.main.backend.task.execution.subspace.Subspace import Subspace
 
 
 class SubspaceGenerationDescription(ABC):

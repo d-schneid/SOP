@@ -1,7 +1,7 @@
 import json
 import unittest
 
-from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
+from backend_library.src.main.backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 
 
 class ParameterizedAlgorithmTests(unittest.TestCase):

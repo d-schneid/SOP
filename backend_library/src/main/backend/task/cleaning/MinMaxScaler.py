@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler as mms
 
-from backend.task.cleaning.FeatureScaler import FeatureScaler
-from backend.task.cleaning.DatasetCleaningStepExceptionHanding \
+from backend_library.src.main.backend.task.cleaning.FeatureScaler import FeatureScaler
+from backend_library.src.main.backend.task.cleaning.DatasetCleaningStepExceptionHanding \
     import DatasetCleaningStepExceptionHandling as eh
 
 

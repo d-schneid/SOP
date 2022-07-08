@@ -1,10 +1,10 @@
 import unittest
 from unittest.mock import Mock
 
-from backend.task.execution.core.Execution import Execution as e
-from backend.task.execution.core.ExecutionElement import ExecutionElement as ee
-from backend.task.execution.core.ExecutionSubspace import ExecutionSubspace as es
-from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
+from backend_library.src.main.backend.task.execution.core.Execution import Execution as e
+from backend_library.src.main.backend.task.execution.core.ExecutionElement import ExecutionElement as ee
+from backend_library.src.main.backend.task.execution.core.ExecutionSubspace import ExecutionSubspace as es
+from backend_library.src.main.backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 
 
 class ExecutionElement(unittest.TestCase):

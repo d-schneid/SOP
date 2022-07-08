@@ -14,17 +14,17 @@ from collections.abc import Iterable
 import numpy as np
 import pandas as pd
 
-from backend.DataIO import DataIO
-from backend.task.Task import Task
-from backend.task.TaskState import TaskState
-from backend.task.TaskHelper import TaskHelper
-from backend.task.execution.subspace.SubspaceGenerationDescription import \
+from backend_library.src.main.backend.DataIO import DataIO
+from backend_library.src.main.backend.task.Task import Task
+from backend_library.src.main.backend.task.TaskState import TaskState
+from backend_library.src.main.backend.task.TaskHelper import TaskHelper
+from backend_library.src.main.backend.task.execution.subspace.SubspaceGenerationDescription import \
     SubspaceGenerationDescription
-from backend.task.execution.core import ExecutionSubspace
-from backend.scheduler.Scheduler import Scheduler
-from backend.task.execution.ResultZipper import ResultZipper
-from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
-from backend.task.execution.subspace.Subspace import Subspace
+from backend_library.src.main.backend.task.execution.core import ExecutionSubspace
+from backend_library.src.main.backend.scheduler.Scheduler import Scheduler
+from backend_library.src.main.backend.task.execution.ResultZipper import ResultZipper
+from backend_library.src.main.backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
+from backend_library.src.main.backend.task.execution.subspace.Subspace import Subspace
 
 
 class Execution(Task, ABC):
@@ -35,8 +35,7 @@ class Execution(Task, ABC):
 
     def __init__(self, user_id: int, task_id: int, task_progress_callback: Callable[[int, TaskState, float], None],
                  dataset_path: str, result_path: str, subspace_generation: SubspaceGenerationDescription,
-                 algorithms: Iterable[ParameterizedAlgorithm], metric_callback: Callable[[Execution], None],
-                 data_dimensions_count: int):
+                 algorithms: Iterable[ParameterizedAlgorithm], metric_callback: Callable[[Execution], None]):
         """
         :param user_id: The ID of the user belonging to the Execution. Has to be at least -1.
         :param task_id: The ID of the task. Has to be at least -1.
@@ -70,7 +69,7 @@ class Execution(Task, ABC):
         self._metric_finished: bool = False
 
         # generate subspaces
-        self._subspaces: Iterable[Subspace] = self._subspace_generation.generate(data_dimensions_count)
+        self._subspaces: Iterable[Subspace] = self._subspace_generation.generate()
         self._subspaces_count = TaskHelper.iterable_length(self._subspaces)
         self._total_execution_element_count: int = self._subspaces_count * TaskHelper.iterable_length(algorithms)
 
@@ -85,7 +84,7 @@ class Execution(Task, ABC):
         Fills all algorithms with their corresponding directory name in the Execution result folder.  \n
         This is done to allow having multiple algorithms of the same kind in the same Execution.
         Without setting their name individually, algorithms with the same display_name would write their results
-        into the same folder, overwriting the results of the other.  \n
+        into the same folder, overwriting the results of the other. \n
         :return: None
         """
         algorithm_display_name_dict: dict = {}
@@ -99,7 +98,7 @@ class Execution(Task, ABC):
                 algorithm_display_name_dict[algorithm.directory_name_in_execution] = 0
             else:
                 algorithm.directory_name_in_execution = display_name + " (" \
-                                                        + algorithm_display_name_dict[display_name] + ")"
+                                                        + str(algorithm_display_name_dict[display_name]) + ")"
                 algorithm_display_name_dict[algorithm.directory_name_in_execution] += 1
 
     # Generates all missing folders of the file system structure of this execution
@@ -109,7 +108,7 @@ class Execution(Task, ABC):
         :return: None
         """
         # if os.path.exists(self.result_path):
-        if os.path.isdir(self._result_path):
+        if not os.path.isdir(self._result_path):
             TaskHelper.create_directory(self._result_path)
             for algorithm in self._algorithms:
                 algorithm_directory_path: str = self._result_path + '\\' + algorithm.display_name

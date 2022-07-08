@@ -2,7 +2,7 @@ import os
 import unittest
 import numpy as np
 
-from backend.task.TaskHelper import TaskHelper
+from backend_library.src.main.backend.task.TaskHelper import TaskHelper
 
 
 class TaskHelperTest(unittest.TestCase):

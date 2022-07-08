@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from backend.task.cleaning.RowOrColumnMissingValuesRemover import \
+from backend_library.src.main.backend.task.cleaning.RowOrColumnMissingValuesRemover import \
     RowOrColumnMissingValuesRemover
 from backend_library.src.test.DatasetsForTesting import Datasets as ds
 

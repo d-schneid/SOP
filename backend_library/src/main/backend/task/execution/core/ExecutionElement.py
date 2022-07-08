@@ -6,10 +6,10 @@ from abc import ABC
 
 import numpy as np
 
-from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
-from backend.scheduler.Schedulable import Schedulable
-from backend.DataIO import DataIO
-from backend.task.execution.core import ExecutionSubspace
+from backend_library.src.main.backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
+from backend_library.src.main.backend.scheduler.Schedulable import Schedulable
+from backend_library.src.main.backend.DataIO import DataIO
+from backend_library.src.main.backend.task.execution.core import ExecutionSubspace
 
 
 class ExecutionElement(Schedulable, ABC):

@@ -4,9 +4,9 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from backend.task.cleaning.DatasetCleaning import DatasetCleaning
-from backend.task.TaskState import TaskState
-from backend.task.TaskHelper import TaskHelper
+from backend_library.src.main.backend.task.cleaning.DatasetCleaning import DatasetCleaning
+from backend_library.src.main.backend.task.TaskState import TaskState
+from backend_library.src.main.backend.task.TaskHelper import TaskHelper
 
 
 class DatasetCleaningTestDoWork(unittest.TestCase):

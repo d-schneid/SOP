@@ -4,8 +4,8 @@ from abc import ABC
 import numpy as np
 import pandas as pd
 
-from backend.task.cleaning.MissingValuesRemover import MissingValuesRemover
-from backend.task.cleaning.DatasetCleaningStepExceptionHanding \
+from backend_library.src.main.backend.task.cleaning.MissingValuesRemover import MissingValuesRemover
+from backend_library.src.main.backend.task.cleaning.DatasetCleaningStepExceptionHanding \
     import DatasetCleaningStepExceptionHandling as eh
 
 

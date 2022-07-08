@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 from collections.abc import Callable
 
-from backend.task.TaskState import TaskState
+from backend_library.src.main.backend.task.TaskState import TaskState
 
 class Task(ABC):
     """

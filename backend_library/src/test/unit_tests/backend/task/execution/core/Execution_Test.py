@@ -2,13 +2,13 @@ import unittest
 from collections.abc import Iterable
 from unittest import mock
 
-from backend.task.execution.core.Execution import Execution as ex
-from backend.task.TaskState import TaskState
-from backend.task.execution.subspace.RandomizedSubspaceGeneration import \
+from backend_library.src.main.backend.task.execution.core.Execution import Execution as ex
+from backend_library.src.main.backend.task.TaskState import TaskState
+from backend_library.src.main.backend.task.execution.subspace.RandomizedSubspaceGeneration import \
     RandomizedSubspaceGeneration as rsg
-from backend.task.execution.subspace.UniformSubspaceDistribution import \
+from backend_library.src.main.backend.task.execution.subspace.UniformSubspaceDistribution import \
     UniformSubspaceDistribution as usd
-from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
+from backend_library.src.main.backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 
 
 class ExecutionTest(unittest.TestCase):
@@ -31,9 +31,9 @@ class ExecutionTest(unittest.TestCase):
         self._subspace_size_max: int = 5
         self._subspace_amount = 4
         self._subspace_seed = 42
-        self._subspace_generation: rsg = rsg(usd(self._subspace_size_min, self._subspace_size_max),
-                                             self._subspace_amount, self._subspace_seed)
         self._data_dimensions_count: int = 10
+        self._subspace_generation: rsg = rsg(usd(self._subspace_size_min, self._subspace_size_max),
+                                             self._data_dimensions_count, self._subspace_amount, self._subspace_seed)
 
         # parameterized algorithms
         self._hyper_parameter: dict = {'seed': 0}
@@ -42,8 +42,7 @@ class ExecutionTest(unittest.TestCase):
 
         # create Execution
         self._ex = ex(self._user_id, self._task_id, self.__task_progress_callback, self._dataset_path,
-                      self._result_path, self._subspace_generation, self._algorithms, self.__metric_callback,
-                      self._data_dimensions_count)
+                      self._result_path, self._subspace_generation, self._algorithms, self.__metric_callback)
 
     def tearDown(self) -> None:
         self._ex = None

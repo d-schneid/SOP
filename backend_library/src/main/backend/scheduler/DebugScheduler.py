@@ -1,7 +1,7 @@
 from typing import Callable, Type
 
-from backend.scheduler.Schedulable import Schedulable
-from backend.scheduler.Scheduler import Scheduler
+from backend_library.src.main.backend.scheduler.Schedulable import Schedulable
+from backend_library.src.main.backend.scheduler.Scheduler import Scheduler
 
 
 class DebugScheduler(Scheduler):
