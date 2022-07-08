@@ -41,4 +41,4 @@ class Algorithm(models.Model):
     objects = AlgorithmManager.from_queryset(AlgorithmQuerySet)()
 
     def __str__(self) -> str:
-        return str(self.name) + " | " + str(self.group)
+        return str(self.name)
