@@ -1,6 +1,4 @@
-import os
-import random
-import string
+from pathlib import Path
 from typing import Optional
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -20,6 +18,13 @@ from experiments.forms.create import AlgorithmUploadForm
 from experiments.forms.edit import AlgorithmEditForm
 from experiments.models import Algorithm
 from sop.settings import MEDIA_ROOT
+from experiments.services import (
+    save_temp_algorithm,
+    delete_temp_algorithm,
+    get_signature_of_algorithm,
+)
+
+ALGORITHM_ROOT_DIR = MEDIA_ROOT / "algorithms"
 
 
 class AlgorithmOverview(LoginRequiredMixin, ListView):
@@ -44,13 +49,6 @@ class AlgorithmOverview(LoginRequiredMixin, ListView):
         return context
 
 
-def get_signature_of_algorithm(path: str) -> str:
-    algorithm_parameters = AlgorithmLoader.get_algorithm_parameters(path)
-    keys_values = algorithm_parameters.items()
-    string_dict = {key: str(value) for key, value in keys_values}
-    return ",".join(string_dict.values())
-
-
 class AlgorithmUploadView(LoginRequiredMixin, CreateView):
     model = Algorithm
     form_class = AlgorithmUploadForm
@@ -58,9 +56,15 @@ class AlgorithmUploadView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy("algorithm_overview")
 
     def form_valid(self, form) -> HttpResponse:
-        temp_path: str = self.request.FILES["path"].temporary_file_path()
+        file: InMemoryUploadedFile = self.request.FILES["path"]
 
-        error: Optional[str] = AlgorithmLoader.is_algorithm_valid(temp_path)
+        temp_path: Path = save_temp_algorithm(self.request.user, file)
+        AlgorithmLoader.set_algorithm_root_dir(str(ALGORITHM_ROOT_DIR))
+        AlgorithmLoader.ensure_root_dir_in_path()
+        error: Optional[str] = AlgorithmLoader.is_algorithm_valid(str(temp_path))
+        if error is not None:
+            form.instance.signature = get_signature_of_algorithm(str(temp_path))
+        delete_temp_algorithm(temp_path)
 
         if error is not None:
             # add the error to the form and display it as invalid
@@ -69,7 +73,6 @@ class AlgorithmUploadView(LoginRequiredMixin, CreateView):
 
         elif error is None:
             form.instance.user = self.request.user
-            form.instance.signature = get_signature_of_algorithm(temp_path)
             return super(AlgorithmUploadView, self).form_valid(form)
 
 

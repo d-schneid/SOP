@@ -19,10 +19,10 @@ class CategoricalColumnRemoverTest(unittest.TestCase):
         # Remove Categorical data
         cleaned_cat_dataset1: np.ndarray = np.array([[-132., None], [0., None], [1., None]])
         np.testing.assert_array_equal(cleaned_cat_dataset1,
-                                      self._categorical_handler.do_cleaning(self._ds._cat_dataset1))
+                                      self._categorical_handler.do_cleaning(self._ds.cat_dataset1))
 
         # All columns are categorical -> return empty array
-        self.assertEqual(0, self._categorical_handler.do_cleaning(self._ds._cat_dataset2).size)
+        self.assertEqual(0, self._categorical_handler.do_cleaning(self._ds.cat_dataset2).size)
 
         # No categorical data -> Dont do anything
         np.testing.assert_array_equal(self._ds.dataset4,

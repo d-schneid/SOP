@@ -1,6 +1,6 @@
 from django import forms
 
-from experiments.models import Algorithm, Dataset
+from experiments.models import Algorithm, Dataset, Experiment
 
 
 class AlgorithmEditForm(forms.ModelForm):
@@ -27,7 +27,14 @@ class DatasetEditForm(forms.ModelForm):
 
 
 class ExperimentEditForm(forms.ModelForm):
-    pass
+    class Meta:
+        model = Experiment
+        fields = ("display_name",)
+        widgets = {
+            "display_name": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "Experiment name"}
+            )
+        }
 
 
 class ExecutionEditForm(forms.ModelForm):

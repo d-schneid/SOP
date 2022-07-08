@@ -13,6 +13,8 @@ from experiments.views.dataset import (
     DatasetDeleteView,
     DatasetEditView
 )
+from experiments.views.experiment import ExperimentOverview, ExperimentCreateView, \
+    ExperimentDeleteView, ExperimentEditView
 
 urlpatterns = [
     # Algorithm URLs
@@ -52,4 +54,13 @@ urlpatterns = [
          name="dataset_upload"),
     path("dataset/<int:pk>/delete/", DatasetDeleteView.as_view(), name="dataset_delete"),
     path("dataset/<int:pk>/edit/", DatasetEditView.as_view(), name="dataset_edit"),
+
+    # Experiment URLs
+    path("experiment/", RedirectView.as_view(pattern_name="experiment_overview", permanent=True)),
+    path("experiment/overview/", RedirectView.as_view(pattern_name="experiment_overview_sorted", permanent=True),
+         {"sort": "name"}, name="experiment_overview"),
+    path("experiment/overview/sort-by=<str:sort>/", ExperimentOverview.as_view(), name="experiment_overview_sorted"),
+    path("experiment/create/", ExperimentCreateView.as_view(), name="experiment_create"),
+    path("experiment/<int:pk>/delete/", ExperimentDeleteView.as_view(), name="experiment_delete"),
+    path("experiment/<int:pk>/edit/", ExperimentEditView.as_view(), name="experiment_edit")
 ]

@@ -1,5 +1,6 @@
 import random
 import string
+from abc import ABC
 from typing import Iterable, Dict, List
 
 import numpy as np
@@ -10,9 +11,9 @@ from backend_library.src.main.backend.task.execution.subspace.SubspaceGeneration
 from backend_library.src.main.backend.task.execution.subspace.SubspaceSizeDistribution import SubspaceSizeDistribution
 
 
-class RandomizedSubspaceGeneration(SubspaceGenerationDescription):
+class RandomizedSubspaceGeneration(SubspaceGenerationDescription, ABC):
     def __init__(self, size_distr: SubspaceSizeDistribution, subspace_amount: int, seed: int):
-        self._rnd: np.random.Generator = np.random.Generator(np.random.bit_generator.PCG64(seed))
+        self._rnd: np.random.Generator = np.random.Generator(np.random.PCG64(seed))
         self._size_distr: SubspaceSizeDistribution = size_distr
         self._subspace_amount: int = subspace_amount
 

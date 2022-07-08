@@ -9,6 +9,8 @@ from typing import Callable, Optional
 from typing import List
 from collections.abc import Iterable
 
+import pandas as pd
+
 from backend_library.src.main.backend.task.Task import Task
 from backend_library.src.main.backend.task.TaskState import TaskState
 from backend_library.src.main.backend.task.TaskHelper import TaskHelper
@@ -31,10 +33,11 @@ class Execution(Task, ABC):
 
     def __init__(self, user_id: int, task_id: int, task_progress_callback: Callable[[int, TaskState, float], None],
                  dataset_path: str, result_path: str, subspace_generation: SubspaceGenerationDescription,
-                 algorithms: Iterable[ParameterizedAlgorithm], metric_callback: Callable[[Execution], None]):
+                 algorithms: Iterable[ParameterizedAlgorithm], metric_callback: Callable[[Execution], None],
+                 data_dimensions_count: int):
         """
-        :param user_id: The ID of the user belonging to the Execution.
-        :param task_id: The ID of the task.
+        :param user_id: The ID of the user belonging to the Execution. Has to be at least -1.
+        :param task_id: The ID of the task. Has to be at least -1.
         :param task_progress_callback: The Execution uses this callback to return its progress.
         :param dataset_path: The absolute path to the cleaned dataset which will be used for cleaning.
         (path ends with .csv)
@@ -55,17 +58,20 @@ class Execution(Task, ABC):
         self.__fill_algorithms_directory_name()
         self.__generate_file_system_structure()
         self._zipped_result_path: str = self._result_path + ".zip"
+
         # further private variables
         self._has_failed_element: bool = False
         self._finished_execution_element_count: int = 0
         self._metric_finished: bool = False
+
         # generate subspaces
-        self._subspaces: Iterable[Subspace] = self._subspace_generation.generate()
+        self._subspaces: Iterable[Subspace] = self._subspace_generation.generate(data_dimensions_count)
         self._subspaces_count = TaskHelper.iterable_length(self._subspaces)
         self._total_execution_element_count: int = self._subspaces_count * TaskHelper.iterable_length(algorithms)
+
         # generate execution_subspaces
         self._execution_subspaces: List[ExecutionSubspace] = list()
-        self.__generate_execution_subspaces()
+
         # shared memory
         self._shared_memory_name: str = ""
 
@@ -85,11 +91,11 @@ class Execution(Task, ABC):
 
             if (algorithm_display_name_dict.get(display_name)) is None:
                 algorithm.directory_name_in_execution = display_name
+                algorithm_display_name_dict[algorithm.directory_name_in_execution] = 0
             else:
                 algorithm.directory_name_in_execution = display_name + " (" \
                                                         + algorithm_display_name_dict[display_name] + ")"
-
-            algorithm_display_name_dict[algorithm.directory_name_in_execution] += 1
+                algorithm_display_name_dict[algorithm.directory_name_in_execution] += 1
 
     # Generates all missing folders of the file system structure of this execution
     def __generate_file_system_structure(self) -> None:
@@ -140,9 +146,9 @@ class Execution(Task, ABC):
         if self.__does_zip_exists():
             self._task_progress_callback(self._task_id, TaskState.FINISHED, 1.0)
             return
-        scheduler: Scheduler = Scheduler.get_instance()
-        # you can not schedule something that is not schedulable
-        # scheduler.schedule(Execution)
+
+        # create execution subspaces so that they can schedule their execution elements
+        self.__generate_execution_subspaces()
 
     def __does_zip_exists(self) -> bool:
         """

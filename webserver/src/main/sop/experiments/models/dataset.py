@@ -19,7 +19,7 @@ class Dataset(models.Model):
 
     name = models.CharField(max_length=80)
     description = models.TextField(max_length=255, blank=True)
-    upload_date = models.DateTimeField(default=datetime.now())
+    upload_date = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE)
     datapoints_total = models.IntegerField()

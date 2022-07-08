@@ -1,10 +1,11 @@
 import math
+from abc import ABC
 from typing import Dict
 
 from backend_library.src.main.backend.task.execution.subspace.SubspaceSizeDistribution import SubspaceSizeDistribution
 
 
-class UniformSubspaceDistribution(SubspaceSizeDistribution):
+class UniformSubspaceDistribution(SubspaceSizeDistribution, ABC):
     def __init__(self, subspace_size_min: int, subspace_size_max: int):
         assert subspace_size_min <= subspace_size_max
         self._subspace_size_min: int = subspace_size_min

@@ -51,9 +51,8 @@ class ExecutionSubspace:
         :return: None
         """
         for algorithm in algorithms:
-            result_path: str = sys.path.append \
-                (os.path.join(self._execution.zip_result_path,
-                              algorithm.directory_name_in_execution))  # TODO: TEST THIS!
+            result_path: str = os.path.join(self._execution.zip_result_path,
+                                            algorithm.directory_name_in_execution)  # TODO: TEST THIS!
             self._execution_elements.append(ExecutionElement.ExecutionElement(self, algorithm, result_path))
 
     def __schedule_execution_elements(self) -> None:
