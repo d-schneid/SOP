@@ -24,13 +24,13 @@ class RandomizedSubspaceGeneration(SubspaceGenerationDescription, ABC):
         size_counts: Dict[int, int] = self._size_distr.get_subspace_sizes(self._subspace_amount, dataset_total_dimension_count)
         result: List[Subspace] = list()
         for k, v in size_counts.items():
-            result.extend(self._generate_subspaces_of_size(k, v, dataset_total_dimension_count))
+            result.extend(self.__generate_subspaces_of_size(k, v, dataset_total_dimension_count))
         return result
 
-    def _generate_subspaces_of_size(self, size: int, count: int, ds_dim_count: int) -> Iterable[Subspace]:
+    def __generate_subspaces_of_size(self, size: int, count: int, ds_dim_count: int) -> Iterable[Subspace]:
         result: List[Subspace] = list()
         result_bytes: List[bytes] = list()
-        RandomizedSubspaceGeneration._ensure_enough_subspaces(size, count, ds_dim_count)
+        RandomizedSubspaceGeneration.__ensure_enough_subspaces(size, count, ds_dim_count)
         current_mask: np.array = np.concatenate((np.repeat(True, size), np.repeat(False, ds_dim_count - size)))
         while len(result) < count:
             self._rnd.shuffle(current_mask)
@@ -41,5 +41,5 @@ class RandomizedSubspaceGeneration(SubspaceGenerationDescription, ABC):
         return result
 
     @staticmethod
-    def _ensure_enough_subspaces(size: int, count: int, ds_dim_count: int) -> None:
+    def __ensure_enough_subspaces(size: int, count: int, ds_dim_count: int) -> None:
         pass
