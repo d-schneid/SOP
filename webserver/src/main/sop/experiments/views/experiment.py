@@ -3,7 +3,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 
 from authentication.mixins import LoginRequiredMixin
 from experiments.forms.edit import ExperimentEditForm
-from experiments.models import Experiment
+from experiments.models import Experiment, Execution
 from experiments.models.managers import ExperimentQueryset
 
 
@@ -24,7 +24,10 @@ class ExperimentOverview(LoginRequiredMixin, ListView):
         else:
             experiments = experiments.get_sorted_by_name()
 
-        context.update({"models_list": experiments})
+        # Executions
+        execution_set = Execution.objects.all()
+
+        context.update({"models_list": experiments, "execution_set": execution_set})
         return context
 
 
