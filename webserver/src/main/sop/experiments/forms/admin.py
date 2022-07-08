@@ -7,7 +7,7 @@ from django import forms
 from experiments.models import Algorithm
 from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from sop.settings import MEDIA_ROOT
-from experiments.services import (
+from experiments.services.algorithm import (
     save_temp_algorithm,
     delete_temp_algorithm,
     get_signature_of_algorithm,
