@@ -103,16 +103,17 @@ class DatasetCleaning(Task, Schedulable, ABC):
             self._task_progress_callback(self._task_id, TaskState.FINISHED_WITH_ERROR, 1.0)
             return
 
-        cleaned_dataset: np.ndarray = cleaning_pipeline_result.astype(
-            np.float32)  # cast ndarray to float32 # TODO: Vllt copy=False
-
-        if TaskHelper.is_float_csv(cleaned_dataset):
-            self.__store_cleaned_dataset(cleaned_dataset)
-            self._task_progress_callback(self._task_id, TaskState.FINISHED, 1.0)
-        else:
-            error_message: str = "Error: Type != float32 in cleaned_file"
-            TaskHelper.save_error_csv(self._cleaned_dataset_path, error_message)
+        try:
+            cleaned_dataset: np.ndarray = cleaning_pipeline_result.astype(
+                np.float32)  # cast ndarray to float32 # TODO: Vllt copy=False
+        except ValueError as e:
+            TaskHelper.save_error_csv("Error: Cleaning result contained values that were not float32: " + str(e))
             self._task_progress_callback(self._task_id, TaskState.FINISHED_WITH_ERROR, 1.0)
+            return
+
+        self.__store_cleaned_dataset(cleaned_dataset)
+        self._task_progress_callback(self._task_id, TaskState.FINISHED, 1.0)
+
 
     # do_work #############################################
     def __delete_old_error_file(self) -> None:

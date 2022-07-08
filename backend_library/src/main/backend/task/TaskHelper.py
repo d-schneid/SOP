@@ -31,18 +31,6 @@ class TaskHelper:
         return path + ".error"
 
     @staticmethod
-    def is_float_csv(csv_to_check: np.ndarray) -> bool:
-        """ Checks if the array only contains float_32.
-        The parsing of the values into float_32 has to be done before calling this method.
-        :param csv_to_check: The array that should be checked.
-        :return: True if only float_32
-        """
-        dtype: np.dtype = csv_to_check.dtype
-        if dtype == np.float32:
-            return True
-        return False
-
-    @staticmethod
     def create_directory(path: str) -> None:
         """
         :param path: The absolute path where the new directory will be created
