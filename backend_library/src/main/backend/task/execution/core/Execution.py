@@ -16,7 +16,7 @@ from backend_library.src.main.backend.task.TaskState import TaskState
 from backend_library.src.main.backend.task.TaskHelper import TaskHelper
 from backend_library.src.main.backend.task.execution.subspace.SubspaceGenerationDescription import \
     SubspaceGenerationDescription
-from backend_library.src.main.backend.task.execution.core.ExecutionSubspace import ExecutionSubspace
+from backend_library.src.main.backend.task.execution.core import ExecutionSubspace
 from backend_library.src.main.backend.scheduler.Scheduler import Scheduler
 from backend_library.src.main.backend.task.execution.ResultZipper import ResultZipper
 from backend_library.src.main.backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
@@ -71,7 +71,6 @@ class Execution(Task, ABC):
 
         # generate execution_subspaces
         self._execution_subspaces: List[ExecutionSubspace] = list()
-        self.__generate_execution_subspaces()
 
         # shared memory
         self._shared_memory_name: str = ""
@@ -147,9 +146,9 @@ class Execution(Task, ABC):
         if self.__does_zip_exists():
             self._task_progress_callback(self._task_id, TaskState.FINISHED, 1.0)
             return
-        scheduler: Scheduler = Scheduler.get_instance()
-        # you can not schedule something that is not schedulable
-        # scheduler.schedule(Execution)
+
+        # create execution subspaces so that they can schedule their execution elements
+        self.__generate_execution_subspaces()
 
     def __does_zip_exists(self) -> bool:
         """
