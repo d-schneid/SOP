@@ -10,7 +10,7 @@ class TaskHelperTest(unittest.TestCase):
     new_dir_path: str = os.path.join(dir_name, "new_dir")
 
     def tearDown(self):
-        if not os.path.isdir(self.new_dir_path):
+        if os.path.isdir(self.new_dir_path):
             os.rmdir(self.new_dir_path)
 
     def test_convert_to_error_csv_path(self):
@@ -20,26 +20,6 @@ class TaskHelperTest(unittest.TestCase):
         string2: str = "PSE IST DIE BESTE ERFINDUNG DER WELT"
         self.assertEqual("PSE IST DIE BESTE ERFINDUNG DER WELT.error",
                          TaskHelper.convert_to_error_csv_path(string2))  # add assertion here
-
-    def test_is_float_csv(self):
-        # Only float32 values -> true
-        float32_array: np.ndarray = np.array([127, -128, -127], dtype=np.float32)
-        self.assertTrue(TaskHelper.is_float_csv(float32_array))
-
-        # Objects values -> false
-        object_array: np.ndarray = np.array([127, -128, -127], dtype=np.object)
-        self.assertFalse(TaskHelper.is_float_csv(object_array))
-
-        # Int values -> false
-        int_array: np.ndarray = np.array([127, -128, -127], dtype=np.int32)
-        self.assertFalse(TaskHelper.is_float_csv(int_array))
-
-        # Empty array
-        empty_float32_array: np.ndarray = np.array([], dtype=np.float32)
-        self.assertTrue(TaskHelper.is_float_csv(empty_float32_array))
-
-        empty_object_array: np.ndarray = np.array([], dtype=np.object)
-        self.assertFalse(TaskHelper.is_float_csv(empty_object_array))
 
     def test_create_directory(self):
         TaskHelper.create_directory(self.new_dir_path)
