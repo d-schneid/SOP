@@ -61,7 +61,7 @@ default:
     - apt-get -yq install software-properties-common
     - add-apt-repository -y ppa:deadsnakes/ppa
     - apt -y install apt-utils
-    - apt -y install net-tools python3.10 python3-pip mysql-client libmysqlclient-dev
+    - apt -y install net-tools python3.10 python3-pip mysql-client libmysqlclient-dev python3.10-distutils python3.10-dev
     - apt -y upgrade
     - "[ ! -d 'venv3.10' ] && pip3 install virtualenv && virtualenv venv3.10 -p python3.10"
     - ls
