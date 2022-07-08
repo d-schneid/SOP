@@ -2,8 +2,11 @@ import unittest
 from collections.abc import Iterable
 from unittest import mock
 
+import numpy as np
+
 from backend_library.src.main.backend.task.execution.core.Execution import Execution as ex
 from backend_library.src.main.backend.task.TaskState import TaskState
+from backend_library.src.main.backend.task.TaskHelper import TaskHelper
 from backend_library.src.main.backend.task.execution.subspace.RandomizedSubspaceGeneration import \
     RandomizedSubspaceGeneration as rsg
 from backend_library.src.main.backend.task.execution.subspace.UniformSubspaceDistribution import \
@@ -38,7 +41,9 @@ class ExecutionTest(unittest.TestCase):
         # parameterized algorithms
         self._hyper_parameter: dict = {'seed': 0}
         self._algorithms: Iterable[ParameterizedAlgorithm] = \
-            iter([ParameterizedAlgorithm("path", self._hyper_parameter, "display_name")])
+            iter([ParameterizedAlgorithm("path", self._hyper_parameter, "display_name"),
+                  ParameterizedAlgorithm("path2", self._hyper_parameter, "display_name")])
+        print("HELP: " + str(TaskHelper.iterable_length(self._algorithms)))
 
         # create Execution
         self._ex = ex(self._user_id, self._task_id, self.__task_progress_callback, self._dataset_path,
@@ -55,6 +60,15 @@ class ExecutionTest(unittest.TestCase):
         self.assertEqual(self._result_path, self._ex.result_path)
         self.assertEqual(self._algorithms, self._ex.algorithms)
         self.assertEqual(self._result_path + ".zip", self._ex.zip_result_path)
+
+    def test_fill_algorithms_directory_name(self):
+        print("algorithms amount: " + str(TaskHelper.iterable_length(self._ex._algorithms)))
+
+        iter = self._ex._algorithms.__iter__()
+        print("HELP" + str(TaskHelper.iterable_length(self._algorithms)))
+        self.assertEqual(next(iter).display_name, "display_name")
+        self.assertEqual(next(iter).display_name, "display_name (1)")
+        # TODO
 
 
 if __name__ == '__main__':
