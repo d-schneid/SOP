@@ -16,17 +16,16 @@ from experiments.services.algorithm import (
 ALGORITHM_ROOT_DIR = MEDIA_ROOT / "algorithms"
 
 
-class AdminAlgorithm(forms.ModelForm):
+class AdminAddAlgorithmForm(forms.ModelForm):
     class Meta:
         model = Algorithm
         exclude = ["signature"]
 
-    def clean(self):
-        cleaned_data = self.cleaned_data
-        file: TemporaryUploadedFile = cleaned_data.get('path')
+    def clean_path(self):
+        cleaned_file: TemporaryUploadedFile = self.cleaned_data.get('path')
 
         # current user is set in ModelAdmin of Algorithm
-        temp_path: Path = save_temp_algorithm(self.current_user, file)
+        temp_path: Path = save_temp_algorithm(self.current_user, cleaned_file)
         AlgorithmLoader.set_algorithm_root_dir(str(ALGORITHM_ROOT_DIR))
         AlgorithmLoader.ensure_root_dir_in_path()
         error: Optional[str] = AlgorithmLoader.is_algorithm_valid(str(temp_path))
@@ -39,4 +38,9 @@ class AdminAlgorithm(forms.ModelForm):
 
         elif error is None:
             # No need to assign user, admin can decide to which user this algorithm belongs to
-            return cleaned_data
+            return cleaned_file
+
+class AdminChangeAlgorithmForm(forms.ModelForm):
+    class Meta:
+        model = Algorithm
+        exclude = ["path", "signature"]
