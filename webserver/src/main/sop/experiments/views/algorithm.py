@@ -18,7 +18,7 @@ from experiments.forms.create import AlgorithmUploadForm
 from experiments.forms.edit import AlgorithmEditForm
 from experiments.models import Algorithm
 from sop.settings import MEDIA_ROOT
-from experiments.services import (
+from experiments.services.algorithm import (
     save_temp_algorithm,
     delete_temp_algorithm,
     get_signature_of_algorithm,
@@ -62,7 +62,7 @@ class AlgorithmUploadView(LoginRequiredMixin, CreateView):
         AlgorithmLoader.set_algorithm_root_dir(str(ALGORITHM_ROOT_DIR))
         AlgorithmLoader.ensure_root_dir_in_path()
         error: Optional[str] = AlgorithmLoader.is_algorithm_valid(str(temp_path))
-        if error is not None:
+        if error is None:
             form.instance.signature = get_signature_of_algorithm(str(temp_path))
         delete_temp_algorithm(temp_path)
 

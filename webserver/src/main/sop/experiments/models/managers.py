@@ -58,6 +58,9 @@ class ExperimentQueryset(models.QuerySet):
     def get_by_user(self, request_user: User):
         return self.filter(user=request_user)
 
+    def get_with_dataset(self, request_dataset):
+        return self.filter(dataset=request_dataset)
+
 
 class ExecutionManager(models.Manager):
     pass
