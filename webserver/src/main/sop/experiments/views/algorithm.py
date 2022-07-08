@@ -1,9 +1,10 @@
 import os
-import random
-import string
+import shutil
+from pathlib import Path
 from typing import Optional
 
-from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.files.uploadedfile import UploadedFile, \
+    TemporaryUploadedFile, InMemoryUploadedFile
 from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import (
@@ -15,11 +16,14 @@ from django.views.generic import (
 )
 
 from authentication.mixins import LoginRequiredMixin
+from authentication.models import User
 from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from experiments.forms.create import AlgorithmUploadForm
 from experiments.forms.edit import AlgorithmEditForm
 from experiments.models import Algorithm
 from sop.settings import MEDIA_ROOT
+
+ALGORITHM_ROOT_DIR = MEDIA_ROOT / "algorithms"
 
 
 class AlgorithmOverview(LoginRequiredMixin, ListView):
@@ -51,6 +55,37 @@ def get_signature_of_algorithm(path: str) -> str:
     return ",".join(string_dict.values())
 
 
+def save_temp_algorithm(user: User, file: UploadedFile):
+    temp_dir = ALGORITHM_ROOT_DIR / "temp" / f"{user.id}"
+    temp_file_path = temp_dir / file.name
+
+    if not os.path.exists(temp_dir):
+        os.makedirs(temp_dir)
+
+    # save contents of uploaded file into temp file
+    with open(temp_file_path, "wb") as temp_file:
+        for chunk in file.chunks():
+            temp_file.write(chunk)
+
+    return temp_file_path
+
+
+def delete_temp_algorithm(temp_file_path: Path):
+    parent_folder = temp_file_path.parent
+    assert temp_file_path.parent.parent == ALGORITHM_ROOT_DIR / "temp"
+
+    if not os.path.isdir(temp_file_path.parent):
+        return
+
+    # remove temp file
+    temp_file_path.unlink()
+
+    # remove parent dir if it has no files in it (ignore directories in it, since
+    # __pycache__ could have been created)
+    if not any([os.path.isfile(file) for file in os.listdir(parent_folder)]):
+        shutil.rmtree(parent_folder)
+
+
 class AlgorithmUploadView(LoginRequiredMixin, CreateView):
     model = Algorithm
     form_class = AlgorithmUploadForm
@@ -58,9 +93,15 @@ class AlgorithmUploadView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy("algorithm_overview")
 
     def form_valid(self, form) -> HttpResponse:
-        temp_path: str = self.request.FILES["path"].temporary_file_path()
+        file: InMemoryUploadedFile = self.request.FILES["path"]
 
-        error: Optional[str] = AlgorithmLoader.is_algorithm_valid(temp_path)
+        temp_path: Path = save_temp_algorithm(self.request.user, file)
+        AlgorithmLoader.set_algorithm_root_dir(str(ALGORITHM_ROOT_DIR))
+        AlgorithmLoader.ensure_root_dir_in_path()
+        error: Optional[str] = AlgorithmLoader.is_algorithm_valid(str(temp_path))
+        if error is not None:
+            form.instance.signature = get_signature_of_algorithm(str(temp_path))
+        delete_temp_algorithm(temp_path)
 
         if error is not None:
             # add the error to the form and display it as invalid
@@ -69,7 +110,6 @@ class AlgorithmUploadView(LoginRequiredMixin, CreateView):
 
         elif error is None:
             form.instance.user = self.request.user
-            form.instance.signature = get_signature_of_algorithm(temp_path)
             return super(AlgorithmUploadView, self).form_valid(form)
 
 

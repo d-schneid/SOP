@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Edit experiment
+{% endblock %}
+
+{% block content %}
+    <form method="post">{% csrf_token %}
+        {{ form.non_field_errors }}
+        <div class="card shadow mt-2">
+            <div class="card-header bg-dark d-flex" id="experiment_{{ dataset.pk }}">
+                <div>{{ form.name.errors }}</div>
+                <div><label for="{{ form.name.id_for_label }}"></label></div>
+                <div class="flex-fill">{{ form.display_name }}</div>
+            </div>
+
+            <div id="collapse_{{ experiment.pk }}"
+                 class="collapse show"
+                 aria-labelledby="experiment_{{ experiment.pk }}"
+                 data-parent="#dataset_accordion">
+                <div class="card-body d-flex flex-column">
+                    {{ form.description }}
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <div class="d-flex">
+                            <a href="{% url 'experiment_overview' %}"
+                               class="btn btn-dark">Cancel</a>
+                            <input class="btn btn-warning ml-auto" type="submit" value="Update">
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </form>
+{% endblock %}

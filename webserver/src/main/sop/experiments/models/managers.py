@@ -5,6 +5,10 @@ from django.db.models.functions import Lower
 from authentication.models import User
 
 
+class AlgorithmManager(models.Manager):
+    pass
+
+
 class AlgorithmQuerySet(models.QuerySet):
 
     # TODO: type hints
@@ -20,18 +24,9 @@ class AlgorithmQuerySet(models.QuerySet):
     def get_by_user_and_public(self, user):
         return self.filter(Q(user_id__exact=user.id) | Q(user_id__exact=None))
 
-
     def get_sorted_by_upload_date(self):
         # latest uploaded algorithms first
-        return self.order_by('-upload_date')
-
-
-class AlgorithmManager(models.Manager):
-    pass
-
-
-class ExecutionManager(models.Manager):
-    pass
+        return self.order_by("-upload_date")
 
 
 class DatasetManager(models.Manager):
@@ -40,10 +35,29 @@ class DatasetManager(models.Manager):
 
 class DatasetQueryset(models.QuerySet):
     def get_sorted_by_name(self):
-        return self.order_by(Lower('name'))
+        return self.order_by(Lower("name"))
 
     def get_sorted_by_upload_time(self):
         return self.order_by("-upload_date")
 
     def get_by_user(self, request_user: User):
         return self.filter(user=request_user)
+
+
+class ExperimentManager(models.Manager):
+    pass
+
+
+class ExperimentQueryset(models.QuerySet):
+    def get_sorted_by_name(self):
+        return self.order_by(Lower("display_name"))
+
+    def get_sorted_by_creation_date(self):
+        return self.order_by("-creation_date")
+
+    def get_by_user(self, request_user: User):
+        return self.filter(user=request_user)
+
+
+class ExecutionManager(models.Manager):
+    pass
