@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Delete experiment
+{% endblock %}
+
+{% block content %}
+    <form method="post">{% csrf_token %}
+        <p>Are you sure you want to delete "{{ object }}"?</p>
+        {{ form }}
+        <div class="d-flex">
+            <a href="{% url 'experiment_overview' %}" class="btn btn-dark">Cancel</a>
+            <input class="btn btn-dark ml-auto" type="submit" value="Confirm">
+        </div>
+    </form>
+{% endblock %}
