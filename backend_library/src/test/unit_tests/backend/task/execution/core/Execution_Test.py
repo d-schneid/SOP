@@ -12,7 +12,6 @@ from backend_library.src.main.backend.task.execution.ParameterizedAlgorithm impo
 
 
 class ExecutionTest(unittest.TestCase):
-
     _user_id: int = 214
     _task_id: int = 1553
     _dataset_path: str = "dataset_path"
@@ -27,21 +26,24 @@ class ExecutionTest(unittest.TestCase):
         pass
 
     def setUp(self) -> None:
-
         # subspace generation
         self._subspace_size_min: int = 1
-        self._subspace_size_max: int = 3
+        self._subspace_size_max: int = 5
         self._subspace_amount = 4
         self._subspace_seed = 42
         self._subspace_generation: rsg = rsg(usd(self._subspace_size_min, self._subspace_size_max),
                                              self._subspace_amount, self._subspace_seed)
+        self._data_dimensions_count: int = 10
 
         # parameterized algorithms
-        self._algorithms: Iterable[ParameterizedAlgorithm] = iter([])
+        self._hyper_parameter: dict = {'seed': 0}
+        self._algorithms: Iterable[ParameterizedAlgorithm] = \
+            iter([ParameterizedAlgorithm("path", self._hyper_parameter, "display_name")])
 
         # create Execution
         self._ex = ex(self._user_id, self._task_id, self.__task_progress_callback, self._dataset_path,
-                      self._result_path, self._subspace_generation, self._algorithms, self.__metric_callback)
+                      self._result_path, self._subspace_generation, self._algorithms, self.__metric_callback,
+                      self._data_dimensions_count)
 
     def tearDown(self) -> None:
         self._ex = None

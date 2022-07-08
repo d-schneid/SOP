@@ -33,7 +33,8 @@ class Execution(Task, ABC):
 
     def __init__(self, user_id: int, task_id: int, task_progress_callback: Callable[[int, TaskState, float], None],
                  dataset_path: str, result_path: str, subspace_generation: SubspaceGenerationDescription,
-                 algorithms: Iterable[ParameterizedAlgorithm], metric_callback: Callable[[Execution], None]):
+                 algorithms: Iterable[ParameterizedAlgorithm], metric_callback: Callable[[Execution], None],
+                 data_dimensions_count: int):
         """
         :param user_id: The ID of the user belonging to the Execution. Has to be at least -1.
         :param task_id: The ID of the task. Has to be at least -1.
@@ -63,13 +64,8 @@ class Execution(Task, ABC):
         self._finished_execution_element_count: int = 0
         self._metric_finished: bool = False
 
-        # find dataset dimension amount
-        assert os.path.isfile(self._dataset_path)
-        df_first_row = pd.read_csv(self._dataset_path, nrows=1)
-        self._dimension_count = df_first_row.shape(1)
-
         # generate subspaces
-        self._subspaces: Iterable[Subspace] = self._subspace_generation.generate(self._dimension_count)
+        self._subspaces: Iterable[Subspace] = self._subspace_generation.generate(data_dimensions_count)
         self._subspaces_count = TaskHelper.iterable_length(self._subspaces)
         self._total_execution_element_count: int = self._subspaces_count * TaskHelper.iterable_length(algorithms)
 
@@ -96,11 +92,11 @@ class Execution(Task, ABC):
 
             if (algorithm_display_name_dict.get(display_name)) is None:
                 algorithm.directory_name_in_execution = display_name
+                algorithm_display_name_dict[algorithm.directory_name_in_execution] = 0
             else:
                 algorithm.directory_name_in_execution = display_name + " (" \
                                                         + algorithm_display_name_dict[display_name] + ")"
-
-            algorithm_display_name_dict[algorithm.directory_name_in_execution] += 1
+                algorithm_display_name_dict[algorithm.directory_name_in_execution] += 1
 
     # Generates all missing folders of the file system structure of this execution
     def __generate_file_system_structure(self) -> None:
