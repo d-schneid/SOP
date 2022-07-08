@@ -25,39 +25,43 @@
 {% endblock %}
 
 {% block card-body %}
-    {{ model.creation_date }}
+    <div class="d-flex">
+        <a>{{ model.creation_date }}</a>
+
+        <a href="{% url 'execution_create' model.pk %}"
+           class="btn btn-success ml-auto">Create Execution</a>
+    </div>
+    <div class="d-flex">
+        <a>Dataset: {{ model.dataset.name }}</a>
+    </div>
+    <div class="d-flex">
+        <a>
+            Algorithms:
+            {{ model.algorithms.all|join:", " }}
+        </a>
+    </div>
 {% endblock %}
 
 {% block card-footer %}
-    {% for execution in execution_set %}
-        {% if execution.experiment.pk == model.pk %}
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item">
-                    <div class="d-flex">
-                        <a class="flex-fill">Execution {{ forloop.counter }}</a>
-                        <a class="flex-fill">{{ execution.status }}</a>
-                        <a class="flex-fill">{{ execution.progess }}</a>
-                        <a class="flex-fill">{{ execution.creation_date }}</a>
-                    </div>
-                </li>
-            </ul>
-        {% endif %}
+    {% for execution in model.execution_set.all %}
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+                <div class="d-flex">
+                    <a class="flex-fill">Execution {{ forloop.counter }}</a>
+                    <a class="flex-fill">{{ execution.status }}</a>
+                    <a class="flex-fill">{{ execution.progess }}</a>
+                    <a class="flex-fill">{{ execution.creation_date }}</a>
+                </div>
+            </li>
+        </ul>
     {% endfor %}
     <ul class="list-group list-group-flush">
         <li class="list-group-item">
             <div class="d-flex flex-row-reverse">
-                <a href="{% url 'execution_create' model.pk %}"
-                   class="btn btn-success mr-3">Create Execution</a>
-            </div>
-        </li>
-    </ul>
-    <ul class="list-group list-group-flush">
-        <li class="list-group-item">
-            <div class="d-flex flex-row-reverse">
                 <a href="{% url 'experiment_delete' model.pk %}"
-                   class="btn btn-danger mr-3">Delete</a>
+                   class="btn btn-danger mr-3">Delete Experiment</a>
                 <a href="{% url 'experiment_edit' model.pk %}"
-                   class="btn btn-warning mr-3">Edit</a>
+                   class="btn btn-warning mr-3">Edit Experiment</a>
             </div>
         </li>
     </ul>

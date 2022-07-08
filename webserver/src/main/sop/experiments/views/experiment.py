@@ -24,10 +24,7 @@ class ExperimentOverview(LoginRequiredMixin, ListView):
         else:
             experiments = experiments.get_sorted_by_name()
 
-        # Executions
-        execution_set = Execution.objects.all()
-
-        context.update({"models_list": experiments, "execution_set": execution_set})
+        context.update({"models_list": experiments})
         return context
 
 
