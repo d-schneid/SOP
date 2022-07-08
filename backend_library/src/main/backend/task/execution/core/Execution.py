@@ -3,14 +3,18 @@ from __future__ import annotations
 import json
 import multiprocessing
 import os
+import sys
 
+from multiprocessing import shared_memory
 from abc import ABC
 from typing import Callable, Optional
 from typing import List
 from collections.abc import Iterable
 
+import numpy as np
 import pandas as pd
 
+from backend.DataIO import DataIO
 from backend.task.Task import Task
 from backend.task.TaskState import TaskState
 from backend.task.TaskHelper import TaskHelper
@@ -28,8 +32,6 @@ class Execution(Task, ABC):
         A task that is provided by the BackendLibrary.
         When scheduled by the Scheduler it executes an execution with the selected cleaned dataset and algorithms.
     """
-    _cache_dataset_lock = multiprocessing.Lock()
-    _execution_element_finished_lock = multiprocessing.Lock()
 
     def __init__(self, user_id: int, task_id: int, task_progress_callback: Callable[[int, TaskState, float], None],
                  dataset_path: str, result_path: str, subspace_generation: SubspaceGenerationDescription,
@@ -55,6 +57,9 @@ class Execution(Task, ABC):
         self._metric_callback: Callable = metric_callback
 
         # on created logic
+
+        self._cache_dataset_lock = multiprocessing.Lock()
+        self._execution_element_finished_lock = multiprocessing.Lock()
         self.__fill_algorithms_directory_name()
         self.__generate_file_system_structure()
         self._zipped_result_path: str = self._result_path + ".zip"
@@ -198,10 +203,15 @@ class Execution(Task, ABC):
         Load the cleaned dataset, if it isn't loaded into the shared memory yet. \n
         :return: The shared_memory_name of the cleaned dataset.
         """
-        Execution._cache_dataset_lock.acquire()
-        # TODO: Tobias
-        Execution._cache_dataset_lock.release()
-        pass
+        with self._cache_dataset_lock:
+            if self._shared_memory_name is None:
+                data = DataIO.read_cleaned_csv(self._dataset_path)
+                shm = shared_memory.SharedMemory(None, True, sys.getsizeof(data))
+                shared_data = np.ndarray(data.shape, data.dtype, shm.buf)
+                shared_data[:] = data[:]
+                return shm.name
+            else:
+                return self._shared_memory_name
 
     def on_execution_element_finished(self, error: bool) -> None:
         """
@@ -213,14 +223,13 @@ class Execution(Task, ABC):
         if not self._has_failed_element and error:
             self._has_failed_element = True
 
-        Execution._execution_element_finished_lock.acquire()
-        self._finished_execution_element_count += 1
-        if self._finished_execution_element_count == self._total_execution_element_count:
-            self.__unload_dataset()
-            self._metric_callback(self)
-            self._metric_finished = True
-            self.__schedule_result_zipping()
-        Execution._execution_element_finished_lock.release()
+        with self._execution_element_finished_lock:
+            self._finished_execution_element_count += 1
+            if self._finished_execution_element_count == self._total_execution_element_count:
+                self.__unload_dataset()
+                self._metric_callback(self)
+                self._metric_finished = True
+                self.__schedule_result_zipping()
 
     def __unload_dataset(self) -> None:
         """
