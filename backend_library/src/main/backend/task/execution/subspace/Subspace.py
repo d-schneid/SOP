@@ -22,9 +22,5 @@ class Subspace:
         encoded_bytes = base64.urlsafe_b64encode(np.packbits(self.mask).tobytes())
         return bytes.decode(encoded_bytes)[:math.ceil(self.mask.size / 6)]
 
-    def get_size_of_subspace_buffer(self, full_dataset: np.array) -> int:
+    def make_subspace_array(self, full_dataset: np.array) -> np.array:
         pass
-
-    def make_subspace_array(self, full_dataset: np.array, target_buffer : memoryview) -> np.array:
-        pass
-

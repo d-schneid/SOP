@@ -23,7 +23,7 @@ class RandomizedSubspaceGeneration(SubspaceGenerationDescription, ABC):
     def generate(self, dataset_total_dimension_count: int) -> Iterable[Subspace]:
         size_counts: Dict[int, int] = self._size_distr.get_subspace_sizes(self._subspace_amount, dataset_total_dimension_count)
         result: List[Subspace] = list()
-        for k, v in size_counts:
+        for k, v in size_counts.items():
             result.extend(self._generate_subspaces_of_size(k, v, dataset_total_dimension_count))
         return result
 
