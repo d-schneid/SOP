@@ -8,6 +8,8 @@ from experiments.models import Algorithm
 from experiments.models import Dataset
 from authentication.models import User
 
+from experiments.models.managers import ExperimentManager, ExperimentQueryset
+
 
 class Experiment(models.Model):
     """
@@ -22,6 +24,7 @@ class Experiment(models.Model):
     )
     algorithms = models.ManyToManyField(to=Algorithm)
     creation_date = models.DateTimeField(auto_now_add=True)
+    objects = ExperimentManager.from_queryset(ExperimentQueryset)()
 
     class Meta:
         unique_together = ["display_name", "user"]
