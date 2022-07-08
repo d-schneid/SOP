@@ -1,6 +1,6 @@
 import unittest
 
-from backend_library.src.main.backend.task.cleaning.DatasetCleaningStepExceptionHanding \
+from backend.task.cleaning.DatasetCleaningStepExceptionHanding \
     import DatasetCleaningStepExceptionHandling as eh
 from backend_library.src.test.DatasetsForTesting import Datasets as ds
 

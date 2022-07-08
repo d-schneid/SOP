@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Callable
 
-from backend_library.src.main.backend.scheduler.Schedulable import Schedulable
+from backend.scheduler.Schedulable import Schedulable
 from abc import ABC, abstractmethod
 
 
