@@ -211,7 +211,9 @@ class Execution(Task, ABC):
                 shm = shared_memory.SharedMemory(None, True, sys.getsizeof(data))
                 shared_data = np.ndarray(data.shape, data.dtype, shm.buf)
                 shared_data[:] = data[:]
-                return shm.name
+                shm_name = shm.name
+                shm.close()
+                return shm_name
             else:
                 return self._shared_memory_name
 
@@ -238,9 +240,11 @@ class Execution(Task, ABC):
         Unloads the cleaned dataset from shared_memory. \n
         :return: None
         """
-        # TODO: Tobias
-        self._shared_memory_name = ""
-        pass
+        assert self._shared_memory_name is None, "If there is no shred memory currently loaded it can not be unloaded"
+        shm = shared_memory.SharedMemory(self._shared_memory_name)
+        shm.unlink()
+        shm.close()
+        self._shared_memory_name = None
 
     def __schedule_result_zipping(self) -> None:
         """
