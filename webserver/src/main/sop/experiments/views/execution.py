@@ -94,10 +94,8 @@ class ExecutionCreateView(LoginRequiredMixin, CreateView):
         assert subspaces_max >= 0
         subspace_amount: int = form.cleaned_data["subspace_amount"]
         assert subspace_amount > 0
-        try:
-            seed: int = form.cleaned_data["subspace_generation_seed"]
-        except KeyError:
-            seed: int = random.randint(0, 10000000000)
+        seed: int = form.cleaned_data.get("subspace_generation_seed")
+        seed: int = seed if seed is not None else random.randint(0, 10000000000)
         if subspaces_min >= subspaces_max:
             form.errors.update(
                 {
@@ -125,5 +123,6 @@ class ExecutionCreateView(LoginRequiredMixin, CreateView):
         # access to the primary key of this instance and the primary key will be set
         # on the save call in form_valid
         response = super(ExecutionCreateView, self).form_valid(form)
+        assert form.instance.pk is not None
         schedule_backend(form.instance)
         return response
