@@ -12,26 +12,28 @@ from backend_library.src.main.backend.task.execution.subspace.SubspaceSizeDistri
 
 
 class RandomizedSubspaceGeneration(SubspaceGenerationDescription, ABC):
-    def __init__(self, size_distr: SubspaceSizeDistribution, subspace_amount: int, seed: int):
+    def __init__(self, size_distr: SubspaceSizeDistribution, dataset_total_dimension_count: int, subspace_amount: int,
+                 seed: int):
         self._rnd: np.random.Generator = np.random.Generator(np.random.PCG64(seed))
+        self.__ds_dim_count = dataset_total_dimension_count
         self._size_distr: SubspaceSizeDistribution = size_distr
         self._subspace_amount: int = subspace_amount
 
     def to_json(self) -> string:
         pass
 
-    def generate(self, dataset_total_dimension_count: int) -> Iterable[Subspace]:
-        size_counts: Dict[int, int] = self._size_distr.get_subspace_sizes(self._subspace_amount, dataset_total_dimension_count)
+    def generate(self) -> Iterable[Subspace]:
+        size_counts: Dict[int, int] = self._size_distr.get_subspace_sizes(self._subspace_amount, self.__ds_dim_count)
         result: List[Subspace] = list()
         for k, v in size_counts.items():
-            result.extend(self.__generate_subspaces_of_size(k, v, dataset_total_dimension_count))
+            result.extend(self.__generate_subspaces_of_size(k, v))
         return result
 
-    def __generate_subspaces_of_size(self, size: int, count: int, ds_dim_count: int) -> Iterable[Subspace]:
+    def __generate_subspaces_of_size(self, size: int, count: int) -> Iterable[Subspace]:
         result: List[Subspace] = list()
         result_bytes: List[bytes] = list()
-        RandomizedSubspaceGeneration.__ensure_enough_subspaces(size, count, ds_dim_count)
-        current_mask: np.array = np.concatenate((np.repeat(True, size), np.repeat(False, ds_dim_count - size)))
+        RandomizedSubspaceGeneration.__ensure_enough_subspaces(size, count, self.__ds_dim_count)
+        current_mask: np.array = np.concatenate((np.repeat(True, size), np.repeat(False, self.__ds_dim_count - size)))
         while len(result) < count:
             self._rnd.shuffle(current_mask)
             current_mask_bytes: bytes = np.packbits(current_mask).tobytes()

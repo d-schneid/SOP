@@ -6,7 +6,7 @@ from backend_library.src.main.backend.task.execution.subspace.Subspace import Su
 
 class SubspaceGenerationDescription(ABC):
     @abstractmethod
-    def generate(self, dataset_total_dimension_count: int) -> Iterable[Subspace]:
+    def generate(self) -> Iterable[Subspace]:
         """
         Generates the Subspaces deterministically. \n
         :return: The generated Subspaces.
