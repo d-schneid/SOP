@@ -9,12 +9,14 @@ from typing import Callable, Optional
 from typing import List
 from collections.abc import Iterable
 
+import pandas as pd
+
 from backend_library.src.main.backend.task.Task import Task
 from backend_library.src.main.backend.task.TaskState import TaskState
 from backend_library.src.main.backend.task.TaskHelper import TaskHelper
 from backend_library.src.main.backend.task.execution.subspace.SubspaceGenerationDescription import \
     SubspaceGenerationDescription
-from backend_library.src.main.backend.task.execution.core import ExecutionSubspace
+from backend_library.src.main.backend.task.execution.core.ExecutionSubspace import ExecutionSubspace
 from backend_library.src.main.backend.scheduler.Scheduler import Scheduler
 from backend_library.src.main.backend.task.execution.ResultZipper import ResultZipper
 from backend_library.src.main.backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
@@ -55,17 +57,26 @@ class Execution(Task, ABC):
         self.__fill_algorithms_directory_name()
         self.__generate_file_system_structure()
         self._zipped_result_path: str = self._result_path + ".zip"
+
         # further private variables
         self._has_failed_element: bool = False
         self._finished_execution_element_count: int = 0
         self._metric_finished: bool = False
+
+        # find dataset dimension amount
+        assert os.path.isfile(self._dataset_path)
+        df_first_row = pd.read_csv(self._dataset_path, nrows=1)
+        self._dimension_count = df_first_row.shape(1)
+
         # generate subspaces
-        self._subspaces: Iterable[Subspace] = self._subspace_generation.generate()
+        self._subspaces: Iterable[Subspace] = self._subspace_generation.generate(self._dimension_count)
         self._subspaces_count = TaskHelper.iterable_length(self._subspaces)
         self._total_execution_element_count: int = self._subspaces_count * TaskHelper.iterable_length(algorithms)
+
         # generate execution_subspaces
         self._execution_subspaces: List[ExecutionSubspace] = list()
         self.__generate_execution_subspaces()
+
         # shared memory
         self._shared_memory_name: str = ""
 

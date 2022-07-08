@@ -16,8 +16,8 @@ class DatasetCleaningTestDoWork(unittest.TestCase):
 
     finished_cleaning: bool = False
 
-    user_id: int = -1
-    task_id: int = -1
+    user_id: int = 1533
+    task_id: int = 24
     priority: int = 9999
 
     def setUp(self) -> None:
@@ -27,7 +27,7 @@ class DatasetCleaningTestDoWork(unittest.TestCase):
 
         if os.path.isfile(self.uncleaned_dataset_path):
             os.remove(self.uncleaned_dataset_path)
-        self._uncleaned_array: np.dnarray = np.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+        self._uncleaned_array: np.ndarray = np.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
         pd.DataFrame(self._uncleaned_array).to_csv(self.uncleaned_dataset_path, index=False)
 
     def tearDown(self) -> None:
@@ -84,11 +84,6 @@ class DatasetCleaningTestInvalidValues(unittest.TestCase):
     dir_name: str = os.getcwd()
     uncleaned_dataset_path: str = os.path.join(dir_name, "uncleaned_dataset.csv")
     cleaned_dataset_path: str = os.path.join(dir_name, "cleaned_dataset.csv")
-
-    finished_cleaning: bool = False
-
-    user_id: int = -1
-    task_id: int = -1
     priority: int = 9999
 
     def task_progress_callback(self, task_id: int, task_state: TaskState, progress: float) -> None:

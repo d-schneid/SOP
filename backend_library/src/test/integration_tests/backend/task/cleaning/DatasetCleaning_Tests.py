@@ -70,6 +70,10 @@ class DatasetCleaningTestNoUncleanedDataset(unittest.TestCase):
                                                                                   self.priority)
 
     def tearDown(self) -> None:
+        if os.path.isfile(self.uncleaned_dataset_path):
+            os.remove(self.uncleaned_dataset_path)
+        if os.path.isfile(self.cleaned_dataset_path):
+            os.remove(self.cleaned_dataset_path)
         self._dc_missing_uncleaned_dataset = None
 
     def task_progress_callback(self, task_id: int, task_state: TaskState, progress: float) -> None:

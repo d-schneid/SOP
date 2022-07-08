@@ -8,9 +8,8 @@ import pandas as pd
 class DataIO:
     @staticmethod
     def read_cleaned_csv(path: str) -> np.ndarray:
-        # TODO: Implement
-        # Test if csv-file consists of only float32. (Finn you could use astype if you want to for this)
-        return np.zeros(0)
+        return DataIO.read_uncleaned_csv(path)
+        # TODO: Test if csv-file consists of only float32. (Finn you could use astype if you want to for this)
 
     @staticmethod
     def read_uncleaned_csv(path: str) -> np.ndarray:
