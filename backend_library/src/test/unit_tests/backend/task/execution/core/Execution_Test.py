@@ -1,3 +1,4 @@
+import os.path
 import unittest
 from collections.abc import Iterable
 from unittest import mock
@@ -18,7 +19,8 @@ class ExecutionTest(unittest.TestCase):
     _user_id: int = 214
     _task_id: int = 1553
     _dataset_path: str = "dataset_path"
-    _result_path: str = "result_path"
+
+    _dir_name: str = os.getcwd()
 
     def __task_progress_callback(self, task_id: int, task_state: TaskState, progress: float) -> None:
         # Empty callback
@@ -29,6 +31,8 @@ class ExecutionTest(unittest.TestCase):
         pass
 
     def setUp(self) -> None:
+        self._result_path: str = os.path.join(self._dir_name, "execution_folder")
+
         # subspace generation
         self._subspace_size_min: int = 1
         self._subspace_size_max: int = 5
@@ -50,6 +54,14 @@ class ExecutionTest(unittest.TestCase):
                   ParameterizedAlgorithm("path3", self._hyper_parameter, self._display_names[2]),
                   ParameterizedAlgorithm("path3", self._hyper_parameter, self._display_names[3])])
 
+        # Delete all folders of the execution structure: BEFORE creating the execution!
+        for dir_name in self._directory_names_in_execution:
+            path: str = os.path.join(self._result_path, dir_name)
+            if os.path.isdir(path):
+                os.rmdir(path)
+        if os.path.isdir(self._result_path):
+            os.rmdir(self._result_path)
+
         # create Execution
         self._ex = ex(self._user_id, self._task_id, self.__task_progress_callback, self._dataset_path,
                       self._result_path, self._subspace_generation, self._algorithms, self.__metric_callback)
@@ -58,6 +70,14 @@ class ExecutionTest(unittest.TestCase):
         self._ex = None
         self._subspace_generation = None
         self._algorithms = None
+
+        # Delete all folders of the execution structure
+        for dir_name in self._directory_names_in_execution:
+            path: str = os.path.join(self._result_path, dir_name)
+            if os.path.isdir(path):
+                os.rmdir(path)
+        if os.path.isdir(self._result_path):
+            os.rmdir(self._result_path)
 
     def test_getter(self):
         self.assertEqual(self._user_id, self._ex.user_id)
@@ -72,6 +92,12 @@ class ExecutionTest(unittest.TestCase):
         self.assertEqual(next(iterable).directory_name_in_execution, self._directory_names_in_execution[1])
         self.assertEqual(next(iterable).directory_name_in_execution, self._directory_names_in_execution[2])
         self.assertEqual(next(iterable).directory_name_in_execution, self._directory_names_in_execution[3])
+
+    def test_generate_file_system_structure(self):
+        self.assertTrue(os.path.isdir(self._result_path))
+        for algorithm in self._algorithms:
+            path: str = os.path.join(self._result_path, algorithm.display_name)
+            self.assertTrue(os.path.isdir(path))
 
 
 if __name__ == '__main__':

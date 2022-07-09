@@ -69,9 +69,9 @@ class Execution(Task, ABC):
         self._metric_finished: bool = False
 
         # generate subspaces
-        self._subspaces: Iterable[Subspace] = self._subspace_generation.generate()
+        self._subspaces: List[Subspace] = list(self._subspace_generation.generate())
         self._subspaces_count = TaskHelper.iterable_length(self._subspaces)
-        self._total_execution_element_count: int = self._subspaces_count * TaskHelper.iterable_length(algorithms)
+        self._total_execution_element_count: int = self._subspaces_count * len(self._algorithms)
 
         # generate execution_subspaces
         self._execution_subspaces: List[ExecutionSubspace] = list()
@@ -111,7 +111,7 @@ class Execution(Task, ABC):
         if not os.path.isdir(self._result_path):
             TaskHelper.create_directory(self._result_path)
             for algorithm in self._algorithms:
-                algorithm_directory_path: str = self._result_path + '\\' + algorithm.display_name
+                algorithm_directory_path: str = os.path.join(self._result_path, algorithm.directory_name_in_execution)
                 TaskHelper.create_directory(algorithm_directory_path)
 
     def __generate_execution_details_in_filesystem(self) -> None:
@@ -120,7 +120,7 @@ class Execution(Task, ABC):
         It includes information so that the Execution results could be understood and reconstructed.  \n
         :return: None
         """
-        details_path: str = self._result_path + 'details.json'
+        details_path: str = os.path.join(self._result_path, 'details.json')
 
         # create dictionary that will be saved as a JSON-str
         details_dict = {'subspace_generation_information': self._subspace_generation.to_json()}
@@ -267,7 +267,7 @@ class Execution(Task, ABC):
         """
         :return: The subspaces belonging to this Execution.
         """
-        return self._subspaces
+        return iter(self._subspaces)
 
     @property
     def zip_result_path(self) -> str:
