@@ -33,14 +33,15 @@ class AlgorithmOverview(LoginRequiredMixin, ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
+        sorted_list = Algorithm.objects.get_by_user(self.request.user)
         # Get sort by variable and get sorted set
         sort_by = self.kwargs["sort"]
         if sort_by == "group":
-            sorted_list = Algorithm.objects.get_sorted_by_group_and_name()
+            sorted_list = sorted_list.get_sorted_by_group_and_name()
         elif sort_by == "upload_date":
-            sorted_list = Algorithm.objects.get_sorted_by_upload_date()
+            sorted_list = sorted_list.get_sorted_by_upload_date()
         else:
-            sorted_list = Algorithm.objects.get_sorted_by_name()
+            sorted_list = sorted_list.get_sorted_by_name()
 
         # Filter algorithms to only show own and public algorithms
         sorted_list = sorted_list.get_by_user_and_public(self.request.user)
