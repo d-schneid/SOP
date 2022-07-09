@@ -54,13 +54,8 @@ class ExecutionTest(unittest.TestCase):
                   ParameterizedAlgorithm("path3", self._hyper_parameter, self._display_names[2]),
                   ParameterizedAlgorithm("path3", self._hyper_parameter, self._display_names[3])])
 
-        # Delete all folders of the execution structure: BEFORE creating the execution!
-        for dir_name in self._directory_names_in_execution:
-            path: str = os.path.join(self._result_path, dir_name)
-            if os.path.isdir(path):
-                os.rmdir(path)
-        if os.path.isdir(self._result_path):
-            os.rmdir(self._result_path)
+        # Delete all folders and files of the old execution structure: BEFORE creating the new execution!
+        self.__clear_old_execution_file_structure()
 
         # create Execution
         self._ex = ex(self._user_id, self._task_id, self.__task_progress_callback, self._dataset_path,
@@ -71,13 +66,7 @@ class ExecutionTest(unittest.TestCase):
         self._subspace_generation = None
         self._algorithms = None
 
-        # Delete all folders of the execution structure
-        for dir_name in self._directory_names_in_execution:
-            path: str = os.path.join(self._result_path, dir_name)
-            if os.path.isdir(path):
-                os.rmdir(path)
-        if os.path.isdir(self._result_path):
-            os.rmdir(self._result_path)
+        self.__clear_old_execution_file_structure()
 
     def test_getter(self):
         self.assertEqual(self._user_id, self._ex.user_id)
@@ -98,6 +87,22 @@ class ExecutionTest(unittest.TestCase):
         for algorithm in self._algorithms:
             path: str = os.path.join(self._result_path, algorithm.display_name)
             self.assertTrue(os.path.isdir(path))
+
+    def test_generate_execution_details_in_filesystem(self):
+        details_path: str = os.path.join(self._result_path, 'details.json')
+        self.assertTrue(os.path.isfile(details_path))
+
+    def __clear_old_execution_file_structure(self):
+        details_path: str = os.path.join(self._result_path, 'details.json')
+        if os.path.isfile(details_path):
+            os.remove(details_path)
+
+        for dir_name in self._directory_names_in_execution:
+            path: str = os.path.join(self._result_path, dir_name)
+            if os.path.isdir(path):
+                os.rmdir(path)
+        if os.path.isdir(self._result_path):
+            os.rmdir(self._result_path)
 
 
 if __name__ == '__main__':

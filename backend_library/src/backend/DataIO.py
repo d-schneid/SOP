@@ -34,5 +34,5 @@ class DataIO:
 
     @staticmethod
     def write_csv(path: str, data: np.ndarray):
-        # TODO: Implement
+        # TODO: Finn
         pass

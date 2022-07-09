@@ -61,6 +61,7 @@ class Execution(Task, ABC):
         self._execution_element_finished_lock = multiprocessing.Lock()
         self.__fill_algorithms_directory_name()
         self.__generate_file_system_structure()
+        self.__generate_execution_details_in_filesystem()
         self._zipped_result_path: str = self._result_path + ".zip"
 
         # further private variables
@@ -120,13 +121,15 @@ class Execution(Task, ABC):
         It includes information so that the Execution results could be understood and reconstructed.  \n
         :return: None
         """
+        assert os.path.isdir(self._result_path)
+
         details_path: str = os.path.join(self._result_path, 'details.json')
 
         # create dictionary that will be saved as a JSON-str
         details_dict = {'subspace_generation_information': self._subspace_generation.to_json()}
         for algorithm in self._algorithms:
             algorithm: ParameterizedAlgorithm = algorithm  # To get the type hint
-            details_dict[algorithm.directory_name_in_execution] += algorithm.to_json()
+            details_dict[algorithm.directory_name_in_execution] = algorithm.to_json()
 
         # save JSON-str
         details_json_str: str = json.dumps(details_dict, indent=4)
@@ -249,7 +252,7 @@ class Execution(Task, ABC):
         :return: None
         """
         result_zipper: ResultZipper = ResultZipper(self._user_id, self._task_id, self._has_failed_element,
-                                                   self._task_progress_callback, self._result_path,
+                                                   self._task_progress_callback , self._result_path,
                                                    self._zipped_result_path)
         scheduler: Scheduler = Scheduler.get_instance()
         scheduler.schedule(result_zipper)
