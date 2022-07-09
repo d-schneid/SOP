@@ -16,6 +16,8 @@ class TaskHelper:
         :param error_message: The error message that will be written into the error_csv file.
         :return: None
         """
+        assert path.endswith(".csv")
+
         error_file_path: str = TaskHelper.convert_to_error_csv_path(path)
         error_message: str = error_message
         with open(error_file_path, 'w') as error_csv:

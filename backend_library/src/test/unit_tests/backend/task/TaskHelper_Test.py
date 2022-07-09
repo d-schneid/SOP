@@ -6,12 +6,48 @@ from backend.task.TaskHelper import TaskHelper
 
 
 class TaskHelperTest(unittest.TestCase):
-    dir_name: str = os.getcwd()
-    new_dir_path: str = os.path.join(dir_name, "new_dir")
+    _dir_name: str = os.getcwd()
+    _new_dir_path: str = os.path.join(_dir_name, "new_dir")
+
+    _path1: str = os.path.join(_dir_name, "error.csv")
+    _path2: str = os.path.join(_dir_name, "error")  # path ends not with .csv
+    _path3: str = os.path.join(_dir_name, "empty.csv")
+    _error_path1: str = TaskHelper.convert_to_error_csv_path(_path1)
+    _error_path2: str = TaskHelper.convert_to_error_csv_path(_path2)
+    _error_path3: str = TaskHelper.convert_to_error_csv_path(_path3)
+
+    def setUp(self) -> None:
+        self.__clean_created_files_and_directories()
 
     def tearDown(self):
-        if os.path.isdir(self.new_dir_path):
-            os.rmdir(self.new_dir_path)
+        self.__clean_created_files_and_directories()
+
+    def test_create_error_csv(self):
+        error_message: str = "basic error"
+
+        TaskHelper.save_error_csv(self._path1, error_message)
+        self.assertTrue(os.path.isfile(self._error_path1))
+
+        with self.assertRaises(AssertionError) as context:
+            TaskHelper.save_error_csv(self._path2, error_message)
+        self.assertFalse(os.path.isfile(self._error_path2))
+
+        empty_message: str = ""
+        TaskHelper.save_error_csv(self._path3, empty_message)
+        self.assertTrue(os.path.isfile(self._error_path3))
+
+        # TODO: Check content of created csv files
+
+    def __clean_created_files_and_directories(self):
+        if os.path.isfile(self._error_path1):
+            os.remove(self._error_path1)
+        if os.path.isfile(self._error_path2):
+            os.remove(self._error_path2)
+        if os.path.isfile(self._error_path3):
+            os.remove(self._error_path3)
+
+        if os.path.isdir(self._new_dir_path):
+            os.rmdir(self._new_dir_path)
 
     def test_convert_to_error_csv_path(self):
         string1: str = ""
@@ -22,12 +58,12 @@ class TaskHelperTest(unittest.TestCase):
                          TaskHelper.convert_to_error_csv_path(string2))  # add assertion here
 
     def test_create_directory(self):
-        TaskHelper.create_directory(self.new_dir_path)
-        self.assertTrue(os.path.isdir(self.new_dir_path))
+        TaskHelper.create_directory(self._new_dir_path)
+        self.assertTrue(os.path.isdir(self._new_dir_path))
 
         # Works also when the directory already exists:
-        TaskHelper.create_directory(self.new_dir_path)
-        self.assertTrue(os.path.isdir(self.new_dir_path))
+        TaskHelper.create_directory(self._new_dir_path)
+        self.assertTrue(os.path.isdir(self._new_dir_path))
 
     def test_iterable_length(self):
         self.assertEqual(0, TaskHelper.iterable_length(iter([])))

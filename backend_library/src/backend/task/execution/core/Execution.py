@@ -47,6 +47,7 @@ class Execution(Task, ABC):
         :param algorithms: Contains all algorithms that should be processed on the subspaces.
         :param metric_callback: Called after the Execution-computation is complete. Carries out the metricizes.
         """
+        assert dataset_path.endswith(".csv")
 
         Task.__init__(self, user_id, task_id, task_progress_callback)
         self._dataset_path: str = dataset_path

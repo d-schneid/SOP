@@ -25,6 +25,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
     When scheduled by the Scheduler it cleans a dataset and
     stores the cleaned dataset separately in cleaned_dataset_path.
     """
+
     def __init__(self, user_id: int, task_id: int, task_progress_callback: Callable[[int, TaskState, float], None],
                  uncleaned_dataset_path: str, cleaned_dataset_path: str,
                  cleaning_steps: Iterable[DatasetCleaningStep] = None, priority: int = 100):
@@ -113,7 +114,6 @@ class DatasetCleaning(Task, Schedulable, ABC):
 
         self.__store_cleaned_dataset(cleaned_dataset)
         self._task_progress_callback(self._task_id, TaskState.FINISHED, 1.0)
-
 
     # do_work #############################################
     def __delete_old_error_file(self) -> None:
