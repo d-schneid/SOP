@@ -61,9 +61,8 @@ class ExecutionSubspace:
         :return: None
         """
         scheduler: Scheduler = Scheduler.get_instance()
-        if scheduler is not None:
-            for execution_element in self._execution_elements:
-                scheduler.schedule(execution_element)
+        for execution_element in self._execution_elements:
+            scheduler.schedule(execution_element)
 
     # getter for ExecutionSubspace
     @property

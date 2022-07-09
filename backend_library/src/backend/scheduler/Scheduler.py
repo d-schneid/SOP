@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from typing import Callable
+from typing import Callable, Optional
 
 from backend.scheduler.Schedulable import Schedulable
 from abc import ABC, abstractmethod
 
 
 class Scheduler(ABC):
-    _instance = None
+    _instance: Optional[Scheduler] = None
 
     def __init__(self):
         # This is not thread safe but as you should not try to break that assertion anyway I do not care
@@ -16,6 +16,7 @@ class Scheduler(ABC):
 
     @staticmethod
     def get_instance() -> Scheduler:
+        assert Scheduler._instance is not None, "A scheduler is yet to be created"
         return Scheduler._instance
 
     @abstractmethod
