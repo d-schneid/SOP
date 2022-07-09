@@ -5,10 +5,10 @@ from pathlib import Path
 from django.core.files.uploadedfile import UploadedFile
 
 from authentication.models import User
-from sop.settings import MEDIA_ROOT
+from django.conf import settings
 from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 
-ALGORITHM_ROOT_DIR = MEDIA_ROOT / "algorithms"
+ALGORITHM_ROOT_DIR = settings.MEDIA_ROOT / "algorithms"
 
 
 def save_temp_algorithm(user: User, file: UploadedFile):
