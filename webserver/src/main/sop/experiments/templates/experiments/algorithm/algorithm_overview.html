@@ -9,21 +9,26 @@
     <ul class="dropdown-menu mr-5" aria-labelledby="sortByButton">
         <li><a href="{% url 'algorithm_overview_sorted' 'name' %}" class="dropdown-item btn-secondary">Name</a></li>
         <li><a href="{% url 'algorithm_overview_sorted' 'group' %}" class="dropdown-item btn-secondary">Group</a></li>
-        <li><a href="{% url 'algorithm_overview_sorted' 'upload_date' %}" class="dropdown-item btn-secondary">Upload date</a></li>
+        <li><a href="{% url 'algorithm_overview_sorted' 'upload_date' %}" class="dropdown-item btn-secondary">Upload
+            date</a></li>
     </ul>
     <a href="{% url 'algorithm_upload' %}" class="mt-3 mb-3 btn btn-outline-dark">Upload algorithm</a>
 {% endblock %}
 
 {% block card-header %}
-    <h5 class="mb-0 w-80">
+    <h5 class="mb-0 flex-grow-1">
         <a class="btn-link btn-block text-white{% if not forloop.first %} collapsed{% endif %}"
            aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
            aria-controls="collapse_{{ model.pk }}">
             {{ model.name }}
         </a>
     </h5>
-    <a class="text-white ml-auto">{{ model.group }}</a>
-    <a class="text-white ml-auto">{{ model.upload_date }}</a>
+    <div class="d-flex justify-content-center">
+        {% if model.upload_date %}
+            <a class="text-white mr-5">{{ model.upload_date }}</a>
+        {% endif %}
+        <a class="text-white">{{ model.group }}</a>
+    </div>
 {% endblock %}
 
 {% block card-body %}
