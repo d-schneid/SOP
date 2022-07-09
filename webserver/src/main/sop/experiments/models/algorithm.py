@@ -34,7 +34,7 @@ class Algorithm(models.Model):
                             validators=(FileExtensionValidator(
                                 allowed_extensions=["py"]),))
     description = models.TextField(blank=True)
-    upload_date = models.DateField(default=date.today)
+    upload_date = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE, blank=True, null=True)
 
