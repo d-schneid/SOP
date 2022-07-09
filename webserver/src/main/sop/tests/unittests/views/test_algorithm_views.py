@@ -66,7 +66,7 @@ class AlgorithmOverviewTests(TestCase):
         self.assertContains(response, "name_a")
         self.assertContains(response, "name_b")
         self.assertContains(response, "name_c")
-        self.assertQuerysetEqual(response.context[self.QUERYSET_NAME], [algo1, algo2, algo3])
+        self.assertQuerysetEqual(response.context[self.QUERYSET_NAME], [algo3, algo2, algo1])
 
 
 def upload_algorithm(client, name, group, description, file_name):
