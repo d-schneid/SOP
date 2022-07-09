@@ -40,10 +40,15 @@ class ExecutionTest(unittest.TestCase):
 
         # parameterized algorithms
         self._hyper_parameter: dict = {'seed': 0}
+        self._display_names: list[str] = ["display_name", "display_name", "different_display_name", "display_name"]
+        self._directory_names_in_execution: list[str] = ["display_name", "display_name (1)", "different_display_name",
+                                                         "display_name (2)"]
+
         self._algorithms: Iterable[ParameterizedAlgorithm] = \
-            iter([ParameterizedAlgorithm("path", self._hyper_parameter, "display_name"),
-                  ParameterizedAlgorithm("path2", self._hyper_parameter, "display_name")])
-        print("HELP: " + str(TaskHelper.iterable_length(self._algorithms)))
+            iter([ParameterizedAlgorithm("path", self._hyper_parameter, self._display_names[0]),
+                  ParameterizedAlgorithm("path2", self._hyper_parameter, self._display_names[1]),
+                  ParameterizedAlgorithm("path3", self._hyper_parameter, self._display_names[2]),
+                  ParameterizedAlgorithm("path3", self._hyper_parameter, self._display_names[3])])
 
         # create Execution
         self._ex = ex(self._user_id, self._task_id, self.__task_progress_callback, self._dataset_path,
@@ -62,13 +67,11 @@ class ExecutionTest(unittest.TestCase):
         self.assertEqual(self._result_path + ".zip", self._ex.zip_result_path)
 
     def test_fill_algorithms_directory_name(self):
-        print("algorithms amount: " + str(TaskHelper.iterable_length(self._ex._algorithms)))
-
-        iter = self._ex._algorithms.__iter__()
-        print("HELP" + str(TaskHelper.iterable_length(self._algorithms)))
-        self.assertEqual(next(iter).display_name, "display_name")
-        self.assertEqual(next(iter).display_name, "display_name (1)")
-        # TODO
+        iterable = self._ex._algorithms.__iter__()
+        self.assertEqual(next(iterable).directory_name_in_execution, self._directory_names_in_execution[0])
+        self.assertEqual(next(iterable).directory_name_in_execution, self._directory_names_in_execution[1])
+        self.assertEqual(next(iterable).directory_name_in_execution, self._directory_names_in_execution[2])
+        self.assertEqual(next(iterable).directory_name_in_execution, self._directory_names_in_execution[3])
 
 
 if __name__ == '__main__':

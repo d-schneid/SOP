@@ -48,13 +48,12 @@ class Execution(Task, ABC):
         :param algorithms: Contains all algorithms that should be processed on the subspaces.
         :param metric_callback: Called after the Execution-computation is complete. Carries out the metricizes.
         """
-        print("algorithms amount0: " + str(TaskHelper.iterable_length(algorithms)))
 
         Task.__init__(self, user_id, task_id, task_progress_callback)
         self._dataset_path: str = dataset_path
         self._result_path: str = result_path
         self._subspace_generation: SubspaceGenerationDescription = subspace_generation
-        self._algorithms: Iterable[ParameterizedAlgorithm] = algorithms
+        self._algorithms: list = list(algorithms)
         self._metric_callback: Callable = metric_callback
 
         # on created logic
@@ -101,8 +100,6 @@ class Execution(Task, ABC):
                 algorithm.directory_name_in_execution = display_name + " (" \
                                                         + str(algorithm_display_name_dict[display_name]) + ")"
                 algorithm_display_name_dict[algorithm.display_name] += 1
-
-        print("algorithms amount: " + str(TaskHelper.iterable_length(self._algorithms)))
 
     # Generates all missing folders of the file system structure of this execution
     def __generate_file_system_structure(self) -> None:
@@ -263,7 +260,7 @@ class Execution(Task, ABC):
         """
         :return: The algorithm information belonging to this Execution.
         """
-        return self._algorithms
+        return iter(self._algorithms)
 
     @property
     def subspaces(self) -> Iterable[Subspace]:
