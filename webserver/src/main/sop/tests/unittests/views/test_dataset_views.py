@@ -10,17 +10,19 @@ from tests.unittests.views.LoggedInTestCase import LoggedInTestCase
 
 
 class DatasetOverviewTests(LoggedInTestCase):
-
     def setUp(self) -> None:
         self.QUERYSET_NAME = "models_list"
         super().setUp()
 
     def create_dataset(self, name):
-        return Dataset.objects.create(name=name, user=self.user, datapoints_total=0, dimensions_total=0)
+        return Dataset.objects.create(
+            name=name, user=self.user, datapoints_total=0, dimensions_total=0
+        )
 
     def test_no_datasets(self):
         response = self.client.get(reverse("dataset_overview"), follow=True)
         self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "experiments/dataset/dataset_overview.html")
         self.assertQuerysetEqual(response.context[self.QUERYSET_NAME], [])
 
     def test_one_dataset(self):
@@ -36,10 +38,13 @@ class DatasetOverviewTests(LoggedInTestCase):
         dataset3 = self.create_dataset("name_c")
         response = self.client.get(reverse("dataset_overview"), follow=True)
         self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "experiments/dataset/dataset_overview.html")
         self.assertContains(response, "name_a")
         self.assertContains(response, "name_b")
         self.assertContains(response, "name_c")
-        self.assertQuerysetEqual(response.context[self.QUERYSET_NAME], [dataset2, dataset1, dataset3])
+        self.assertQuerysetEqual(
+            response.context[self.QUERYSET_NAME], [dataset2, dataset1, dataset3]
+        )
 
     def test_sort_by_upload_date(self):
         dataset1 = self.create_dataset("name_c")
@@ -48,24 +53,20 @@ class DatasetOverviewTests(LoggedInTestCase):
         url = reverse("dataset_overview_sorted", args=("upload_date",))
         response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "experiments/dataset/dataset_overview.html")
         self.assertContains(response, "name_a")
         self.assertContains(response, "name_b")
         self.assertContains(response, "name_c")
-        self.assertQuerysetEqual(response.context[self.QUERYSET_NAME], [dataset3, dataset2, dataset1])
-
-
-
+        self.assertQuerysetEqual(
+            response.context[self.QUERYSET_NAME], [dataset3, dataset2, dataset1]
+        )
 
 
 class DatasetUploadViewTests(LoggedInTestCase):
-
     def setUp(self) -> None:
         self.name = "Test Valid Dataset"
         self.description = "Test Valid Description"
         self.file_name = "valid_dataset.csv"
-        self.subspaces_min = 1
-        self.subspaces_max = 4
-        self.subspace_amount = 2
         super().setUp()
 
     @classmethod
@@ -94,23 +95,102 @@ class DatasetUploadViewTests(LoggedInTestCase):
         response = self.upload_dataset(self.client, file_name)
 
         self.assertEqual(response.status_code, 200)
-        # we expect to be redirected to algorithm_overview
+        self.assertTemplateNotUsed(response, "experiments/dataset/dataset_upload.html")
+        self.assertTemplateUsed(response, "experiments/dataset/dataset_overview.html")
+        # we expect to be redirected to dataset_overview
         self.assertEqual("dataset_overview_sorted", response.resolver_match.url_name)
         self.assertTrue(response.redirect_chain)
 
         dataset = Dataset.objects.get()
+        self.assertEqual(self.user, dataset.user)
         self.assertEqual(self.name, dataset.name)
         self.assertEqual(self.description, dataset.description)
-        self.assertEqual(f"datasets/user_{self.user.pk}/" + self.file_name, str(dataset.path_original))
+        self.assertEqual(
+            f"datasets/user_{self.user.pk}/" + self.file_name,
+            str(dataset.path_original),
+        )
 
     def test_invalid_file_type(self):
         file_name = "invalid_dataset.txt"
         response = self.upload_dataset(self.client, file_name)
 
         self.assertEqual(response.status_code, 200)
-        # we expect to be redirected to algorithm_overview
+        self.assertTemplateUsed(response, "experiments/dataset/dataset_upload.html")
+        self.assertTemplateNotUsed(response, "experiments/dataset/dataset_overview.html")
+        # we expect to stay on the dataset_upload
         self.assertFalse(response.redirect_chain)
 
         dataset = Dataset.objects.first()
         self.assertIsNone(dataset)
-        self.assertFalse(os.path.exists(f"datasets/user_{self.user.pk}/" + self.file_name))
+        self.assertFalse(
+            os.path.exists(f"datasets/user_{self.user.pk}/" + self.file_name)
+        )
+
+
+class DatasetEditViewTests(LoggedInTestCase):
+    def post_dataset_edit(
+        self, dataset_pk=None, expected_status=200, update_model=True
+    ):
+        dataset_pk = dataset_pk if dataset_pk is not None else self.dataset.pk
+        data = {
+            "name": self.new_name,
+            "description": self.new_description,
+        }
+        response = self.client.post(
+            reverse("dataset_edit", args=(dataset_pk,)), follow=True, data=data
+        )
+        self.assertEqual(response.status_code, expected_status)
+        # reload dataset from db
+        if update_model:
+            self.dataset = Dataset.objects.get(pk=dataset_pk)
+        return response
+
+    def assertNoDatasetChange(self, response):
+        self.assertFalse(response.redirect_chain)
+        self.assertEqual(self.name, self.dataset.name)
+        self.assertEqual(self.description, self.dataset.description)
+
+    def assertDatasetChange(self, response):
+        self.assertTrue(response.redirect_chain)
+        self.assertEqual(self.new_name, self.dataset.name)
+        self.assertEqual(self.new_description, self.dataset.description)
+
+    def setUp(self) -> None:
+        self.name = "Original Name"
+        self.description = "Original Description"
+        self.new_name = "New Name"
+        self.new_description = "New Description"
+        super().setUp()
+        self.dataset = Dataset.objects.create(
+            name=self.name,
+            description=self.description,
+            user=self.user,
+            datapoints_total=4,
+            dimensions_total=7,
+        )
+
+    def test_valid_edit(self):
+        response = self.post_dataset_edit()
+        self.assertTemplateNotUsed(response, "experiments/dataset/dataset_edit.html")
+        self.assertTemplateUsed(response, "experiments/dataset/dataset_overview.html")
+        self.assertDatasetChange(response)
+
+    def test_edit_no_name(self):
+        self.new_name = ""
+        response = self.post_dataset_edit()
+        self.assertTemplateUsed(response, "experiments/dataset/dataset_edit.html")
+        self.assertTemplateNotUsed(response, "experiments/dataset/dataset_overview.html")
+        self.assertNoDatasetChange(response)
+
+    def test_edit_no_description(self):
+        self.new_description = ""
+        response = self.post_dataset_edit()
+        self.assertTemplateNotUsed(response, "experiments/dataset/dataset_edit.html")
+        self.assertTemplateUsed(response, "experiments/dataset/dataset_overview.html")
+        self.assertDatasetChange(response)
+
+    def test_edit_invalid_pk(self):
+        response = self.post_dataset_edit(dataset_pk=42, expected_status=404, update_model=False)
+        self.assertTemplateNotUsed(response, "experiments/dataset/dataset_edit.html")
+        self.assertTemplateNotUsed(response, "experiments/dataset/dataset_overview.html")
+        self.assertNoDatasetChange(response)

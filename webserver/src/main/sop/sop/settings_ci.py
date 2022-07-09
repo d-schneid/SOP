@@ -58,6 +58,8 @@ TEMPLATES = [
         "DIRS": [
             BASE_DIR / "experiments/templates/experiments/algorithm",
             BASE_DIR / "experiments/templates/experiments/dataset",
+            BASE_DIR / "experiments/templates/experiments/experiment",
+            BASE_DIR / "experiments/templates/experiments/execution",
             BASE_DIR / "experiments/templates/experiments",
         ],
         "APP_DIRS": True,
