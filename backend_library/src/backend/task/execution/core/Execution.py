@@ -71,7 +71,7 @@ class Execution(Task, ABC):
 
         # generate subspaces
         self._subspaces: List[Subspace] = list(self._subspace_generation.generate())
-        self._subspaces_count = TaskHelper.iterable_length(self._subspaces)
+        self._subspaces_count = len(self._subspaces)
         self._total_execution_element_count: int = self._subspaces_count * len(self._algorithms)
 
         # generate execution_subspaces
@@ -171,8 +171,9 @@ class Execution(Task, ABC):
         if a Task is finished. \n
         :return: A float in [0,1] which indicates the progress of the Execution.
         """
-        execution_element_progress: float = self._finished_execution_element_count / self._total_execution_element_count
-        progress: float = max(execution_element_progress, 0.98)  # clamp the progress to be more accurate
+        execution_element_progress: float = float(self._finished_execution_element_count) \
+                                            / float(self._total_execution_element_count)
+        progress: float = max(0., min(execution_element_progress, 0.98))  # clamp the progress to be more accurate
         if self._metric_finished:
             progress += 0.01
         # Note: The 100% progress is only reached after zipping
@@ -252,7 +253,7 @@ class Execution(Task, ABC):
         :return: None
         """
         result_zipper: ResultZipper = ResultZipper(self._user_id, self._task_id, self._has_failed_element,
-                                                   self._task_progress_callback , self._result_path,
+                                                   self._task_progress_callback, self._result_path,
                                                    self._zipped_result_path)
         scheduler: Scheduler = Scheduler.get_instance()
         scheduler.schedule(result_zipper)

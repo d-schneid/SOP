@@ -49,8 +49,8 @@ class ExecutionTest(unittest.TestCase):
         self._directory_names_in_execution: list[str] = ["display_name", "display_name (1)", "different_display_name",
                                                          "display_name (2)"]
 
-        self._algorithms: Iterable[ParameterizedAlgorithm] = \
-            iter([ParameterizedAlgorithm("path", self._hyper_parameter, self._display_names[0]),
+        self._algorithms: list[ParameterizedAlgorithm] = \
+            list([ParameterizedAlgorithm("path", self._hyper_parameter, self._display_names[0]),
                   ParameterizedAlgorithm("path2", self._hyper_parameter, self._display_names[1]),
                   ParameterizedAlgorithm("path3", self._hyper_parameter, self._display_names[2]),
                   ParameterizedAlgorithm("path3", self._hyper_parameter, self._display_names[3])])
@@ -60,7 +60,7 @@ class ExecutionTest(unittest.TestCase):
 
         # create Execution
         self._ex = ex(self._user_id, self._task_id, self.__task_progress_callback, self._dataset_path,
-                      self._result_path, self._subspace_generation, self._algorithms, self.__metric_callback)
+                      self._result_path, self._subspace_generation, iter(self._algorithms), self.__metric_callback)
 
     def tearDown(self) -> None:
         self._ex = None
@@ -73,7 +73,7 @@ class ExecutionTest(unittest.TestCase):
         self.assertEqual(self._user_id, self._ex.user_id)
         self.assertEqual(self._user_id, self._ex.user_id)
         self.assertEqual(self._result_path, self._ex.result_path)
-        self.assertEqual(self._algorithms, self._ex.algorithms)
+        self.assertEqual(self._algorithms, list(self._ex.algorithms))
         self.assertEqual(self._result_path + ".zip", self._ex.zip_result_path)
 
     def test_fill_algorithms_directory_name(self):
@@ -85,6 +85,7 @@ class ExecutionTest(unittest.TestCase):
 
     def test_generate_file_system_structure(self):
         self.assertTrue(os.path.isdir(self._result_path))
+
         for algorithm in self._algorithms:
             path: str = os.path.join(self._result_path, algorithm.display_name)
             self.assertTrue(os.path.isdir(path))
@@ -102,6 +103,20 @@ class ExecutionTest(unittest.TestCase):
         os.rmdir(self._zipped_result_path)
         self.assertFalse(os.path.exists(self._zipped_result_path))
 
+    def test_compute_progress(self):
+        execution_element_count = self._subspace_amount * len(self._algorithms)
+
+        for i in range(0, execution_element_count + 1):
+            self._ex._finished_execution_element_count = i
+            progress: float = i / execution_element_count
+            if progress <= 0.98:
+                self.assertAlmostEqual(progress, self._ex._Execution__compute_progress())
+            else:
+                self.assertAlmostEqual(0.98, self._ex._Execution__compute_progress())
+
+        self._ex._metric_finished = True
+        self.assertAlmostEqual(0.99, self._ex._Execution__compute_progress())
+
     def __clear_old_execution_file_structure(self):
         details_path: str = os.path.join(self._result_path, 'details.json')
         if os.path.isfile(details_path):
@@ -111,8 +126,10 @@ class ExecutionTest(unittest.TestCase):
             path: str = os.path.join(self._result_path, dir_name)
             if os.path.isdir(path):
                 os.rmdir(path)
+
         if os.path.isdir(self._result_path):
             os.rmdir(self._result_path)
+
         if os.path.isdir(self._zipped_result_path):
             os.rmdir(self._zipped_result_path)
 
