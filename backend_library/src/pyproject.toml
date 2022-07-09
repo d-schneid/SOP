@@ -9,3 +9,7 @@ dependencies = [
     "numpy",
     "pandas",
 ]
+
+[tool.setuptools.packages.find]
+include = ["backend*"]
+exclude = ["test*"]

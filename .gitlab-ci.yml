@@ -68,7 +68,7 @@ default:
     - source venv3.10/bin/activate
     - pip3 install -r requirements.txt
     - pip3 install mysqlclient
-    - pip3 install -e backend_library/src/main
+    - pip3 install -e backend_library/src
     - python3.10 -V
 
 migrations:
