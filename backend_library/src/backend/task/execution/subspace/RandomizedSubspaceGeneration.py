@@ -5,10 +5,10 @@ from typing import Iterable, Dict, List
 
 import numpy as np
 
-from backend_library.src.main.backend.task.execution.subspace.Subspace import Subspace
-from backend_library.src.main.backend.task.execution.subspace.SubspaceGenerationDescription import \
+from backend.task.execution.subspace.Subspace import Subspace
+from backend.task.execution.subspace.SubspaceGenerationDescription import \
     SubspaceGenerationDescription
-from backend_library.src.main.backend.task.execution.subspace.SubspaceSizeDistribution import SubspaceSizeDistribution
+from backend.task.execution.subspace.SubspaceSizeDistribution import SubspaceSizeDistribution
 
 
 class RandomizedSubspaceGeneration(SubspaceGenerationDescription, ABC):

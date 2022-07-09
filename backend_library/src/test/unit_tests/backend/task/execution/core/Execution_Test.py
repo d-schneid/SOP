@@ -4,14 +4,14 @@ from unittest import mock
 
 import numpy as np
 
-from backend_library.src.main.backend.task.execution.core.Execution import Execution as ex
-from backend_library.src.main.backend.task.TaskState import TaskState
-from backend_library.src.main.backend.task.TaskHelper import TaskHelper
-from backend_library.src.main.backend.task.execution.subspace.RandomizedSubspaceGeneration import \
+from backend.task.execution.core.Execution import Execution as ex
+from backend.task.TaskState import TaskState
+from backend.task.TaskHelper import TaskHelper
+from backend.task.execution.subspace.RandomizedSubspaceGeneration import \
     RandomizedSubspaceGeneration as rsg
-from backend_library.src.main.backend.task.execution.subspace.UniformSubspaceDistribution import \
+from backend.task.execution.subspace.UniformSubspaceDistribution import \
     UniformSubspaceDistribution as usd
-from backend_library.src.main.backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
+from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 
 
 class ExecutionTest(unittest.TestCase):

@@ -14,17 +14,17 @@ from collections.abc import Iterable
 import numpy as np
 import pandas as pd
 
-from backend_library.src.main.backend.DataIO import DataIO
-from backend_library.src.main.backend.task.Task import Task
-from backend_library.src.main.backend.task.TaskState import TaskState
-from backend_library.src.main.backend.task.TaskHelper import TaskHelper
-from backend_library.src.main.backend.task.execution.subspace.SubspaceGenerationDescription import \
+from backend.DataIO import DataIO
+from backend.task.Task import Task
+from backend.task.TaskState import TaskState
+from backend.task.TaskHelper import TaskHelper
+from backend.task.execution.subspace.SubspaceGenerationDescription import \
     SubspaceGenerationDescription
-from backend_library.src.main.backend.task.execution.core import ExecutionSubspace
-from backend_library.src.main.backend.scheduler.Scheduler import Scheduler
-from backend_library.src.main.backend.task.execution.ResultZipper import ResultZipper
-from backend_library.src.main.backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
-from backend_library.src.main.backend.task.execution.subspace.Subspace import Subspace
+from backend.task.execution.core import ExecutionSubspace
+from backend.scheduler.Scheduler import Scheduler
+from backend.task.execution.ResultZipper import ResultZipper
+from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
+from backend.task.execution.subspace.Subspace import Subspace
 
 
 class Execution(Task, ABC):
