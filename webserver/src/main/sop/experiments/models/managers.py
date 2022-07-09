@@ -28,6 +28,9 @@ class AlgorithmQuerySet(models.QuerySet):
         # latest uploaded algorithms first
         return self.order_by("-upload_date")
 
+    def get_public(self):
+        return self.filter(user=None)
+
 
 class DatasetManager(models.Manager):
     pass
