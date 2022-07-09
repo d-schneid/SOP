@@ -32,6 +32,7 @@ class ExecutionTest(unittest.TestCase):
 
     def setUp(self) -> None:
         self._result_path: str = os.path.join(self._dir_name, "execution_folder")
+        self._zipped_result_path: str = self._result_path + ".zip"
 
         # subspace generation
         self._subspace_size_min: int = 1
@@ -92,6 +93,15 @@ class ExecutionTest(unittest.TestCase):
         details_path: str = os.path.join(self._result_path, 'details.json')
         self.assertTrue(os.path.isfile(details_path))
 
+    def test_does_zip_exists(self):
+        self.assertFalse(os.path.exists(self._zipped_result_path))
+
+        TaskHelper.create_directory(self._zipped_result_path)
+        self.assertTrue(os.path.exists(self._zipped_result_path))
+
+        os.rmdir(self._zipped_result_path)
+        self.assertFalse(os.path.exists(self._zipped_result_path))
+
     def __clear_old_execution_file_structure(self):
         details_path: str = os.path.join(self._result_path, 'details.json')
         if os.path.isfile(details_path):
@@ -103,6 +113,8 @@ class ExecutionTest(unittest.TestCase):
                 os.rmdir(path)
         if os.path.isdir(self._result_path):
             os.rmdir(self._result_path)
+        if os.path.isdir(self._zipped_result_path):
+            os.rmdir(self._zipped_result_path)
 
 
 if __name__ == '__main__':
