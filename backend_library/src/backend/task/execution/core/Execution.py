@@ -12,7 +12,6 @@ from typing import List
 from collections.abc import Iterable
 
 import numpy as np
-import pandas as pd
 
 from backend.DataIO import DataIO
 from backend.task.Task import Task

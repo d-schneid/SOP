@@ -10,8 +10,10 @@ from backend.task.execution.subspace.UniformSubspaceDistribution import \
     UniformSubspaceDistribution as usd
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 
+from backend.scheduler.DebugScheduler import DebugScheduler
 
-class ExecutionTest(unittest.TestCase):
+
+class ExecutionTestResultZipping(unittest.TestCase):
     _user_id: int = 214
     _task_id: int = 1553
     _dataset_path: str = "dataset_path"
@@ -29,7 +31,6 @@ class ExecutionTest(unittest.TestCase):
     def setUp(self) -> None:
         self._result_path: str = os.path.join(self._dir_name, "execution_folder")
         self._zipped_result_path: str = self._result_path + ".zip"
-        self._details_path: str = os.path.join(self._result_path, 'details.json')
 
         # subspace generation
         self._subspace_size_min: int = 1
@@ -59,6 +60,9 @@ class ExecutionTest(unittest.TestCase):
         self._ex = ex(self._user_id, self._task_id, self.__task_progress_callback, self._dataset_path,
                       self._result_path, self._subspace_generation, iter(self._algorithms), self.__metric_callback)
 
+        # create a DebugScheduler
+        DebugScheduler()
+
     def tearDown(self) -> None:
         self._ex = None
         self._subspace_generation = None
@@ -66,59 +70,16 @@ class ExecutionTest(unittest.TestCase):
 
         self.__clear_old_execution_file_structure()
 
-    def test_getter(self):
-        self.assertEqual(self._user_id, self._ex.user_id)
-        self.assertEqual(self._user_id, self._ex.user_id)
-        self.assertEqual(self._result_path, self._ex.result_path)
-        self.assertEqual(self._algorithms, list(self._ex.algorithms))
-        self.assertEqual(self._result_path + ".zip", self._ex.zip_result_path)
-
-    def test_fill_algorithms_directory_name(self):
-        iterable = self._ex._algorithms.__iter__()
-        self.assertEqual(next(iterable).directory_name_in_execution, self._directory_names_in_execution[0])
-        self.assertEqual(next(iterable).directory_name_in_execution, self._directory_names_in_execution[1])
-        self.assertEqual(next(iterable).directory_name_in_execution, self._directory_names_in_execution[2])
-        self.assertEqual(next(iterable).directory_name_in_execution, self._directory_names_in_execution[3])
-
-    def test_generate_file_system_structure(self):
-        self.assertTrue(os.path.isdir(self._result_path))
-
-        for algorithm in self._algorithms:
-            path: str = os.path.join(self._result_path, algorithm.display_name)
-            self.assertTrue(os.path.isdir(path))
-
-    def test_generate_execution_details_in_filesystem(self):
-        self.assertTrue(os.path.isfile(self._details_path))
-
-    def test_does_zip_exists(self):
-        if os.path.isdir(self._zipped_result_path):
-            os.rmdir(self._zipped_result_path)
-
+    def test_schedule_result_zipping(self):
         self.assertFalse(os.path.exists(self._zipped_result_path))
-
-        TaskHelper.create_directory(self._zipped_result_path)
+        self._ex._Execution__schedule_result_zipping()
         self.assertTrue(os.path.exists(self._zipped_result_path))
-
         os.rmdir(self._zipped_result_path)
-        self.assertFalse(os.path.exists(self._zipped_result_path))
-
-    def test_compute_progress(self):
-        execution_element_count = self._subspace_amount * len(self._algorithms)
-
-        for i in range(0, execution_element_count + 1):
-            self._ex._finished_execution_element_count = i
-            progress: float = i / execution_element_count
-            if progress <= 0.98:
-                self.assertAlmostEqual(progress, self._ex._Execution__compute_progress())
-            else:
-                self.assertAlmostEqual(0.98, self._ex._Execution__compute_progress())
-
-        self._ex._metric_finished = True
-        self.assertAlmostEqual(0.99, self._ex._Execution__compute_progress())
 
     def __clear_old_execution_file_structure(self):
-        if os.path.isfile(self._details_path):
-            os.remove(self._details_path)
+        details_path: str = os.path.join(self._result_path, 'details.json')
+        if os.path.isfile(details_path):
+            os.remove(details_path)
 
         for dir_name in self._directory_names_in_execution:
             path: str = os.path.join(self._result_path, dir_name)
