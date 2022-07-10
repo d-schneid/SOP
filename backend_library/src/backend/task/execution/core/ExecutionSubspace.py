@@ -101,14 +101,17 @@ class ExecutionSubspace:
             else:
                 return SharedMemory(self._subspace_shared_memory_name)
 
-    def __load_subspace_from_dataset(self) -> np.ndarray:
+    def __load_subspace_from_dataset(self) -> SharedMemory:
         """
         :return: Loads the dataset for this subspace into shared_memory, if it isn't loaded into the shared_memory yet.
         """
-        self._cache_subset_lock.acquire()
-        # TODO Tobias
-        self._cache_subset_lock.release()
-        return np.zeros((0, 0))
+        ds_shm: SharedMemory = self._execution.cache_dataset()
+        ds_dim_cnt: int = self._subspace.mask.size
+        ds_point_count = ds_shm.size / self.subspace_dtype.itemsize / ds_dim_cnt
+        ds_arr = np.ndarray((ds_point_count, ds_dim_cnt), dtype=self.subspace_dtype, buffer=ds_shm.buf)
+        ss_shm = SharedMemory(None, True, self._subspace.get_size_of_subspace_buffer(ds_arr))
+        self._subspace.make_subspace_array(ds_arr, ss_shm)
+        return ss_shm
 
     def execution_element_is_finished(self, error_occurred: bool) -> None:
         """
