@@ -35,20 +35,20 @@
     {{ model.description }}
 {% endblock %}
 
-{% block edit_button %}
+{% block edit %}
     <a href="{% url 'algorithm_edit' model.pk %}"
        class="btn btn-warning mr-3">Edit</a>
 {% endblock %}
 
-{% block reject %}
+{% block error %}
     Algorithm <b>{{ model.name }}</b> cannot be deleted, since it is used in these experiments:
 {% endblock %}
 
-{% block sure %}
+{% block check %}
     Are you sure you want to delete algorithm <b>{{ model.name }}</b>?
 {% endblock %}
 
-{% block url %}
+{% block delete %}
     <form action="{% url 'algorithm_delete' model.pk %}" method="post">
         {% csrf_token %}
         <button type="submit" class="btn btn-success mr-3">Yes</button>

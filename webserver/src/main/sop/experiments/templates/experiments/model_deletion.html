@@ -21,7 +21,7 @@
                         data-target="#deleteModal{{ model.pk }}">
                     Delete
                 </button>
-                {% block edit_button %}{% endblock %}
+                {% block edit %}{% endblock %}
 
                 {% if model.experiment_set.count > 0 %}
                 <div class="modal fade"
@@ -34,7 +34,7 @@
                             <div class="modal-header">
                                 <div class="text-left">
                                     <h5><b>Error</b></h5><br/>
-                                    {% block reject %}{% endblock %}
+                                    {% block error %}{% endblock %}
                                 </div>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
@@ -82,11 +82,11 @@
                                 </div>
                                 <div class="modal-body">
                                     <div class="text-center">
-                                        {% block sure %}{% endblock %}
+                                        {% block check %}{% endblock %}
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    {% block url %}{% endblock %}
+                                    {% block delete %}{% endblock %}
                                     <button type="button" class="btn btn-danger mr-3" data-dismiss="modal">Cancel</button>
                                 </div>
                             </div>
