@@ -15,7 +15,7 @@ class AlgorithmOverviewTests(LoggedInTestCase):
         self.QUERYSET_NAME = "models_list"
         super().setUp()
 
-    def test_no_algorithms(self):
+    def test_algorithm_overview_no_algorithms(self):
         response = self.client.get(reverse("algorithm_overview"), follow=True)
         self.assertEqual(response.status_code, 200)
         # TODO: figure out why we can use just the name for the templates in algorithm tests but have to give whole path
@@ -23,7 +23,7 @@ class AlgorithmOverviewTests(LoggedInTestCase):
         self.assertTemplateUsed(response, "algorithm_overview.html")
         self.assertQuerysetEqual(response.context[self.QUERYSET_NAME], [])
 
-    def test_one_algorithm(self):
+    def test_algorithm_overview_one_algorithm(self):
         algorithm = Algorithm.objects.create(name="test_algo", user=self.user)
         response = self.client.get(reverse("algorithm_overview"), follow=True)
         self.assertEqual(response.status_code, 200)
@@ -31,7 +31,7 @@ class AlgorithmOverviewTests(LoggedInTestCase):
         self.assertContains(response, "test_algo")
         self.assertQuerysetEqual(response.context[self.QUERYSET_NAME], [algorithm])
 
-    def test_multiple_algorithms(self):
+    def test_algorithm_overview_multiple_algorithms(self):
         algo1 = Algorithm.objects.create(name="name_b", user=self.user)
         algo2 = Algorithm.objects.create(name="name_a", user=self.user)
         algo3 = Algorithm.objects.create(name="name_c", user=self.user)
@@ -45,7 +45,7 @@ class AlgorithmOverviewTests(LoggedInTestCase):
             response.context[self.QUERYSET_NAME], [algo2, algo1, algo3]
         )
 
-    def test_sort_by_group(self):
+    def test_algorithm_overview_sort_by_group(self):
         algo1 = Algorithm.objects.create(
             group=Algorithm.AlgorithmGroup.PROBABILISTIC, user=self.user
         )
@@ -66,7 +66,7 @@ class AlgorithmOverviewTests(LoggedInTestCase):
             response.context[self.QUERYSET_NAME], [algo2, algo3, algo1]
         )
 
-    def test_sort_by_upload_date(self):
+    def test_algorithm_overview_sort_by_upload_date(self):
         algo1 = Algorithm.objects.create(name="name_c", user=self.user)
         algo2 = Algorithm.objects.create(name="name_a", user=self.user)
         algo3 = Algorithm.objects.create(name="name_b", user=self.user)
@@ -81,7 +81,7 @@ class AlgorithmOverviewTests(LoggedInTestCase):
             response.context[self.QUERYSET_NAME], [algo3, algo2, algo1]
         )
 
-    def test_do_not_display_public_algorithms(self):
+    def test_algorithm_overview_do_not_display_public_algorithms(self):
         algo1 = Algorithm.objects.create(name="name_c", user=self.user)
         Algorithm.objects.create(name="name_a")
         algo2 = Algorithm.objects.create(name="name_b", user=self.user)
@@ -117,7 +117,7 @@ class AlgorithmUploadViewTests(LoggedInTestCase):
             shutil.rmtree(settings.MEDIA_ROOT)
         super().tearDown()
 
-    def test_valid_upload(self):
+    def test_algorithm_upload_view_valid_upload(self):
         test_name = "Test Valid Algorithm"
         test_group = Algorithm.AlgorithmGroup.COMBINATION
         test_description = "Test Valid Description"
@@ -142,7 +142,7 @@ class AlgorithmUploadViewTests(LoggedInTestCase):
             str(algorithm.path), f"algorithms/user_{self.user.pk}/" + test_file_name
         )
 
-    def test_algorithm_not_subclass(self):
+    def test_algorithm_upload_view_not_subclass(self):
         test_name = "Test Invalid Algorithm"
         test_group = Algorithm.AlgorithmGroup.COMBINATION
         test_description = "Test Invalid Description"
@@ -164,7 +164,7 @@ class AlgorithmUploadViewTests(LoggedInTestCase):
         self.assertIsNone(algorithm)
         self.assertFalse(os.path.exists(f"algorithms/{self.user.pk}/" + test_file_name))
 
-    def test_algorithm_no_class(self):
+    def test_algorithm_upload_view_no_class(self):
         test_name = "Test Invalid Algorithm"
         test_group = Algorithm.AlgorithmGroup.COMBINATION
         test_description = "Test Invalid Description"
@@ -186,14 +186,14 @@ class AlgorithmUploadViewTests(LoggedInTestCase):
 
 
 class AlgorithmDeleteViewTests(LoggedInTestCase):
-    def test_delete(self):
+    def test_algorithm_delete_view_valid_delete(self):
         algorithm = Algorithm.objects.create()
         response = self.client.post(reverse("algorithm_delete", args=(algorithm.pk,)))
         self.assertEqual(response.status_code, 302)
         self.assertIsNone(Algorithm.objects.first())
 
     @skip
-    def test_delete_invalid_pk(self):
+    def test_algorithm_delete_view_invalid_pk(self):
         response = self.client.post(reverse("algorithm_delete", args=(42,)))
         # we expect to be redirected to the algorithm overview
         self.assertEqual(response.status_code, 302)
@@ -246,34 +246,34 @@ class AlgorithmEditViewTest(LoggedInTestCase):
             user=self.user,
         )
 
-    def test_valid_edit(self):
+    def test_algorithm_edit_view_valid_edit(self):
         response = self.post_algorithm_edit()
         self.assertTemplateNotUsed(response, "algorithm_edit.html")
         self.assertTemplateUsed(response, "algorithm_overview.html")
         self.assertAlgorithmChange(response)
 
-    def test_edit_no_name(self):
+    def test_algorithm_edit_view_edit_no_name(self):
         self.new_name = ""
         response = self.post_algorithm_edit()
         self.assertTemplateUsed(response, "algorithm_edit.html")
         self.assertTemplateNotUsed(response, "algorithm_overview.html")
         self.assertNoAlgorithmChange(response)
 
-    def test_edit_no_group(self):
+    def test_algorithm_edit_view_edit_no_group(self):
         self.new_group = ""
         response = self.post_algorithm_edit()
         self.assertTemplateUsed(response, "algorithm_edit.html")
         self.assertTemplateNotUsed(response, "algorithm_overview.html")
         self.assertNoAlgorithmChange(response)
 
-    def test_edit_no_description(self):
+    def test_algorithm_edit_view_edit_no_description(self):
         self.new_description = ""
         response = self.post_algorithm_edit()
         self.assertTemplateNotUsed(response, "algorithm_edit.html")
         self.assertTemplateUsed(response, "algorithm_overview.html")
         self.assertAlgorithmChange(response)
 
-    def test_edit_invalid_pk(self):
+    def test_algorithm_edit_view_edit_invalid_pk(self):
         response = self.post_algorithm_edit(algorithm_pk=42, expected_code=404, update_model=False)
         self.assertTemplateNotUsed(response, "algorithm_edit.html")
         self.assertTemplateNotUsed(response, "algorithm_overview.html")

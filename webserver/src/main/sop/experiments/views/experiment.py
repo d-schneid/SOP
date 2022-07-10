@@ -9,7 +9,7 @@ from experiments.models.managers import ExperimentQueryset
 
 class ExperimentOverview(LoginRequiredMixin, ListView):
     model = Experiment
-    template_name = "experiments/experiment/experiment_overview.html"
+    template_name = "experiment_overview.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -30,7 +30,7 @@ class ExperimentOverview(LoginRequiredMixin, ListView):
 
 class ExperimentCreateView(LoginRequiredMixin, CreateView):
     model = Experiment
-    template_name = "experiments/experiment/experiment_create.html"
+    template_name = "experiment_create.html"
     # TODO: use ExperimentCreateForm
     fields = ("display_name", "dataset", "algorithms")
     success_url = reverse_lazy("experiment_overview")
@@ -43,11 +43,11 @@ class ExperimentCreateView(LoginRequiredMixin, CreateView):
 class ExperimentEditView(LoginRequiredMixin, UpdateView):
     model = Experiment
     form_class = ExperimentEditForm
-    template_name = "experiments/experiment/experiment_edit.html"
+    template_name = "experiment_edit.html"
     success_url = reverse_lazy("experiment_overview")
 
 
 class ExperimentDeleteView(LoginRequiredMixin, DeleteView):
     model = Experiment
-    template_name = "experiments/experiment/experiment_delete.html"
+    template_name = "experiment_delete.html"
     success_url = reverse_lazy("experiment_overview")
