@@ -42,6 +42,14 @@ class RowThresholdMissingValuesRemoverTest(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             self._row_remover.do_cleaning(self._ds.empty_dataset)
 
+        # Only one row (edge case): No None row -> dont do anything
+        np.testing.assert_array_equal(self._ds.cat_dataset3,
+                                      self._row_remover.do_cleaning(self._ds.cat_dataset3))
+
+        # Only one row (edge case): A None row -> return empty array
+        np.testing.assert_array_equal(self._ds.empty_dataset,
+                                      self._row_remover.do_cleaning(np.asarray([None, None, None])))
+
 
 class ColumnThresholdMissingValuesRemoverTest(unittest.TestCase):
     def setUp(self) -> None:
@@ -52,7 +60,12 @@ class ColumnThresholdMissingValuesRemoverTest(unittest.TestCase):
         self._row_zero_threshold_remover = None
         self._row_one_threshold_remover = None
 
-    def test_none_row_remove(self):
+    def test_none_columns_remove(self):
+        # Only one row (edge case)
+        cleaned_cat_dataset3: np.ndarray = np.asarray([1, 412, "I am an evil String"], object)
+        np.testing.assert_array_equal(cleaned_cat_dataset3,
+                                      self._column_remover.do_cleaning(self._ds.cat_dataset3))
+
         # No missing values -> Don't change anything
         np.testing.assert_array_equal(self._ds.dataset0,
                                       self._column_remover.do_cleaning(self._ds.dataset0))

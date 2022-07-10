@@ -36,7 +36,6 @@ class CategoricalColumnRemover(CategoricalDataHandler, ABC):
         else:
             for column in df:
                 column_df: pd.DataFrame = pd.DataFrame(df[column])
-                print(column_df)
                 if column_df.applymap(type).eq(str).any().any():
                     columns_to_drop.append(column)
                     continue

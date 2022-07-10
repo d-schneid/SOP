@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from backend.DataInfo import DataInfo
 
 
 class DatasetCleaningStepExceptionHandling:
@@ -15,7 +16,7 @@ class DatasetCleaningStepExceptionHandling:
         :return: Throws an ValueError exception if the inputted dataset is empty
         """
         try:
-            if dataset_to_check.size == 0 or dataset_to_check.shape[0] == 0 or dataset_to_check.shape[1] == 0:
+            if dataset_to_check.size == 0:
                 raise ValueError(error_root + ": input array is empty. Needs at least one row, one column and an entry")
         except pd.errors.EmptyDataError:
             raise ValueError(error_root + ": input array is empty. Needs at least one row, one column and an entry")

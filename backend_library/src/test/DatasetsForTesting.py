@@ -50,3 +50,7 @@ class Datasets:
     @property
     def cat_dataset2(self) -> np.ndarray:
         return np.array([['Größter', 'PSE', 'fan'], [2., 0., None], [1., 99981., None]])
+
+    @property
+    def cat_dataset3(self) -> np.ndarray:
+        return np.asarray([1, 412, "I am an evil String", None], object)
