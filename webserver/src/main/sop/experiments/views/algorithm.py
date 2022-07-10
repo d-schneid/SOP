@@ -79,7 +79,6 @@ class AlgorithmUploadView(LoginRequiredMixin, CreateView):
 
 class AlgorithmDeleteView(LoginRequiredMixin, DeleteView):
     model = Algorithm
-    template_name = "algorithm_delete.html"
     success_url = reverse_lazy("algorithm_overview")
 
 
