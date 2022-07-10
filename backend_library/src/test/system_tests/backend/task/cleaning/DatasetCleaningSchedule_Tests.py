@@ -75,7 +75,6 @@ class DatasetCleaningTestRunCleaningPipeline(unittest.TestCase):
             os.remove(self._uncleaned_dataset_path2)
 
     def test_run_cleaning_pipeline1(self):
-        # print(self._dc1._DatasetCleaning__run_cleaning_pipeline(self._uncleaned_dataset1))
         self._dc1.schedule()
         np.testing.assert_array_almost_equal(self._cleaned_dataset1,
                                              DataIO.read_cleaned_csv(self._cleaned_dataset_path1))

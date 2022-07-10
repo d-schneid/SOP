@@ -1,6 +1,8 @@
 import os.path
 import unittest
 
+import numpy as np
+
 from backend.task.execution.core.Execution import Execution as ex
 from backend.task.TaskState import TaskState
 from backend.task.TaskHelper import TaskHelper
@@ -72,6 +74,7 @@ class ExecutionTest(unittest.TestCase):
         self.assertEqual(self._result_path, self._ex.result_path)
         self.assertEqual(self._algorithms, list(self._ex.algorithms))
         self.assertEqual(self._result_path + ".zip", self._ex.zip_result_path)
+        self.assertEqual(np.dtype('f4'), self._ex.dataset_dtype)
 
     def test_fill_algorithms_directory_name(self):
         iterable = self._ex._algorithms.__iter__()
