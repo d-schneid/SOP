@@ -5,6 +5,7 @@ from collections.abc import Callable
 
 from backend.task.TaskState import TaskState
 
+
 class Task(ABC):
     """
     An abstract class which sets the structure for all tasks that are computed by the BackendLibrary. \n

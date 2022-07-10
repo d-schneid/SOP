@@ -3,6 +3,7 @@ import os
 
 import numpy as np
 from collections.abc import Iterable
+from backend.DataIO import DataIO
 
 
 class TaskHelper:
@@ -20,9 +21,9 @@ class TaskHelper:
 
         error_file_path: str = TaskHelper.convert_to_error_csv_path(path)
         error_message: str = error_message
-        with open(error_file_path, 'w') as error_csv:
-            writer = csv.writer(error_csv)
-            writer.writerow(error_message)
+
+        to_save: np.ndarray = np.asarray([error_message], object)
+        DataIO.write_csv(error_file_path, to_save)
 
     @staticmethod
     def convert_to_error_csv_path(path: str) -> str:

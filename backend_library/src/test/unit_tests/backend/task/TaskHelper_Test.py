@@ -1,8 +1,9 @@
+import math
 import os
 import unittest
-import numpy as np
 
 from backend.task.TaskHelper import TaskHelper
+from backend.DataIO import DataIO
 
 
 class TaskHelperTest(unittest.TestCase):
@@ -17,26 +18,31 @@ class TaskHelperTest(unittest.TestCase):
     _error_path3: str = TaskHelper.convert_to_error_csv_path(_path3)
 
     def setUp(self) -> None:
-        self.__clean_created_files_and_directories()
+        # self.__clean_created_files_and_directories()
+        pass
 
     def tearDown(self):
-        self.__clean_created_files_and_directories()
+        # self.__clean_created_files_and_directories()
+        pass
 
     def test_create_error_csv(self):
         error_message: str = "basic error"
 
+        # valid path and message != "" -> everything works
         TaskHelper.save_error_csv(self._path1, error_message)
         self.assertTrue(os.path.isfile(self._error_path1))
+        self.assertEqual(error_message, DataIO.read_uncleaned_csv(self._error_path1)[0][0])
 
+        # Not valid path (doesn't end with .csv) -> Raise AssertionError
         with self.assertRaises(AssertionError) as context:
             TaskHelper.save_error_csv(self._path2, error_message)
         self.assertFalse(os.path.isfile(self._error_path2))
 
+        # empty string -> save and return NaN
         empty_message: str = ""
         TaskHelper.save_error_csv(self._path3, empty_message)
         self.assertTrue(os.path.isfile(self._error_path3))
-
-        # TODO: Check content of created csv files
+        self.assertTrue(math.isnan(DataIO.read_uncleaned_csv(self._error_path3)[0][0]))
 
     def __clean_created_files_and_directories(self):
         if os.path.isfile(self._error_path1):
