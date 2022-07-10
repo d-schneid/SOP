@@ -17,9 +17,9 @@ class CategoricalColumnRemoverTest(unittest.TestCase):
 
     def test_categorical_column_remover(self):
         # Remove categorical data one row (edge case)
-        cleaned_cat_dataset3: np.ndarray = np.asarray([1, 412, None])
-        np.testing.assert_array_equal(cleaned_cat_dataset3,
-                                      self._categorical_handler.do_cleaning(self._ds.cat_dataset3))
+        cleaned_cat_dataset4: np.ndarray = np.asarray([1, 412, None])
+        np.testing.assert_array_equal(cleaned_cat_dataset4,
+                                      self._categorical_handler.do_cleaning(self._ds.cat_dataset4))
 
         # Remove Categorical data
         cleaned_cat_dataset1: np.ndarray = np.array([[-132., None], [0., None], [1., None]])

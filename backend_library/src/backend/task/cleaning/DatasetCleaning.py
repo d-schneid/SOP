@@ -96,25 +96,20 @@ class DatasetCleaning(Task, Schedulable, ABC):
         Is called by the scheduler to do the dataset cleaning. \n
         :return: None
         """
-        print("DO WORK!")
         self.__delete_old_error_file()
 
         dataset_to_clean: np.ndarray = self.__load_uncleaned_dataset()
 
-        print("LOADED:")
-        print(dataset_to_clean)
-        print("END LOADED")
         cleaning_pipeline_result: Optional[np.ndarray] = self.__run_cleaning_pipeline(dataset_to_clean)
-        print("CLEANING PIPELINE RESULT:")
-        print(cleaning_pipeline_result)
+
         if cleaning_pipeline_result is None:  # cleaning failed
             self._task_progress_callback(self._task_id, TaskState.FINISHED_WITH_ERROR, 1.0)
             return
 
-        # Casting will throw an exception when the cleaned dataset cannot be converted to only float32 values
+        # Casting will throw an exception if the cleaned dataset cannot be converted to only float32 values
         try:
             cleaned_dataset: np.ndarray = cleaning_pipeline_result.astype(
-                np.float32)  # cast ndarray to float32 # TODO: Vllt copy=False
+                np.float32, copy=False)  # cast ndarray to float32
         except ValueError as e:
             TaskHelper.save_error_csv(self._cleaned_dataset_path,
                                       TaskErrorMessages().cast_to_float32_error + str(e))
@@ -154,15 +149,10 @@ class DatasetCleaning(Task, Schedulable, ABC):
 
         finished_cleaning_steps: int = 0
 
-        print("START")
-        print(csv_to_clean)
         for cleaning_step in self._cleaning_steps:
             try:
                 if cleaning_step is not None:
-                    print(str(cleaning_step) + "STARTED")
                     csv_to_clean = cleaning_step.do_cleaning(csv_to_clean)
-                    print(str(cleaning_step) + "RESULT:")
-                    print(csv_to_clean)
             except Exception as e:  # catch all exceptions
                 TaskHelper.save_error_csv(self._cleaned_dataset_path, str(e))
                 return None
@@ -177,9 +167,6 @@ class DatasetCleaning(Task, Schedulable, ABC):
                                   0.99)  # compute and clamp progress
             self._task_progress_callback(self._task_id, TaskState.RUNNING, progress)
 
-            print(str(cleaning_step))
-            print(csv_to_clean)
-        print("END_CLEANING")
         return csv_to_clean
 
     def __empty_cleaning_result_handler(self, csv_to_check: np.ndarray) -> bool:

@@ -11,13 +11,22 @@ from backend.DataIO import DataIO
 
 
 class DatasetCleaningTestRunCleaningPipeline(unittest.TestCase):
+    # DatasetCleaning object constructor variables
+    _finished_cleaning: bool = False
+
+    _user_id: int = -1
+    _task_id: int = -1
+    _priority: int = 9999
+
+    # datasets
     _dir_name: str = os.getcwd()
+
     # dataset 1
     _uncleaned_dataset_path1: str = os.path.join(_dir_name, "uncleaned_dataset1.csv")
     _cleaned_dataset_path1: str = os.path.join(_dir_name, "cleaned_dataset1.csv")
 
     _uncleaned_dataset1: np.ndarray = ds().cat_dataset3
-    _cleaned_dataset1: np.ndarray = np.asarray([[1., 1.]])
+    _cleaned_dataset1: np.ndarray = np.asarray([[0., 0.]])
 
     # dataset 2
     _uncleaned_dataset_path2: str = os.path.join(_dir_name, "uncleaned_dataset2.csv")
@@ -25,19 +34,14 @@ class DatasetCleaningTestRunCleaningPipeline(unittest.TestCase):
 
     _uncleaned_dataset2: np.ndarray = ds().big_dataset1
 
-    _finished_cleaning: bool = False
-
-    _user_id: int = -1
-    _task_id: int = -1
-    _priority: int = 9999
+    # Scheduler
+    DebugScheduler()
 
     def task_progress_callback(self, _task_id: int, task_state: TaskState, progress: float) -> None:
         pass
 
     def setUp(self) -> None:
         self.__clean_created_files_and_directories()
-
-        DebugScheduler()
 
         self._dataIO = DataIO()
         self._dataIO.write_csv(self._uncleaned_dataset_path1, self._uncleaned_dataset1)
@@ -52,7 +56,7 @@ class DatasetCleaningTestRunCleaningPipeline(unittest.TestCase):
                                                      self._cleaned_dataset_path2, None, self._priority)
 
     def tearDown(self) -> None:
-        #self.__clean_created_files_and_directories()
+        self.__clean_created_files_and_directories()
         self._dc1 = None
         self._dc2 = None
 
@@ -70,13 +74,11 @@ class DatasetCleaningTestRunCleaningPipeline(unittest.TestCase):
         if os.path.isfile(self._uncleaned_dataset_path2):
             os.remove(self._uncleaned_dataset_path2)
 
-    #def test_run_cleaning_pipeline1(self):
-        #print(self._dc1._DatasetCleaning__run_cleaning_pipeline(self._uncleaned_dataset1))
-        #self._dc1.schedule()
-        #cleaned_dataset1: np.ndarray = self._dataIO.read_cleaned_csv(self._cleaned_dataset_path1)
-        #np.testing.assert_array_almost_equal(cleaned_dataset1, DataIO.read_cleaned_csv(self._cleaned_dataset_path1))
-
-
+    def test_run_cleaning_pipeline1(self):
+        # print(self._dc1._DatasetCleaning__run_cleaning_pipeline(self._uncleaned_dataset1))
+        self._dc1.schedule()
+        np.testing.assert_array_almost_equal(self._cleaned_dataset1,
+                                             DataIO.read_cleaned_csv(self._cleaned_dataset_path1))
 
     def test_run_cleaning_pipeline2(self):
         self._dc2.schedule()
@@ -89,6 +91,7 @@ class DatasetCleaningTestRunCleaningPipeline(unittest.TestCase):
                                                    [6.07124844e-05, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
                                                     1.00000000e+00, 0.00000000e+00, 9.87870182e-01]])
         np.testing.assert_array_almost_equal(cleaned_dataset2, DataIO.read_cleaned_csv(self._cleaned_dataset_path2))
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -16,7 +16,7 @@ from backend.scheduler.DebugScheduler import DebugScheduler
 class ExecutionTestResultZipping(unittest.TestCase):
     _user_id: int = 214
     _task_id: int = 1553
-    _dataset_path: str = "dataset_path"
+    _dataset_path: str = "dataset_path.csv"
 
     _dir_name: str = os.getcwd()
 

@@ -112,7 +112,7 @@ class DatasetCleaningTestNoUncleanedDataset(unittest.TestCase):
 
     def test_load_uncleaned_dataset(self):
         # No uncleaned Dataset -> throw exception
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(FileNotFoundError) as context:
             self._dc_missing_uncleaned_dataset._DatasetCleaning__load_uncleaned_dataset()
 
     def task_progress_callback(self, _task_id: int, task_state: TaskState, progress: float) -> None:
@@ -126,7 +126,7 @@ class DatasetCleaningTestRunCleaningPipeline(unittest.TestCase):
     _cleaned_dataset_path: str = os.path.join(_dir_name, "cleaned_dataset1.csv")
 
     _uncleaned_dataset1: np.ndarray = ds().cat_dataset3
-    _cleaned_dataset1: np.ndarray = np.asarray([[1., 1.]])
+    _cleaned_dataset1: np.ndarray = np.asarray([[0., 0.]])
 
     # dataset 2
     _uncleaned_dataset2: np.ndarray = ds().big_dataset1
