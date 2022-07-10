@@ -46,6 +46,10 @@ class ExecutionSubspace:
         self.__schedule_execution_elements()
 
     @property
+    def subspace(self) -> Subspace:
+        return self._subspace
+
+    @property
     def subspace_dtype(self) -> np.dtype:
         return self._execution.dataset_dtype
 
