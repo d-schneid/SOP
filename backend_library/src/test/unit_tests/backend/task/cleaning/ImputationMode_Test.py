@@ -14,6 +14,12 @@ class ImputationModeTest(unittest.TestCase):
 
     def test_imputation_mode(self):
         # use mode normally
+        # TODO!!!!
+        cleaned_dataset7: np.ndarray = np.array([[-132., 7., 3.], [0., 7., 3.], [1., 7., 3.]])
+        np.testing.assert_array_equal(cleaned_dataset7,
+                                      self._mode.do_cleaning(self._ds.dataset7))
+
+        # No missing values -> Dont do anything
         cleaned_dataset3: np.ndarray = np.array([[-1, 2], [-1, 2], [-1, 2], [-1, 2]])
         self.assertTrue(np.array_equal(self._ds.dataset3,
                                        self._mode.do_cleaning(self._ds.dataset3)), True)

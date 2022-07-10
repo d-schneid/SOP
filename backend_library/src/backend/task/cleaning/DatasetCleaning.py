@@ -148,11 +148,11 @@ class DatasetCleaning(Task, Schedulable, ABC):
 
         finished_cleaning_steps: int = 0
 
+        print("START")
+        print(csv_to_clean)
         for cleaning_step in self._cleaning_steps:
-            print(csv_to_clean)
             try:
                 if cleaning_step is not None:
-                    print(type(cleaning_step))
                     csv_to_clean = cleaning_step.do_cleaning(csv_to_clean)
             except Exception as e:  # catch all exceptions
                 TaskHelper.save_error_csv(self._cleaned_dataset_path, str(e))
@@ -164,9 +164,13 @@ class DatasetCleaning(Task, Schedulable, ABC):
 
             # Progress handling
             finished_cleaning_steps += 1
-            progress: float = min(finished_cleaning_steps / self._cleaning_steps_count,
+            progress: float = min(float(finished_cleaning_steps) / float(self._cleaning_steps_count),
                                   0.99)  # compute and clamp progress
             self._task_progress_callback(self._task_id, TaskState.RUNNING, progress)
+
+            print(str(cleaning_step))
+            print(csv_to_clean)
+        print("END_CLEANING")
         return csv_to_clean
 
     def __empty_cleaning_result_handler(self, csv_to_check: np.ndarray) -> bool:

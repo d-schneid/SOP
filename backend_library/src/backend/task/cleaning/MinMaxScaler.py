@@ -24,8 +24,6 @@ class MinMaxScaler(FeatureScaler, ABC):
         eh.check_non_none_column(dataset_to_clean, "MinMaxScaler")
 
         # MinMaxScaling logic
-
-
         # normal case (more than one row)
         if len(dataset_to_clean.shape) > 1:
             scaler: mms = mms()
@@ -36,5 +34,5 @@ class MinMaxScaler(FeatureScaler, ABC):
 
         # edge case handling: one row only
         else:
-            return np.ones((1, dataset_to_clean.shape[0])).astype(np.float32)
+            return np.ones((1, dataset_to_clean.shape[0]))
 

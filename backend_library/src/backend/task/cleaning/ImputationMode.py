@@ -2,10 +2,12 @@ from abc import ABC
 
 import numpy as np
 import pandas as pd
+from scipy import stats
 
 from backend.task.cleaning.Imputation import Imputation
 from backend.task.cleaning.DatasetCleaningStepExceptionHanding \
     import DatasetCleaningStepExceptionHandling as eh
+from sklearn.impute import SimpleImputer
 
 
 class ImputationMode(Imputation, ABC):
@@ -26,10 +28,12 @@ class ImputationMode(Imputation, ABC):
         # Mode logic
         # normal case (more than one row)
         if len(dataset_to_clean.shape) > 1:
-            df = pd.DataFrame(dataset_to_clean)
-            for column in df:
-                df[column] = df[column].fillna(df[column].mean)
-            return df.to_numpy()
+            # Replace None with np.nan
+            dataset_to_clean = pd.DataFrame(dataset_to_clean).fillna(value=np.nan).to_numpy()
+            # Use SimpleImputer to replace np.nan with None
+            imputer_mode: SimpleImputer = SimpleImputer(missing_values=np.nan, strategy='most_frequent')
+            imputer_mode.fit(dataset_to_clean)
+            return imputer_mode.transform(dataset_to_clean)
 
         # edge case handling: one row only
         else:

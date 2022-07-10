@@ -121,11 +121,15 @@ class DatasetCleaningTestNoUncleanedDataset(unittest.TestCase):
 
 class DatasetCleaningTestRunCleaningPipeline(unittest.TestCase):
     _dir_name: str = os.getcwd()
+    # dataset 1
     _uncleaned_dataset_path1: str = os.path.join(_dir_name, "uncleaned_dataset1.csv")
     _cleaned_dataset_path1: str = os.path.join(_dir_name, "cleaned_dataset1.csv")
 
     _uncleaned_dataset1: np.ndarray = ds().cat_dataset3
-    _cleaned_dataset1: np.ndarray = np.asarray([1., 1.])
+    _cleaned_dataset1: np.ndarray = np.asarray([[1., 1.]])
+
+    # dataset 2
+    _uncleaned_dataset2: np.ndarray = ds().big_dataset1
 
     _finished_cleaning: bool = False
 
@@ -133,16 +137,14 @@ class DatasetCleaningTestRunCleaningPipeline(unittest.TestCase):
     _task_id: int = -1
     _priority: int = 9999
 
-
-
-    def task_progress_callback1(self, _task_id: int, task_state: TaskState, progress: float) -> None:
+    def task_progress_callback(self, _task_id: int, task_state: TaskState, progress: float) -> None:
         pass
 
     def setUp(self) -> None:
         self.__clean_created_files_and_directories()
         with open(self._uncleaned_dataset_path1, 'w') as uncleaned_csv:
             self._dc1: DatasetCleaning = DatasetCleaning(self._user_id, self._task_id,
-                                                         self.task_progress_callback1, self._uncleaned_dataset_path1,
+                                                         self.task_progress_callback, self._uncleaned_dataset_path1,
                                                          self._cleaned_dataset_path1, None, self._priority)
 
     def tearDown(self) -> None:
@@ -152,6 +154,8 @@ class DatasetCleaningTestRunCleaningPipeline(unittest.TestCase):
     def __clean_created_files_and_directories(self):
         if os.path.isfile(self._cleaned_dataset_path1):
             os.remove(self._cleaned_dataset_path1)
+        if os.path.isfile(self._cleaned_dataset_path1+".error"):
+            os.remove(self._cleaned_dataset_path1+".error")
         if os.path.isfile(self._uncleaned_dataset_path1):
             os.remove(self._uncleaned_dataset_path1)
 
@@ -159,6 +163,10 @@ class DatasetCleaningTestRunCleaningPipeline(unittest.TestCase):
         np.testing.assert_array_equal(self._cleaned_dataset1,
                                       self._dc1._DatasetCleaning__run_cleaning_pipeline(self._uncleaned_dataset1))
 
+    def test_run_cleaning_pipeline2(self):
+        print(self._uncleaned_dataset2)
+        print(self._dc1._DatasetCleaning__run_cleaning_pipeline(self._uncleaned_dataset2))
+        self.assertTrue(True)
 
 if __name__ == '__main__':
     unittest.main()

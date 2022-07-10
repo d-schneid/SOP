@@ -29,7 +29,7 @@ class MinMaxScalerTest(unittest.TestCase):
             self._min_max_scaler.do_cleaning(self._ds.dataset1)
 
         # edge case: Only one row -> Replace each element with one
-        np.testing.assert_array_equal(np.asarray([[1, 1, 1, 1, 1]], np.float32),
+        np.testing.assert_array_equal(np.asarray([[1, 1, 1, 1, 1]]),
                                       self._min_max_scaler.do_cleaning(self._ds.dataset6))
 
 

@@ -48,6 +48,10 @@ class Datasets:
         return np.array([-1, 1234, 12, 53, 6])
 
     @property
+    def dataset7(self) -> np.ndarray:
+        return np.array([[-132., None, None], [0., 7., None], [1., 7., 3.]])
+
+    @property
     def cat_dataset1(self) -> np.ndarray:
         return np.array([[-132., 'PSE', None], [0., 'IST', None], [1., 'SUPER', None]])
 
@@ -58,3 +62,11 @@ class Datasets:
     @property
     def cat_dataset3(self) -> np.ndarray:
         return np.asarray([1, 412, "I am an evil String", None], object)
+
+    @property
+    def big_dataset1(self) -> np.ndarray:
+        return np.array([[-1, 1234, 12, 53, 6, 124, None, 151245124, 1541],
+                         [214123, 1, 21, None, 1241, "Eve the evil String", None, 213, -124512],
+                         [12, -1234, None, 1, 15215, 4, None, 12, 12],
+                         [None, None, None, None, None, None, None, None, None],
+                         [12, -1234, None, 1, 15215, 4, None, 12, 12]])
