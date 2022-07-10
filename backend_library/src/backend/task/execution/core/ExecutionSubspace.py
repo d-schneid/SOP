@@ -130,5 +130,7 @@ class ExecutionSubspace:
         Unlinks the dataset from the subspace from shared_memory. \n
         :return: None
         """
-        # TODO Tobias
-        return None
+        ss_shm = SharedMemory(self._subspace_shared_memory_name)
+        self._subspace_shared_memory_name = None
+        ss_shm.unlink()
+        ss_shm.close()
