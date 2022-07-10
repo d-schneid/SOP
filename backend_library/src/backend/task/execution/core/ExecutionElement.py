@@ -94,5 +94,5 @@ class ExecutionElement(Schedulable, ABC):
         :param run_algo_result: The unchanged result of the algorithm.
         :return: The result-csv-file of this ExecutionElement.
         """
-        # TODO: Tobias
-        return np.zeros(0)
+        one_to_n = np.arange(0, run_algo_result.shape[0], 1, self._execution_subspace.subspace_dtype)
+        return np.concatenate((one_to_n.T, run_algo_result), 1)
