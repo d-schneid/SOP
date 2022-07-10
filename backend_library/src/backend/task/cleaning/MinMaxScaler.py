@@ -24,8 +24,17 @@ class MinMaxScaler(FeatureScaler, ABC):
         eh.check_non_none_column(dataset_to_clean, "MinMaxScaler")
 
         # MinMaxScaling logic
-        scaler: mms = mms()
-        scaler.fit(dataset_to_clean)
-        transformed_dataset: np.ndarray = scaler.transform(dataset_to_clean)
-        df = pd.DataFrame(transformed_dataset)
-        return df.to_numpy()
+
+
+        # normal case (more than one row)
+        if len(dataset_to_clean.shape) > 1:
+            scaler: mms = mms()
+            scaler.fit(dataset_to_clean)
+            transformed_dataset: np.ndarray = scaler.transform(dataset_to_clean)
+            df = pd.DataFrame(transformed_dataset)
+            return df.to_numpy()
+
+        # edge case handling: one row only
+        else:
+            return np.ones((1, dataset_to_clean.shape[0])).astype(np.float32)
+

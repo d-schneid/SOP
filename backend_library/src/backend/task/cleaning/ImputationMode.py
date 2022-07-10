@@ -33,5 +33,5 @@ class ImputationMode(Imputation, ABC):
 
         # edge case handling: one row only
         else:
-            return np.ones((1, dataset_to_clean.shape[0])).astype(np.float32)
+            return dataset_to_clean
 

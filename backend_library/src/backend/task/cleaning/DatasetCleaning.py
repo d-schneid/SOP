@@ -167,6 +167,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
             progress: float = min(finished_cleaning_steps / self._cleaning_steps_count,
                                   0.99)  # compute and clamp progress
             self._task_progress_callback(self._task_id, TaskState.RUNNING, progress)
+        return csv_to_clean
 
     def __empty_cleaning_result_handler(self, csv_to_check: np.ndarray) -> bool:
         """
