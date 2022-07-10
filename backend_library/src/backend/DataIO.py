@@ -33,5 +33,12 @@ class DataIO:
 
     @staticmethod
     def write_csv(path: str, data: np.ndarray):
-        # TODO: Finn
-        pass
+        """
+        Writes the given dataset to a csv-file.
+        :path: The absolute path to the location of the csv-file to be created and written to.
+        :data: The dataset to write to the file.
+        """
+
+        df = pd.DataFrame(data)
+
+        df.to_csv(path)
