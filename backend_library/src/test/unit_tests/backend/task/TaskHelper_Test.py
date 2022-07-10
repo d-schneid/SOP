@@ -18,12 +18,10 @@ class TaskHelperTest(unittest.TestCase):
     _error_path3: str = TaskHelper.convert_to_error_csv_path(_path3)
 
     def setUp(self) -> None:
-        # self.__clean_created_files_and_directories()
-        pass
+        self.__clean_created_files_and_directories()
 
     def tearDown(self):
-        # self.__clean_created_files_and_directories()
-        pass
+        self.__clean_created_files_and_directories()
 
     def test_create_error_csv(self):
         error_message: str = "basic error"
