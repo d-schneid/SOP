@@ -7,6 +7,7 @@ import sys
 
 from multiprocessing import shared_memory
 from abc import ABC
+from multiprocessing.shared_memory import SharedMemory
 from typing import Callable, Optional
 from typing import List
 from collections.abc import Iterable
@@ -205,7 +206,7 @@ class Execution(Task, ABC):
         """
         return self._result_path
 
-    def cache_dataset(self) -> str:
+    def cache_dataset(self) -> SharedMemory:
         """
         Load the cleaned dataset, if it isn't loaded into the shared memory yet. \n
         :return: The shared_memory_name of the cleaned dataset.
@@ -216,11 +217,10 @@ class Execution(Task, ABC):
                 shm = shared_memory.SharedMemory(None, True, sys.getsizeof(data))
                 shared_data = np.ndarray(data.shape, data.dtype, shm.buf)
                 shared_data[:] = data[:]
-                shm_name = shm.name
-                shm.close()
-                return shm_name
+                self._shared_memory_name = shm.name
+                return shm
             else:
-                return self._shared_memory_name
+                return SharedMemory(self._shared_memory_name)
 
     def on_execution_element_finished(self, error: bool) -> None:
         """
