@@ -19,7 +19,7 @@ ALGORITHM_ROOT_DIR = settings.MEDIA_ROOT / "algorithms"
 class AdminAddAlgorithmForm(forms.ModelForm):
     class Meta:
         model = Algorithm
-        exclude = ["signature"]
+        exclude = ["signature", "upload_date"]
 
     def clean_path(self):
         cleaned_file: TemporaryUploadedFile = self.cleaned_data.get('path')
@@ -34,7 +34,7 @@ class AdminAddAlgorithmForm(forms.ModelForm):
         delete_temp_algorithm(temp_path)
 
         if error is not None:
-            self.add_error("path", "This is not a valid algorithm")
+            self.add_error("path", "This is not a valid algorithm: " + error)
 
         elif error is None:
             # No need to assign user, admin can decide to which user this algorithm belongs to
