@@ -5,6 +5,7 @@ import os
 
 import sys
 from collections.abc import Iterable
+from multiprocessing.shared_memory import SharedMemory
 from typing import List
 
 import numpy as np
@@ -21,13 +22,13 @@ class ExecutionSubspace:
     """
     Manages the computations of all algorithms of an Execution, that compute their results on the same Subspace.
     """
-    _cache_subset_lock = multiprocessing.Lock()
 
     def __init__(self, execution: Execution, subspace: Subspace):
         """
         :param execution: The Execution this ExecutionSubspace belongs to.
         :param subspace: The Subspace whose ExecutionElements are managed by this ExecutionSubspace.
         """
+        self._cache_subset_lock = multiprocessing.Lock()
         self._execution: Execution = execution
         self._subspace: Subspace = subspace
 
@@ -87,16 +88,18 @@ class ExecutionSubspace:
         """
         return self._execution.task_id
 
-    def get_subspace_data_for_processing(self) -> np.ndarray:
+    def get_subspace_data_for_processing(self) -> SharedMemory:
         """
         Returns the dataset for this subset from shared_memory. \n
         :return: The subspace_dataset (from shared_memory).
         """
-        if self._subspace_shared_memory_name is None:
-            self.__load_subspace_from_dataset()
-
-        # TODO Tobias: numpy array aus shared_memory ausgeben
-        return np.zeros((0, 0))
+        with self._cache_subset_lock:
+            if self._subspace_shared_memory_name is None:
+                shm = self.__load_subspace_from_dataset()
+                self._subspace_shared_memory_name = shm.name
+                return shm
+            else:
+                return SharedMemory(self._subspace_shared_memory_name)
 
     def __load_subspace_from_dataset(self) -> np.ndarray:
         """
