@@ -1,7 +1,6 @@
 import os
 
 import numpy as np
-import numpy.typing as npt
 import pandas as pd
 
 
@@ -11,7 +10,7 @@ class DataIO:
         """
         Returns the cleaned dataset. \n
         Raises an ValueError exception if the dataset is not cleaned (cast into float32 did not succeed).
-        :param path: The absolute path were to read the dataset from.
+        :param path: The absolute path where to read the dataset from.
         :return: The cleaned Dataset (Or an exception).
         """
         loaded_dataset = DataIO.read_uncleaned_csv(path)
@@ -24,7 +23,7 @@ class DataIO:
     def read_uncleaned_csv(path: str) -> np.ndarray:
         """
         Returns the uncleaned dataset. \n
-        :param path: The absolute path were to read the dataset from.
+        :param path: The absolute path where to read the dataset from.
         :return: The uncleaned dataset.
         """
         assert os.path.isfile(path) is True
@@ -34,5 +33,12 @@ class DataIO:
 
     @staticmethod
     def write_csv(path: str, data: np.ndarray):
-        # TODO: Finn
-        pass
+        """
+        Writes the given dataset to a csv-file.
+        :path: The absolute path to the location of the csv-file to be created and written to.
+        :data: The dataset to write to the file.
+        """
+
+        df = pd.DataFrame(data)
+
+        df.to_csv(path)

@@ -18,15 +18,21 @@ class AlgorithmQuerySet(models.QuerySet):
     def get_sorted_by_name(self):
         return self.order_by(Lower("name"))
 
+    def get_sorted_by_upload_date(self):
+        # latest uploaded algorithms first
+        return self.order_by("-upload_date")
+
     def get_with_group(self, group):
         return self.filter(group=group)
 
     def get_by_user_and_public(self, user):
         return self.filter(Q(user_id__exact=user.id) | Q(user_id__exact=None))
 
-    def get_sorted_by_upload_date(self):
-        # latest uploaded algorithms first
-        return self.order_by("-upload_date")
+    def get_by_user(self, user):
+        return self.filter(user__id__exact=user.id)
+
+    def get_public(self):
+        return self.filter(user=None)
 
 
 class DatasetManager(models.Manager):

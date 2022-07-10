@@ -1,0 +1,2 @@
+class SampleAlgorithmInvalid:
+    pass

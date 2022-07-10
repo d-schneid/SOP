@@ -7,7 +7,7 @@ from experiments.models.managers import DatasetManager, DatasetQueryset
 
 def _get_dataset_upload_path(instance, filename) -> str:
     user_id = instance.user.id
-    return f"datasets/user{user_id}/{filename}"
+    return f"datasets/user_{user_id}/{filename}"
 
 
 class Dataset(models.Model):

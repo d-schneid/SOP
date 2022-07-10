@@ -40,7 +40,7 @@ class TaskHelper:
         """
         if not os.path.isdir(path):
             new_directory = os.path.join(path)  # TODO: Test this
-            os.mkdir(new_directory)
+            os.makedirs(new_directory)
 
     @staticmethod
     def iterable_length(iterable: Iterable) -> int:

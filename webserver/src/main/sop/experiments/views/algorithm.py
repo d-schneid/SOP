@@ -17,14 +17,14 @@ from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from experiments.forms.create import AlgorithmUploadForm
 from experiments.forms.edit import AlgorithmEditForm
 from experiments.models import Algorithm
-from sop.settings import MEDIA_ROOT
+from django.conf import settings
 from experiments.services.algorithm import (
     save_temp_algorithm,
     delete_temp_algorithm,
     get_signature_of_algorithm,
 )
 
-ALGORITHM_ROOT_DIR = MEDIA_ROOT / "algorithms"
+ALGORITHM_ROOT_DIR = settings.MEDIA_ROOT / "algorithms"
 
 
 class AlgorithmOverview(LoginRequiredMixin, ListView):
@@ -33,17 +33,15 @@ class AlgorithmOverview(LoginRequiredMixin, ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
+        sorted_list = Algorithm.objects.get_by_user(self.request.user)
         # Get sort by variable and get sorted set
         sort_by = self.kwargs["sort"]
         if sort_by == "group":
-            sorted_list = Algorithm.objects.get_sorted_by_group_and_name()
+            sorted_list = sorted_list.get_sorted_by_group_and_name()
         elif sort_by == "upload_date":
-            sorted_list = Algorithm.objects.get_sorted_by_upload_date()
+            sorted_list = sorted_list.get_sorted_by_upload_date()
         else:
-            sorted_list = Algorithm.objects.get_sorted_by_name()
-
-        # Filter algorithms to only show own and public algorithms
-        sorted_list = sorted_list.get_by_user_and_public(self.request.user)
+            sorted_list = sorted_list.get_sorted_by_name()
 
         context.update({"models_list": sorted_list})
         return context
@@ -78,7 +76,6 @@ class AlgorithmUploadView(LoginRequiredMixin, CreateView):
 
 class AlgorithmDeleteView(LoginRequiredMixin, DeleteView):
     model = Algorithm
-    template_name = "algorithm_delete.html"
     success_url = reverse_lazy("algorithm_overview")
 
 
