@@ -43,9 +43,6 @@ class AlgorithmOverview(LoginRequiredMixin, ListView):
         else:
             sorted_list = sorted_list.get_sorted_by_name()
 
-        # Filter algorithms to only show own and public algorithms
-        sorted_list = sorted_list.get_by_user_and_public(self.request.user)
-
         context.update({"models_list": sorted_list})
         return context
 
@@ -79,7 +76,6 @@ class AlgorithmUploadView(LoginRequiredMixin, CreateView):
 
 class AlgorithmDeleteView(LoginRequiredMixin, DeleteView):
     model = Algorithm
-    template_name = "algorithm_delete.html"
     success_url = reverse_lazy("algorithm_overview")
 
 
