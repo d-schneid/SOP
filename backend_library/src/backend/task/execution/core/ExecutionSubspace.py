@@ -45,6 +45,10 @@ class ExecutionSubspace:
         self.__generate_execution_elements(algorithms)
         self.__schedule_execution_elements()
 
+    @property
+    def subspace_dtype(self) -> np.dtype:
+        return self._execution.dataset_dtype
+
     def __generate_execution_elements(self, algorithms: Iterable[ParameterizedAlgorithm]) -> None:
         """
         :param algorithms: All algorithms that are selected for the Execution.

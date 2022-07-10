@@ -78,7 +78,11 @@ class Execution(Task, ABC):
         self._execution_subspaces: List[ExecutionSubspace] = list()
 
         # shared memory
-        self._shared_memory_name: str = ""
+        self._shared_memory_name: Optional[str] = None
+
+    @property
+    def dataset_dtype(self) -> np.dtype:
+        return np.dtype('f4')
 
     def __fill_algorithms_directory_name(self) -> None:
         """
