@@ -4,41 +4,13 @@ from django.views.generic import ListView, UpdateView, DeleteView, CreateView
 from pandas import DataFrame
 
 from authentication.mixins import LoginRequiredMixin
-from backend.scheduler.DebugScheduler import DebugScheduler
-from backend.scheduler.Scheduler import Scheduler
 from experiments.forms.create import DatasetUploadForm
 from experiments.forms.edit import DatasetEditForm
-from experiments.models.dataset import Dataset, get_dataset_path
-from django.core.files.uploadhandler import TemporaryUploadedFile
+from experiments.models import Dataset
 
 import pandas as pd
 
 from experiments.models.managers import DatasetQueryset
-from backend.task.cleaning import DatasetCleaning
-from django.conf import settings
-
-
-def stub_callback(*args, **kwargs):
-    print("CALLBACK:")
-    for arg in args:
-        print(arg)
-    print()
-
-
-def begin_dataset_cleaning(dataset: Dataset):
-    cleaning = DatasetCleaning(
-        uncleaned_dataset_path=str(settings.MEDIA_ROOT / str(dataset.path_original)),
-        cleaned_dataset_path=str(settings.MEDIA_ROOT / str(dataset.path_cleaned)),
-        cleaning_steps=None,
-        task_id=dataset.pk,
-        user_id=dataset.user.pk,
-        task_progress_callback=stub_callback,
-    )
-    print(dataset.path_cleaned)
-    print(dataset.path_original)
-    if Scheduler._instance is None:
-        DebugScheduler()
-    cleaning.schedule()
 
 
 class DatasetUploadView(LoginRequiredMixin, CreateView):
@@ -49,21 +21,15 @@ class DatasetUploadView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.user = self.request.user
-        file: TemporaryUploadedFile = self.request.FILES["path_original"]
 
-        csv_frame: DataFrame = pd.read_csv(
-            file.temporary_file_path()
-        )
+        csv_frame: DataFrame = pd.read_csv(self.request.FILES["path_original"].temporary_file_path())
         form.instance.datapoints_total = csv_frame.size
         form.instance.dimensions_total = csv_frame.shape[1]
 
         form.instance.is_cleaned = False
+        # TODO: Start Dataset Cleaning
 
-        # create dataset so we can extract attributes of dataset later
-        response = super().form_valid(form)
-        form.instance.path_cleaned = str(form.instance.path_original).split(".")[0] + "_cleaned.csv"
-        begin_dataset_cleaning(form.instance)
-        return response
+        return super().form_valid(form)
 
 
 class DatasetOverview(LoginRequiredMixin, ListView):
@@ -98,7 +64,7 @@ class DatasetDeleteView(LoginRequiredMixin, DeleteView):
         # find experiment via related name in models of experiment
         if not dataset.is_deletable:
             # return reverse_lazy("dataset_overview")
-            return HttpResponseRedirect(reverse_lazy("dataset_overview"))
+            return HttpResponseRedirect(reverse_lazy('dataset_overview'))
         return super().form_valid(form)
 
 
