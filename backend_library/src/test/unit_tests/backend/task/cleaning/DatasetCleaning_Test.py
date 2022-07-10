@@ -75,7 +75,7 @@ class DatasetCleaningTestDoWork(unittest.TestCase):
         self._dc._DatasetCleaning__delete_old_error_file()
         self.assertFalse(os.path.isfile(error_path))
 
-    def test_load_uncleaned_dataset(self):
+    def test_store_cleaned_dataset(self):
         np.testing.assert_array_equal(self._dc._DatasetCleaning__load_uncleaned_dataset(),
                                       self._uncleaned_array)
 
@@ -117,7 +117,6 @@ class DatasetCleaningTestInvalidValues(unittest.TestCase):
             DatasetCleaning(0, -2,
                             self.task_progress_callback, self.uncleaned_dataset_path,
                             self.cleaned_dataset_path, iter([]), self.priority)
-
 
 
 if __name__ == '__main__':

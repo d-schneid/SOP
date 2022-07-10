@@ -1,4 +1,3 @@
-import math
 import os
 import unittest
 
@@ -36,11 +35,11 @@ class TaskHelperTest(unittest.TestCase):
             TaskHelper.save_error_csv(self._path2, error_message)
         self.assertFalse(os.path.isfile(self._error_path2))
 
-        # empty string -> save and return NaN
+        # empty string -> Raise AssertionError
         empty_message: str = ""
-        TaskHelper.save_error_csv(self._path3, empty_message)
-        self.assertTrue(os.path.isfile(self._error_path3))
-        self.assertTrue(math.isnan(DataIO.read_uncleaned_csv(self._error_path3)[0][0]))
+        with self.assertRaises(AssertionError) as context:
+            TaskHelper.save_error_csv(self._path3, empty_message)
+        self.assertFalse(os.path.isfile(self._error_path3))
 
     def __clean_created_files_and_directories(self):
         if os.path.isfile(self._error_path1):

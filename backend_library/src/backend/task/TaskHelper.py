@@ -15,9 +15,11 @@ class TaskHelper:
         """ Converts path into the error_file_path and saves the error-csv-file there.
         :param path: The absolute path where the csv will be stored (contains the name of the csv and ends with .csv).
         :param error_message: The error message that will be written into the error_csv file.
+        It has to be not equal to ""
         :return: None
         """
         assert path.endswith(".csv")
+        assert error_message != ""
 
         error_file_path: str = TaskHelper.convert_to_error_csv_path(path)
         error_message: str = error_message
