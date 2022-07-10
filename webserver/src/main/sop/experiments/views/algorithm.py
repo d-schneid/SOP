@@ -43,9 +43,6 @@ class AlgorithmOverview(LoginRequiredMixin, ListView):
         else:
             sorted_list = sorted_list.get_sorted_by_name()
 
-        # Filter algorithms to only show own and public algorithms
-        sorted_list = sorted_list.get_by_user_and_public(self.request.user)
-
         context.update({"models_list": sorted_list})
         return context
 
