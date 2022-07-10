@@ -25,10 +25,19 @@ class CategoricalColumnRemover(CategoricalDataHandler, ABC):
         # CategoricalColumnRemover logic
         df = pd.DataFrame(dataset_to_clean)
         columns_to_drop = []
-        for column in df:
-            column_df: pd.DataFrame = pd.DataFrame(df[column])
-            if column_df.applymap(type).eq(str).any().any():
-                columns_to_drop.append(column)
-                continue
 
-        return df.drop(df.columns[columns_to_drop], axis=1).to_numpy()
+        # only one row -> needs special treatment
+        if len(dataset_to_clean.shape) < 2:
+            for idx in range(0, dataset_to_clean.shape[0]):
+                if type(dataset_to_clean[idx]) is str:
+                    columns_to_drop.append(idx)
+            return np.asarray(np.delete(dataset_to_clean, columns_to_drop, axis=0))
+        # normal case -> more than one row
+        else:
+            for column in df:
+                column_df: pd.DataFrame = pd.DataFrame(df[column])
+                print(column_df)
+                if column_df.applymap(type).eq(str).any().any():
+                    columns_to_drop.append(column)
+                    continue
+            return df.drop(df.columns[columns_to_drop], axis=1).to_numpy()
