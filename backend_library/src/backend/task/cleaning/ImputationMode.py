@@ -24,7 +24,14 @@ class ImputationMode(Imputation, ABC):
         eh.check_non_none_column(dataset_to_clean, "ImputationMode")
 
         # Mode logic
-        df = pd.DataFrame(dataset_to_clean)
-        for column in df:
-            df[column] = df[column].fillna(df[column].mean)
-        return df.to_numpy()
+        # normal case (more than one row)
+        if len(dataset_to_clean.shape) > 1:
+            df = pd.DataFrame(dataset_to_clean)
+            for column in df:
+                df[column] = df[column].fillna(df[column].mean)
+            return df.to_numpy()
+
+        # edge case handling: one row only
+        else:
+            return np.ones((1, dataset_to_clean.shape[0])).astype(np.float32)
+

@@ -1,5 +1,7 @@
 import unittest
 
+import numpy as np
+
 from backend.task.cleaning.DatasetCleaningStepExceptionHanding \
     import DatasetCleaningStepExceptionHandling as eh
 from backend_library.src.test.DatasetsForTesting import Datasets as ds
@@ -40,6 +42,16 @@ class DatasetCleaningStepExceptionHandlingTest(unittest.TestCase):
         # Raise exception because no column exists
         with self.assertRaises(ValueError) as context:
             eh.check_non_none_column(self._ds.empty_dataset, "")
+
+        # edge case: Only one row with no None -> No Error
+        self.assertEqual(eh.check_non_none_column(np.asarray([1, 14, 15]), "ERROR"), None)
+
+        # edge case: Only one row with None values -> Exception!
+        try:
+            self.assertEqual(eh.check_non_none_column(np.asarray([None, 1, None, None, 14, 15, None]), "ERROR"), None)
+        except ValueError:
+            self.fail("myFunc() raised ExceptionType unexpectedly!")
+
 
 
 if __name__ == '__main__':

@@ -31,8 +31,15 @@ class DatasetCleaningStepExceptionHandling:
         """
         DatasetCleaningStepExceptionHandling.check_non_empty_array(dataset_to_check, error_root)
 
-        for column_idx in range(0, dataset_to_check.shape[1]):
-            df: pd.DataFrame = pd.DataFrame(dataset_to_check[:, column_idx])
-            is_none_array: np.ndarray = df.isna().to_numpy()
-            if is_none_array.all():
-                raise ValueError(error_root + ": None-column exists")
+        # normal case (more than one row)
+        if len(dataset_to_check.shape) > 1:
+            for column_idx in range(0, dataset_to_check.shape[1]):
+                df: pd.DataFrame = pd.DataFrame(dataset_to_check[:, column_idx])
+                is_none_array: np.ndarray = df.isna().to_numpy()
+                if is_none_array.all():
+                    raise ValueError(error_root + ": None-column exists")
+        # edge case handling: one row only
+            else:
+                for idx in range(0, dataset_to_check.shape[0]):
+                    if str(type(dataset_to_check[idx])) == '<class \'NoneType\'>':
+                        raise ValueError(error_root + ": None-column exists")

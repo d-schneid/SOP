@@ -44,6 +44,10 @@ class Datasets:
         return np.array([[-1, 2], [-0.5, 6], [0, 10], [1, 18]])
 
     @property
+    def dataset6(self) -> np.ndarray:
+        return np.array([-1, 1234, 12, 53, 6])
+
+    @property
     def cat_dataset1(self) -> np.ndarray:
         return np.array([[-132., 'PSE', None], [0., 'IST', None], [1., 'SUPER', None]])
 

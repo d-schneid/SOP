@@ -2,121 +2,120 @@ import os
 import unittest
 
 import numpy as np
-import pandas as pd
 
 from backend.task.cleaning.DatasetCleaning import DatasetCleaning
 from backend.task.TaskState import TaskState
 from backend.task.TaskHelper import TaskHelper
+from backend.DataIO import DataIO
+from backend.task.TaskErrorMessages import TaskErrorMessages
 
 
-class DatasetCleaningTestDoWork(unittest.TestCase):
-    dir_name: str = os.getcwd()
-    uncleaned_dataset_path: str = os.path.join(dir_name, "uncleaned_dataset.csv")
-    cleaned_dataset_path: str = os.path.join(dir_name, "cleaned_dataset.csv")
+class DatasetCleaningTest1(unittest.TestCase):
+    _dir_name: str = os.getcwd()
+    _uncleaned_dataset_path: str = os.path.join(_dir_name, "uncleaned_dataset.csv")
+    _cleaned_dataset_path: str = os.path.join(_dir_name, "cleaned_dataset.csv")
 
-    finished_cleaning: bool = False
+    _finished_cleaning: bool = False
 
-    user_id: int = 1533
-    task_id: int = 24
-    priority: int = 9999
+    _user_id: int = -1
+    _task_id: int = -1
+    _priority: int = 9999
+
+    _error_message: str = TaskErrorMessages().cleaning_result_empty
+    _error_path: str = TaskHelper.convert_to_error_csv_path(_cleaned_dataset_path)
 
     def setUp(self) -> None:
-        self._dc: DatasetCleaning = DatasetCleaning(self.user_id, self.task_id,
-                                                    self.task_progress_callback, self.uncleaned_dataset_path,
-                                                    self.cleaned_dataset_path, iter([]), self.priority)
-
-        if os.path.isfile(self.uncleaned_dataset_path):
-            os.remove(self.uncleaned_dataset_path)
-        self._uncleaned_array: np.ndarray = np.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-        pd.DataFrame(self._uncleaned_array).to_csv(self.uncleaned_dataset_path, index=False)
+        self.__clean_created_files_and_directories()
+        with open(self._uncleaned_dataset_path, 'w') as uncleaned_csv:
+            self._dc: DatasetCleaning = DatasetCleaning(self._user_id, self._task_id,
+                                                        self.task_progress_callback, self._uncleaned_dataset_path,
+                                                        self._cleaned_dataset_path, iter([]), self._priority)
 
     def tearDown(self) -> None:
-        if os.path.isfile(self.uncleaned_dataset_path):
-            os.remove(self.uncleaned_dataset_path)
-        if os.path.isfile(self.cleaned_dataset_path):
-            os.remove(self.cleaned_dataset_path)
+        self.__clean_created_files_and_directories()
         self._dc = None
 
-    def task_progress_callback(self, task_id: int, task_state: TaskState, progress: float) -> None:
-        # Empty callback
-        pass
+    def test_is_DatasetCleaning_finished(self):
+        """Tests if __did_cleaning_finish() works correctly when calling schedule()"""
+        # Cleaned file does not exist -> cleaning is NOT finished
+        # Raise exception that scheduler does not exist
+        with self.assertRaises(AssertionError):
+            try:
+                self._dc.schedule()
+            except AttributeError:
+                raise AssertionError
+        self.assertFalse(self._finished_cleaning)
 
-    def test_getter(self):
-        self.assertEqual(self.user_id, self._dc.user_id)
-        self.assertEqual(self.task_id, self._dc.task_id)
-        self.assertEqual(self.priority, self._dc.priority)
+        # Cleaned file does exist -> cleaning is finished
+        with open(self._cleaned_dataset_path, 'w') as cleaned_csv:
+            self._dc.schedule()
+            self.assertTrue(self._finished_cleaning)
+        os.remove(self._cleaned_dataset_path)
 
-    def test_did_cleaning_finish(self):
-        if os.path.isfile(self.cleaned_dataset_path):
-            os.remove(self.cleaned_dataset_path)
+    def test_empty_cleaning_result_handler(self):
+        """Tests if __empty_cleaning_result_handler() works correctly"""
+        self.assertFalse(os.path.isfile(self._error_path))
 
-        self.assertFalse(self._dc._DatasetCleaning__did_cleaning_finish())
+        # array not empty
+        not_empty: np.ndarray = np.asarray(["I am not empty (:"])
+        self.assertFalse(self._dc._DatasetCleaning__empty_cleaning_result_handler(not_empty))
+        self.assertFalse(os.path.isfile(self._error_path))
 
-        with open(self.cleaned_dataset_path, 'w') as cleaned_csv:
-            self.assertTrue(self._dc._DatasetCleaning__did_cleaning_finish())
+        # array is empty
+        empty: np.ndarray = np.asarray([])
+        self.assertTrue(self._dc._DatasetCleaning__empty_cleaning_result_handler(empty))
+        self.assertTrue(os.path.isfile(self._error_path))
+        # compare error message
+        self.assertEqual(self._error_message, DataIO.read_uncleaned_csv(self._error_path)[0][0])
 
-        if os.path.isfile(self.cleaned_dataset_path):
-            os.remove(self.cleaned_dataset_path)
+        # clean up
+        os.remove(self._error_path)
+        self.assertFalse(os.path.isfile(self._error_path))
 
-        self.assertFalse(self._dc._DatasetCleaning__did_cleaning_finish())
+    def task_progress_callback(self, _task_id: int, task_state: TaskState, progress: float) -> None:
+        self._finished_cleaning = True
 
-    def test_delete_old_error_file(self):
-        error_path = TaskHelper.convert_to_error_csv_path(self.cleaned_dataset_path)
-        if os.path.isfile(error_path):
-            os.remove(error_path)
-
-        self._dc._DatasetCleaning__delete_old_error_file()
-        self.assertFalse(os.path.isfile(error_path))
-
-        with open(error_path, 'w') as cleaned_csv:
-            self.assertTrue(os.path.isfile(error_path))
-
-        # Test if it deletes the newly created error file:
-        self._dc._DatasetCleaning__delete_old_error_file()
-        self.assertFalse(os.path.isfile(error_path))
-
-    def test_store_cleaned_dataset(self):
-        np.testing.assert_array_equal(self._dc._DatasetCleaning__load_uncleaned_dataset(),
-                                      self._uncleaned_array)
+    def __clean_created_files_and_directories(self):
+        if os.path.isfile(self._error_path):
+            os.remove(self._error_path)
+        if os.path.isfile(self._uncleaned_dataset_path):
+            os.remove(self._uncleaned_dataset_path)
+        if os.path.isfile(self._cleaned_dataset_path):
+            os.remove(self._cleaned_dataset_path)
 
 
-class DatasetCleaningTestInvalidValues(unittest.TestCase):
-    dir_name: str = os.getcwd()
-    uncleaned_dataset_path: str = os.path.join(dir_name, "uncleaned_dataset.csv")
-    cleaned_dataset_path: str = os.path.join(dir_name, "cleaned_dataset.csv")
-    priority: int = 9999
+class DatasetCleaningTestNoUncleanedDataset(unittest.TestCase):
+    """Tests if __did_cleaning_finish() works correctly when calling schedule()"""
+    _dir_name: str = os.getcwd()
+    _uncleaned_dataset_path: str = os.path.join(_dir_name, "uncleaned_dataset.csv")
+    _cleaned_dataset_path: str = os.path.join(_dir_name, "cleaned_dataset.csv")
 
-    def task_progress_callback(self, task_id: int, task_state: TaskState, progress: float) -> None:
-        # Empty callback
-        pass
+    _user_id: int = -1
+    _task_id: int = -1
+    _priority: int = 9999
 
-    def test_invalid_user_id(self):
-        # has to be >= 0
+    def setUp(self) -> None:
+        with open(self._uncleaned_dataset_path, 'w') as uncleaned_csv:
+            self._dc_missing_uncleaned_dataset: DatasetCleaning = DatasetCleaning(self._user_id, self._task_id,
+                                                                                  self.task_progress_callback,
+                                                                                  "no_uncleaned_dataset",
+                                                                                  self._cleaned_dataset_path, iter([]),
+                                                                                  self._priority)
 
-        # No Error:
-        DatasetCleaning(-1, 0,
-                        self.task_progress_callback, self.uncleaned_dataset_path,
-                        self.cleaned_dataset_path, iter([]), self.priority)
+    def tearDown(self) -> None:
+        if os.path.isfile(self._uncleaned_dataset_path):
+            os.remove(self._uncleaned_dataset_path)
+        if os.path.isfile(self._cleaned_dataset_path):
+            os.remove(self._cleaned_dataset_path)
+        self._dc_missing_uncleaned_dataset = None
 
-        # <-1 -> exception
+    def test_load_uncleaned_dataset(self):
+        # No uncleaned Dataset -> throw exception
         with self.assertRaises(AssertionError) as context:
-            DatasetCleaning(-2, 0,
-                            self.task_progress_callback, self.uncleaned_dataset_path,
-                            self.cleaned_dataset_path, iter([]), self.priority)
+            self._dc_missing_uncleaned_dataset._DatasetCleaning__load_uncleaned_dataset()
 
-    def test_invalid_task_id(self):
-        # has to be >= 0
-
-        # No Error:
-        DatasetCleaning(0, -1,
-                        self.task_progress_callback, self.uncleaned_dataset_path,
-                        self.cleaned_dataset_path, iter([]), self.priority)
-
-        # <-1 -> exception
-        with self.assertRaises(AssertionError) as context:
-            DatasetCleaning(0, -2,
-                            self.task_progress_callback, self.uncleaned_dataset_path,
-                            self.cleaned_dataset_path, iter([]), self.priority)
+    def task_progress_callback(self, _task_id: int, task_state: TaskState, progress: float) -> None:
+        pass
 
 
 if __name__ == '__main__':

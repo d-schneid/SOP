@@ -30,6 +30,10 @@ class ImputationModeTest(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             self._mode.do_cleaning(self._ds.dataset1)
 
+        # edge case: Only one row -> Replace each element with one
+        np.testing.assert_array_equal(np.asarray([[1, 1, 1, 1, 1]], np.float32),
+                                      self._mode.do_cleaning(self._ds.dataset6))
+
 
 if __name__ == '__main__':
     unittest.main()
