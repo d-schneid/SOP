@@ -26,15 +26,38 @@ class DataIO:
         :path: The absolute path where to read the dataset from.
         :return: The uncleaned dataset.
         """
-        assert os.path.isfile(path) is True
 
         df: pd.DataFrame = pd.read_csv(path, dtype=object)
-        return df.to_numpy()
+        return DataIO.__save_convert_to_float(df.to_numpy())
+
+    @staticmethod
+    def __save_convert_to_float(to_convert: np.ndarray) -> np.ndarray:
+        """
+        Converts all values to float that can be converted. Leaves the other values as they are. \n
+        :param to_convert: The array that should be converted.
+        :return: The converted array.
+        """
+        assert len(to_convert.shape) > 0
+
+        if len(to_convert.shape) > 1:
+            for n in range(0, to_convert.shape[0]):
+                for m in range(0, to_convert.shape[1]):
+                    try:
+                        to_convert[n, m] = float(to_convert[n, m])
+                    except ValueError:
+                        continue  # leave value the same if it can't be casted
+        else:  # edge case: only one row
+            for n in range(0, to_convert.shape[0]):
+                try:
+                    to_convert[n] = float(to_convert[n])
+                except ValueError:
+                    continue  # leave value the same if it can't be casted
+        return to_convert
 
     @staticmethod
     def write_csv(path: str, data: np.ndarray, add_index_column: bool = False):
         """
-        Writes the given dataset to a csv-file.
+        Writes the given dataset to a csv-file. \n
         :param path: The absolute path to the location of the csv-file to be created and written to.
         :param data: The dataset that should be created and written to.
         :param add_index_column: If True create an additional column at the start of the array with

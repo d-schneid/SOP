@@ -96,11 +96,17 @@ class DatasetCleaning(Task, Schedulable, ABC):
         Is called by the scheduler to do the dataset cleaning. \n
         :return: None
         """
+        print("DO WORK!")
         self.__delete_old_error_file()
 
         dataset_to_clean: np.ndarray = self.__load_uncleaned_dataset()
-        cleaning_pipeline_result: Optional[np.ndarray] = self.__run_cleaning_pipeline(dataset_to_clean)
 
+        print("LOADED:")
+        print(dataset_to_clean)
+        print("END LOADED")
+        cleaning_pipeline_result: Optional[np.ndarray] = self.__run_cleaning_pipeline(dataset_to_clean)
+        print("CLEANING PIPELINE RESULT:")
+        print(cleaning_pipeline_result)
         if cleaning_pipeline_result is None:  # cleaning failed
             self._task_progress_callback(self._task_id, TaskState.FINISHED_WITH_ERROR, 1.0)
             return
@@ -135,7 +141,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
         """ Loads the uncleaned dataset which will be cleaned. \n
         :return: The loaded uncleaned dataset.
         """
-        return DataIO.read_uncleaned_csv(self._uncleaned_dataset_path)
+        return DataIO.read_uncleaned_csv(self._uncleaned_dataset_path).astype(object)
 
     def __run_cleaning_pipeline(self, csv_to_clean: np.ndarray) -> Optional[np.ndarray]:
         """
@@ -153,7 +159,10 @@ class DatasetCleaning(Task, Schedulable, ABC):
         for cleaning_step in self._cleaning_steps:
             try:
                 if cleaning_step is not None:
+                    print(str(cleaning_step) + "STARTED")
                     csv_to_clean = cleaning_step.do_cleaning(csv_to_clean)
+                    print(str(cleaning_step) + "RESULT:")
+                    print(csv_to_clean)
             except Exception as e:  # catch all exceptions
                 TaskHelper.save_error_csv(self._cleaned_dataset_path, str(e))
                 return None

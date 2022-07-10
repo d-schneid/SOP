@@ -64,6 +64,10 @@ class Datasets:
         return np.asarray([1, 412, "I am an evil String", None], object)
 
     @property
+    def mixed_dataset1(self) -> np.ndarray:
+        return np.asarray([[1, 412, "I am an evil String", None]], object)
+
+    @property
     def big_dataset1(self) -> np.ndarray:
         return np.array([[-1, 1234, 12, 53, 6, 124, None, 151245124, 1541],
                          [214123, 1, 21, None, 1241, "Eve the evil String", None, 213, -124512],
