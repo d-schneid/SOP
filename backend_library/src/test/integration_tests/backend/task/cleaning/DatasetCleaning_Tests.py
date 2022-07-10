@@ -7,10 +7,10 @@ from backend.task.cleaning.DatasetCleaning import DatasetCleaning
 from backend.task.TaskState import TaskState
 from backend.task.TaskHelper import TaskHelper
 from backend.DataIO import DataIO
+from backend.task.TaskErrorMessages import TaskErrorMessages
 
 
-class DatasetCleaningTestCleaningFinished(unittest.TestCase):
-    """Tests if __did_cleaning_finish() works correctly when calling schedule()"""
+class DatasetCleaningTest1(unittest.TestCase):
     _dir_name: str = os.getcwd()
     _un_cleaned_dataset_path: str = os.path.join(_dir_name, "uncleaned_dataset.csv")
     _cleaned_dataset_path: str = os.path.join(_dir_name, "cleaned_dataset.csv")
@@ -21,7 +21,7 @@ class DatasetCleaningTestCleaningFinished(unittest.TestCase):
     _task_id: int = -1
     _priority: int = 9999
 
-    _error_message: str = "Error: Cleaning resulted in empty dataset"
+    _error_message: str = TaskErrorMessages().cleaning_result_empty
     _error_path: str = TaskHelper.convert_to_error_csv_path(_cleaned_dataset_path)
 
     def setUp(self) -> None:
@@ -31,12 +31,12 @@ class DatasetCleaningTestCleaningFinished(unittest.TestCase):
                                                         self.task_progress_callback, self._un_cleaned_dataset_path,
                                                         self._cleaned_dataset_path, iter([]), self._priority)
 
-
     def tearDown(self) -> None:
         self.__clean_created_files_and_directories()
         self._dc = None
 
     def test_is_DatasetCleaning_finished(self):
+        """Tests if __did_cleaning_finish() works correctly when calling schedule()"""
         # Cleaned file does not exist -> cleaning is NOT finished
         # Raise exception that scheduler does not exist
         with self.assertRaises(AssertionError):
@@ -53,6 +53,7 @@ class DatasetCleaningTestCleaningFinished(unittest.TestCase):
         os.remove(self._cleaned_dataset_path)
 
     def test_empty_cleaning_result_handler(self):
+        """Tests if __empty_cleaning_result_handler() works correctly"""
         self.assertFalse(os.path.isfile(self._error_path))
 
         # array not empty
@@ -115,6 +116,22 @@ class DatasetCleaningTestNoUncleanedDataset(unittest.TestCase):
 
     def task_progress_callback(self, _task_id: int, task_state: TaskState, progress: float) -> None:
         pass
+
+
+class DatasetCleaningTestRunCleaningPipeline(unittest.TestCase):
+    _dir_name: str = os.getcwd()
+    _un_cleaned_dataset_path: str = os.path.join(_dir_name, "uncleaned_dataset.csv")
+    _cleaned_dataset_path: str = os.path.join(_dir_name, "cleaned_dataset.csv")
+
+    _finished_cleaning: bool = False
+
+    _user_id: int = -1
+    _task_id: int = -1
+    _priority: int = 9999
+
+    _error_message_empty_unclened_dataset: str = "Error: Cleaning resulted in empty dataset"
+    _error_path: str = TaskHelper.convert_to_error_csv_path(_cleaned_dataset_path)
+    pass
 
 
 if __name__ == '__main__':

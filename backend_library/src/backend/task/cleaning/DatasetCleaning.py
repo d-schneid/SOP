@@ -17,6 +17,7 @@ from backend.task.cleaning.ImputationMode import ImputationMode
 from backend.task.cleaning.MinMaxScaler import MinMaxScaler
 from backend.task.cleaning.RowOrColumnMissingValuesRemover \
     import RowOrColumnMissingValuesRemover as none_roc_remover
+from backend.task.TaskErrorMessages import TaskErrorMessages
 
 
 class DatasetCleaning(Task, Schedulable, ABC):
@@ -110,7 +111,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
                 np.float32)  # cast ndarray to float32 # TODO: Vllt copy=False
         except ValueError as e:
             TaskHelper.save_error_csv(self._cleaned_dataset_path,
-                                      "Error: Cleaning result contained values that were not float32: \n" + str(e))
+                                      TaskErrorMessages().cast_to_float32_error + str(e))
             self._task_progress_callback(self._task_id, TaskState.FINISHED_WITH_ERROR, 1.0)
             return
 
@@ -168,7 +169,9 @@ class DatasetCleaning(Task, Schedulable, ABC):
         :return: True, if the array is empty. Otherwise, return False.
         """
         if csv_to_check.size == 0:
-            error: str = "Error: Cleaning resulted in empty dataset"
+            error: str = TaskErrorMessages().cleaning_result_empty
+            print("TEST")
+            print(error)
             TaskHelper.save_error_csv(self._cleaned_dataset_path, str(error))
             return True
         return False
