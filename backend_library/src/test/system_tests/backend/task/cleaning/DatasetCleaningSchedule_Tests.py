@@ -34,6 +34,10 @@ class DatasetCleaningTestRunCleaningPipeline(unittest.TestCase):
 
     _uncleaned_dataset2: np.ndarray = ds().big_dataset1
 
+    # dataset 3: canada_climate.csv
+    _uncleaned_dataset_path3: str = "../../../../datasets/canada_climate_uncleaned.csv"
+    _cleaned_dataset_path3: str = "../../../../datasets/canada_climate_cleaned.csv"
+
     # Scheduler
     DebugScheduler()
 
@@ -55,24 +59,34 @@ class DatasetCleaningTestRunCleaningPipeline(unittest.TestCase):
                                                      self.task_progress_callback, self._uncleaned_dataset_path2,
                                                      self._cleaned_dataset_path2, None, self._priority)
 
+        self._dc3: DatasetCleaning = DatasetCleaning(self._user_id, self._task_id,
+                                                     self.task_progress_callback, self._uncleaned_dataset_path3,
+                                                     self._cleaned_dataset_path3, None, self._priority)
+
     def tearDown(self) -> None:
         self.__clean_created_files_and_directories()
         self._dc1 = None
         self._dc2 = None
+        self._dc3 = None
 
     def __clean_created_files_and_directories(self):
+        # dataset 1
         if os.path.isfile(self._cleaned_dataset_path1):
             os.remove(self._cleaned_dataset_path1)
         if os.path.isfile(self._cleaned_dataset_path1 + ".error"):
             os.remove(self._cleaned_dataset_path1 + ".error")
         if os.path.isfile(self._uncleaned_dataset_path1):
             os.remove(self._uncleaned_dataset_path1)
+        # dataset 2
         if os.path.isfile(self._cleaned_dataset_path2):
             os.remove(self._cleaned_dataset_path2)
         if os.path.isfile(self._cleaned_dataset_path2 + ".error"):
             os.remove(self._cleaned_dataset_path2 + ".error")
         if os.path.isfile(self._uncleaned_dataset_path2):
             os.remove(self._uncleaned_dataset_path2)
+        # dataset 3
+        if os.path.isfile(self._cleaned_dataset_path3 + ".error"):
+            os.remove(self._cleaned_dataset_path3 + ".error")
 
     def test_run_cleaning_pipeline1(self):
         self._dc1.schedule()
@@ -90,6 +104,12 @@ class DatasetCleaningTestRunCleaningPipeline(unittest.TestCase):
                                                    [6.07124844e-05, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
                                                     1.00000000e+00, 0.00000000e+00, 9.87870182e-01]])
         np.testing.assert_array_almost_equal(cleaned_dataset2, DataIO.read_cleaned_csv(self._cleaned_dataset_path2))
+
+    def test_run_cleaning_pipeline3(self):
+        self._dc3.schedule()
+        print(DataIO.read_cleaned_csv(self._cleaned_dataset_path3))
+        cleaned_dataset3: np.ndarray = DataIO.read_cleaned_csv(self._cleaned_dataset_path3)
+        np.testing.assert_array_almost_equal(cleaned_dataset3, DataIO.read_cleaned_csv(self._cleaned_dataset_path3))
 
 
 if __name__ == '__main__':
