@@ -3,6 +3,7 @@ from django.core.validators import FileExtensionValidator
 from django.db import models
 
 from experiments.models.managers import DatasetManager, DatasetQueryset
+from experiments.models.experiment import Experiment
 
 
 def _get_dataset_upload_path(instance, filename) -> str:
@@ -35,8 +36,6 @@ class Dataset(models.Model):
 
     @property
     def is_deletable(self) -> bool:
-        # Import this here to avoid circular import
-        from experiments.models import Experiment
         return not Experiment.objects.get_with_dataset(self).exists()
 
     def __str__(self) -> str:
