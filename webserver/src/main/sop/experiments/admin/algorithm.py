@@ -9,7 +9,7 @@ from experiments.models.experiment import Experiment
 class ExperimentInline(admin.StackedInline):
     model = Experiment.algorithms.through
     verbose_name = "Experiment"
-    verbose_name_plural = "Experiments"
+    template = "experiment_inline.html"
 
     def has_add_permission(self, request, obj):
         return False
@@ -18,7 +18,7 @@ class ExperimentInline(admin.StackedInline):
         return False
 
     def has_delete_permission(self, request, obj=None):
-        return False
+        return True
 
 
 @admin.register(Algorithm)
@@ -62,3 +62,7 @@ class AlgorithmAdmin(admin.ModelAdmin):
                                         f"since at least algorithm {algorithm.name} is used in at least one experiment")
                 return
         return django_delete_selected(self, request, algorithms)
+
+    # remove inlines from add_view
+    def get_inline_instances(self, request, obj=None):
+        return obj and super().get_inline_instances(request, obj) or []
