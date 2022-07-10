@@ -6,6 +6,7 @@ from abc import ABC
 
 import numpy as np
 
+from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 from backend.scheduler.Schedulable import Schedulable
 from backend.DataIO import DataIO
@@ -77,8 +78,15 @@ class ExecutionElement(Schedulable, ABC):
         Computes the algorithms on the subspace. \n
         :return: Returns the result of the algorithm on the subspace.
         """
-        # TODO: Tobias
-        return np.zeros(0)
+        ss_shm = self._execution_subspace.get_subspace_data_for_processing
+        ss_dim_count = self._execution_subspace.subspace.get_included_dimension_count()
+        ss_point_count = ss_shm.size / self._execution_subspace.subspace_dtype.itemsize / ss_dim_count
+        ss_arr = np.ndarray((ss_point_count, ss_dim_count), dtype=self._execution_subspace.subspace_dtype,
+                            buffer=ss_shm)
+        algo = AlgorithmLoader.get_algorithm_object(self._algorithm.path, self._algorithm.hyper_parameter)
+        results = algo.decision_function(ss_arr)
+        ss_shm.close()
+        return results
 
     def __convert_result_to_csv(self, run_algo_result: np.ndarray) -> np.ndarray:
         """

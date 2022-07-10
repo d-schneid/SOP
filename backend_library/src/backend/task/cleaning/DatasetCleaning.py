@@ -17,7 +17,6 @@ from backend.task.cleaning.ImputationMode import ImputationMode
 from backend.task.cleaning.MinMaxScaler import MinMaxScaler
 from backend.task.cleaning.RowOrColumnMissingValuesRemover \
     import RowOrColumnMissingValuesRemover as none_roc_remover
-from backend.task.TaskErrorMessages import TaskErrorMessages
 
 
 class DatasetCleaning(Task, Schedulable, ABC):
@@ -105,20 +104,15 @@ class DatasetCleaning(Task, Schedulable, ABC):
             self._task_progress_callback(self._task_id, TaskState.FINISHED_WITH_ERROR, 1.0)
             return
 
-        # Casting will throw an exception when the cleaned dataset cannot be converted to only float32 values
         try:
             cleaned_dataset: np.ndarray = cleaning_pipeline_result.astype(
                 np.float32)  # cast ndarray to float32 # TODO: Vllt copy=False
         except ValueError as e:
-            TaskHelper.save_error_csv(self._cleaned_dataset_path,
-                                      TaskErrorMessages().cast_to_float32_error + str(e))
+            TaskHelper.save_error_csv("Error: Cleaning result contained values that were not float32: " + str(e))
             self._task_progress_callback(self._task_id, TaskState.FINISHED_WITH_ERROR, 1.0)
             return
 
-        # store cleaned dataset in path
-        DataIO.write_csv(self._cleaned_dataset_path, cleaned_dataset)
-
-        # report webserver the task progress
+        self.__store_cleaned_dataset(cleaned_dataset)
         self._task_progress_callback(self._task_id, TaskState.FINISHED, 1.0)
 
     # do_work #############################################
@@ -162,6 +156,13 @@ class DatasetCleaning(Task, Schedulable, ABC):
                                   0.99)  # compute and clamp progress
             self._task_progress_callback(self._task_id, TaskState.RUNNING, progress)
 
+    def __store_cleaned_dataset(self, cleaned_dataset: np.ndarray) -> None:
+        """ Stores the cleaned dataset in the FileStorage. \n
+        :param cleaned_dataset: Dataset that should be stored
+        :return: None
+        """
+        DataIO.write_csv(self._cleaned_dataset_path, cleaned_dataset)
+
     def __empty_cleaning_result_handler(self, csv_to_check: np.ndarray) -> bool:
         """
         Checks if the cleaning result is empty. If this is the case create and store the error file and return True.
@@ -169,9 +170,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
         :return: True, if the array is empty. Otherwise, return False.
         """
         if csv_to_check.size == 0:
-            error: str = TaskErrorMessages().cleaning_result_empty
-            print("TEST")
-            print(error)
+            error: str = "Cleaning resulted in empty dataset"
             TaskHelper.save_error_csv(self._cleaned_dataset_path, str(error))
             return True
         return False
