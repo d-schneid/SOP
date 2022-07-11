@@ -141,7 +141,9 @@ class DatasetCleaningTestRunCleaningPipeline(unittest.TestCase):
     _priority: int = 9999
 
     def task_progress_callback(self, _task_id: int, task_state: TaskState, progress: float) -> None:
-        pass
+        self.assertTrue(task_state.is_running())
+        self.assertTrue(progress >= 0)
+        self.assertTrue(progress < 1)  # Is smaller than one in run_pipeline
 
     def setUp(self) -> None:
         self.__clean_created_files_and_directories()
