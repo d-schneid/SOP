@@ -3,9 +3,10 @@ import itertools
 import multiprocessing
 import sys
 from collections import OrderedDict
+from dataclasses import dataclass, field
 from multiprocessing import Condition, Process
 from multiprocessing.process import BaseProcess
-from typing import Callable, Optional, Dict, Tuple, List
+from typing import Callable, Optional, Dict, List
 
 from backend.scheduler.Schedulable import Schedulable
 from backend.scheduler.Scheduler import Scheduler
@@ -18,7 +19,7 @@ class UserRoundRobinScheduler(Scheduler):
         self.__on_shutdown_completed: Optional[Callable] = None
         self.__empty_queue: Condition = Condition()
         self.__workers: Dict[BaseProcess, Optional[Schedulable]] = dict()
-        self.__user_queues: OrderedDict[int, List[Tuple[int, Schedulable]]] \
+        self.__user_queues: OrderedDict[int, List[PrioritizedSchedulable]] \
             = OrderedDict()
         self.__next_queue: int = -1
         for i in range(UserRoundRobinScheduler.__get_targeted_worker_count()):
@@ -78,7 +79,8 @@ class UserRoundRobinScheduler(Scheduler):
             if uid not in self.__user_queues:
                 self.__next_queue = len(self.__user_queues)
                 self.__user_queues[uid] = []
-            heapq.heappush(self.__user_queues[uid], (priority, to_schedule))
+            prioritized_schedulable = PrioritizedSchedulable(to_schedule, priority)
+            heapq.heappush(self.__user_queues[uid], prioritized_schedulable)
             self.__empty_queue.notify()
 
     def __worker_main(self) -> None:
@@ -117,9 +119,19 @@ class UserRoundRobinScheduler(Scheduler):
             self.__next_queue = self.__next_queue + 1
             if len(v) > 0:
                 self.__next_queue = self.__next_queue % len(self.__user_queues)
-                return heapq.heappop(v)
+                return heapq.heappop(v).schedulable
         return None
 
     @staticmethod
     def __get_targeted_worker_count() -> int:
         return multiprocessing.cpu_count() * 2
+
+
+@dataclass(order=True)
+class PrioritizedSchedulable:
+    priority: int
+    schedulable: Schedulable = field(compare=False)
+
+    def __init__(self, sched: Schedulable, prio: int):
+        self.priority = -prio
+        self.schedulable = sched
