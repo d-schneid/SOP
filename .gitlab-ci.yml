@@ -114,6 +114,8 @@ backend-tests:
     - python3.10 -m coverage report
 
 publish-build:
+  inherit:
+    default: false
   stage: publish
   image: docker:latest
   services:
@@ -125,6 +127,8 @@ publish-build:
     - docker push $TAG_LATEST
 
 deploy-app:
+  inherit:
+    default: false
   stage: deploy
   image: alpine:latest
   tags:
