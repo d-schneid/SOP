@@ -11,7 +11,7 @@ class Scheduler(ABC):
 
     def __init__(self):
         # This is not thread safe but as you should not try to break that assertion anyway I do not care
-        assert Scheduler._instance is None
+        assert Scheduler._instance is None, "A scheduler has already been created"
         Scheduler._instance = self
 
     @staticmethod
