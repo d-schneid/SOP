@@ -1,17 +1,18 @@
 import os
 import shutil
 from pathlib import Path
+from typing import Final
 
+from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
 
 from authentication.models import User
-from django.conf import settings
 from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 
-ALGORITHM_ROOT_DIR = settings.MEDIA_ROOT / "algorithms"
+ALGORITHM_ROOT_DIR: Final = settings.MEDIA_ROOT / "algorithms"
 
 
-def save_temp_algorithm(user: User, file: UploadedFile):
+def save_temp_algorithm(user: User, file: UploadedFile) -> Path:
     temp_dir = ALGORITHM_ROOT_DIR / "temp" / f"{user.id}"
     temp_file_path = temp_dir / file.name
 

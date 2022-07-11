@@ -140,3 +140,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "authentication.User"
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "login"
+
+# Needed for typing webserver
+import django_stubs_ext  # noqa: E402
+
+django_stubs_ext.monkeypatch()

@@ -1,9 +1,9 @@
 from django import forms
 
-from experiments.models import Algorithm, Dataset, Execution
+from experiments.models import Algorithm, Dataset, Execution, Experiment
 
 
-class AlgorithmUploadForm(forms.ModelForm):
+class AlgorithmUploadForm(forms.ModelForm[Algorithm]):
     class Meta:
         model = Algorithm
         fields = ("display_name", "description", "group", "path")
@@ -22,7 +22,7 @@ class AlgorithmUploadForm(forms.ModelForm):
         }
 
 
-class DatasetUploadForm(forms.ModelForm):
+class DatasetUploadForm(forms.ModelForm[Dataset]):
     class Meta:
         model = Dataset
         fields = ("display_name", "description", "path_original")
@@ -40,11 +40,11 @@ class DatasetUploadForm(forms.ModelForm):
         }
 
 
-class ExperimentCreateForm(forms.ModelForm):
+class ExperimentCreateForm(forms.ModelForm[Experiment]):
     pass
 
 
-class ExecutionCreateForm(forms.ModelForm):
+class ExecutionCreateForm(forms.ModelForm[Execution]):
     class Meta:
         model = Execution
         fields = (

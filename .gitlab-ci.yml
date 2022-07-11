@@ -98,14 +98,16 @@ migrations:
 django-tests:
   stage: test
   script:
+    - source venv3.10/bin/activate
     - pip3 install django_coverage_plugin && echo "[run]\nplugins = django_coverage_plugin" > webserver/src/main/sop/.coveragerc
+    - ls
+    - source venv3.10/bin/activate
     - which python3.10
     - cd webserver/src/main/sop
     # The MYSQL user only gets permissions for MYSQL_DB, so Django can't create a test database.
     - echo "GRANT ALL on *.* to '${MYSQL_USER}';"| mysql -u root --password="${MYSQL_ROOT_PASSWORD}" -h mysql
-    # use python3 explicitly. see https://wiki.ubuntu.com/Python/3
     - python3.10 manage.py showmigrations --settings=sop.settings_ci
-    - python3.10 -m coverage run --source="." --omit="media/*","*/migrations/*","*/__init__.py","tests/*" manage.py test --settings sop.settings_ci
+    - python3.10 -m coverage run --source="." --omit="media/*","*/migrations/*","*/__init__.py","tests/*","sop/*" manage.py test --settings sop.settings_ci
     - python3.10 -m coverage report
 
 

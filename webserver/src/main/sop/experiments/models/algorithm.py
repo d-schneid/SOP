@@ -25,16 +25,16 @@ class Algorithm(models.Model):
         OTHER = "Other"
 
     # TODO: check max_length, blank, and null
-    display_name = models.CharField(max_length=80)
-    group = models.CharField(max_length=80, choices=AlgorithmGroup.choices)
-    signature = models.CharField(max_length=80)
+    display_name = models.CharField(max_length=80)  # type: ignore
+    group = models.CharField(max_length=80, choices=AlgorithmGroup.choices)  # type: ignore
+    signature = models.CharField(max_length=80)  # type: ignore
     path = models.FileField(
         upload_to=_get_algorithm_upload_path,
         validators=(FileExtensionValidator(allowed_extensions=["py"]),),
     )
-    description = models.TextField(blank=True)
-    upload_date = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(
+    description = models.TextField(blank=True)  # type: ignore
+    upload_date = models.DateTimeField(auto_now_add=True)  # type: ignore
+    user = models.ForeignKey(  # type: ignore
         to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True
     )
 

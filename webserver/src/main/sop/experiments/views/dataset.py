@@ -1,3 +1,4 @@
+import pandas as pd
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views.generic import ListView, UpdateView, DeleteView, CreateView
@@ -7,13 +8,10 @@ from authentication.mixins import LoginRequiredMixin
 from experiments.forms.create import DatasetUploadForm
 from experiments.forms.edit import DatasetEditForm
 from experiments.models import Dataset
-
-import pandas as pd
-
-from experiments.models.managers import DatasetQueryset
+from experiments.models.managers import DatasetQuerySet
 
 
-class DatasetUploadView(LoginRequiredMixin, CreateView):
+class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadForm]):
     model = Dataset
     form_class = DatasetUploadForm
     template_name = "dataset_upload.html"
@@ -40,7 +38,7 @@ class DatasetOverview(LoginRequiredMixin, ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        datasets: DatasetQueryset = Dataset.objects.get_by_user(self.request.user)
+        datasets: DatasetQuerySet = Dataset.objects.get_by_user(self.request.user)
 
         # Sorting
         sort_by: str = self.kwargs["sort"]
