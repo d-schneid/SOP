@@ -14,8 +14,7 @@ class Dataset(models.Model):
     """
     Database Model of a Dataset.
     """
-
-    name = models.CharField(max_length=80)
+    display_name = models.CharField(max_length=80)
     description = models.TextField(max_length=255, blank=True)
     upload_date = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL,
@@ -40,7 +39,7 @@ class Dataset(models.Model):
         return not Experiment.objects.get_with_dataset(self).exists()
 
     def __str__(self) -> str:
-        return str(self.name) + " | " + str(self.user)
+        return str(self.display_name) + " | " + str(self.user)
 
 
 def get_dataset_path(instance: Dataset, filename: str) -> str:

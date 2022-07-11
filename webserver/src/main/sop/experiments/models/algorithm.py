@@ -25,7 +25,7 @@ class Algorithm(models.Model):
         OTHER = "Other"
 
     # TODO: check max_length, blank, and null
-    name = models.CharField(max_length=80)
+    display_name = models.CharField(max_length=80)
     group = models.CharField(max_length=80, choices=AlgorithmGroup.choices)
     signature = models.CharField(max_length=80)
     path = models.FileField(upload_to=_get_algorithm_upload_path,
@@ -39,4 +39,4 @@ class Algorithm(models.Model):
     objects = AlgorithmManager.from_queryset(AlgorithmQuerySet)()
 
     def __str__(self) -> str:
-        return str(self.name)
+        return str(self.display_name)

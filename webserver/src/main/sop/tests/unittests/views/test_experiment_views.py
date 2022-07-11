@@ -16,19 +16,19 @@ class ExperimentOverviewTests(LoggedInTestCase):
 
     def create_experiment(self, name):
         dataset = Dataset.objects.create(
-            name="Datset Name",
+            display_name="Datset Name",
             description="Dataset Description",
             user=self.user,
             datapoints_total=4,
             dimensions_total=7,
         )
         algo1 = Algorithm.objects.create(
-            name="First Algorithm",
+            display_name="First Algorithm",
             group=Algorithm.AlgorithmGroup.PROBABILISTIC,
             user=self.user,
         )
         algo2 = Algorithm.objects.create(
-            name="Second Algorithm",
+            display_name="Second Algorithm",
             group=Algorithm.AlgorithmGroup.COMBINATION,
             user=self.user,
         )
@@ -96,7 +96,7 @@ class ExperimentCreateViewTests(LoggedInTestCase):
         super().setUp()
         self.name = "Test Valid Dataset"
         self.dataset = Dataset.objects.create(
-            name="Datset Name",
+            display_name="Datset Name",
             description="Dataset Description",
             user=self.user,
             datapoints_total=4,
@@ -104,12 +104,12 @@ class ExperimentCreateViewTests(LoggedInTestCase):
         )
         self.algorithms = [
             Algorithm.objects.create(
-                name="First Algorithm",
+                display_name="First Algorithm",
                 group=Algorithm.AlgorithmGroup.PROBABILISTIC,
                 user=self.user,
             ),
             Algorithm.objects.create(
-                name="Second Algorithm",
+                display_name="Second Algorithm",
                 group=Algorithm.AlgorithmGroup.COMBINATION,
                 user=self.user,
             ),
@@ -193,7 +193,7 @@ class ExperimentEditViewTests(LoggedInTestCase):
         self.new_name = "New Name"
         super().setUp()
         self.dataset = Dataset.objects.create(
-            name="Datset Name",
+            display_name="Datset Name",
             description="Dataset Description",
             user=self.user,
             datapoints_total=4,
@@ -201,12 +201,12 @@ class ExperimentEditViewTests(LoggedInTestCase):
         )
         self.algorithms = [
             Algorithm.objects.create(
-                name="First Algorithm",
+                display_name="First Algorithm",
                 group=Algorithm.AlgorithmGroup.PROBABILISTIC,
                 user=self.user,
             ),
             Algorithm.objects.create(
-                name="Second Algorithm",
+                display_name="Second Algorithm",
                 group=Algorithm.AlgorithmGroup.COMBINATION,
                 user=self.user,
             ),

@@ -57,7 +57,7 @@ def schedule_backend(instance: Execution):
         # TODO: create hyper parameters and pass them into ParameterizedAlgorithms
         parameterized_algorithms.append(
             ParameterizedAlgorithm(
-                display_name=algorithm.name, path=algorithm.path, hyper_parameter=dict()
+                display_name=algorithm.display_name, path=algorithm.path, hyper_parameter=dict()
             )
         )
     backend_execution = BackendExecution(

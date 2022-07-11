@@ -24,7 +24,7 @@ class ExperimentInline(admin.StackedInline):
 @admin.register(Algorithm)
 class AlgorithmAdmin(admin.ModelAdmin):
     inlines = [ExperimentInline]
-    list_display = ["name", "group", "user", "upload_date"]
+    list_display = ["display_name", "group", "user", "upload_date"]
     raw_id_fields = ["user"]
     list_filter = ["user", "group"]
     search_fields = ["name"]
@@ -59,7 +59,7 @@ class AlgorithmAdmin(admin.ModelAdmin):
         for algorithm in algorithms:
             if algorithm.experiment_set.count() > 0:
                 messages.error(request, f"Bulk deletion cannot be executed, "
-                                        f"since at least algorithm {algorithm.name} is used in at least one experiment")
+                                        f"since at least algorithm {algorithm.display_name} is used in at least one experiment")
                 return
         return django_delete_selected(self, request, algorithms)
 
