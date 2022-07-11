@@ -18,6 +18,7 @@ COPY requirements.txt ./
 # install dependencies
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements_deploy.txt
 
 # copy project
 COPY ./webserver /app/webserver
