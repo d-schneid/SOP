@@ -15,6 +15,7 @@ RUN apt update -y && apt upgrade -y \
     && apt install -y python3-dev
 
 COPY requirements.txt ./
+COPY requirements_deploy.txt ./
 # install dependencies
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
