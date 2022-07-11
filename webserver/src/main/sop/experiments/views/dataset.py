@@ -32,7 +32,7 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
         return super().form_valid(form)
 
 
-class DatasetOverview(LoginRequiredMixin, ListView):
+class DatasetOverview(LoginRequiredMixin, ListView[Dataset]):
     model = Dataset
     template_name = "dataset_overview.html"
 
@@ -51,7 +51,7 @@ class DatasetOverview(LoginRequiredMixin, ListView):
         return context
 
 
-class DatasetDeleteView(LoginRequiredMixin, DeleteView):
+class DatasetDeleteView(LoginRequiredMixin, DeleteView[Dataset]):
     model = Dataset
     template_name = "dataset_delete.html"
     success_url = reverse_lazy("dataset_overview")
@@ -68,7 +68,7 @@ class DatasetDeleteView(LoginRequiredMixin, DeleteView):
         return super().form_valid(form)
 
 
-class DatasetEditView(LoginRequiredMixin, UpdateView):
+class DatasetEditView(LoginRequiredMixin, UpdateView[Dataset, DatasetEditForm]):
     model = Dataset
     form_class = DatasetEditForm
     template_name = "dataset_edit.html"

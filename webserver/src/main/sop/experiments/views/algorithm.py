@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Optional
 
+from django.conf import settings
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.http import HttpResponse
 from django.urls import reverse_lazy
@@ -17,7 +18,6 @@ from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from experiments.forms.create import AlgorithmUploadForm
 from experiments.forms.edit import AlgorithmEditForm
 from experiments.models import Algorithm
-from django.conf import settings
 from experiments.services.algorithm import (
     save_temp_algorithm,
     delete_temp_algorithm,
@@ -27,7 +27,7 @@ from experiments.services.algorithm import (
 ALGORITHM_ROOT_DIR = settings.MEDIA_ROOT / "algorithms"
 
 
-class AlgorithmOverview(LoginRequiredMixin, ListView):
+class AlgorithmOverview(LoginRequiredMixin, ListView[Algorithm]):
     model = Algorithm
     template_name = "algorithm_overview.html"
 
@@ -47,14 +47,16 @@ class AlgorithmOverview(LoginRequiredMixin, ListView):
         return context
 
 
-class AlgorithmUploadView(LoginRequiredMixin, CreateView):
+class AlgorithmUploadView(
+    LoginRequiredMixin, CreateView[Algorithm, AlgorithmUploadForm]
+):
     model = Algorithm
     form_class = AlgorithmUploadForm
     template_name = "algorithm_upload.html"
     success_url = reverse_lazy("algorithm_overview")
 
     def form_valid(self, form) -> HttpResponse:
-        file: InMemoryUploadedFile = self.request.FILES["path"]
+        file: InMemoryUploadedFile = self.request.FILES["path"]  # type: ignore
 
         temp_path: Path = save_temp_algorithm(self.request.user, file)
         AlgorithmLoader.set_algorithm_root_dir(str(ALGORITHM_ROOT_DIR))
@@ -74,19 +76,19 @@ class AlgorithmUploadView(LoginRequiredMixin, CreateView):
             return super(AlgorithmUploadView, self).form_valid(form)
 
 
-class AlgorithmDeleteView(LoginRequiredMixin, DeleteView):
+class AlgorithmDeleteView(LoginRequiredMixin, DeleteView[Algorithm]):
     model = Algorithm
     success_url = reverse_lazy("algorithm_overview")
 
 
-class AlgorithmEditView(LoginRequiredMixin, UpdateView):
+class AlgorithmEditView(LoginRequiredMixin, UpdateView[Algorithm, AlgorithmEditForm]):
     model = Algorithm
     form_class = AlgorithmEditForm
     template_name = "algorithm_edit.html"
     success_url = reverse_lazy("algorithm_overview")
 
 
-class AlgorithmDetailView(LoginRequiredMixin, DetailView):
+class AlgorithmDetailView(LoginRequiredMixin, DetailView[Algorithm]):
     model = Algorithm
     # TODO: template?
     # template_name =

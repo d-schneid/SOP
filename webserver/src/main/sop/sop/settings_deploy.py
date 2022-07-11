@@ -23,7 +23,7 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = int(os.getenv(key="DJANGO_DEBUG", default="0"))
 
-ALLOWED_HOSTS = str(os.environ.get("DJANGO_ALLOWED_HOSTS")).split(" ")
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")  # type: ignore
 CSRF_TRUSTED_ORIGINS = str(os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS")).split(" ")
 
 # Application definition
