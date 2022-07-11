@@ -7,6 +7,7 @@ from backend.task.TaskState import TaskState
 from test.DatasetsForTesting import Datasets as ds
 from backend.task.cleaning.DatasetCleaning import DatasetCleaning
 from backend.scheduler.DebugScheduler import DebugScheduler
+from backend.scheduler.Scheduler import Scheduler
 from backend.DataIO import DataIO
 
 
@@ -38,13 +39,16 @@ class DatasetCleaningTestRunCleaningPipeline(unittest.TestCase):
     _uncleaned_dataset_path3: str = "test/datasets/canada_climate_uncleaned.csv"
     _cleaned_dataset_path3: str = "test/datasets/canada_climate_cleaned.csv"
 
-    # Scheduler
-    DebugScheduler()
 
     def task_progress_callback(self, _task_id: int, task_state: TaskState, progress: float) -> None:
         pass
 
     def setUp(self) -> None:
+        # Scheduler
+        Scheduler._instance = None
+        DebugScheduler()
+
+        # DatasetCleaning creation
         self.__clean_created_files_and_directories()
 
         self._dataIO = DataIO()

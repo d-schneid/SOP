@@ -135,6 +135,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
     def __load_uncleaned_dataset(self) -> np.ndarray:
         """ Loads the uncleaned dataset which will be cleaned. \n
         :return: The loaded uncleaned dataset.
+        (Throws FileNotFoundError if there exists no file at the uncleaned_dataset_path)
         """
         return DataIO.read_uncleaned_csv(self._uncleaned_dataset_path).astype(object)
 
