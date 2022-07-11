@@ -4,7 +4,7 @@ import numpy as np
 
 from backend.task.cleaning.DatasetCleaningStepExceptionHanding \
     import DatasetCleaningStepExceptionHandling as eh
-from backend_library.src.test.DatasetsForTesting import Datasets as ds
+from test.DatasetsForTesting import Datasets as ds
 
 
 class DatasetCleaningStepExceptionHandlingTest(unittest.TestCase):

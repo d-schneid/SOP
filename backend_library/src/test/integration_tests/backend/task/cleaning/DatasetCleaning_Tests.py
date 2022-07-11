@@ -8,7 +8,7 @@ from backend.task.TaskState import TaskState
 from backend.task.TaskHelper import TaskHelper
 from backend.DataIO import DataIO
 from backend.task.TaskErrorMessages import TaskErrorMessages
-from backend_library.src.test.DatasetsForTesting import Datasets as ds
+from test.DatasetsForTesting import Datasets as ds
 
 
 class DatasetCleaningTest1(unittest.TestCase):

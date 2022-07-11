@@ -4,7 +4,7 @@ import numpy as np
 
 from backend.task.cleaning.RowOrColumnMissingValuesRemover import \
     RowOrColumnMissingValuesRemover
-from backend_library.src.test.DatasetsForTesting import Datasets as ds
+from test.DatasetsForTesting import Datasets as ds
 
 
 class RowThresholdMissingValuesRemoverTest(unittest.TestCase):

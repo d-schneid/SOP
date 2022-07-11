@@ -6,7 +6,7 @@ import pandas as pd
 
 from backend.DataInfo import DataInfo
 
-from backend_library.src.test.DatasetsForTesting import Datasets as ds
+from test.DatasetsForTesting import Datasets as ds
 
 
 class DataInfoTest(unittest.TestCase):

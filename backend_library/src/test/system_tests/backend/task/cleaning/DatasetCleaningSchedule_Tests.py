@@ -4,7 +4,7 @@ import unittest
 import numpy as np
 
 from backend.task.TaskState import TaskState
-from backend_library.src.test.DatasetsForTesting import Datasets as ds
+from test.DatasetsForTesting import Datasets as ds
 from backend.task.cleaning.DatasetCleaning import DatasetCleaning
 from backend.scheduler.DebugScheduler import DebugScheduler
 from backend.DataIO import DataIO
