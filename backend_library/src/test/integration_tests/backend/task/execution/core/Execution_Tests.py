@@ -12,6 +12,7 @@ from backend.task.execution.subspace.UniformSubspaceDistribution import \
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 
 from backend.scheduler.DebugScheduler import DebugScheduler
+from backend.scheduler.Scheduler import Scheduler
 
 
 class ExecutionTestResultZipping(unittest.TestCase):
@@ -30,6 +31,11 @@ class ExecutionTestResultZipping(unittest.TestCase):
         pass
 
     def setUp(self) -> None:
+        # create a DebugScheduler
+        Scheduler._instance = None
+        DebugScheduler()
+
+        # path creation
         self._result_path: str = os.path.join(self._dir_name, "execution_folder")
         self._zipped_result_path: str = self._result_path + ".zip"
 
@@ -61,9 +67,6 @@ class ExecutionTestResultZipping(unittest.TestCase):
         self._ex = ex(self._user_id, self._task_id, self.__task_progress_callback, self._dataset_path,
                       self._result_path, self._subspace_generation, iter(self._algorithms), self.__metric_callback)
 
-        # create a DebugScheduler
-        DebugScheduler()
-
     def tearDown(self) -> None:
         self._ex = None
         self._subspace_generation = None
@@ -71,7 +74,6 @@ class ExecutionTestResultZipping(unittest.TestCase):
 
         self.__clear_old_execution_file_structure()
 
-    @skip
     def test_schedule_result_zipping(self):
         self.assertFalse(os.path.exists(self._zipped_result_path))
         self._ex._Execution__schedule_result_zipping()

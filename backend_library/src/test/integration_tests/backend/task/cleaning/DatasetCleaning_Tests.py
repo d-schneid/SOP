@@ -10,6 +10,7 @@ from backend.task.TaskHelper import TaskHelper
 from backend.DataIO import DataIO
 from backend.task.TaskErrorMessages import TaskErrorMessages
 from test.DatasetsForTesting import Datasets as ds
+from backend.scheduler.Scheduler import Scheduler
 
 
 class DatasetCleaningTest1(unittest.TestCase):
@@ -37,11 +38,11 @@ class DatasetCleaningTest1(unittest.TestCase):
         self.__clean_created_files_and_directories()
         self._dc = None
 
-    @skip
     def test_is_DatasetCleaning_finished(self):
         """Tests if __did_cleaning_finish() works correctly when calling schedule()"""
         # Cleaned file does not exist -> cleaning is NOT finished
         # Raise exception that scheduler does not exist
+        Scheduler._instance = None
         with self.assertRaises(AssertionError):
             try:
                 self._dc.schedule()
@@ -140,7 +141,9 @@ class DatasetCleaningTestRunCleaningPipeline(unittest.TestCase):
     _priority: int = 9999
 
     def task_progress_callback(self, _task_id: int, task_state: TaskState, progress: float) -> None:
-        pass
+        self.assertTrue(task_state.is_running())
+        self.assertTrue(progress >= 0)
+        self.assertTrue(progress < 1)  # Is smaller than one in run_pipeline
 
     def setUp(self) -> None:
         self.__clean_created_files_and_directories()

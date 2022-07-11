@@ -20,7 +20,7 @@
         <a class="btn-link btn-block text-white{% if not forloop.first %} collapsed{% endif %}"
            aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
            aria-controls="collapse_{{ model.pk }}">
-            {{ model.name }}
+            {{ model.display_name }}
         </a>
     </h5>
     <div class="d-flex justify-content-center">
@@ -41,11 +41,11 @@
 {% endblock %}
 
 {% block error %}
-    Algorithm <b>{{ model.name }}</b> cannot be deleted, since it is used in these experiments:
+    Algorithm <b>{{ model.display_name }}</b> cannot be deleted, since it is used in these experiments:
 {% endblock %}
 
 {% block check %}
-    Are you sure you want to delete algorithm <b>{{ model.name }}</b>?
+    Are you sure you want to delete algorithm <b>{{ model.display_name }}</b>?
 {% endblock %}
 
 {% block delete %}

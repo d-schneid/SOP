@@ -7,6 +7,7 @@ from backend.task.TaskState import TaskState
 from test.DatasetsForTesting import Datasets as ds
 from backend.task.cleaning.DatasetCleaning import DatasetCleaning
 from backend.scheduler.DebugScheduler import DebugScheduler
+from backend.scheduler.Scheduler import Scheduler
 from backend.DataIO import DataIO
 
 
@@ -28,6 +29,10 @@ class DatasetCleaningTestRunCleaningPipeline(unittest.TestCase):
     _uncleaned_dataset1: np.ndarray = ds().cat_dataset3
     _cleaned_dataset1: np.ndarray = np.asarray([[0., 0.]])
 
+    _run_cleaning1: bool = False
+    _finished_cleaning1: bool = False
+    _latest_progress: float = 0.
+
     # dataset 2
     _uncleaned_dataset_path2: str = os.path.join(_dir_name, "uncleaned_dataset2.csv")
     _cleaned_dataset_path2: str = os.path.join(_dir_name, "cleaned_dataset2.csv")
@@ -38,13 +43,24 @@ class DatasetCleaningTestRunCleaningPipeline(unittest.TestCase):
     _uncleaned_dataset_path3: str = "test/datasets/canada_climate_uncleaned.csv"
     _cleaned_dataset_path3: str = "test/datasets/canada_climate_cleaned.csv"
 
-    # Scheduler
-    DebugScheduler()
+    def task_progress_callback1(self, _task_id: int, task_state: TaskState, progress: float) -> None:
+        if task_state.is_running():
+            self._run_cleaning1 = True
+
+        if task_state.is_finished():
+            self._finished_cleaning1 = True
+
+        self._latest_progress = progress
 
     def task_progress_callback(self, _task_id: int, task_state: TaskState, progress: float) -> None:
         pass
 
     def setUp(self) -> None:
+        # Scheduler
+        Scheduler._instance = None
+        DebugScheduler()
+
+        # DatasetCleaning creation
         self.__clean_created_files_and_directories()
 
         self._dataIO = DataIO()
@@ -52,7 +68,7 @@ class DatasetCleaningTestRunCleaningPipeline(unittest.TestCase):
         self._dataIO.write_csv(self._uncleaned_dataset_path2, self._uncleaned_dataset2)
 
         self._dc1: DatasetCleaning = DatasetCleaning(self._user_id, self._task_id,
-                                                     self.task_progress_callback, self._uncleaned_dataset_path1,
+                                                     self.task_progress_callback1, self._uncleaned_dataset_path1,
                                                      self._cleaned_dataset_path1, None, self._priority)
 
         self._dc2: DatasetCleaning = DatasetCleaning(self._user_id, self._task_id,
@@ -89,9 +105,17 @@ class DatasetCleaningTestRunCleaningPipeline(unittest.TestCase):
             os.remove(self._cleaned_dataset_path3 + ".error")
 
     def test_run_cleaning_pipeline1(self):
+        self.assertFalse(self._run_cleaning1)
+        self.assertFalse(self._finished_cleaning1)
+        self.assertEqual(0, self._latest_progress)
+        # cleaning
         self._dc1.schedule()
         np.testing.assert_array_almost_equal(self._cleaned_dataset1,
                                              DataIO.read_cleaned_csv(self._cleaned_dataset_path1))
+        # callback
+        self.assertTrue(self._run_cleaning1)
+        self.assertTrue(self._finished_cleaning1)
+        self.assertEqual(1, self._latest_progress)
 
     def test_run_cleaning_pipeline2(self):
         self._dc2.schedule()

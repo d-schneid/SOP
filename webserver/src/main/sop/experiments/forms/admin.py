@@ -22,7 +22,7 @@ class AdminAddAlgorithmForm(forms.ModelForm):
         exclude = ["signature", "upload_date"]
 
     def clean_path(self):
-        cleaned_file: TemporaryUploadedFile = self.cleaned_data.get('path')
+        cleaned_file: TemporaryUploadedFile = self.cleaned_data.get("path")
 
         # current user is set in ModelAdmin of Algorithm
         temp_path: Path = save_temp_algorithm(self.current_user, cleaned_file)
@@ -39,6 +39,7 @@ class AdminAddAlgorithmForm(forms.ModelForm):
         elif error is None:
             # No need to assign user, admin can decide to which user this algorithm belongs to
             return cleaned_file
+
 
 class AdminChangeAlgorithmForm(forms.ModelForm):
     class Meta:

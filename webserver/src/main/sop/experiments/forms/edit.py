@@ -6,9 +6,9 @@ from experiments.models import Algorithm, Dataset, Experiment
 class AlgorithmEditForm(forms.ModelForm):
     class Meta:
         model = Algorithm
-        fields = ("name", "description", "group")
+        fields = ("display_name", "description", "group")
         widgets = {
-            "name": forms.TextInput(
+            "display_name": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "Algorithm name"}
             ),
             "group": forms.Select(attrs={"class": "form-control"}),
@@ -18,9 +18,9 @@ class AlgorithmEditForm(forms.ModelForm):
 class DatasetEditForm(forms.ModelForm):
     class Meta:
         model = Dataset
-        fields = ("name", "description")
+        fields = ("display_name", "description")
         widgets = {
-            "name": forms.TextInput(
+            "display_name": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "Dataset name"}
             )
         }

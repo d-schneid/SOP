@@ -16,7 +16,7 @@ class DatasetOverviewTests(LoggedInTestCase):
 
     def create_dataset(self, name):
         return Dataset.objects.create(
-            name=name, user=self.user, datapoints_total=0, dimensions_total=0
+            display_name=name, user=self.user, datapoints_total=0, dimensions_total=0
         )
 
     def test_dataset_overview_no_datasets(self):
@@ -84,7 +84,7 @@ class DatasetUploadViewTests(LoggedInTestCase):
         path = f"tests/sample_datasets/{file_name}"
         with open(path, "r") as file:
             data = {
-                "name": self.name,
+                "display_name": self.name,
                 "description": self.description,
                 "path_original": file,
             }
@@ -103,7 +103,7 @@ class DatasetUploadViewTests(LoggedInTestCase):
 
         dataset = Dataset.objects.get()
         self.assertEqual(self.user, dataset.user)
-        self.assertEqual(self.name, dataset.name)
+        self.assertEqual(self.name, dataset.display_name)
         self.assertEqual(self.description, dataset.description)
         self.assertEqual(
             f"datasets/user_{self.user.pk}/" + self.file_name,
@@ -133,7 +133,7 @@ class DatasetEditViewTests(LoggedInTestCase):
     ):
         dataset_pk = dataset_pk if dataset_pk is not None else self.dataset.pk
         data = {
-            "name": self.new_name,
+            "display_name": self.new_name,
             "description": self.new_description,
         }
         response = self.client.post(
@@ -147,12 +147,12 @@ class DatasetEditViewTests(LoggedInTestCase):
 
     def assertNoDatasetChange(self, response):
         self.assertFalse(response.redirect_chain)
-        self.assertEqual(self.name, self.dataset.name)
+        self.assertEqual(self.name, self.dataset.display_name)
         self.assertEqual(self.description, self.dataset.description)
 
     def assertDatasetChange(self, response):
         self.assertTrue(response.redirect_chain)
-        self.assertEqual(self.new_name, self.dataset.name)
+        self.assertEqual(self.new_name, self.dataset.display_name)
         self.assertEqual(self.new_description, self.dataset.description)
 
     def setUp(self) -> None:
@@ -162,7 +162,7 @@ class DatasetEditViewTests(LoggedInTestCase):
         self.new_description = "New Description"
         super().setUp()
         self.dataset = Dataset.objects.create(
-            name=self.name,
+            display_name=self.name,
             description=self.description,
             user=self.user,
             datapoints_total=4,
@@ -190,7 +190,9 @@ class DatasetEditViewTests(LoggedInTestCase):
         self.assertDatasetChange(response)
 
     def test_dataset_edit_view_edit_invalid_pk(self):
-        response = self.post_dataset_edit(dataset_pk=42, expected_status=404, update_model=False)
+        response = self.post_dataset_edit(
+            dataset_pk=42, expected_status=404, update_model=False
+        )
         self.assertTemplateNotUsed(response, "dataset_edit.html")
         self.assertTemplateNotUsed(response, "dataset_overview.html")
         self.assertNoDatasetChange(response)

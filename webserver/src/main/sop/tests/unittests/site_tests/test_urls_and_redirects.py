@@ -62,7 +62,9 @@ class LoggedInSiteTests(LoggedInTestCase):
         self.assertTemplateUsed(response, "dataset_upload.html")
 
     def test_dataset_edit_urls_logged_in(self):
-        dataset = Dataset.objects.create(datapoints_total=0, dimensions_total=0, user=self.user)
+        dataset = Dataset.objects.create(
+            datapoints_total=0, dimensions_total=0, user=self.user
+        )
         response = self.client.get(f"/dataset/{dataset.pk}/edit/")
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "dataset_edit.html")
@@ -71,38 +73,30 @@ class LoggedInSiteTests(LoggedInTestCase):
         response = self.client.get("/experiment/", follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.redirect_chain)
-        self.assertTemplateUsed(
-            response, "experiment_overview.html"
-        )
+        self.assertTemplateUsed(response, "experiment_overview.html")
 
         response = self.client.get("/experiment/overview/", follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.redirect_chain)
-        self.assertTemplateUsed(
-            response, "experiment_overview.html"
-        )
+        self.assertTemplateUsed(response, "experiment_overview.html")
 
         response = self.client.get("/experiment/overview/sort-by=name/")
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(
-            response, "experiment_overview.html"
-        )
+        self.assertTemplateUsed(response, "experiment_overview.html")
 
         response = self.client.get("/experiment/overview/sort-by=creation_date/")
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(
-            response, "experiment_overview.html"
-        )
+        self.assertTemplateUsed(response, "experiment_overview.html")
 
     def test_experiment_create_urls_logged_in(self):
         response = self.client.get("/experiment/create/")
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(
-            response, "experiment_create.html"
-        )
+        self.assertTemplateUsed(response, "experiment_create.html")
 
     def test_experiment_edit_urls_logged_in(self):
-        dataset = Dataset.objects.create(datapoints_total=0, dimensions_total=0, user=self.user)
+        dataset = Dataset.objects.create(
+            datapoints_total=0, dimensions_total=0, user=self.user
+        )
         exp = Experiment.objects.create(dataset=dataset, user=self.user)
         response = self.client.get(f"/experiment/{exp.pk}/edit/")
         self.assertEqual(response.status_code, 200)

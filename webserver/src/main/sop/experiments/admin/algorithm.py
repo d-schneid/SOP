@@ -24,7 +24,7 @@ class ExperimentInline(admin.StackedInline):
 @admin.register(Algorithm)
 class AlgorithmAdmin(admin.ModelAdmin):
     inlines = [ExperimentInline]
-    list_display = ["name", "group", "user", "upload_date"]
+    list_display = ["display_name", "group", "user", "upload_date"]
     raw_id_fields = ["user"]
     list_filter = ["user", "group"]
     search_fields = ["name"]
@@ -48,8 +48,11 @@ class AlgorithmAdmin(admin.ModelAdmin):
     def delete_view(self, request, object_id, extra_context=None):
         algorithm = self.get_object(request, object_id)
         if algorithm.experiment_set.count() > 0:
-            messages.error(request, f"This algorithm cannot be deleted, "
-                                    f"since it is used in at least one experiment (see below)")
+            messages.error(
+                request,
+                "This algorithm cannot be deleted, "
+                "since it is used in at least one experiment (see below)",
+            )
             return self.change_view(request, object_id, "", extra_context)
         return super().delete_view(request, object_id, extra_context)
 
@@ -58,8 +61,11 @@ class AlgorithmAdmin(admin.ModelAdmin):
         algorithms = obj.all()
         for algorithm in algorithms:
             if algorithm.experiment_set.count() > 0:
-                messages.error(request, f"Bulk deletion cannot be executed, "
-                                        f"since at least algorithm {algorithm.name} is used in at least one experiment")
+                messages.error(
+                    request,
+                    "Bulk deletion cannot be executed, "
+                    "since at least algorithm {algorithm.display_name} is used in at least one experiment",
+                )
                 return
         return django_delete_selected(self, request, algorithms)
 

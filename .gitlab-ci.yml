@@ -29,7 +29,11 @@
 # Note that when using a service in GitLab CI/CD that needs environment variables to run, only variables defined in
 # .gitlab-ci.yml are passed to the service and variables defined in the GitLab UI are not.
 # https://gitlab.com/gitlab-org/gitlab/-/issues/30178
-
+stages:
+  - build
+  - test
+  - publish
+  - deploy
 
 variables:
   # DJANGO_CONFIG: "test"
@@ -38,6 +42,13 @@ variables:
   MYSQL_USER: "username"
   MYSQL_PASSWORD: "dbpass"
   MYSQL_HOST: mysql
+
+  # Deployment tags
+  TAG_LATEST: albinoboi/sop:latest
+  TAG_COMMIT: albinoboi/sop:$CI_COMMIT_SHORT_SHA
+
+  # Fix tls issue in docker
+  DOCKER_TLS_CERTDIR: ""
 
 default:
   image: ubuntu:20.04
@@ -87,6 +98,7 @@ migrations:
 django-tests:
   stage: test
   script:
+    - pip3 install django_coverage_plugin && echo "[run]\nplugins = django_coverage_plugin" > webserver/src/main/sop/.coveragerc
     - which python3.10
     - cd webserver/src/main/sop
     # The MYSQL user only gets permissions for MYSQL_DB, so Django can't create a test database.
@@ -105,3 +117,34 @@ backend-tests:
     - python3.10 -m coverage run --source=backend/ --omit="*/__init__.py" -m unittest discover -p "*.py" -s test/ -t .
     - python3.10 -m coverage report
 
+publish-build:
+  inherit:
+    default: false
+  stage: publish
+  image: docker:stable
+  services:
+    - docker:dind
+  script:
+    - docker build -t $TAG_COMMIT -t $TAG_LATEST .
+    - docker login -u $DOCKERHUB_USER -p $DOCKERHUB_TOKEN
+    - docker push $TAG_COMMIT
+    - docker push $TAG_LATEST
+
+deploy-app:
+  inherit:
+    default: false
+  stage: deploy
+  image: alpine:latest
+  tags:
+    - deployment
+  script:
+    - chmod og= $ID_RSA
+    - apk update && apk add openssh-client docker-compose
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "cd docker/sop"
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login -u $DOCKERHUB_USER -p $DOCKERHUB_TOKEN"
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker-compose down"
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker pull $TAG_COMMIT"
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker-compose up -d"
+  environment:
+    name: development
+    url: https://sop.ffhz.site

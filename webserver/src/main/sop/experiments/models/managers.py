@@ -13,10 +13,10 @@ class AlgorithmQuerySet(models.QuerySet):
 
     # TODO: type hints
     def get_sorted_by_group_and_name(self):
-        return self.order_by("group", Lower("name"))
+        return self.order_by("group", Lower("display_name"))
 
     def get_sorted_by_name(self):
-        return self.order_by(Lower("name"))
+        return self.order_by(Lower("display_name"))
 
     def get_sorted_by_upload_date(self):
         # latest uploaded algorithms first
@@ -41,7 +41,7 @@ class DatasetManager(models.Manager):
 
 class DatasetQueryset(models.QuerySet):
     def get_sorted_by_name(self):
-        return self.order_by(Lower("name"))
+        return self.order_by(Lower("display_name"))
 
     def get_sorted_by_upload_time(self):
         return self.order_by("-upload_date")

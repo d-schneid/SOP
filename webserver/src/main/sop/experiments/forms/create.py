@@ -6,9 +6,9 @@ from experiments.models import Algorithm, Dataset, Execution
 class AlgorithmUploadForm(forms.ModelForm):
     class Meta:
         model = Algorithm
-        fields = ("name", "description", "group", "path")
+        fields = ("display_name", "description", "group", "path")
         widgets = {
-            "name": forms.TextInput(
+            "display_name": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "algorithm name"}
             ),
             "description": forms.Textarea(
@@ -25,9 +25,9 @@ class AlgorithmUploadForm(forms.ModelForm):
 class DatasetUploadForm(forms.ModelForm):
     class Meta:
         model = Dataset
-        fields = ("name", "description", "path_original")
+        fields = ("display_name", "description", "path_original")
         widgets = {
-            "name": forms.TextInput(
+            "display_name": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "Dataset name"}
             ),
             "description": forms.Textarea(
@@ -47,4 +47,9 @@ class ExperimentCreateForm(forms.ModelForm):
 class ExecutionCreateForm(forms.ModelForm):
     class Meta:
         model = Execution
-        fields = ("algorithm_parameters", "subspaces_min", "subspaces_max", "subspace_amount")
+        fields = (
+            "algorithm_parameters",
+            "subspaces_min",
+            "subspaces_max",
+            "subspace_amount",
+        )
