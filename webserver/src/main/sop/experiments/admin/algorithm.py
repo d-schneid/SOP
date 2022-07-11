@@ -3,7 +3,7 @@ from typing import Optional
 from django.contrib import admin, messages
 from django.contrib.admin.actions import delete_selected as django_delete_selected
 from django.db.models import Model
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 
 from experiments.forms.admin import AdminAddAlgorithmForm, AdminChangeAlgorithmForm
 from experiments.models.algorithm import Algorithm
@@ -61,9 +61,10 @@ class AlgorithmAdmin(admin.ModelAdmin[Algorithm]):
         request: HttpRequest,
         object_id: str,
         extra_context: Optional[dict[str, object]] = None,
-    ):
-        algorithm = self.get_object(request, object_id)
+    ) -> HttpResponse:
+        algorithm: Algorithm | None = self.get_object(request, object_id)
         assert algorithm is not None  # TODO: handle algorithm is None
+
         if algorithm.experiment_set.count() > 0:  # type: ignore
             messages.error(
                 request,
@@ -81,7 +82,7 @@ class AlgorithmAdmin(admin.ModelAdmin[Algorithm]):
                 messages.error(
                     request,
                     "Bulk deletion cannot be executed, "
-                    "since at least algorithm {algorithm.display_name} is used in at least one experiment",
+                    f"since at least algorithm {algorithm.display_name} is used in at least one experiment",
                 )
                 return
         return django_delete_selected(self, request, algorithms)
