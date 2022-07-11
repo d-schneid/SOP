@@ -47,6 +47,9 @@ variables:
   TAG_LATEST: albinoboi/sop:latest
   TAG_COMMIT: albinoboi/sop:$CI_COMMIT_SHORT_SHA
 
+  # Fix tls issue in docker
+  DOCKER_TLS_CERTDIR: ""
+
 default:
   image: ubuntu:20.04
 
