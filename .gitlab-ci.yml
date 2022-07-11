@@ -87,6 +87,7 @@ migrations:
 django-tests:
   stage: test
   script:
+    - which python3.10
     - cd webserver/src/main/sop
     # The MYSQL user only gets permissions for MYSQL_DB, so Django can't create a test database.
     - echo "GRANT ALL on *.* to '${MYSQL_USER}';"| mysql -u root --password="${MYSQL_ROOT_PASSWORD}" -h mysql
@@ -94,3 +95,13 @@ django-tests:
     - python3.10 manage.py showmigrations --settings=sop.settings_ci
     - python3.10 -m coverage run --source="." --omit="media/*","*/migrations/*","*/__init__.py","tests/*" manage.py test --settings sop.settings_ci
     - python3.10 -m coverage report
+
+
+backend-tests:
+  stage: test
+  script:
+    - which python3.10
+    - cd backend_library/src
+    - python3.10 -m coverage run --source=backend/ --omit="*/__init__.py" -m unittest discover -p "*.py" -s test/ -t .
+    - python3.10 -m coverage report
+
