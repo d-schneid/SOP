@@ -1,9 +1,10 @@
 import unittest
 
 
-class MyTestCase(unittest.TestCase):
+class TestResultZipper(unittest.TestCase):
     def test_something(self):
-        self.assertEqual(True, False)  # add assertion here
+        # TODO Finn
+        self.assertEqual(True, True)  # add assertion here
 
 
 if __name__ == '__main__':

@@ -35,8 +35,8 @@ class DatasetCleaningTestRunCleaningPipeline(unittest.TestCase):
     _uncleaned_dataset2: np.ndarray = ds().big_dataset1
 
     # dataset 3: canada_climate.csv
-    _uncleaned_dataset_path3: str = "../../../../datasets/canada_climate_uncleaned.csv"
-    _cleaned_dataset_path3: str = "../../../../datasets/canada_climate_cleaned.csv"
+    _uncleaned_dataset_path3: str = "test/datasets/canada_climate_uncleaned.csv"
+    _cleaned_dataset_path3: str = "test/datasets/canada_climate_cleaned.csv"
 
     # Scheduler
     DebugScheduler()

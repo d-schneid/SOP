@@ -1,5 +1,6 @@
 import os
 import unittest
+from unittest import skip
 
 import numpy as np
 
@@ -35,6 +36,7 @@ class DatasetCleaningTest1(unittest.TestCase):
         self.__clean_created_files_and_directories()
         self._dc = None
 
+    @skip
     def test_is_DatasetCleaning_finished(self):
         """Tests if __did_cleaning_finish() works correctly when calling schedule()"""
         # Cleaned file does not exist -> cleaning is NOT finished
@@ -109,6 +111,7 @@ class DatasetCleaningTestNoUncleanedDataset(unittest.TestCase):
             os.remove(self._cleaned_dataset_path)
         self._dc_missing_uncleaned_dataset = None
 
+    @skip
     def test_load_uncleaned_dataset(self):
         # No uncleaned Dataset -> throw exception
         with self.assertRaises(AssertionError) as context:

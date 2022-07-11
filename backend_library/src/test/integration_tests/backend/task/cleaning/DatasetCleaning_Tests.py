@@ -1,5 +1,6 @@
 import os
 import unittest
+from unittest import skip
 
 import numpy as np
 
@@ -36,6 +37,7 @@ class DatasetCleaningTest1(unittest.TestCase):
         self.__clean_created_files_and_directories()
         self._dc = None
 
+    @skip
     def test_is_DatasetCleaning_finished(self):
         """Tests if __did_cleaning_finish() works correctly when calling schedule()"""
         # Cleaned file does not exist -> cleaning is NOT finished

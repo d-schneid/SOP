@@ -1,5 +1,6 @@
 import os.path
 import unittest
+from unittest import skip
 
 from backend.task.execution.core.Execution import Execution as ex
 from backend.task.TaskState import TaskState
@@ -70,6 +71,7 @@ class ExecutionTestResultZipping(unittest.TestCase):
 
         self.__clear_old_execution_file_structure()
 
+    @skip
     def test_schedule_result_zipping(self):
         self.assertFalse(os.path.exists(self._zipped_result_path))
         self._ex._Execution__schedule_result_zipping()
