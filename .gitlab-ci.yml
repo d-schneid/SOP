@@ -117,7 +117,7 @@ publish-build:
   inherit:
     default: false
   stage: publish
-  image: docker:latest
+  image: docker:stable
   services:
     - docker:dind
   script:
