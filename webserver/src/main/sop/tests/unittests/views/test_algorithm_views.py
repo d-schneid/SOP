@@ -100,7 +100,12 @@ class AlgorithmOverviewTests(LoggedInTestCase):
 def upload_algorithm(client, name, group, description, file_name):
     path = f"tests/sample_algorithms/{file_name}"
     with open(path, "r") as file:
-        data = {"display_name": name, "group": group, "description": description, "path": file}
+        data = {
+            "display_name": name,
+            "group": group,
+            "description": description,
+            "path": file,
+        }
 
         return client.post(reverse("algorithm_upload"), data=data, follow=True)
 
@@ -202,7 +207,7 @@ class AlgorithmDeleteViewTests(LoggedInTestCase):
 
 class AlgorithmEditViewTest(LoggedInTestCase):
     def post_algorithm_edit(
-            self, algorithm_pk=None, expected_code=200, update_model=True
+        self, algorithm_pk=None, expected_code=200, update_model=True
     ):
         algorithm_pk = algorithm_pk if algorithm_pk is not None else self.algo.pk
         data = {
@@ -274,7 +279,9 @@ class AlgorithmEditViewTest(LoggedInTestCase):
         self.assertAlgorithmChange(response)
 
     def test_algorithm_edit_view_edit_invalid_pk(self):
-        response = self.post_algorithm_edit(algorithm_pk=42, expected_code=404, update_model=False)
+        response = self.post_algorithm_edit(
+            algorithm_pk=42, expected_code=404, update_model=False
+        )
         self.assertTemplateNotUsed(response, "algorithm_edit.html")
         self.assertTemplateNotUsed(response, "algorithm_overview.html")
         self.assertNoAlgorithmChange(response)

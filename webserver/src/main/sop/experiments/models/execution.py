@@ -5,9 +5,7 @@ from experiments.models.managers import ExecutionManager, ExecutionQueryset
 
 
 class Execution(models.Model):
-    experiment = models.ForeignKey(
-        to=Experiment, on_delete=models.CASCADE
-    )
+    experiment = models.ForeignKey(to=Experiment, on_delete=models.CASCADE)
     status = models.CharField(max_length=80, default="created")
     progress = models.FloatField(default=0.0)
     creation_date = models.DateTimeField(auto_now_add=True)

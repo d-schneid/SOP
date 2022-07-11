@@ -22,7 +22,9 @@ class DatasetUploadView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.user = self.request.user
 
-        csv_frame: DataFrame = pd.read_csv(self.request.FILES["path_original"].temporary_file_path())
+        csv_frame: DataFrame = pd.read_csv(
+            self.request.FILES["path_original"].temporary_file_path()
+        )
         form.instance.datapoints_total = csv_frame.size
         form.instance.dimensions_total = csv_frame.shape[1]
 
@@ -64,7 +66,7 @@ class DatasetDeleteView(LoginRequiredMixin, DeleteView):
         # find experiment via related name in models of experiment
         if not dataset.is_deletable:
             # return reverse_lazy("dataset_overview")
-            return HttpResponseRedirect(reverse_lazy('dataset_overview'))
+            return HttpResponseRedirect(reverse_lazy("dataset_overview"))
         return super().form_valid(form)
 
 

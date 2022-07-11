@@ -47,4 +47,9 @@ class ExperimentCreateForm(forms.ModelForm):
 class ExecutionCreateForm(forms.ModelForm):
     class Meta:
         model = Execution
-        fields = ("algorithm_parameters", "subspaces_min", "subspaces_max", "subspace_amount")
+        fields = (
+            "algorithm_parameters",
+            "subspaces_min",
+            "subspaces_max",
+            "subspace_amount",
+        )

@@ -190,7 +190,9 @@ class DatasetEditViewTests(LoggedInTestCase):
         self.assertDatasetChange(response)
 
     def test_dataset_edit_view_edit_invalid_pk(self):
-        response = self.post_dataset_edit(dataset_pk=42, expected_status=404, update_model=False)
+        response = self.post_dataset_edit(
+            dataset_pk=42, expected_status=404, update_model=False
+        )
         self.assertTemplateNotUsed(response, "dataset_edit.html")
         self.assertTemplateNotUsed(response, "dataset_overview.html")
         self.assertNoDatasetChange(response)

@@ -3,7 +3,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 
 from authentication.mixins import LoginRequiredMixin
 from experiments.forms.edit import ExperimentEditForm
-from experiments.models import Experiment, Execution
+from experiments.models import Experiment
 from experiments.models.managers import ExperimentQueryset
 
 

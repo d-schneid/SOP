@@ -26,7 +26,9 @@ class UrlLoginRequiredTests(TestCase):
         self.assertTrue(response.redirect_chain)
         self.assertTemplateUsed("registration/login.html")
 
-        response = self.client.get("/algorithm/overview/sort-by=upload_date/", follow=True)
+        response = self.client.get(
+            "/algorithm/overview/sort-by=upload_date/", follow=True
+        )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.redirect_chain)
         self.assertTemplateUsed("registration/login.html")
@@ -38,7 +40,7 @@ class UrlLoginRequiredTests(TestCase):
         self.assertTemplateUsed("registration/login.html")
 
     def test_algorithm_edit_redirect_to_login(self):
-        response = self.client.get(f"/algorithm/1/edit/", follow=True)
+        response = self.client.get("/algorithm/1/edit/", follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.redirect_chain)
         self.assertTemplateUsed("registration/login.html")
@@ -65,7 +67,9 @@ class UrlLoginRequiredTests(TestCase):
         self.assertTrue(response.redirect_chain)
         self.assertTemplateUsed("registration/login.html")
 
-        response = self.client.get("/dataset/overview/sort-by=upload_date/", follow=True)
+        response = self.client.get(
+            "/dataset/overview/sort-by=upload_date/", follow=True
+        )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.redirect_chain)
         self.assertTemplateUsed("registration/login.html")
@@ -104,7 +108,9 @@ class UrlLoginRequiredTests(TestCase):
         self.assertTrue(response.redirect_chain)
         self.assertTemplateUsed("registration/login.html")
 
-        response = self.client.get("/experiment/overview/sort-by=creation_date/", follow=True)
+        response = self.client.get(
+            "/experiment/overview/sort-by=creation_date/", follow=True
+        )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.redirect_chain)
         self.assertTemplateUsed("registration/login.html")

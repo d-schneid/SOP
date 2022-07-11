@@ -6,13 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('experiments', '0009_rename__datapoints_total_dataset_datapoints_total_and_more'),
+        (
+            "experiments",
+            "0009_rename__datapoints_total_dataset_datapoints_total_and_more",
+        ),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='dataset',
-            name='path_cleaned',
-            field=models.FileField(upload_to=''),
+            model_name="dataset",
+            name="path_cleaned",
+            field=models.FileField(upload_to=""),
         ),
     ]

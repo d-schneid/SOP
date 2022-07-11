@@ -98,6 +98,7 @@ migrations:
 django-tests:
   stage: test
   script:
+    - pip3 install django_coverage_plugin && echo "[run]\nplugins = django_coverage_plugin" > webserver/src/main/sop/.coveragerc
     - which python3.10
     - cd webserver/src/main/sop
     # The MYSQL user only gets permissions for MYSQL_DB, so Django can't create a test database.
