@@ -147,7 +147,7 @@ deploy-app:
     - apt -y update
     - apt -y install cloudflared openssh-client gettext
     - mkdir ~/.ssh && touch ~/.ssh/config
-    - envsubst < "$SSH_CONF" > "~/.ssh/config"
+    - envsubst < $SSH_CONF > ~/.ssh/config
 
   script:
     - chmod og= $ID_RSA
