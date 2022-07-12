@@ -123,6 +123,8 @@ publish-build:
   inherit:
     default: false
   stage: publish
+  only:
+    - main
   image: docker:stable
   services:
     - docker:dind
@@ -136,6 +138,8 @@ deploy-app:
   inherit:
     default: false
   stage: deploy
+  only:
+    - main
   image: debian:latest
   tags:
     - deployment
