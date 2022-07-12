@@ -14,7 +14,7 @@ class UserRoundRobinSchedulerMock(UserRoundRobinScheduler):
         return self._UserRoundRobinScheduler__get_next_schedulable()
 
 
-class MyTestCase(unittest.TestCase):
+class UnitTestRoundRobinScheduler(unittest.TestCase):
     def test_priority(self):
         Scheduler._instance = None
         sched = UserRoundRobinSchedulerMock()

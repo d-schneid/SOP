@@ -3,7 +3,7 @@ import unittest
 from backend.task.TaskState import TaskState
 
 
-class TestTaskState(unittest.TestCase):
+class UnitTestTaskState(unittest.TestCase):
     def test_is_finished(self):
         self.assertEqual(TaskState.WAITING.is_finished(), False)
         self.assertEqual(TaskState.RUNNING.is_finished(), False)

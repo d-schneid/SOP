@@ -15,50 +15,48 @@ from backend.scheduler.DebugScheduler import DebugScheduler
 from backend.scheduler.Scheduler import Scheduler
 
 
-class ExecutionTestResultZipping(unittest.TestCase):
+class IntegrationTestExecutionResultZipping(unittest.TestCase):
     _user_id: int = 214
     _task_id: int = 1553
     _dataset_path: str = "dataset_path.csv"
 
     _dir_name: str = os.getcwd()
 
+    # path creation
+    _result_path: str = os.path.join(_dir_name, "execution_folder")
+    _zipped_result_path: str = _result_path + ".zip"
+
+    # subspace generation
+    _subspace_size_min: int = 1
+    _subspace_size_max: int = 5
+    _subspace_amount = 4
+    _subspace_seed = 42
+    _data_dimensions_count: int = 10
+    _subspace_generation: rsg = rsg(usd(_subspace_size_min, _subspace_size_max),
+                                         _data_dimensions_count, _subspace_amount, _subspace_seed)
+
+    # parameterized algorithms
+    _hyper_parameter: dict = {'seed': 0}
+    _display_names: list[str] = ["display_name", "display_name", "different_display_name", "display_name"]
+    _directory_names_in_execution: list[str] = ["display_name", "display_name (1)", "different_display_name",
+                                                     "display_name (2)"]
+
+    _algorithms: list[ParameterizedAlgorithm] = \
+        list([ParameterizedAlgorithm("path", _hyper_parameter, _display_names[0]),
+              ParameterizedAlgorithm("path2", _hyper_parameter, _display_names[1]),
+              ParameterizedAlgorithm("path3", _hyper_parameter, _display_names[2]),
+              ParameterizedAlgorithm("path3", _hyper_parameter, _display_names[3])])
+
     def __task_progress_callback(self, task_id: int, task_state: TaskState, progress: float) -> None:
-        # Empty callback
-        pass
+        pass  # Empty callback
 
     def __metric_callback(self, execution: ex) -> None:
-        # Empty callback
-        pass
+        pass  # Empty callback
 
     def setUp(self) -> None:
         # create a DebugScheduler
         Scheduler._instance = None
         DebugScheduler()
-
-        # path creation
-        self._result_path: str = os.path.join(self._dir_name, "execution_folder")
-        self._zipped_result_path: str = self._result_path + ".zip"
-
-        # subspace generation
-        self._subspace_size_min: int = 1
-        self._subspace_size_max: int = 5
-        self._subspace_amount = 4
-        self._subspace_seed = 42
-        self._data_dimensions_count: int = 10
-        self._subspace_generation: rsg = rsg(usd(self._subspace_size_min, self._subspace_size_max),
-                                             self._data_dimensions_count, self._subspace_amount, self._subspace_seed)
-
-        # parameterized algorithms
-        self._hyper_parameter: dict = {'seed': 0}
-        self._display_names: list[str] = ["display_name", "display_name", "different_display_name", "display_name"]
-        self._directory_names_in_execution: list[str] = ["display_name", "display_name (1)", "different_display_name",
-                                                         "display_name (2)"]
-
-        self._algorithms: list[ParameterizedAlgorithm] = \
-            list([ParameterizedAlgorithm("path", self._hyper_parameter, self._display_names[0]),
-                  ParameterizedAlgorithm("path2", self._hyper_parameter, self._display_names[1]),
-                  ParameterizedAlgorithm("path3", self._hyper_parameter, self._display_names[2]),
-                  ParameterizedAlgorithm("path3", self._hyper_parameter, self._display_names[3])])
 
         # Delete all folders and files of the old execution structure: BEFORE creating the new execution!
         self.__clear_old_execution_file_structure()
@@ -68,10 +66,6 @@ class ExecutionTestResultZipping(unittest.TestCase):
                       self._result_path, self._subspace_generation, iter(self._algorithms), self.__metric_callback)
 
     def tearDown(self) -> None:
-        self._ex = None
-        self._subspace_generation = None
-        self._algorithms = None
-
         self.__clear_old_execution_file_structure()
 
     def test_schedule_result_zipping(self):

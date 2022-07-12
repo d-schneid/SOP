@@ -5,7 +5,7 @@ from backend.task.TaskHelper import TaskHelper
 from backend.DataIO import DataIO
 
 
-class TaskHelperTest(unittest.TestCase):
+class UnitTestTaskHelper(unittest.TestCase):
     _dir_name: str = os.getcwd()
     _new_dir_path: str = os.path.join(_dir_name, "new_dir")
 
@@ -21,6 +21,17 @@ class TaskHelperTest(unittest.TestCase):
 
     def tearDown(self):
         self.__clean_created_files_and_directories()
+
+    def __clean_created_files_and_directories(self):
+        if os.path.isfile(self._error_path1):
+            os.remove(self._error_path1)
+        if os.path.isfile(self._error_path2):
+            os.remove(self._error_path2)
+        if os.path.isfile(self._error_path3):
+            os.remove(self._error_path3)
+
+        if os.path.isdir(self._new_dir_path):
+            os.rmdir(self._new_dir_path)
 
     def test_create_error_csv(self):
         error_message: str = "basic error"
@@ -40,17 +51,6 @@ class TaskHelperTest(unittest.TestCase):
         with self.assertRaises(AssertionError) as context:
             TaskHelper.save_error_csv(self._path3, empty_message)
         self.assertFalse(os.path.isfile(self._error_path3))
-
-    def __clean_created_files_and_directories(self):
-        if os.path.isfile(self._error_path1):
-            os.remove(self._error_path1)
-        if os.path.isfile(self._error_path2):
-            os.remove(self._error_path2)
-        if os.path.isfile(self._error_path3):
-            os.remove(self._error_path3)
-
-        if os.path.isdir(self._new_dir_path):
-            os.rmdir(self._new_dir_path)
 
     def test_convert_to_error_csv_path(self):
         string1: str = ""

@@ -5,14 +5,14 @@ from backend.scheduler.Schedulable import Schedulable
 from backend.scheduler.Scheduler import Scheduler
 
 
-class DebugSchedulerTest(unittest.TestCase):
+class UnitTestDebugScheduler(unittest.TestCase):
     to_be_changed = False
 
     def test_work_is_done(self):
         Scheduler._instance = None
         sched = DebugScheduler()
         sched.schedule(TestSched())
-        self.assertTrue(DebugSchedulerTest.to_be_changed)  # add assertion here
+        self.assertTrue(UnitTestDebugScheduler.to_be_changed)  # add assertion here
 
 
 if __name__ == '__main__':
@@ -33,4 +33,4 @@ class TestSched(Schedulable):
         return 0
 
     def do_work(self) -> None:
-        DebugSchedulerTest.to_be_changed = True
+        UnitTestDebugScheduler.to_be_changed = True

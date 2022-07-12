@@ -7,10 +7,9 @@ from backend.task.cleaning.DatasetCleaningStepExceptionHanding \
 from test.DatasetsForTesting import Datasets as ds
 
 
-class DatasetCleaningStepExceptionHandlingTest(unittest.TestCase):
+class UnitTestDatasetCleaningStepExceptionHandling(unittest.TestCase):
 
-    def setUp(self) -> None:
-        self._ds: ds = ds()
+    _ds: ds = ds()
 
     def test_check_non_empty_array(self):
         # Raise exception
@@ -51,7 +50,6 @@ class DatasetCleaningStepExceptionHandlingTest(unittest.TestCase):
             self.assertEqual(eh.check_non_none_column(np.asarray([None, 1, None, None, 14, 15, None]), "ERROR"), None)
         except ValueError:
             self.fail("myFunc() raised ExceptionType unexpectedly!")
-
 
 
 if __name__ == '__main__':

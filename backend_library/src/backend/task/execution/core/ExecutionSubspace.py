@@ -32,12 +32,15 @@ class ExecutionSubspace:
         self._execution: Execution = execution
         self._subspace: Subspace = subspace
 
-        algorithms: Iterable[ParameterizedAlgorithm] = execution.algorithms
+        algorithms: list[ParameterizedAlgorithm] = list(execution.algorithms)
 
         # further private variables
         self._finished_execution_element_count: int = 0
-        self._total_execution_element_count: int = TaskHelper.iterable_length(algorithms)
+        self._total_execution_element_count: int = len(algorithms)
         self._execution_elements: List[ExecutionElement] = list()
+
+        self._user_id = self._execution.user_id
+        self._task_id = self._execution.task_id
 
         # shared memory
         self._subspace_shared_memory_name: str = ""
@@ -79,14 +82,14 @@ class ExecutionSubspace:
         """
         :return: The ID of the user belonging to this Execution.
         """
-        return self._execution.user_id
+        return self._user_id
 
     @property
     def task_id(self) -> int:
         """
         :return: The ID of the task.
         """
-        return self._execution.task_id
+        return self._task_id
 
     def get_subspace_data_for_processing(self) -> SharedMemory:
         """
@@ -134,11 +137,3 @@ class ExecutionSubspace:
         self._subspace_shared_memory_name = None
         ss_shm.unlink()
         ss_shm.close()
-
-    @task_id.setter
-    def task_id(self, value):
-        self._task_id = value
-
-    @user_id.setter
-    def user_id(self, value):
-        self._user_id = value

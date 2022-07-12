@@ -6,14 +6,10 @@ from backend.task.cleaning.CategoricalColumnRemover import CategoricalColumnRemo
 from test.DatasetsForTesting import Datasets as ds
 
 
-class CategoricalColumnRemoverTest(unittest.TestCase):
+class UnitTestCategoricalColumnRemover(unittest.TestCase):
 
-    def setUp(self) -> None:
-        self._ds: ds = ds()
-        self._categorical_handler = ccr()
-
-    def tearDown(self) -> None:
-        self._min_max_scaler = None
+    _ds: ds = ds()
+    _categorical_handler = ccr()
 
     def test_categorical_column_remover(self):
         # Remove categorical data one row (edge case)

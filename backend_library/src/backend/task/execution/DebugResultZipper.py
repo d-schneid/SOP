@@ -3,6 +3,7 @@ from typing import Callable
 
 from backend.scheduler.Schedulable import Schedulable
 from backend.task.TaskState import TaskState
+from backend.task.TaskHelper import TaskHelper
 
 
 class ResultZipper(Schedulable):
@@ -50,4 +51,8 @@ class ResultZipper(Schedulable):
         return 50
 
     def do_work(self) -> None:
-        return None
+        """
+        Debug Mode: Just create the zipped-directory
+        :return: None
+        """
+        TaskHelper.create_directory(self._zipped_file_path)

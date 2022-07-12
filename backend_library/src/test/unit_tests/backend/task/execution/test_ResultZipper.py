@@ -1,8 +1,9 @@
 import unittest
 
 
-class MyTestCase(unittest.TestCase):
+class UnitTestResultZipper(unittest.TestCase):
     def test_something(self):
+        # TODO Finn
         self.assertEqual(True, True)  # add assertion here
 
 

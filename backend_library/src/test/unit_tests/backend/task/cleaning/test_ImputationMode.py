@@ -6,15 +6,13 @@ from backend.task.cleaning.ImputationMode import ImputationMode
 from test.DatasetsForTesting import Datasets as ds
 
 
-class ImputationModeTest(unittest.TestCase):
+class UnitTestImputationMode(unittest.TestCase):
 
-    def setUp(self) -> None:
-        self._ds: ds = ds()
-        self._mode: ImputationMode = ImputationMode()
+    _ds: ds = ds()
+    _mode: ImputationMode = ImputationMode()
 
     def test_imputation_mode(self):
         # use mode normally
-        # TODO!!!!
         cleaned_dataset7: np.ndarray = np.array([[-132., 7., 3.], [0., 7., 3.], [1., 7., 3.]])
         np.testing.assert_array_equal(cleaned_dataset7,
                                       self._mode.do_cleaning(self._ds.dataset7))

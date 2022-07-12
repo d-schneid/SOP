@@ -6,14 +6,10 @@ from backend.task.cleaning.MinMaxScaler import MinMaxScaler
 from test.DatasetsForTesting import Datasets as ds
 
 
-class MinMaxScalerTest(unittest.TestCase):
+class UnitTestMinMaxScaler(unittest.TestCase):
 
-    def setUp(self) -> None:
-        self._ds: ds = ds()
-        self._min_max_scaler = MinMaxScaler()
-
-    def tearDown(self) -> None:
-        self._min_max_scaler = None
+    _ds: ds = ds()
+    _min_max_scaler = MinMaxScaler()
 
     def test_min_max_scaler(self):
         # Test Min Max Scaling on normal array

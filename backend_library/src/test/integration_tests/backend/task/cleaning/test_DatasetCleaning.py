@@ -9,10 +9,11 @@ from backend.task.TaskState import TaskState
 from backend.task.TaskHelper import TaskHelper
 from backend.DataIO import DataIO
 from backend.task.TaskErrorMessages import TaskErrorMessages
+from test.DatasetsForTesting import Datasets as ds
 from backend.scheduler.Scheduler import Scheduler
 
 
-class DatasetCleaningTest1(unittest.TestCase):
+class IntegrationTestDatasetCleaning1(unittest.TestCase):
     _dir_name: str = os.getcwd()
     _uncleaned_dataset_path: str = os.path.join(_dir_name, "uncleaned_dataset.csv")
     _cleaned_dataset_path: str = os.path.join(_dir_name, "cleaned_dataset.csv")
@@ -27,15 +28,20 @@ class DatasetCleaningTest1(unittest.TestCase):
     _error_path: str = TaskHelper.convert_to_error_csv_path(_cleaned_dataset_path)
 
     def setUp(self) -> None:
-        self.__clean_created_files_and_directories()
         with open(self._uncleaned_dataset_path, 'w') as uncleaned_csv:
             self._dc: DatasetCleaning = DatasetCleaning(self._user_id, self._task_id,
                                                         self.task_progress_callback, self._uncleaned_dataset_path,
                                                         self._cleaned_dataset_path, iter([]), self._priority)
+        self._finished_cleaning = False
 
     def tearDown(self) -> None:
-        self.__clean_created_files_and_directories()
-        self._dc = None
+        # cleanup
+        if os.path.isfile(self._error_path):
+            os.remove(self._error_path)
+        if os.path.isfile(self._uncleaned_dataset_path):
+            os.remove(self._uncleaned_dataset_path)
+        if os.path.isfile(self._cleaned_dataset_path):
+            os.remove(self._cleaned_dataset_path)
 
     def test_is_DatasetCleaning_finished(self):
         """Tests if __did_cleaning_finish() works correctly when calling schedule()"""
@@ -55,39 +61,12 @@ class DatasetCleaningTest1(unittest.TestCase):
             self.assertTrue(self._finished_cleaning)
         os.remove(self._cleaned_dataset_path)
 
-    def test_empty_cleaning_result_handler(self):
-        """Tests if __empty_cleaning_result_handler() works correctly"""
-        self.assertFalse(os.path.isfile(self._error_path))
-
-        # array not empty
-        not_empty: np.ndarray = np.asarray(["I am not empty (:"])
-        self.assertFalse(self._dc._DatasetCleaning__empty_cleaning_result_handler(not_empty))
-        self.assertFalse(os.path.isfile(self._error_path))
-
-        # array is empty
-        empty: np.ndarray = np.asarray([])
-        self.assertTrue(self._dc._DatasetCleaning__empty_cleaning_result_handler(empty))
-        self.assertTrue(os.path.isfile(self._error_path))
-        # compare error message
-        self.assertEqual(self._error_message, DataIO.read_uncleaned_csv(self._error_path)[0][0])
-
-        # clean up
-        os.remove(self._error_path)
-        self.assertFalse(os.path.isfile(self._error_path))
-
     def task_progress_callback(self, _task_id: int, task_state: TaskState, progress: float) -> None:
-        self._finished_cleaning = True
-
-    def __clean_created_files_and_directories(self):
-        if os.path.isfile(self._error_path):
-            os.remove(self._error_path)
-        if os.path.isfile(self._uncleaned_dataset_path):
-            os.remove(self._uncleaned_dataset_path)
-        if os.path.isfile(self._cleaned_dataset_path):
-            os.remove(self._cleaned_dataset_path)
+        if task_state.is_finished():
+            self._finished_cleaning = True
 
 
-class DatasetCleaningTestNoUncleanedDataset(unittest.TestCase):
+class IntegrationTestDatasetCleaningNoUncleanedDataset(unittest.TestCase):
     """Tests if __did_cleaning_finish() works correctly when calling schedule()"""
     _dir_name: str = os.getcwd()
     _uncleaned_dataset_path: str = os.path.join(_dir_name, "uncleaned_dataset.csv")
@@ -119,6 +98,61 @@ class DatasetCleaningTestNoUncleanedDataset(unittest.TestCase):
 
     def task_progress_callback(self, _task_id: int, task_state: TaskState, progress: float) -> None:
         pass
+
+
+class IntegrationTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
+    _dir_name: str = os.getcwd()
+    # dataset 1
+    _uncleaned_dataset_path: str = os.path.join(_dir_name, "uncleaned_dataset1.csv")
+    _cleaned_dataset_path: str = os.path.join(_dir_name, "cleaned_dataset1.csv")
+
+    _uncleaned_dataset1: np.ndarray = ds().cat_dataset3
+    _cleaned_dataset1: np.ndarray = np.asarray([[0., 0.]])
+
+    # dataset 2
+    _uncleaned_dataset2: np.ndarray = ds().big_dataset1
+
+    _finished_cleaning: bool = False
+
+    _user_id: int = -1
+    _task_id: int = -1
+    _priority: int = 9999
+
+    def task_progress_callback(self, _task_id: int, task_state: TaskState, progress: float) -> None:
+        self.assertTrue(task_state.is_running())
+        self.assertTrue(progress >= 0)
+        self.assertTrue(progress < 1)  # Is smaller than one in run_pipeline
+
+    def setUp(self) -> None:
+        self.__clean_created_files_and_directories()
+        with open(self._uncleaned_dataset_path, 'w') as uncleaned_csv:
+            self._dc: DatasetCleaning = DatasetCleaning(self._user_id, self._task_id,
+                                                         self.task_progress_callback, self._uncleaned_dataset_path,
+                                                         self._cleaned_dataset_path, None, self._priority)
+
+    def __clean_created_files_and_directories(self):
+        if os.path.isfile(self._cleaned_dataset_path):
+            os.remove(self._cleaned_dataset_path)
+        if os.path.isfile(self._cleaned_dataset_path + ".error"):
+            os.remove(self._cleaned_dataset_path + ".error")
+        if os.path.isfile(self._uncleaned_dataset_path):
+            os.remove(self._uncleaned_dataset_path)
+
+    def test_run_cleaning_pipeline1(self):
+        np.testing.assert_array_equal(self._cleaned_dataset1,
+                                      self._dc._DatasetCleaning__run_cleaning_pipeline(self._uncleaned_dataset1))
+
+    def test_run_cleaning_pipeline2(self):
+        cleaned_dataset2: np.ndarray = np.asarray([[0.00000000e+00, 1.00000000e+00, 0.00000000e+00, 1.00000000e+00,
+                                                    0.00000000e+00, 1.00000000e+00, 1.00000000e+00],
+                                                   [1.00000000e+00, 5.00405186e-01, 1.00000000e+00, 0.00000000e+00,
+                                                    8.12019199e-02, 1.32896857e-06, 0.00000000e+00],
+                                                   [6.07124844e-05, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
+                                                    1.00000000e+00, 0.00000000e+00, 9.87870182e-01],
+                                                   [6.07124844e-05, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
+                                                    1.00000000e+00, 0.00000000e+00, 9.87870182e-01]])
+        np.testing.assert_array_almost_equal(cleaned_dataset2, self._dc._DatasetCleaning__run_cleaning_pipeline(
+            self._uncleaned_dataset2))
 
 
 if __name__ == '__main__':

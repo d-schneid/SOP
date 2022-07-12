@@ -7,14 +7,10 @@ from backend.task.cleaning.RowOrColumnMissingValuesRemover import \
 from test.DatasetsForTesting import Datasets as ds
 
 
-class RowMissingValuesRemoverTest(unittest.TestCase):
-    def setUp(self) -> None:
-        self._ds: ds = ds()
-        self._row_remover: RowOrColumnMissingValuesRemover = RowOrColumnMissingValuesRemover(axis=0)
+class UnitTestRowMissingValuesRemover(unittest.TestCase):
 
-    def tearDown(self) -> None:
-        self._row_zero_threshold_remover = None
-        self._row_one_threshold_remover = None
+    _ds: ds = ds()
+    _row_remover: RowOrColumnMissingValuesRemover = RowOrColumnMissingValuesRemover(axis=0)
 
     def test_empty_array(self):
         # Raise exception when empty dataset is inputted
@@ -51,14 +47,10 @@ class RowMissingValuesRemoverTest(unittest.TestCase):
                                       self._row_remover.do_cleaning(np.asarray([None, None, None])))
 
 
-class ColumnMissingValuesRemoverTest(unittest.TestCase):
-    def setUp(self) -> None:
-        self._ds: ds = ds()
-        self._column_remover: RowOrColumnMissingValuesRemover = RowOrColumnMissingValuesRemover(axis=1)
-
-    def tearDown(self) -> None:
-        self._row_zero_threshold_remover = None
-        self._row_one_threshold_remover = None
+class UnitTestColumnMissingValuesRemover(unittest.TestCase):
+    
+    _ds: ds = ds()
+    _column_remover: RowOrColumnMissingValuesRemover = RowOrColumnMissingValuesRemover(axis=1)
 
     def test_none_columns_remove(self):
         # Only one row (edge case)
