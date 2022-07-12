@@ -1,14 +1,14 @@
 from django import forms
 
-from experiments.models import Algorithm, Dataset, Execution
+from experiments.models import Algorithm, Dataset, Execution, Experiment
 
 
-class AlgorithmUploadForm(forms.ModelForm):
+class AlgorithmUploadForm(forms.ModelForm[Algorithm]):
     class Meta:
         model = Algorithm
-        fields = ("name", "description", "group", "path")
+        fields = ("display_name", "description", "group", "path")
         widgets = {
-            "name": forms.TextInput(
+            "display_name": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "algorithm name"}
             ),
             "description": forms.Textarea(
@@ -22,12 +22,12 @@ class AlgorithmUploadForm(forms.ModelForm):
         }
 
 
-class DatasetUploadForm(forms.ModelForm):
+class DatasetUploadForm(forms.ModelForm[Dataset]):
     class Meta:
         model = Dataset
-        fields = ("name", "description", "path_original")
+        fields = ("display_name", "description", "path_original")
         widgets = {
-            "name": forms.TextInput(
+            "display_name": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "Dataset name"}
             ),
             "description": forms.Textarea(
@@ -40,11 +40,16 @@ class DatasetUploadForm(forms.ModelForm):
         }
 
 
-class ExperimentCreateForm(forms.ModelForm):
+class ExperimentCreateForm(forms.ModelForm[Experiment]):
     pass
 
 
-class ExecutionCreateForm(forms.ModelForm):
+class ExecutionCreateForm(forms.ModelForm[Execution]):
     class Meta:
         model = Execution
-        fields = ("algorithm_parameters", "subspaces_min", "subspaces_max", "subspace_amount")
+        fields = (
+            "algorithm_parameters",
+            "subspaces_min",
+            "subspaces_max",
+            "subspace_amount",
+        )

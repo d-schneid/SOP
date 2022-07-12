@@ -61,7 +61,11 @@ class Datasets:
 
     @property
     def cat_dataset3(self) -> np.ndarray:
-        return np.asarray([1, 412, "I am an evil String", None], object)
+        return np.asarray([[1, 412, "I am an evil String", None]], object)
+
+    @property
+    def cat_dataset4(self) -> np.ndarray:
+        return np.asarray([1, 412, "I am an evil String", None], object)  # 1 dim array
 
     @property
     def mixed_dataset1(self) -> np.ndarray:

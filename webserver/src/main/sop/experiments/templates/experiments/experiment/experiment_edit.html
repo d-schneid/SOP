@@ -9,8 +9,8 @@
         {{ form.non_field_errors }}
         <div class="card shadow mt-2">
             <div class="card-header bg-dark d-flex" id="experiment_{{ dataset.pk }}">
-                <div>{{ form.name.errors }}</div>
-                <div><label for="{{ form.name.id_for_label }}"></label></div>
+                <div>{{ form.display_name.errors }}</div>
+                <div><label for="{{ form.display_name.id_for_label }}"></label></div>
                 <div class="flex-fill">{{ form.display_name }}</div>
             </div>
 

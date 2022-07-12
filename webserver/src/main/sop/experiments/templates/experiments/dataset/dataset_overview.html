@@ -1,4 +1,4 @@
-{% extends 'model_overview.html' %}
+{% extends 'model_deletion.html' %}
 
 {% block title %}Dataset Overview{% endblock %}
 
@@ -20,10 +20,16 @@
         <a class="btn-link btn-block text-white{% if not forloop.first %} collapsed{% endif %}"
            aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
            aria-controls="collapse_{{ model.pk }}">
-            {{ model.name }}
+            {{ model.display_name }}
         </a>
     </h5>
-    <a class="text-white ml-auto">{{ model.group }}</a>
+    {% if model.path_cleaned.name|slice:"-5:" == "error" %}
+        <a class="text-white ml-auto">ERROR</a>
+    {% elif model.is_cleaned %}
+        <a class="text-white ml-auto">cleaned</a>
+    {% else %}
+        <a class="text-white ml-auto">cleaning in progress</a>
+    {% endif %}
 {% endblock %}
 
 
@@ -31,82 +37,22 @@
     {{ model.description }}
 {% endblock %}
 
-{% block card-footer %}
-    <ul class="list-group list-group-flush">
-        <li class="list-group-item">
-            <div class="d-flex flex-row-reverse">
-                <button type="button"
-                        class="btn btn-danger mr-3" data-toggle="modal" data-target="#deleteModal{{ model.pk }}">Delete
-                </button>
-                <a href="{% url 'dataset_edit' model.pk %}"
-                   class="btn btn-warning mr-3">Edit</a>
+{% block edit %}
+    <a href="{% url 'dataset_edit' model.pk %}"
+       class="btn btn-warning mr-3">Edit</a>
+{% endblock %}
 
-                <!-- Delete Modal -->
-                <div class="modal fade" id="deleteModal{{ model.pk }}" tabindex="-1" role="dialog"
-                     aria-labelledby="deleteModalTitle" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered" role="document">
-                        <!-- Decide whether Model is deletable or not -->
-                        {% if model.is_deletable %}
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="deleteModalTitle">Delete Dataset</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <p>
-                                        Are you sure you want to delete:
-                                    </p>
-                                    <ul style="font-weight:bold">{{ model.name }}</ul>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                    <form action="{% url 'dataset_delete' model.pk %}" method="post">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-danger btn-md">Delete</button>
-                                    </form>
-                                </div>
-                            </div>
-                        {% else %}
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="deleteModalTitle">Can't delete Dataset</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <h6 class="mb-0">Can't delete <span
-                                            style="font-weight: bold">{{ model.name }}</span> because following
-                                        Experiments use it:</h6>
-                                    <div class="list-group mt-3">
-                                        {% for experiment in model.experiment_set.get_queryset %}
-                                            <a href="{% url 'experiment_overview' %}"
-                                               class="list-group-item list-group-item-action d-flex gap-3 py-3"
-                                               aria-current="true">
-                                                <div class="d-flex gap-2 w-100 justify-content-between">
-                                                    <div>
-                                                        <h5 class="mb-0">{{ experiment.display_name }}</h5>
-                                                        <p class="mb-0 opacity-75">
-                                                            Executions: {{ experiment.execution_set.all.count }}</p>
-                                                    </div>
-                                                    <small class="opacity-50 text-nowrap">created {{ experiment.creation_date }}</small>
-                                                </div>
-                                            </a>
+{% block error %}
+    Dataset <b>{{ model.display_name }}</b> cannot be deleted, since it is used in these experiments:
+{% endblock %}
 
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                </div>
-                            </div
-                        {% endif %}
-                    </div>
-                </div>
+{% block check %}
+    Are you sure you want to delete dataset <b>{{ model.display_name }}</b>?
+{% endblock %}
 
-            </div>
-        </li>
-    </ul>
+{% block delete %}
+    <form action="{% url 'dataset_delete' model.pk %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success mr-3">Yes</button>
+    </form>
 {% endblock %}

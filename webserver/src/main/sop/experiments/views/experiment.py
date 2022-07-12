@@ -2,18 +2,19 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 
 from authentication.mixins import LoginRequiredMixin
+from experiments.forms.create import ExperimentCreateForm
 from experiments.forms.edit import ExperimentEditForm
-from experiments.models import Experiment, Execution
-from experiments.models.managers import ExperimentQueryset
+from experiments.models import Experiment
+from experiments.models.managers import ExperimentQuerySet
 
 
-class ExperimentOverview(LoginRequiredMixin, ListView):
+class ExperimentOverview(LoginRequiredMixin, ListView[Experiment]):
     model = Experiment
-    template_name = "experiments/experiment/experiment_overview.html"
+    template_name = "experiment_overview.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        experiments: ExperimentQueryset = Experiment.objects.get_by_user(
+        experiments: ExperimentQuerySet = Experiment.objects.get_by_user(
             self.request.user
         )
 
@@ -28,9 +29,11 @@ class ExperimentOverview(LoginRequiredMixin, ListView):
         return context
 
 
-class ExperimentCreateView(LoginRequiredMixin, CreateView):
+class ExperimentCreateView(
+    LoginRequiredMixin, CreateView[Experiment, ExperimentCreateForm]
+):
     model = Experiment
-    template_name = "experiments/experiment/experiment_create.html"
+    template_name = "experiment_create.html"
     # TODO: use ExperimentCreateForm
     fields = ("display_name", "dataset", "algorithms")
     success_url = reverse_lazy("experiment_overview")
@@ -40,14 +43,16 @@ class ExperimentCreateView(LoginRequiredMixin, CreateView):
         return super(ExperimentCreateView, self).form_valid(form)
 
 
-class ExperimentEditView(LoginRequiredMixin, UpdateView):
+class ExperimentEditView(
+    LoginRequiredMixin, UpdateView[Experiment, ExperimentEditForm]
+):
     model = Experiment
     form_class = ExperimentEditForm
-    template_name = "experiments/experiment/experiment_edit.html"
+    template_name = "experiment_edit.html"
     success_url = reverse_lazy("experiment_overview")
 
 
-class ExperimentDeleteView(LoginRequiredMixin, DeleteView):
+class ExperimentDeleteView(LoginRequiredMixin, DeleteView[Experiment]):
     model = Experiment
-    template_name = "experiments/experiment/experiment_delete.html"
+    template_name = "experiment_delete.html"
     success_url = reverse_lazy("experiment_overview")

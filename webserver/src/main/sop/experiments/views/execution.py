@@ -57,7 +57,9 @@ def schedule_backend(instance: Execution):
         # TODO: create hyper parameters and pass them into ParameterizedAlgorithms
         parameterized_algorithms.append(
             ParameterizedAlgorithm(
-                display_name=algorithm.name, path=algorithm.path, hyper_parameter=dict()
+                display_name=algorithm.display_name,
+                path=algorithm.path,
+                hyper_parameter=dict(),
             )
         )
     backend_execution = BackendExecution(
@@ -124,11 +126,11 @@ class ExecutionCreateView(LoginRequiredMixin, CreateView):
         assert experiment.user.pk is not None
         assert experiment.pk is not None
         form.instance.result_path = (
-                settings.MEDIA_ROOT
-                / "experiments"
-                / ("user_" + str(experiment.user.pk))
-                / ("experiment_" + str(experiment.pk))
-                / ("execution_" + str(form.instance.pk))
+            settings.MEDIA_ROOT
+            / "experiments"
+            / ("user_" + str(experiment.user.pk))
+            / ("experiment_" + str(experiment.pk))
+            / ("execution_" + str(form.instance.pk))
         )
         schedule_backend(form.instance)
         return response

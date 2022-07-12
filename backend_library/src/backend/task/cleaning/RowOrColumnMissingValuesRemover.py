@@ -46,11 +46,11 @@ class RowOrColumnMissingValuesRemover(MissingValuesRemover, ABC):
             if self._axis == 1:  # remove column (one entry)
                 columns_to_drop = []
                 for idx in range(0, dataset_to_clean.shape[0]):
-                    if str(type(dataset_to_clean[idx])) == '<class \'NoneType\'>':  # TODO unschön, vllt schöner machen
+                    if str(type(dataset_to_clean[idx])) == '<class \'NoneType\'>':  # check if None-value
                         columns_to_drop.append(idx)
                 return np.asarray(np.delete(dataset_to_clean, columns_to_drop, axis=0))
             else:  # remove row
                 for idx in range(0, dataset_to_clean.shape[0]):
-                    if str(type(dataset_to_clean[idx])) != '<class \'NoneType\'>':  # TODO unschön, vllt schöner machen
+                    if str(type(dataset_to_clean[idx])) != '<class \'NoneType\'>':  # check if not None-value
                         return dataset_to_clean  # no none row -> don't do anything
                     return np.zeros((0, 0))  # empty dataset

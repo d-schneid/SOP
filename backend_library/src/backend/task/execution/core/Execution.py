@@ -283,3 +283,11 @@ class Execution(Task, ABC):
         :return: The absolute path where the ZIP-file of the result of this Execution can be found.
         """
         return self._zipped_result_path
+
+    @user_id.setter
+    def user_id(self, value):
+        self._user_id = value
+
+    @task_id.setter
+    def task_id(self, value):
+        self._task_id = value

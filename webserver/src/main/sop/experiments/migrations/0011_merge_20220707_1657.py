@@ -6,9 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('experiments', '0010_algorithm_upload_date'),
-        ('experiments', '0010_alter_dataset_path_cleaned'),
+        ("experiments", "0010_algorithm_upload_date"),
+        ("experiments", "0010_alter_dataset_path_cleaned"),
     ]
 
-    operations = [
-    ]
+    operations = []

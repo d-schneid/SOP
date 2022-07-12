@@ -1,31 +1,31 @@
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Final
 
-from django.core.files.uploadedfile import TemporaryUploadedFile
 from django import forms
-
-from experiments.models import Algorithm
-from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from django.conf import settings
+from django.core.files.uploadedfile import TemporaryUploadedFile
+
+from backend.task.execution.AlgorithmLoader import AlgorithmLoader
+from experiments.models import Algorithm
 from experiments.services.algorithm import (
     save_temp_algorithm,
     delete_temp_algorithm,
     get_signature_of_algorithm,
 )
 
-ALGORITHM_ROOT_DIR = settings.MEDIA_ROOT / "algorithms"
+ALGORITHM_ROOT_DIR: Final = settings.MEDIA_ROOT / "algorithms"
 
 
-class AdminAddAlgorithmForm(forms.ModelForm):
+class AdminAddAlgorithmForm(forms.ModelForm[Algorithm]):
     class Meta:
         model = Algorithm
         exclude = ["signature", "upload_date"]
 
     def clean_path(self):
-        cleaned_file: TemporaryUploadedFile = self.cleaned_data.get('path')
+        cleaned_file: TemporaryUploadedFile = self.cleaned_data.get("path")  # type: ignore
 
         # current user is set in ModelAdmin of Algorithm
-        temp_path: Path = save_temp_algorithm(self.current_user, cleaned_file)
+        temp_path: Path = save_temp_algorithm(self.current_user, cleaned_file)  # type: ignore
         AlgorithmLoader.set_algorithm_root_dir(str(ALGORITHM_ROOT_DIR))
         AlgorithmLoader.ensure_root_dir_in_path()
         error: Optional[str] = AlgorithmLoader.is_algorithm_valid(str(temp_path))
@@ -40,7 +40,8 @@ class AdminAddAlgorithmForm(forms.ModelForm):
             # No need to assign user, admin can decide to which user this algorithm belongs to
             return cleaned_file
 
-class AdminChangeAlgorithmForm(forms.ModelForm):
+
+class AdminChangeAlgorithmForm(forms.ModelForm[Algorithm]):
     class Meta:
         model = Algorithm
         exclude = ["path", "signature"]

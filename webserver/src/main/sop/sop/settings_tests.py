@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/4.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
-import os.path
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -24,7 +23,7 @@ SECRET_KEY = "django-insecure-c5)!_+b-ih@nw)ole3qp1g@s(86z115dg#@)5vt&a*ut_&e@zu
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = []  # type: ignore
 
 # Application definition
 
@@ -64,6 +63,7 @@ TEMPLATES = [
         ],
         "APP_DIRS": True,
         "OPTIONS": {
+            "debug": True,
             "context_processors": [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
@@ -135,3 +135,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "authentication.User"
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "login"
+
+# Needed for typing webserver
+import django_stubs_ext  # noqa: E402
+
+django_stubs_ext.monkeypatch()

@@ -1,32 +1,32 @@
 from django import forms
 
-from experiments.models import Algorithm, Dataset, Experiment
+from experiments.models import Algorithm, Dataset, Experiment, Execution
 
 
-class AlgorithmEditForm(forms.ModelForm):
+class AlgorithmEditForm(forms.ModelForm[Algorithm]):
     class Meta:
         model = Algorithm
-        fields = ("name", "description", "group")
+        fields = ("display_name", "description", "group")
         widgets = {
-            "name": forms.TextInput(
+            "display_name": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "Algorithm name"}
             ),
             "group": forms.Select(attrs={"class": "form-control"}),
         }
 
 
-class DatasetEditForm(forms.ModelForm):
+class DatasetEditForm(forms.ModelForm[Dataset]):
     class Meta:
         model = Dataset
-        fields = ("name", "description")
+        fields = ("display_name", "description")
         widgets = {
-            "name": forms.TextInput(
+            "display_name": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "Dataset name"}
             )
         }
 
 
-class ExperimentEditForm(forms.ModelForm):
+class ExperimentEditForm(forms.ModelForm[Experiment]):
     class Meta:
         model = Experiment
         fields = ("display_name",)
@@ -37,5 +37,5 @@ class ExperimentEditForm(forms.ModelForm):
         }
 
 
-class ExecutionEditForm(forms.ModelForm):
+class ExecutionEditForm(forms.ModelForm[Execution]):
     pass

@@ -16,19 +16,19 @@ class ExperimentOverviewTests(LoggedInTestCase):
 
     def create_experiment(self, name):
         dataset = Dataset.objects.create(
-            name="Datset Name",
+            display_name="Datset Name",
             description="Dataset Description",
             user=self.user,
             datapoints_total=4,
             dimensions_total=7,
         )
         algo1 = Algorithm.objects.create(
-            name="First Algorithm",
+            display_name="First Algorithm",
             group=Algorithm.AlgorithmGroup.PROBABILISTIC,
             user=self.user,
         )
         algo2 = Algorithm.objects.create(
-            name="Second Algorithm",
+            display_name="Second Algorithm",
             group=Algorithm.AlgorithmGroup.COMBINATION,
             user=self.user,
         )
@@ -38,27 +38,27 @@ class ExperimentOverviewTests(LoggedInTestCase):
         exp.algorithms.set([algo1, algo2])
         return exp
 
-    def test_no_experiments(self):
+    def test_experiment_overview_no_experiments(self):
         response = self.client.get(reverse("experiment_overview"), follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "experiments/experiment/experiment_overview.html")
+        self.assertTemplateUsed(response, "experiment_overview.html")
         self.assertQuerysetEqual(response.context[self.QUERYSET_NAME], [])
 
-    def test_one_experiment(self):
+    def test_experiment_overview_one_experiment(self):
         experiment = self.create_experiment("test_experiment")
         response = self.client.get(reverse("experiment_overview"), follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "experiments/experiment/experiment_overview.html")
+        self.assertTemplateUsed(response, "experiment_overview.html")
         self.assertContains(response, "test_experiment")
         self.assertQuerysetEqual(response.context[self.QUERYSET_NAME], [experiment])
 
-    def test_multiple_experiments(self):
+    def test_experiment_overview_multiple_experiments(self):
         experiment1 = self.create_experiment("name_b")
         experiment2 = self.create_experiment("name_a")
         experiment3 = self.create_experiment("name_c")
         response = self.client.get(reverse("experiment_overview"), follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "experiments/experiment/experiment_overview.html")
+        self.assertTemplateUsed(response, "experiment_overview.html")
         self.assertContains(response, "name_a")
         self.assertContains(response, "name_b")
         self.assertContains(response, "name_c")
@@ -67,14 +67,14 @@ class ExperimentOverviewTests(LoggedInTestCase):
             [experiment2, experiment1, experiment3],
         )
 
-    def test_sort_by_upload_date(self):
+    def test_experiment_overview_sort_by_upload_date(self):
         experiment1 = self.create_experiment("name_c")
         experiment2 = self.create_experiment("name_a")
         experiment3 = self.create_experiment("name_b")
         url = reverse("experiment_overview_sorted", args=("creation_date",))
         response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "experiments/experiment/experiment_overview.html")
+        self.assertTemplateUsed(response, "experiment_overview.html")
         self.assertContains(response, "name_a")
         self.assertContains(response, "name_b")
         self.assertContains(response, "name_c")
@@ -96,7 +96,7 @@ class ExperimentCreateViewTests(LoggedInTestCase):
         super().setUp()
         self.name = "Test Valid Dataset"
         self.dataset = Dataset.objects.create(
-            name="Datset Name",
+            display_name="Datset Name",
             description="Dataset Description",
             user=self.user,
             datapoints_total=4,
@@ -104,12 +104,12 @@ class ExperimentCreateViewTests(LoggedInTestCase):
         )
         self.algorithms = [
             Algorithm.objects.create(
-                name="First Algorithm",
+                display_name="First Algorithm",
                 group=Algorithm.AlgorithmGroup.PROBABILISTIC,
                 user=self.user,
             ),
             Algorithm.objects.create(
-                name="Second Algorithm",
+                display_name="Second Algorithm",
                 group=Algorithm.AlgorithmGroup.COMBINATION,
                 user=self.user,
             ),
@@ -130,12 +130,12 @@ class ExperimentCreateViewTests(LoggedInTestCase):
         }
         return self.client.post(reverse("experiment_create"), data=data, follow=True)
 
-    def test_valid_creation(self):
+    def test_experiment_create_view_valid_creation(self):
         response = self.post_experiment_creation()
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateNotUsed(response, "experiments/experiment/experiment_create.html")
-        self.assertTemplateUsed(response, "experiments/experiment/experiment_overview.html")
+        self.assertTemplateNotUsed(response, "experiment_create.html")
+        self.assertTemplateUsed(response, "experiment_overview.html")
         # we expect to be redirected to experiment_overview
         self.assertEqual("experiment_overview_sorted", response.resolver_match.url_name)
         self.assertTrue(response.redirect_chain)
@@ -146,13 +146,13 @@ class ExperimentCreateViewTests(LoggedInTestCase):
         self.assertEqual(self.dataset, experiment.dataset)
         self.assertEqual(self.algorithms, list(experiment.algorithms.all()))
 
-    def test_no_algorithms(self):
+    def test_experiment_create_view_no_algorithms(self):
         self.algorithms = []
         response = self.post_experiment_creation()
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "experiments/experiment/experiment_create.html")
-        self.assertTemplateNotUsed(response, "experiments/experiment/experiment_overview.html")
+        self.assertTemplateUsed(response, "experiment_create.html")
+        self.assertTemplateNotUsed(response, "experiment_overview.html")
         # we expect to stay on the experiment_upload
         self.assertFalse(response.redirect_chain)
         experiment = Experiment.objects.first()
@@ -193,7 +193,7 @@ class ExperimentEditViewTests(LoggedInTestCase):
         self.new_name = "New Name"
         super().setUp()
         self.dataset = Dataset.objects.create(
-            name="Datset Name",
+            display_name="Datset Name",
             description="Dataset Description",
             user=self.user,
             datapoints_total=4,
@@ -201,12 +201,12 @@ class ExperimentEditViewTests(LoggedInTestCase):
         )
         self.algorithms = [
             Algorithm.objects.create(
-                name="First Algorithm",
+                display_name="First Algorithm",
                 group=Algorithm.AlgorithmGroup.PROBABILISTIC,
                 user=self.user,
             ),
             Algorithm.objects.create(
-                name="Second Algorithm",
+                display_name="Second Algorithm",
                 group=Algorithm.AlgorithmGroup.COMBINATION,
                 user=self.user,
             ),
@@ -216,23 +216,23 @@ class ExperimentEditViewTests(LoggedInTestCase):
         )
         self.experiment.algorithms.set(self.algorithms)
 
-    def test_valid_edit(self):
+    def test_experiment_edit_view_valid_edit(self):
         response = self.post_experiment_edit()
-        self.assertTemplateNotUsed(response, "experiments/experiment/experiment_edit.html")
-        self.assertTemplateUsed(response, "experiments/experiment/experiment_overview.html")
+        self.assertTemplateNotUsed(response, "experiment_edit.html")
+        self.assertTemplateUsed(response, "experiment_overview.html")
         self.assertExperimentChange(response)
 
-    def test_edit_no_name(self):
+    def test_experiment_edit_view_edit_no_name(self):
         self.new_name = ""
         response = self.post_experiment_edit()
-        self.assertTemplateUsed(response, "experiments/experiment/experiment_edit.html")
-        self.assertTemplateNotUsed(response, "experiments/experiment/experiment_overview.html")
+        self.assertTemplateUsed(response, "experiment_edit.html")
+        self.assertTemplateNotUsed(response, "experiment_overview.html")
         self.assertNoExperimentChange(response)
 
-    def test_edit_invalid_pk(self):
+    def test_experiment_edit_view_edit_invalid_pk(self):
         response = self.post_experiment_edit(
             experiment_pk=42, expected_status=404, update_model=False
         )
-        self.assertTemplateNotUsed(response, "experiments/experiment/experiment_edit.html")
-        self.assertTemplateNotUsed(response, "experiments/experiment/experiment_overview.html")
+        self.assertTemplateNotUsed(response, "experiment_edit.html")
+        self.assertTemplateNotUsed(response, "experiment_overview.html")
         self.assertNoExperimentChange(response)
