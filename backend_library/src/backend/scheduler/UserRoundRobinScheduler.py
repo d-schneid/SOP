@@ -26,8 +26,11 @@ class UserRoundRobinScheduler(Scheduler):
             self.__make_worker()
 
     def __make_worker(self):
-        p = Process(target=UserRoundRobinScheduler.__worker_main, args=(self,))
+        p = Process(
+            target=UserRoundRobinScheduler._UserRoundRobinScheduler__worker_main,
+            args=(self,))
         self.__workers[p] = None
+        p.start()
 
     def abort_by_task(self, task_id: int) -> None:
         self.__abort(lambda x: x.task_id == task_id)
