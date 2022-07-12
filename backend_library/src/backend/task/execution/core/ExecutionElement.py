@@ -19,7 +19,8 @@ class ExecutionElement(Schedulable, ABC):
     Consists of the computation of one algorithm on exactly one subspace.
     """
 
-    def __init__(self, execution_subspace: ExecutionSubspace, algorithm: ParameterizedAlgorithm, result_path: str):
+    def __init__(self, execution_subspace: ExecutionSubspace, algorithm: ParameterizedAlgorithm, result_path: str,
+                 priority: int = 0):
         """
         :param execution_subspace: The ExecutionSubspace that belongs to this ExecutionElement.
         :param algorithm: The algorithm that should be computed on the subspace.
@@ -29,8 +30,9 @@ class ExecutionElement(Schedulable, ABC):
         self._algorithm: ParameterizedAlgorithm = algorithm
         self._result_path: str = result_path
 
-        self._user_id = self._execution_subspace.user_id
-        self._task_id = self._execution_subspace.task_id
+        self._user_id: int = self._execution_subspace.user_id
+        self._task_id: int = self._execution_subspace.task_id
+        self._priority: int = priority
 
     def finished_result_exists(self) -> bool:
         """
@@ -60,7 +62,7 @@ class ExecutionElement(Schedulable, ABC):
         """
         :return: The priority for the Scheduler.
         """
-        return 0
+        return self._priority
 
     def do_work(self) -> None:
         """

@@ -134,3 +134,11 @@ class ExecutionSubspace:
         self._subspace_shared_memory_name = None
         ss_shm.unlink()
         ss_shm.close()
+
+    @task_id.setter
+    def task_id(self, value):
+        self._task_id = value
+
+    @user_id.setter
+    def user_id(self, value):
+        self._user_id = value
