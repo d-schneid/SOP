@@ -1,8 +1,8 @@
-
 from typing import Callable
 
 from backend.scheduler.Schedulable import Schedulable
 from backend.task.TaskState import TaskState
+from backend.task.TaskHelper import TaskHelper
 
 
 class ResultZipper(Schedulable):
@@ -50,4 +50,17 @@ class ResultZipper(Schedulable):
         return 50
 
     def do_work(self) -> None:
-        pass
+        """
+        Zips the given directory and saves the created .zip-file at the given path.
+        The given directory is deleted after the zipping took place.
+        After the zipping took place, the callback method is used to inform the
+        webserver that the execution is finished.
+        :return: None
+        """
+
+        TaskHelper.zip_dir(self._zipped_file_path, self._path_to_zip)
+        TaskHelper.del_dir(self._path_to_zip)
+
+        self._task_progress_callback(self._task_id, TaskState.FINISHED, 1) # TODO
+
+
