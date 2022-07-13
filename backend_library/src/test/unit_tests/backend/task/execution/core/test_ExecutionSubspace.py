@@ -1,16 +1,14 @@
 import os
 import unittest
 from multiprocessing.shared_memory import SharedMemory
-from unittest.mock import Mock
 
 import numpy as np
 
 from backend.task.execution.core.ExecutionElement import ExecutionElement
 from backend.task.execution.core.ExecutionSubspace import ExecutionSubspace
-from backend.task.execution.core.Execution import Execution
 from backend.task.execution.subspace.Subspace import Subspace
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
-from backend.scheduler.DebugScheduler2 import DebugScheduler2
+from test.DebugScheduler2 import DebugScheduler2
 from backend.scheduler.Scheduler import Scheduler
 
 
