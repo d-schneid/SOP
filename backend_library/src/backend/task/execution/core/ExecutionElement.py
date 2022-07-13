@@ -15,15 +15,17 @@ from multiprocessing.shared_memory import SharedMemory
 from backend.task.execution.subspace.Subspace import Subspace
 
 
-class ExecutionElement(Schedulable, ABC):
+class ExecutionElement(Schedulable):
     """
     Is the smallest unit of an Execution.
     Consists of the computation of one algorithm on exactly one subspace.
     """
-    def __init__(self, user_id: int, task_id: int, subspace: Subspace, algorithm: ParameterizedAlgorithm,
+
+    def __init__(self, user_id: int, task_id: int, subspace: Subspace,
+                 algorithm: ParameterizedAlgorithm,
                  result_path: str, subspace_dtype: np.dtype,
                  get_subspace_data_for_processing: Callable[[], SharedMemory],
-                 execution_element_is_finished: Callable[[bool], None], priority: int = 0):
+                 execution_element_is_finished: Callable[[bool], None]):
         """
         :param user_id: The ID of the user belonging to this ExecutionElement. Has to be at least -1.
         :param task_id: The ID of this task. Has to be at least -1.
@@ -41,7 +43,6 @@ class ExecutionElement(Schedulable, ABC):
 
         self._user_id: int = user_id
         self._task_id: int = task_id
-        self._priority: int = priority
 
         self._subspace: Subspace = subspace
         self._algorithm: ParameterizedAlgorithm = algorithm
@@ -82,7 +83,7 @@ class ExecutionElement(Schedulable, ABC):
         """
         :return: The priority for the Scheduler.
         """
-        return self._priority
+        return 10
 
     def do_work(self) -> None:
         """
