@@ -8,6 +8,9 @@ class DebugScheduler2(Scheduler):
     """
     Placeholder for a Scheduler that doesn't even start the Schedulables when calling schedule()
     """
+    def __init__(self):
+        self._called_scheduler_amount = 0
+
     def abort_by_task(self, task_id: int) -> None:
         raise NotImplementedError
 
@@ -24,4 +27,9 @@ class DebugScheduler2(Scheduler):
         return False
 
     def schedule(self, to_schedule: Schedulable) -> None:
-        return None  # Don't do anything!
+        self._called_scheduler_amount += 1
+        # Don't schedule anything!
+
+    @property
+    def called_scheduler_amount(self) -> int:
+        return self._called_scheduler_amount
