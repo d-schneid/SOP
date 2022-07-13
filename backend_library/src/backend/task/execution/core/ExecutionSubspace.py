@@ -6,10 +6,11 @@ import os
 import sys
 from collections.abc import Iterable
 from multiprocessing.shared_memory import SharedMemory
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 
+from backend.scheduler.Schedulable import Schedulable
 from backend.task.execution.core import ExecutionElement
 from backend.task.execution.core import Execution
 from backend.task.execution.subspace.Subspace import Subspace
@@ -20,11 +21,28 @@ from typing import Callable
 from multiprocessing.shared_memory import SharedMemory
 
 
-class ExecutionSubspace:
+class ExecutionSubspace(Schedulable):
     """
     Manages the computations of all algorithms of an Execution, that compute their results on the same Subspace.
     """
-    def __init__(self, user_id: int, task_id: int, algorithms: Iterable[ParameterizedAlgorithm],
+
+    @property
+    def user_id(self) -> int:
+        return self._user_id
+
+    @property
+    def task_id(self) -> int:
+        return self._task_id
+
+    @property
+    def priority(self) -> int:
+        return 5
+
+    def do_work(self) -> Optional[int]:
+        pass
+
+    def __init__(self, user_id: int, task_id: int,
+                 algorithms: Iterable[ParameterizedAlgorithm],
                  subspace: Subspace, result_path: str, subspace_dtype: np.dtype,
                  cache_dataset_callback: Callable[[Execution], SharedMemory],
                  on_execution_element_finished_callback: Callable[[bool], None]):
