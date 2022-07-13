@@ -278,3 +278,7 @@ class Execution(Task, Schedulable):
         :return: The absolute path where the ZIP-file of the result of this Execution can be found.
         """
         return self._zipped_result_path
+
+    def run_later_on_main(self, statuscode: int):
+        for ess in self._execution_subspaces:
+            Scheduler.get_instance().schedule(ess)
