@@ -14,7 +14,6 @@ class UnitTestExecutionElement(unittest.TestCase):
     # parameters for Execution Subspace/Element
     _user_id: int = 414
     _task_id: int = 42
-    _priority: int = 9999
 
     # create Execution Element
     _dir_name: str = os.getcwd()
@@ -26,9 +25,10 @@ class UnitTestExecutionElement(unittest.TestCase):
     _subspace_dtype: np.dtype = np.dtype('f4')
 
     def setUp(self) -> None:
-        self._ee: ee = ee(self._user_id, self._task_id, self._subspace, self._algorithm, self._result_path,
-                          self._subspace_dtype, self.__get_subspace_data_for_processing_callback,
-                          self.__execution_element_is_finished1, self._priority)
+        self._ee: ee = ee(self._user_id, self._task_id, self._subspace, self._algorithm,
+                          self._result_path,
+                          self._subspace_dtype, "",
+                          self.__execution_element_is_finished1)
 
         # mock Execution Element for do_work()
         self._ee._ExecutionElement__run_algorithm = Mock(return_value=np.asarray([["algorithm result"]]))
@@ -55,23 +55,22 @@ class UnitTestExecutionElement(unittest.TestCase):
         _wrong_task_id: int = -2
 
         with self.assertRaises(AssertionError) as context:
-            self._ee_wrong_user_id: ee = ee(_wrong_user_id, self._task_id, self._subspace,
+            self._ee_wrong_user_id: ee = ee(_wrong_user_id, self._task_id,
+                                            self._subspace,
                                             self._algorithm, self._result_path,
-                                            self._subspace_dtype, self.__get_subspace_data_for_processing_callback,
-                                            self.__execution_element_is_finished,
-                                            self._priority)
+                                            self._subspace_dtype, "",
+                                            self.__execution_element_is_finished)
 
         with self.assertRaises(AssertionError) as context:
-            self._ee_wrong_task_id: ee = ee(self._user_id, _wrong_task_id, self._subspace,
+            self._ee_wrong_task_id: ee = ee(self._user_id, _wrong_task_id,
+                                            self._subspace,
                                             self._algorithm, self._result_path,
-                                            self._subspace_dtype, self.__get_subspace_data_for_processing_callback,
-                                            self.__execution_element_is_finished,
-                                            self._priority)
+                                            self._subspace_dtype, "",
+                                            self.__execution_element_is_finished)
 
     def test_getter(self):
         self.assertEqual(self._ee.user_id, self._user_id)
         self.assertEqual(self._ee.task_id, self._task_id)
-        self.assertEqual(self._ee.priority, self._priority)
 
     def test_finished_result_exists(self):
         self.assertFalse(self._ee.finished_result_exists())
@@ -85,11 +84,13 @@ class UnitTestExecutionElement(unittest.TestCase):
         self.assertFalse(self._ee1_is_finished)
 
         # Method that should be tested
-        self._ee.do_work()
+        statuscode = self._ee.do_work()
+        self._ee.run_later_on_main(statuscode)
 
         # Tests if do_work() saved the converted algorithm result
         self.assertTrue(self._ee.finished_result_exists())
-        self.assertEqual(DataIO.read_uncleaned_csv(self._result_path)[0, 0], "converted algorithm result")
+        self.assertEqual(DataIO.read_uncleaned_csv(self._result_path)[0, 0],
+                         "converted algorithm result")
 
         # Test callback
         self.assertTrue(self._ee1_is_finished)
