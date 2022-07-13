@@ -20,6 +20,7 @@ class Task(ABC):
         """
         assert user_id >= -1
         assert task_id >= -1
+
         self._user_id: int = user_id
         self._task_id: int = task_id
         self._task_progress_callback: Callable = task_progress_callback
