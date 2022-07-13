@@ -38,6 +38,13 @@ class UnitTestRoundRobinScheduler(unittest.TestCase):
         sched.schedule(TestSched(1, -1, 2))
         self.assertNotEqual(sched.next_sched().user_id, sched.next_sched().user_id)
 
+    def test_exec(self):
+        Scheduler._instance = None
+        urss = UserRoundRobinScheduler()
+        urss.schedule(TestSched(-1, -1, 0))
+        time.sleep(2)
+        self.assertTrue(UrrsTest.to_be_changed.value)
+
 
 if __name__ == '__main__':
     unittest.main()
