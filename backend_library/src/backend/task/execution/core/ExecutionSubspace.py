@@ -42,9 +42,8 @@ class ExecutionSubspace(Schedulable):
         pass
 
     def __init__(self, user_id: int, task_id: int,
-                 algorithms: Iterable[ParameterizedAlgorithm],
-                 subspace: Subspace, result_path: str, subspace_dtype: np.dtype,
-                 cache_dataset_callback: Callable[[Execution], SharedMemory],
+                 algorithms: Iterable[ParameterizedAlgorithm], subspace: Subspace,
+                 result_path: str, subspace_dtype: np.dtype,
                  on_execution_element_finished_callback: Callable[[bool], None]):
         """
         :param user_id: The ID of the user belonging to the ExecutionSubspace. Has to be at least -1.
@@ -54,7 +53,6 @@ class ExecutionSubspace(Schedulable):
         :param _result_path: The absolute path where the Execution will store its results
         (ends with the directory name of this specific Execution. f.e. execution1).
         :param subspace_dtype: The dtype of the values that are stored in the dataset for processing
-        :param cache_dataset_callback: Gets the dataset of the Execution.
         :param on_execution_element_finished_callback: Reports the Execution that a ExecutionElement finished.
         """
 
@@ -84,7 +82,6 @@ class ExecutionSubspace(Schedulable):
 
         # initialisation functions
         self.__generate_execution_elements(algorithms)
-        self.__schedule_execution_elements()
 
     def __generate_execution_elements(self, algorithms: Iterable[ParameterizedAlgorithm]) -> None:
         """
