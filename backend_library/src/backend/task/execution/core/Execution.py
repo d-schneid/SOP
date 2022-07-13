@@ -15,6 +15,7 @@ from collections.abc import Iterable
 import numpy as np
 
 from backend.DataIO import DataIO
+from backend.scheduler.Schedulable import Schedulable
 from backend.task.Task import Task
 from backend.task.TaskState import TaskState
 from backend.task.TaskHelper import TaskHelper
@@ -27,15 +28,33 @@ from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 from backend.task.execution.subspace.Subspace import Subspace
 
 
-class Execution(Task, ABC):
+class Execution(Task, Schedulable):
     """
         A task that is provided by the BackendLibrary.
         When scheduled by the Scheduler it executes an execution with the selected cleaned dataset and algorithms.
     """
 
-    def __init__(self, user_id: int, task_id: int, task_progress_callback: Callable[[int, TaskState, float], None],
-                 dataset_path: str, result_path: str, subspace_generation: SubspaceGenerationDescription,
-                 algorithms: Iterable[ParameterizedAlgorithm], metric_callback: Callable[[Execution], None]):
+    @property
+    def user_id(self) -> int:
+        return self.user_id
+
+    @property
+    def task_id(self) -> int:
+        return self.task_id
+
+    @property
+    def priority(self) -> int:
+        return 0
+
+    def do_work(self) -> Optional[int]:
+        pass
+
+    def __init__(self, user_id: int, task_id: int,
+                 task_progress_callback: Callable[[int, TaskState, float], None],
+                 dataset_path: str, result_path: str,
+                 subspace_generation: SubspaceGenerationDescription,
+                 algorithms: Iterable[ParameterizedAlgorithm],
+                 metric_callback: Callable[[Execution], None]):
         """
         :param user_id: The ID of the user belonging to the Execution. Has to be at least -1.
         :param task_id: The ID of the task. Has to be at least -1.
