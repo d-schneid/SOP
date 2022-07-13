@@ -22,3 +22,4 @@ class DebugScheduler(Scheduler):
 
     def schedule(self, to_schedule: Schedulable) -> None:
         to_schedule.do_work()
+        to_schedule.run_later_on_main()
