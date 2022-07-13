@@ -16,6 +16,8 @@ from backend.task.execution.subspace.Subspace import Subspace
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 from backend.task.TaskHelper import TaskHelper
 from backend.scheduler.Scheduler import Scheduler
+from typing import Callable
+from multiprocessing.shared_memory import SharedMemory
 
 
 class ExecutionSubspace:
@@ -23,27 +25,34 @@ class ExecutionSubspace:
     Manages the computations of all algorithms of an Execution, that compute their results on the same Subspace.
     """
 
-    def __init__(self, execution: Execution, subspace: Subspace):
+    def __init__(self, user_id: int, task_id: int, algorithms: iter[ParameterizedAlgorithm],
+                 subspace: Subspace, _result_path: str, subspace_dtype: np.dtype,
+                 cache_dataset_callback: Callable[[Execution], SharedMemory],
+                 on_execution_element_finished_callback: Callable[[bool], None]):
         """
         :param execution: The Execution this ExecutionSubspace belongs to.
         :param subspace: The Subspace whose ExecutionElements are managed by this ExecutionSubspace.
         """
-        self._cache_subset_lock = multiprocessing.Lock()
-        self._execution: Execution = execution
+        # privates from Constructor
+        self._user_id = user_id
+        self._task_id = task_id
         self._subspace: Subspace = subspace
-
-        algorithms: list[ParameterizedAlgorithm] = list(execution.algorithms)
+        self._algorithms: list[ParameterizedAlgorithm] = list(algorithms)
+        self._result_path = _result_path
+        self._subspace_dtype = subspace_dtype
+        self._cache_dataset_callback = cache_dataset_callback
+        self._on_execution_element_finished_callback = on_execution_element_finished_callback
 
         # further private variables
         self._finished_execution_element_count: int = 0
-        self._total_execution_element_count: int = len(algorithms)
+        self._total_execution_element_count: int = len(self._algorithms)
         self._execution_elements: List[ExecutionElement] = list()
-
-        self._user_id = self._execution.user_id
-        self._task_id = self._execution.task_id
 
         # shared memory
         self._subspace_shared_memory_name: str = ""
+
+        # lock for multiprocessing
+        self._cache_subset_lock = multiprocessing.Lock()
 
         # initialisation functions
         self.__generate_execution_elements(algorithms)
@@ -55,7 +64,7 @@ class ExecutionSubspace:
 
     @property
     def subspace_dtype(self) -> np.dtype:
-        return self._execution.dataset_dtype
+        return self._subspace_dtype
 
     def __generate_execution_elements(self, algorithms: Iterable[ParameterizedAlgorithm]) -> None:
         """
@@ -63,7 +72,7 @@ class ExecutionSubspace:
         :return: None
         """
         for algorithm in algorithms:
-            result_path: str = os.path.join(self._execution.zip_result_path,
+            result_path: str = os.path.join(self._result_path,
                                             algorithm.directory_name_in_execution)  # TODO: TEST THIS!
             self._execution_elements.append(ExecutionElement.ExecutionElement(self, algorithm, result_path))
 
@@ -108,7 +117,7 @@ class ExecutionSubspace:
         """
         :return: Loads the dataset for this subspace into shared_memory, if it isn't loaded into the shared_memory yet.
         """
-        ds_shm: SharedMemory = self._execution.cache_dataset()
+        ds_shm: SharedMemory = self._cache_dataset_callback()
         ds_dim_cnt: int = self._subspace.mask.size
         ds_point_count = ds_shm.size / self.subspace_dtype.itemsize / ds_dim_cnt
         ds_arr = np.ndarray((ds_point_count, ds_dim_cnt), dtype=self.subspace_dtype, buffer=ds_shm.buf)
@@ -126,7 +135,7 @@ class ExecutionSubspace:
         self._finished_execution_element_count += 1
         if self._finished_execution_element_count >= self._total_execution_element_count:
             self.__unload_subspace_shared_memory()
-        self._execution.on_execution_element_finished(error_occurred)
+        self._on_execution_element_finished_callback(error_occurred)
 
     def __unload_subspace_shared_memory(self) -> None:
         """

@@ -80,10 +80,7 @@ class Execution(Task, ABC):
 
         # shared memory
         self._shared_memory_name: Optional[str] = None
-
-    @property
-    def dataset_dtype(self) -> np.dtype:
-        return np.dtype('f4')
+        self._subspace_dtype = np.dtype('f4')
 
     def __fill_algorithms_directory_name(self) -> None:
         """
@@ -147,7 +144,12 @@ class Execution(Task, ABC):
         :return: None
         """
         for subspace in self._subspaces:
-            self._execution_subspaces.append(ExecutionSubspace.ExecutionSubspace(self, subspace))
+            self._execution_subspaces.append(ExecutionSubspace.ExecutionSubspace(self._user_id, self._task_id,
+                                                                                 self._algorithms, subspace,
+                                                                                 self._result_path,
+                                                                                 self._subspace_dtype,
+                                                                                 self.__cache_dataset,
+                                                                                 self.__on_execution_element_finished))
 
     # schedule
     def schedule(self) -> None:
@@ -184,29 +186,7 @@ class Execution(Task, ABC):
         # Note: The 100% progress is only reached after zipping
         return progress
 
-    # getter for ExecutionSubspace
-    @property
-    def user_id(self) -> int:
-        """
-        :return: The ID of the user belonging to this Execution.
-        """
-        return self._user_id
-
-    @property
-    def task_id(self) -> int:
-        """
-        :return: The ID of the task.
-        """
-        return self._task_id
-
-    @property
-    def result_path(self) -> str:
-        """
-        :return: The absolute path where the Execution result-directory is stored.
-        """
-        return self._result_path
-
-    def cache_dataset(self) -> SharedMemory:
+    def __cache_dataset(self) -> SharedMemory:
         """
         Load the cleaned dataset, if it isn't loaded into the shared memory yet. \n
         :return: The shared_memory_name of the cleaned dataset.
@@ -222,7 +202,7 @@ class Execution(Task, ABC):
             else:
                 return SharedMemory(self._shared_memory_name)
 
-    def on_execution_element_finished(self, error: bool) -> None:
+    def __on_execution_element_finished(self, error: bool) -> None:
         """
         The Execution gets notified by the corresponding ExecutionSubspace when an ExecutionElement finished
         by calling this method. \n
@@ -283,11 +263,3 @@ class Execution(Task, ABC):
         :return: The absolute path where the ZIP-file of the result of this Execution can be found.
         """
         return self._zipped_result_path
-
-    @user_id.setter
-    def user_id(self, value):
-        self._user_id = value
-
-    @task_id.setter
-    def task_id(self, value):
-        self._task_id = value

@@ -10,6 +10,7 @@ from backend.task.execution.subspace.RandomizedSubspaceGeneration import \
     RandomizedSubspaceGeneration as rsg
 from backend.task.execution.subspace.UniformSubspaceDistribution import \
     UniformSubspaceDistribution as usd
+from backend.task.execution.subspace.Subspace import Subspace
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 
 
@@ -31,19 +32,21 @@ class UnitTestExecution(unittest.TestCase):
     _subspace_seed = 42
     _data_dimensions_count: int = 10
     _subspace_generation: rsg = rsg(usd(_subspace_size_min, _subspace_size_max),
-                                         _data_dimensions_count, _subspace_amount, _subspace_seed)
+                                    _data_dimensions_count, _subspace_amount, _subspace_seed)
 
     # parameterized algorithms
     _hyper_parameter: dict = {'seed': 0}
     _display_names: list[str] = ["display_name", "display_name", "different_display_name", "display_name"]
     _directory_names_in_execution: list[str] = ["display_name", "display_name (1)", "different_display_name",
-                                                     "display_name (2)"]
+                                                "display_name (2)"]
 
     _algorithms: list[ParameterizedAlgorithm] = \
         list([ParameterizedAlgorithm("path", _hyper_parameter, _display_names[0]),
               ParameterizedAlgorithm("path2", _hyper_parameter, _display_names[1]),
               ParameterizedAlgorithm("path3", _hyper_parameter, _display_names[2]),
               ParameterizedAlgorithm("path3", _hyper_parameter, _display_names[3])])
+
+    _subspaces: list[Subspace] = list([Subspace(np.asarray([1, 1, 1]))])
 
     def __task_progress_callback(self, task_id: int, task_state: TaskState, progress: float) -> None:
         # Empty callback
@@ -60,17 +63,15 @@ class UnitTestExecution(unittest.TestCase):
         # create Execution
         self._ex = ex(self._user_id, self._task_id, self.__task_progress_callback, self._dataset_path,
                       self._result_path, self._subspace_generation, iter(self._algorithms), self.__metric_callback)
+        self._ex._subspaces = self._subspaces
 
     def tearDown(self) -> None:
         self._ex = None
 
     def test_getter(self):
-        self.assertEqual(self._user_id, self._ex.user_id)
-        self.assertEqual(self._user_id, self._ex.user_id)
-        self.assertEqual(self._result_path, self._ex.result_path)
         self.assertEqual(self._algorithms, list(self._ex.algorithms))
+        self.assertEqual(self._subspaces, list(self._ex.subspaces))
         self.assertEqual(self._result_path + ".zip", self._ex.zip_result_path)
-        self.assertEqual(np.dtype('f4'), self._ex.dataset_dtype)
 
     def test_fill_algorithms_directory_name(self):
         iterable = self._ex._algorithms.__iter__()
