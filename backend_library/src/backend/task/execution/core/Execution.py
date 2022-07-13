@@ -179,8 +179,6 @@ class Execution(Task, Schedulable):
             self._task_progress_callback(self._task_id, TaskState.FINISHED, 1.0)
             return
 
-        self.__generate_execution_subspaces()
-
         Scheduler.get_instance().schedule(self)
 
     def __does_zip_exists(self) -> bool:
@@ -280,5 +278,6 @@ class Execution(Task, Schedulable):
         return self._zipped_result_path
 
     def run_later_on_main(self, statuscode: int):
+        self.__generate_execution_subspaces()
         for ess in self._execution_subspaces:
             Scheduler.get_instance().schedule(ess)
