@@ -19,6 +19,10 @@ class UserRoundRobinSchedulerMock(UserRoundRobinScheduler):
 
 
 class UnitTestUrrs(unittest.TestCase):
+
+    def tearDown(self) -> None:
+        Scheduler.get_instance().hard_shutdown()
+
     to_be_changed = Manager().Value('b', False)
 
     def test_priority(self):
