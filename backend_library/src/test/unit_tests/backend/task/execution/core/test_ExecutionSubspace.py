@@ -43,12 +43,13 @@ class UnitTestExecutionSubspace(unittest.TestCase):
         Scheduler._instance = None
         DebugScheduler2()
 
-        # create ExecutionSubspace
+
+        # Execution Logic
         self._execution_elements_finished1: int = 0
+        # create ExecutionSubspace
         self._es: ExecutionSubspace = ExecutionSubspace(self._user_id, self._task_id, self._algorithms, self._subspace,
                                                         self._result_path, self._subspace_dtype, self.__cache_dataset,
                                                         self.__on_execution_element_finished1)
-        self._es._ExecutionSubspace__schedule_execution_elements = Mock(return_value=None)
 
     def __cache_dataset(self) -> SharedMemory:
         pass
@@ -58,11 +59,6 @@ class UnitTestExecutionSubspace(unittest.TestCase):
 
     def __on_execution_element_finished1(self, error: bool) -> None:
         self._execution_elements_finished1 += 1
-
-    def test_getter(self):
-        #self.assertEqual(self._execution_subspace.subspace, self._subspace)
-        # TODO
-        self.assertEqual(True, True)  # add assertion here
 
     def test_dont_create_execution_element_with_wrong_user_id_or_task_id(self):
         _wrong_user_id: int = -2
@@ -81,6 +77,20 @@ class UnitTestExecutionSubspace(unittest.TestCase):
                                                                           self._subspace, self._result_path,
                                                                           self._subspace_dtype, self.__cache_dataset,
                                                                           self.__on_execution_element_finished)
+
+    def test_generate_execution_elements(self):
+        # The method will be called on creation of ExecutionSubspace (in constructor -> just test outcome)
+        self.assertEqual(len(self._algorithms), len(self._es._execution_elements))
+        _execution_elements: list[ExecutionElement] = list(self._es._execution_elements)
+        _algorithms_count_in_execution_elements: int = 0
+        for algorithm in self._algorithms:
+            for execution_element in _execution_elements:
+                if execution_element._algorithm == algorithm:
+                    _algorithms_count_in_execution_elements += 1
+                    break
+
+        # Every algorithm has to be in one ExecutionElement:
+        self.assertEqual(_algorithms_count_in_execution_elements, len(self._algorithms))
 
 
 if __name__ == '__main__':
