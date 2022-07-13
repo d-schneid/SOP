@@ -34,11 +34,13 @@ class UnitTestExecutionElement(unittest.TestCase):
     def setUp(self) -> None:
         self._ee: ee = ee(self._user_id, self._task_id, self._subspace, self._algorithm, self._result_path,
                           self._subspace_dtype, self.__get_subspace_data_for_processing_callback,
-                          self.__execution_element_is_finished, self._priority)
+                          self.__execution_element_is_finished1, self._priority)
+
         # mock Execution Element for do_work()
         self._ee._ExecutionElement__run_algorithm = Mock(return_value=np.asarray([["algorithm result"]]))
         self._ee._ExecutionElement__convert_result_to_csv = Mock(
             return_value=np.asarray([["converted algorithm result"]]))
+        self._ee1_is_finished: bool = False
 
     def tearDown(self) -> None:
         if os.path.isfile(self._result_path):
@@ -47,6 +49,9 @@ class UnitTestExecutionElement(unittest.TestCase):
 
     def __get_subspace_data_for_processing_callback(self) -> SharedMemory:
         pass
+
+    def __execution_element_is_finished1(self, error_occurred: bool) -> None:
+        self._ee1_is_finished = True
 
     def __execution_element_is_finished(self, error_occurred: bool) -> None:
         pass
@@ -83,13 +88,17 @@ class UnitTestExecutionElement(unittest.TestCase):
 
     def test_do_work(self):
         self.assertFalse(self._ee.finished_result_exists())
+        self.assertFalse(self._ee1_is_finished)
 
         # Method that should be tested
         self._ee.do_work()
 
-        # Tests if do_work saved the converted algorithm result
+        # Tests if do_work() saved the converted algorithm result
         self.assertTrue(self._ee.finished_result_exists())
         self.assertEqual(DataIO.read_uncleaned_csv(self._result_path)[0, 0], "converted algorithm result")
+
+        # Test callback
+        self.assertTrue(self._ee1_is_finished)
 
         # clean up
         os.remove(self._result_path)

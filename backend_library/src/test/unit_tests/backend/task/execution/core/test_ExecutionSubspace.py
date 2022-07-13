@@ -38,11 +38,13 @@ class UnitTestExecutionSubspace(unittest.TestCase):
 
     _subspace_dtype: np.dtype = np.dtype('f4')
 
+    Scheduler._instance = None
+    _debug_scheduler: DebugScheduler2 = DebugScheduler2()
+
     def setUp(self) -> None:
         # Scheduler
         Scheduler._instance = None
-        DebugScheduler2()
-
+        self._debug_scheduler: DebugScheduler2 = DebugScheduler2()
 
         # Execution Logic
         self._execution_elements_finished1: int = 0
@@ -91,6 +93,9 @@ class UnitTestExecutionSubspace(unittest.TestCase):
 
         # Every algorithm has to be in one ExecutionElement:
         self.assertEqual(_algorithms_count_in_execution_elements, len(self._algorithms))
+
+    def test_schedule_execution_elements(self):
+        self.assertEqual(self._debug_scheduler.called_scheduler_amount, len(self._algorithms))
 
 
 if __name__ == '__main__':

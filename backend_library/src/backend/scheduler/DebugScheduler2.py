@@ -9,6 +9,7 @@ class DebugScheduler2(Scheduler):
     Placeholder for a Scheduler that doesn't even start the Schedulables when calling schedule()
     """
     def __init__(self):
+        Scheduler.__init__(self)
         self._called_scheduler_amount = 0
 
     def abort_by_task(self, task_id: int) -> None:
