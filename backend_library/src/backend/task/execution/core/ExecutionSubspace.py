@@ -24,8 +24,8 @@ class ExecutionSubspace:
     """
     Manages the computations of all algorithms of an Execution, that compute their results on the same Subspace.
     """
-    def __init__(self, user_id: int, task_id: int, algorithms: iter[ParameterizedAlgorithm],
-                 subspace: Subspace, _result_path: str, subspace_dtype: np.dtype,
+    def __init__(self, user_id: int, task_id: int, algorithms: Iterable[ParameterizedAlgorithm],
+                 subspace: Subspace, result_path: str, subspace_dtype: np.dtype,
                  cache_dataset_callback: Callable[[Execution], SharedMemory],
                  on_execution_element_finished_callback: Callable[[bool], None]):
         """
@@ -48,7 +48,7 @@ class ExecutionSubspace:
         self._task_id = task_id
         self._subspace: Subspace = subspace
         self._algorithms: list[ParameterizedAlgorithm] = list(algorithms)
-        self._result_path = _result_path
+        self._result_path = result_path
         self._subspace_dtype = subspace_dtype
         self._cache_dataset_callback = cache_dataset_callback
         self._on_execution_element_finished_callback = on_execution_element_finished_callback

@@ -52,8 +52,8 @@ class UnitTestExecutionElement(unittest.TestCase):
         pass
 
     def test_dont_create_execution_element_with_wrong_user_id_or_task_id(self):
-        _wrong_user_id = -2
-        _wrong_task_id = -2
+        _wrong_user_id: int = -2
+        _wrong_task_id: int = -2
 
         with self.assertRaises(AssertionError) as context:
             self._ee_wrong_user_id: ee = ee(_wrong_user_id, self._task_id, self._subspace,
@@ -68,8 +68,6 @@ class UnitTestExecutionElement(unittest.TestCase):
                                             self._subspace_dtype, self.__get_subspace_data_for_processing_callback,
                                             self.__execution_element_is_finished,
                                             self._priority)
-
-
 
     def test_getter(self):
         self.assertEqual(self._ee.user_id, self._user_id)

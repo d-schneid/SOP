@@ -90,6 +90,9 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
                                                                       self._cleaned_dataset_path_to_compare_result3,
                                                                       None, self._priority)
 
+    def tearDown(self) -> None:
+        self.__clean_created_files_and_directories()
+
     def __clean_created_files_and_directories(self):
         # dataset 1
         if os.path.isfile(self._cleaned_dataset_path1):
