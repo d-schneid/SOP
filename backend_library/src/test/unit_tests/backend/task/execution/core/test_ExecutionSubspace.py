@@ -47,9 +47,14 @@ class UnitTestExecutionSubspace(unittest.TestCase):
         # Execution Logic
         self._execution_elements_finished1: int = 0
         # create ExecutionSubspace
-        self._es: ExecutionSubspace = ExecutionSubspace(self._user_id, self._task_id, self._algorithms, self._subspace,
-                                                        self._result_path, self._subspace_dtype, self.__cache_dataset,
-                                                        self.__on_execution_element_finished1)
+        self._es: ExecutionSubspace = ExecutionSubspace(self._user_id, self._task_id,
+                                                        self._algorithms,
+                                                        self._subspace,
+                                                        self._result_path,
+                                                        self._subspace_dtype,
+                                                        self.__on_execution_element_finished1,
+                                                        "")
+        self._es.run_later_on_main(0)
 
     def __cache_dataset(self) -> SharedMemory:
         pass
@@ -73,10 +78,13 @@ class UnitTestExecutionSubspace(unittest.TestCase):
 
         with self.assertRaises(AssertionError) as context:
             self._es_wrong_task_id: ExecutionSubspace = ExecutionSubspace(self._user_id,
-                                                                          _wrong_task_id, self._algorithms,
-                                                                          self._subspace, self._result_path,
-                                                                          self._subspace_dtype, self.__cache_dataset,
-                                                                          self.__on_execution_element_finished)
+                                                                          _wrong_task_id,
+                                                                          self._algorithms,
+                                                                          self._subspace,
+                                                                          self._result_path,
+                                                                          self._subspace_dtype,
+                                                                          self.__on_execution_element_finished,
+                                                                          "")
 
     def test_generate_execution_elements(self):
         # The method will be called on creation of ExecutionSubspace (in constructor -> just test outcome)
