@@ -21,5 +21,7 @@ class DebugScheduler(Scheduler):
         return False
 
     def schedule(self, to_schedule: Schedulable) -> None:
-        to_schedule.do_work()
-        to_schedule.run_later_on_main()
+        r = to_schedule.do_work()
+        if r is None:
+            r = 0
+        to_schedule.run_later_on_main(0)
