@@ -18,7 +18,7 @@ from backend.scheduler.Scheduler import Scheduler
 class UserRoundRobinScheduler(Scheduler):
     def __init__(self):
         super().__init__()
-        self.__graceful_shutdown_ongoing: bool = False
+        self.__shutdown_ongoing: bool = False
         self.__on_shutdown_completed: Optional[Callable] = None
         self.__empty_queue: Condition = Condition()
         self.__threads: List[Thread] = list()
@@ -56,6 +56,8 @@ class UserRoundRobinScheduler(Scheduler):
                     v[0].terminate()
 
     def hard_shutdown(self) -> None:
+        self.__on_shutdown_completed = None
+        self.__shutdown_ongoing = True
         for k, v in self.__running.items():
             self.__running[k] = (v[0], True)
             v[0].terminate()
@@ -63,13 +65,13 @@ class UserRoundRobinScheduler(Scheduler):
     def graceful_shutdown(self,
                           on_shutdown_completed: Optional[Callable] = None) -> None:
         with self.__empty_queue:
-            self.__graceful_shutdown_ongoing = True
+            self.__shutdown_ongoing = True
             self.__on_shutdown_completed = on_shutdown_completed
             self.__user_queues = OrderedDict()
             self.__empty_queue.notify_all()
 
     def is_shutting_down(self) -> bool:
-        return self.__graceful_shutdown_ongoing
+        return self.__shutdown_ongoing
 
     def schedule(self, to_schedule: Schedulable) -> None:
         uid = to_schedule.user_id
@@ -93,13 +95,13 @@ class UserRoundRobinScheduler(Scheduler):
         sys.exit(r)
 
     def __thread_main(self) -> None:
-        while not self.__graceful_shutdown_ongoing:
+        while not self.__shutdown_ongoing:
             with self.__empty_queue:
                 next_sched = self.__get_next_schedulable()
                 while next_sched is None:
                     self.__empty_queue.wait()
                     next_sched = self.__get_next_schedulable()
-                    if self.__graceful_shutdown_ongoing:
+                    if self.__shutdown_ongoing:
                         self.__handle_graceful_shutdown()
                         return
                 p = Process(target=UserRoundRobinScheduler.__process_main,
@@ -107,8 +109,9 @@ class UserRoundRobinScheduler(Scheduler):
                 self.__running[next_sched] = (p, False)
                 p.start()
             p.join()
-            if not self.__running[next_sched][1]:
-                next_sched.run_later_on_main(p.exitcode)
+            if self.hard_shutdown():
+                if not self.__running[next_sched][1]:
+                    next_sched.run_later_on_main(p.exitcode)
         self.__handle_graceful_shutdown()
 
     def __handle_graceful_shutdown(self) -> None:
