@@ -2,6 +2,7 @@ import os
 import unittest
 
 import numpy as np
+import pandas as pd
 
 from backend.task.TaskState import TaskState
 from test.DatasetsForTesting import Datasets as ds
@@ -88,6 +89,9 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
                                                                       self._uncleaned_dataset_path3,
                                                                       self._cleaned_dataset_path_to_compare_result3,
                                                                       None, self._priority)
+
+    def tearDown(self) -> None:
+        self.__clean_created_files_and_directories()
 
     def __clean_created_files_and_directories(self):
         # dataset 1

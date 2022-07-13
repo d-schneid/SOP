@@ -1,5 +1,6 @@
 import unittest
 from typing import Optional
+from unittest import skip
 
 from backend.scheduler.Schedulable import Schedulable
 from backend.scheduler.Scheduler import Scheduler
@@ -15,6 +16,7 @@ class UserRoundRobinSchedulerMock(UserRoundRobinScheduler):
 
 
 class UnitTestRoundRobinScheduler(unittest.TestCase):
+    @skip
     def test_priority(self):
         Scheduler._instance = None
         sched = UserRoundRobinSchedulerMock()
