@@ -1,14 +1,9 @@
 import os
 import unittest
-from unittest import mock, skip
-
-import ddt as ddt
 import numpy as np
-from unittest.mock import Mock, PropertyMock, patch
+from unittest.mock import Mock
 
-from backend.task.execution.core.Execution import Execution
 from backend.task.execution.core.ExecutionElement import ExecutionElement as ee
-from backend.task.execution.core.ExecutionSubspace import ExecutionSubspace as es
 from backend.task.execution.subspace.Subspace import Subspace
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 from backend.DataIO import DataIO
@@ -16,7 +11,6 @@ from multiprocessing.shared_memory import SharedMemory
 
 
 class UnitTestExecutionElement(unittest.TestCase):
-    # TODO: Maybe remove mocking through using non cyclic dependencies in execution-core
     # parameters for Execution Subspace/Element
     _user_id: int = 414
     _task_id: int = 42
