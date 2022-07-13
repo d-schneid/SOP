@@ -47,7 +47,7 @@ class Execution(Task, Schedulable):
         return 0
 
     def do_work(self) -> Optional[int]:
-        pass
+        self.__load_dataset()
 
     def __init__(self, user_id: int, task_id: int,
                  task_progress_callback: Callable[[int, TaskState, float], None],
@@ -77,7 +77,6 @@ class Execution(Task, Schedulable):
         self._metric_callback: Callable = metric_callback
 
         # on created logic
-        self._cache_dataset_lock = multiprocessing.Lock()
         self._execution_element_finished_lock = multiprocessing.Lock()
         self.__fill_algorithms_directory_name()
         self.__generate_file_system_structure()
@@ -98,7 +97,7 @@ class Execution(Task, Schedulable):
         self._execution_subspaces: List[ExecutionSubspace] = list()
 
         # shared memory
-        self._shared_memory_name: Optional[str] = None
+        self._shared_memory_name: str = TaskHelper.shm_name_generator()
         self._subspace_dtype = np.dtype('f4')
 
     def __fill_algorithms_directory_name(self) -> None:
@@ -180,8 +179,9 @@ class Execution(Task, Schedulable):
             self._task_progress_callback(self._task_id, TaskState.FINISHED, 1.0)
             return
 
-        # create execution subspaces so that they can schedule their execution elements
         self.__generate_execution_subspaces()
+
+        Scheduler.get_instance().schedule(self)
 
     def __does_zip_exists(self) -> bool:
         """
@@ -205,21 +205,17 @@ class Execution(Task, Schedulable):
         # Note: The 100% progress is only reached after zipping
         return progress
 
-    def __cache_dataset(self) -> SharedMemory:
+    def __load_dataset(self) -> None:
         """
         Load the cleaned dataset, if it isn't loaded into the shared memory yet. \n
         :return: The shared_memory_name of the cleaned dataset.
         """
-        with self._cache_dataset_lock:
-            if self._shared_memory_name is None:
-                data = DataIO.read_cleaned_csv(self._dataset_path)
-                shm = shared_memory.SharedMemory(None, True, sys.getsizeof(data))
-                shared_data = np.ndarray(data.shape, data.dtype, shm.buf)
-                shared_data[:] = data[:]
-                self._shared_memory_name = shm.name
-                return shm
-            else:
-                return SharedMemory(self._shared_memory_name)
+        data = DataIO.read_cleaned_csv(self._dataset_path)
+        size = data.size * data.itemsize
+        shm = shared_memory.SharedMemory(self._shared_memory_name, True, size)
+        shared_data = np.ndarray(data.shape, data.dtype, shm.buf)
+        shared_data[:] = data[:]
+        shm.close()
 
     def __on_execution_element_finished(self, error: bool) -> None:
         """
