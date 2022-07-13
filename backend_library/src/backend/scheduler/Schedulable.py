@@ -22,5 +22,5 @@ class Schedulable(ABC):
     def do_work(self) -> Optional[int]:
         return None
 
-    def run_later_on_main(self, stauscode: int) -> None:
+    def run_later_on_main(self, statuscode: int) -> None:
         return None

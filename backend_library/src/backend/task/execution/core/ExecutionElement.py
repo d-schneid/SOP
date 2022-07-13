@@ -22,9 +22,8 @@ class ExecutionElement(Schedulable):
     """
 
     def __init__(self, user_id: int, task_id: int, subspace: Subspace,
-                 algorithm: ParameterizedAlgorithm,
-                 result_path: str, subspace_dtype: np.dtype,
-                 get_subspace_data_for_processing: Callable[[], SharedMemory],
+                 algorithm: ParameterizedAlgorithm, result_path: str,
+                 subspace_dtype: np.dtype, ss_shm_name: Callable[[], SharedMemory],
                  execution_element_is_finished: Callable[[bool], None]):
         """
         :param user_id: The ID of the user belonging to this ExecutionElement. Has to be at least -1.
@@ -33,7 +32,7 @@ class ExecutionElement(Schedulable):
         :param algorithm: The algorithm that should be computed on the subspace.
         :param result_path: The directory where the result-csv-file of the ExecutionElement-computation will be stored.
         :param subspace_dtype: The dtype of the values that are stored in the dataset for processing.
-        :param get_subspace_data_for_processing: Gets the subspace dataset where the ExecutionElement can
+        :param ss_shm_name: Gets the subspace dataset where the ExecutionElement can
         compute its result.
         :param execution_element_is_finished: Reports the ExecutionSubspace that it finished its execution.
         :param priority: The priority of this Schedulable for the Scheduler.
@@ -50,7 +49,7 @@ class ExecutionElement(Schedulable):
         self._result_path: str = result_path
         self._subspace_dtype: np.dtype = subspace_dtype
 
-        self._get_subspace_data_for_processing = get_subspace_data_for_processing
+        self._get_subspace_data_for_processing = ss_shm_name
         self._execution_element_is_finished = execution_element_is_finished
 
         self.execution_element_failed: bool = False

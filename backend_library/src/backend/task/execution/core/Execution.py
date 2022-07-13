@@ -163,11 +163,11 @@ class Execution(Task, Schedulable):
         """
         for subspace in self._subspaces:
             self._execution_subspaces.append(
-                ExecutionSubspace.ExecutionSubspace(self._user_id, self._task_id,
-                                                    self._algorithms, subspace,
-                                                    self._result_path,
-                                                    self._subspace_dtype,
-                                                    self.__on_execution_element_finished))
+                ExecutionSubspace.
+                ExecutionSubspace(self._user_id, self._task_id, self._algorithms,
+                                  subspace, self._result_path, self._subspace_dtype,
+                                  self.__on_execution_element_finished,
+                                  self._shared_memory_name))
 
     # schedule
     def schedule(self) -> None:
