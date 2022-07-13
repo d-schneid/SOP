@@ -15,6 +15,7 @@ from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 
 
 class UnitTestExecution(unittest.TestCase):
+
     _user_id: int = 214
     _task_id: int = 1553
     _dataset_path: str = "dataset_path.csv"

@@ -67,3 +67,7 @@ class DataIO:
 
         df = pd.DataFrame(data)
         df.to_csv(path, index=add_index_column)
+
+    @staticmethod
+    def save_write_csv():
+        pass

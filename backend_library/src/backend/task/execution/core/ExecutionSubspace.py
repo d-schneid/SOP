@@ -24,15 +24,25 @@ class ExecutionSubspace:
     """
     Manages the computations of all algorithms of an Execution, that compute their results on the same Subspace.
     """
-
     def __init__(self, user_id: int, task_id: int, algorithms: iter[ParameterizedAlgorithm],
                  subspace: Subspace, _result_path: str, subspace_dtype: np.dtype,
                  cache_dataset_callback: Callable[[Execution], SharedMemory],
                  on_execution_element_finished_callback: Callable[[bool], None]):
         """
-        :param execution: The Execution this ExecutionSubspace belongs to.
+        :param user_id: The ID of the user belonging to the ExecutionSubspace. Has to be at least -1.
+        :param task_id: The ID of the task. Has to be at least -1.
+        :param algorithms: Contains all algorithms that should be processed on the subspaces.
         :param subspace: The Subspace whose ExecutionElements are managed by this ExecutionSubspace.
+        :param _result_path: The absolute path where the Execution will store its results
+        (ends with the directory name of this specific Execution. f.e. execution1).
+        :param subspace_dtype: The dtype of the values that are stored in the dataset for processing
+        :param cache_dataset_callback: Gets the dataset of the Execution.
+        :param on_execution_element_finished_callback: Reports the Execution that a ExecutionElement finished.
         """
+
+        assert user_id >= -1
+        assert task_id >= -1
+
         # privates from Constructor
         self._user_id = user_id
         self._task_id = task_id
@@ -58,14 +68,6 @@ class ExecutionSubspace:
         self.__generate_execution_elements(algorithms)
         self.__schedule_execution_elements()
 
-    @property
-    def subspace(self) -> Subspace:
-        return self._subspace
-
-    @property
-    def subspace_dtype(self) -> np.dtype:
-        return self._subspace_dtype
-
     def __generate_execution_elements(self, algorithms: Iterable[ParameterizedAlgorithm]) -> None:
         """
         :param algorithms: All algorithms that are selected for the Execution.
@@ -74,7 +76,12 @@ class ExecutionSubspace:
         for algorithm in algorithms:
             result_path: str = os.path.join(self._result_path,
                                             algorithm.directory_name_in_execution)  # TODO: TEST THIS!
-            self._execution_elements.append(ExecutionElement.ExecutionElement(self, algorithm, result_path))
+            self._execution_elements.append(ExecutionElement.ExecutionElement(self._user_id, self._task_id,
+                                                                              self._subspace,
+                                                                              algorithm, result_path,
+                                                                              self._subspace_dtype,
+                                                                              self.__get_subspace_data_for_processing,
+                                                                              self.__execution_element_is_finished))
 
     def __schedule_execution_elements(self) -> None:
         """
@@ -85,22 +92,7 @@ class ExecutionSubspace:
         for execution_element in self._execution_elements:
             scheduler.schedule(execution_element)
 
-    # getter for ExecutionSubspace
-    @property
-    def user_id(self) -> int:
-        """
-        :return: The ID of the user belonging to this Execution.
-        """
-        return self._user_id
-
-    @property
-    def task_id(self) -> int:
-        """
-        :return: The ID of the task.
-        """
-        return self._task_id
-
-    def get_subspace_data_for_processing(self) -> SharedMemory:
+    def __get_subspace_data_for_processing(self) -> SharedMemory:
         """
         Returns the dataset for this subset from shared_memory. \n
         :return: The subspace_dataset (from shared_memory).
@@ -119,13 +111,13 @@ class ExecutionSubspace:
         """
         ds_shm: SharedMemory = self._cache_dataset_callback()
         ds_dim_cnt: int = self._subspace.mask.size
-        ds_point_count = ds_shm.size / self.subspace_dtype.itemsize / ds_dim_cnt
-        ds_arr = np.ndarray((ds_point_count, ds_dim_cnt), dtype=self.subspace_dtype, buffer=ds_shm.buf)
+        ds_point_count = ds_shm.size / self._subspace_dtype.itemsize / ds_dim_cnt
+        ds_arr = np.ndarray((ds_point_count, ds_dim_cnt), dtype=self._subspace_dtype, buffer=ds_shm.buf)
         ss_shm = SharedMemory(None, True, self._subspace.get_size_of_subspace_buffer(ds_arr))
         self._subspace.make_subspace_array(ds_arr, ss_shm)
         return ss_shm
 
-    def execution_element_is_finished(self, error_occurred: bool) -> None:
+    def __execution_element_is_finished(self, error_occurred: bool) -> None:
         """
         The ExecutionSubspace gets notified by an ExecutionElement when it finishes by calling this method. \n
         Passes the notification on to the Execution. \n
