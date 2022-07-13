@@ -2,11 +2,14 @@ import heapq
 import itertools
 import multiprocessing
 import sys
+import threading
 from collections import OrderedDict
 from dataclasses import dataclass, field
+from enum import Enum
 from multiprocessing import Condition, Process
 from multiprocessing.process import BaseProcess
-from typing import Callable, Optional, Dict, List
+from threading import Thread
+from typing import Callable, Optional, Dict, List, Tuple
 
 from backend.scheduler.Schedulable import Schedulable
 from backend.scheduler.Scheduler import Scheduler
@@ -18,19 +21,20 @@ class UserRoundRobinScheduler(Scheduler):
         self.__graceful_shutdown_ongoing: bool = False
         self.__on_shutdown_completed: Optional[Callable] = None
         self.__empty_queue: Condition = Condition()
-        self.__workers: Dict[BaseProcess, Optional[Schedulable]] = dict()
+        self.__threads: List[Thread] = list()
         self.__user_queues: OrderedDict[int, List[PrioritizedSchedulable]] \
             = OrderedDict()
         self.__next_queue: int = -1
-        for i in range(UserRoundRobinScheduler.__get_targeted_worker_count()):
-            self.__make_worker()
+        self.__running: Dict[Schedulable, Tuple[Process, bool]] = dict()
+        for i in range(self.__get_targeted_worker_count()):
+            self.__make_worker_thread()
 
-    def __make_worker(self):
-        p = Process(
-            target=UserRoundRobinScheduler._UserRoundRobinScheduler__worker_main,
+    def __make_worker_thread(self):
+        t = Thread(
+            target=UserRoundRobinScheduler.__thread_main,
             args=(self,))
-        self.__workers[p] = None
-        p.start()
+        self.__threads.append(t)
+        t.start()
 
     def abort_by_task(self, task_id: int) -> None:
         self.__abort(lambda x: x.task_id == task_id)
@@ -46,27 +50,23 @@ class UserRoundRobinScheduler(Scheduler):
                         # there is no way to delete nicely from python heapqs
                         q[i] = q[-1]
                         q.pop()
-            for k, v in self.__user_queues:
-                if selector(v):
-                    k.terminate()
-                    self.__workers.pop(k)
-                    self.__make_worker()
+            for k, v in self.__running:
+                if selector(k):
+                    self.__running[k] = (v[0], True)
+                    v[0].terminate()
 
     def hard_shutdown(self) -> None:
-        for p in self.__workers.keys():
-            p.terminate()
+        for k, v in self.__running.items():
+            self.__running[k] = (v[0], True)
+            v[0].terminate()
 
     def graceful_shutdown(self,
                           on_shutdown_completed: Optional[Callable] = None) -> None:
         with self.__empty_queue:
             self.__graceful_shutdown_ongoing = True
             self.__on_shutdown_completed = on_shutdown_completed
-            for k, v in self.__workers.items():
-                if v is None:
-                    k.terminate()
-                    self.__workers.pop(k)
-            if len(self.__workers) == 0 and on_shutdown_completed is not None:
-                on_shutdown_completed()
+            self.__user_queues = OrderedDict()
+            self.__empty_queue.notify_all()
 
     def is_shutting_down(self) -> bool:
         return self.__graceful_shutdown_ongoing
@@ -86,29 +86,37 @@ class UserRoundRobinScheduler(Scheduler):
             heapq.heappush(self.__user_queues[uid], prioritized_schedulable)
             self.__empty_queue.notify()
 
-    def __worker_main(self) -> None:
+    def __process_main(self, sched: Schedulable):
+        r = sched.do_work()
+        if r is None:
+            r = 0
+        sys.exit(r)
+
+    def __thread_main(self) -> None:
         while not self.__graceful_shutdown_ongoing:
             with self.__empty_queue:
-                next_sched: Optional[Schedulable] = self.__get_next_schedulable()
+                next_sched = self.__get_next_schedulable()
                 while next_sched is None:
                     self.__empty_queue.wait()
                     next_sched = self.__get_next_schedulable()
-                    self.__check_for_graceful_shutdown()
-                self.__workers[multiprocessing.current_process()] = next_sched
-            next_sched.do_work()
-            self.__workers[multiprocessing.current_process()] = None
-        self.__check_for_graceful_shutdown()
+                    if self.__graceful_shutdown_ongoing:
+                        self.__handle_graceful_shutdown()
+                        return
+                p = Process(target=UserRoundRobinScheduler.__process_main,
+                            args=(self, next_sched,))
+                self.__running[next_sched] = (p, False)
+                p.start()
+            p.join()
+            if not self.__running[next_sched][1]:
+                next_sched.run_later_on_main(p.exitcode)
+        self.__handle_graceful_shutdown()
 
-    def __check_for_graceful_shutdown(self) -> None:
-        if self.__graceful_shutdown_ongoing:
-            if self.__on_shutdown_completed is not None:
-                with self.__empty_queue:
-                    self.__workers.pop(multiprocessing.current_process())
-                    if len(self.__workers) == 0:
-                        self.__on_shutdown_completed()
-            sys.exit()
-        else:
-            return None
+    def __handle_graceful_shutdown(self) -> None:
+        if self.__on_shutdown_completed is not None:
+            with self.__empty_queue:
+                self.__threads.remove(threading.current_thread())
+                if len(self.__threads) == 0:
+                    self.__on_shutdown_completed()
 
     def __get_next_schedulable(self) -> Optional[Schedulable]:
         if self.__next_queue == -1:
