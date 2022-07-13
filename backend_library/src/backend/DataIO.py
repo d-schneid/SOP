@@ -57,7 +57,7 @@ class DataIO:
     @staticmethod
     def write_csv(path: str, data: np.ndarray, add_index_column: bool = False):
         """
-        Writes the given dataset to a csv-file. \n
+        Writes the given 2D-dataset to a csv-file. \n
         :param path: The absolute path to the location of the csv-file to be created and written to.
         :param data: The dataset that should be created and written to.
         :param add_index_column: If True create an additional column at the start of the array with
@@ -66,6 +66,8 @@ class DataIO:
         """
 
         df = pd.DataFrame(data)
+        assert len(df.shape) == 2
+
         df.to_csv(path, index=add_index_column)
 
     @staticmethod

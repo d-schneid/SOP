@@ -2,6 +2,7 @@ import os
 import unittest
 
 import numpy as np
+import pandas as pd
 
 from backend.task.TaskState import TaskState
 from test.DatasetsForTesting import Datasets as ds
