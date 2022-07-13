@@ -1,4 +1,6 @@
+import time
 import unittest
+from multiprocessing import Manager
 from typing import Optional
 from unittest import skip
 
@@ -8,15 +10,17 @@ from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
 
 
 class UserRoundRobinSchedulerMock(UserRoundRobinScheduler):
-    @staticmethod
-    def _UserRoundRobinScheduler__get_targeted_worker_count() -> int: return 0
+
+    def _UserRoundRobinScheduler__get_targeted_worker_count(self) -> int:
+        return 0
 
     def next_sched(self) -> Optional[Schedulable]:
         return self._UserRoundRobinScheduler__get_next_schedulable()
 
 
-class UnitTestRoundRobinScheduler(unittest.TestCase):
-    @skip
+class UnitTestUrrs(unittest.TestCase):
+    to_be_changed = Manager().Value('b', False)
+
     def test_priority(self):
         Scheduler._instance = None
         sched = UserRoundRobinSchedulerMock()
@@ -43,7 +47,7 @@ class UnitTestRoundRobinScheduler(unittest.TestCase):
         urss = UserRoundRobinScheduler()
         urss.schedule(TestSched(-1, -1, 0))
         time.sleep(2)
-        self.assertTrue(UrrsTest.to_be_changed.value)
+        self.assertTrue(UnitTestUrrs.to_be_changed.value)
 
 
 if __name__ == '__main__':
@@ -69,4 +73,4 @@ class TestSched(Schedulable):
         return self.prio
 
     def do_work(self) -> None:
-        return None
+        UnitTestUrrs.to_be_changed.set(True)

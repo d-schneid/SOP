@@ -125,8 +125,7 @@ class UserRoundRobinScheduler(Scheduler):
                 return heapq.heappop(v).schedulable
         return None
 
-    @staticmethod
-    def __get_targeted_worker_count() -> int:
+    def __get_targeted_worker_count(self) -> int:
         return multiprocessing.cpu_count() * 2
 
 
