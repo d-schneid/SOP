@@ -18,7 +18,7 @@ from backend.scheduler.Scheduler import Scheduler
 class UserRoundRobinScheduler(Scheduler):
     def __init__(self):
         super().__init__()
-        assert sys.platform == "win32", \
+        assert sys.platform != "win32", \
             "Multiprocessing will not work under native windows use "
         multiprocessing.set_start_method("fork")
         self.__shutdown_ongoing: bool = False
