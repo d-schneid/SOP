@@ -116,7 +116,7 @@ class ExecutionSubspace:
         ds_arr = np.ndarray((ds_point_count, ds_dim_cnt), dtype=self._subspace_dtype, buffer=ds_shm.buf)
         ss_shm = SharedMemory(None, True, self._subspace.get_size_of_subspace_buffer(ds_arr))
         self._subspace.make_subspace_array(ds_arr, ss_shm)
-        return ss_shm
+        return ss_shm   
 
     def __execution_element_is_finished(self, error_occurred: bool) -> None:
         """
