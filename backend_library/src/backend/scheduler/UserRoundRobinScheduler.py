@@ -61,6 +61,8 @@ class UserRoundRobinScheduler(Scheduler):
         for k, v in self.__running.items():
             self.__running[k] = (v[0], True)
             v[0].terminate()
+        with self.__empty_queue:
+            self.__empty_queue.notify_all()
 
     def graceful_shutdown(self,
                           on_shutdown_completed: Optional[Callable] = None) -> None:
