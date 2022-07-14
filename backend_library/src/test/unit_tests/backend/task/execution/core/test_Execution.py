@@ -1,4 +1,5 @@
 import os.path
+import shutil
 import unittest
 
 import numpy as np
@@ -118,19 +119,11 @@ class UnitTestExecution(unittest.TestCase):
         self.assertAlmostEqual(0.99, self._ex._Execution__compute_progress())
 
     def __clear_old_execution_file_structure(self):
-        if os.path.isfile(self._details_path):
-            os.remove(self._details_path)
-
-        for dir_name in self._directory_names_in_execution:
-            path: str = os.path.join(self._result_path, dir_name)
-            if os.path.isdir(path):
-                os.rmdir(path)
-
         if os.path.isdir(self._result_path):
-            os.rmdir(self._result_path)
+            shutil.rmtree(self._result_path)
 
-        if os.path.isdir(self._zipped_result_path):
-            os.rmdir(self._zipped_result_path)
+        if os.path.exists(self._zipped_result_path):
+            os.remove(self._zipped_result_path)
 
 
 if __name__ == '__main__':

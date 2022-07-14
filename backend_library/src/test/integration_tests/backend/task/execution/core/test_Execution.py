@@ -1,4 +1,5 @@
 import os.path
+import shutil
 import unittest
 from unittest import skip
 
@@ -72,23 +73,14 @@ class IntegrationTestExecutionResultZipping(unittest.TestCase):
         self.assertFalse(os.path.exists(self._zipped_result_path))
         self._ex._Execution__schedule_result_zipping()
         self.assertTrue(os.path.exists(self._zipped_result_path))
-        os.rmdir(self._zipped_result_path)
+        os.remove(self._zipped_result_path)
 
     def __clear_old_execution_file_structure(self):
-        details_path: str = os.path.join(self._result_path, 'details.json')
-        if os.path.isfile(details_path):
-            os.remove(details_path)
-
-        for dir_name in self._directory_names_in_execution:
-            path: str = os.path.join(self._result_path, dir_name)
-            if os.path.isdir(path):
-                os.rmdir(path)
-
         if os.path.isdir(self._result_path):
-            os.rmdir(self._result_path)
+            shutil.rmtree(self._result_path)
 
-        if os.path.isdir(self._zipped_result_path):
-            os.rmdir(self._zipped_result_path)
+        if os.path.exists(self._zipped_result_path):
+            os.remove(self._zipped_result_path)
 
 
 if __name__ == '__main__':
