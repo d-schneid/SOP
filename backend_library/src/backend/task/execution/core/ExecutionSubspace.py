@@ -26,7 +26,7 @@ class ExecutionSubspace:
     """
     def __init__(self, user_id: int, task_id: int, algorithms: Iterable[ParameterizedAlgorithm],
                  subspace: Subspace, result_path: str, subspace_dtype: np.dtype,
-                 cache_dataset_callback: Callable[[Execution], SharedMemory],
+                 cache_dataset_callback: Callable[[], SharedMemory],
                  on_execution_element_finished_callback: Callable[[bool], None]):
         """
         :param user_id: The ID of the user belonging to the ExecutionSubspace. Has to be at least -1.
@@ -50,8 +50,9 @@ class ExecutionSubspace:
         self._algorithms: list[ParameterizedAlgorithm] = list(algorithms)
         self._result_path = result_path
         self._subspace_dtype = subspace_dtype
-        self._cache_dataset_callback = cache_dataset_callback
-        self._on_execution_element_finished_callback = on_execution_element_finished_callback
+
+        self._cache_dataset_callback: Callable[[], SharedMemory] = cache_dataset_callback
+        self._on_execution_element_finished_callback: Callable[[bool], None] = on_execution_element_finished_callback
 
         # further private variables
         self._finished_execution_element_count: int = 0
