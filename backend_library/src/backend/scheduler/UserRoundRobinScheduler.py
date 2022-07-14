@@ -18,9 +18,12 @@ from backend.scheduler.Scheduler import Scheduler
 class UserRoundRobinScheduler(Scheduler):
     def __init__(self):
         super().__init__()
-        assert sys.platform != "win32", \
-            "Multiprocessing will not work under native windows use "
-        multiprocessing.set_start_method("fork")
+        assert "fork" in multiprocessing.get_all_start_methods(), \
+            "Multiprocessing will not work under native windows use linux"
+        if multiprocessing.get_start_method(True) is None:
+            multiprocessing.set_start_method("fork")
+        assert multiprocessing.get_start_method(True) == "fork", \
+            "apparently the setting the start method of processes was not possible"
         self.__shutdown_ongoing: bool = False
         self.__on_shutdown_completed: Optional[Callable] = None
         self.__empty_queue: Condition = Condition()
