@@ -123,6 +123,8 @@ publish-build:
   only:
     - main
   image: docker:stable
+  tags:
+    - deployment
   services:
     - docker:dind
   script:
