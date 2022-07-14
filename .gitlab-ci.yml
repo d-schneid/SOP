@@ -51,7 +51,7 @@ variables:
   DOCKER_TLS_CERTDIR: ""
 
 default:
-  image: ubuntu:20.04
+  image: python:3.10-slim-bullseye
 
   cache:
     key: build-cache
@@ -69,18 +69,15 @@ default:
   # http://docs.gitlab.com/ee/ci/yaml/README.html#cache
   before_script:
     - apt -y update
-    - apt-get -yq install software-properties-common
-    - add-apt-repository -y ppa:deadsnakes/ppa
-    - apt -y install apt-utils
-    - apt -y install net-tools python3.10 python3-pip mysql-client libmysqlclient-dev python3.10-distutils python3.10-dev
     - apt -y upgrade
-    - "[ ! -d 'venv3.10' ] && pip3 install virtualenv && virtualenv venv3.10 -p python3.10"
-    - ls
+    - apt-get -yq install software-properties-common
+    - apt -y install apt-utils net-tools default-mysql-client default-libmysqlclient-dev python3-distutils python3-dev gcc
+    - "[ ! -d 'venv3.10' ]  && python3 -m venv venv3.10"
     - source venv3.10/bin/activate
-    - pip3 install -r requirements.txt
-    - pip3 install mysqlclient
-    - pip3 install coverage
-    - pip3 install -e backend_library/src
+    - python3 -m pip install --upgrade pip
+    - python3 -m pip install -r requirements.txt
+    - python3 -m pip install mysqlclient coverage
+    - python3 -m pip install -e backend_library/src
     - python3.10 -V
 
 migrations:
@@ -126,6 +123,8 @@ publish-build:
   only:
     - main
   image: docker:stable
+  tags:
+    - deployment
   services:
     - docker:dind
   script:
