@@ -123,13 +123,10 @@ publish-build:
   only:
     - main
   image: docker:stable
-  tags:
-    - deployment
-  services:
-    - docker:dind
   script:
-    - docker build -t $TAG_COMMIT -t $TAG_LATEST .
     - docker login -u $DOCKERHUB_USER -p $DOCKERHUB_TOKEN
+    - docker pull $TAG_LATEST
+    - docker build -t $TAG_COMMIT -t $TAG_LATEST --cache-from $TAG_LATEST .
     - docker push $TAG_COMMIT
     - docker push $TAG_LATEST
 
@@ -156,7 +153,7 @@ deploy-app:
     - chmod og= $ID_RSA
     - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login -u $DOCKERHUB_USER -p $DOCKERHUB_TOKEN"
     - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker-compose down"
-    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker pull $TAG_COMMIT"
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker pull $TAG_LATEST"
     - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker-compose up -d"
   environment:
     name: development
