@@ -58,8 +58,42 @@
     <ul class="list-group list-group-flush">
         <li class="list-group-item">
             <div class="d-flex flex-row-reverse">
-                <a href="{% url 'experiment_delete' model.pk %}"
-                   class="btn btn-danger mr-3">Delete Experiment</a>
+                <button type="button"
+                        class="btn btn-danger mr-3"
+                        data-toggle="modal"
+                        data-target="#deleteModal{{ model.pk }}">
+                    Delete Experiment
+                </button>
+                <div class="modal fade"
+                     id="deleteModal{{ model.pk }}"
+                     tabindex="-1"
+                     role="dialog"
+                     aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <div class="text-left">
+                                    <h5><b>Warning</b></h5><br/>
+                                </div>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="text-center">
+                                    Are you sure you want to delete experiment <b>{{ model.display_name }}</b>?
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <form action="{% url 'experiment_delete' model.pk %}" method="post">
+                                    {% csrf_token %}
+                                    <button class="btn btn-success mr-3" type="submit">Delete</button>
+                                </form>
+                                <button type="button" class="btn btn-danger mr-3" data-dismiss="modal">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <a href="{% url 'experiment_edit' model.pk %}"
                    class="btn btn-warning mr-3">Edit Experiment</a>
             </div>

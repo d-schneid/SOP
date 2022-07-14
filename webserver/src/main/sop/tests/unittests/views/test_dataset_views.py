@@ -196,3 +196,24 @@ class DatasetEditViewTests(LoggedInTestCase):
         self.assertTemplateNotUsed(response, "dataset_edit.html")
         self.assertTemplateNotUsed(response, "dataset_overview.html")
         self.assertNoDatasetChange(response)
+
+
+class DatasetDeleteViewTests(LoggedInTestCase):
+    def test_dataset_delete_view_valid_delete(self):
+        dataset = Dataset.objects.create(datapoints_total=0, dimensions_total=0, user=self.user)
+        response = self.client.post(
+            reverse("dataset_delete", args=(dataset.pk,)), follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.redirect_chain)
+        self.assertIsNone(Dataset.objects.first())
+        self.assertTemplateUsed(response, "dataset_overview.html")
+
+    def test_dataset_delete_view_invalid_pk(self):
+        response = self.client.post(
+            reverse("dataset_delete", args=(42,)), follow=True
+        )
+        # we expect to be redirected to the dataset overview
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.redirect_chain)
+        self.assertTemplateUsed(response, "dataset_overview.html")

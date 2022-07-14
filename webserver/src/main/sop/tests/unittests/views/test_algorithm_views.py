@@ -1,12 +1,10 @@
 import os
 import shutil
-from unittest import skip
 
+from django.conf import settings
 from django.urls import reverse
 
 from experiments.models import Algorithm
-from django.conf import settings
-
 from tests.unittests.views.LoggedInTestCase import LoggedInTestCase
 
 
@@ -18,8 +16,6 @@ class AlgorithmOverviewTests(LoggedInTestCase):
     def test_algorithm_overview_no_algorithms(self):
         response = self.client.get(reverse("algorithm_overview"), follow=True)
         self.assertEqual(response.status_code, 200)
-        # TODO: figure out why we can use just the name for the templates in algorithm tests but have to give whole path
-        #  in other test files
         self.assertTemplateUsed(response, "algorithm_overview.html")
         self.assertQuerysetEqual(response.context[self.QUERYSET_NAME], [])
 
@@ -193,16 +189,22 @@ class AlgorithmUploadViewTests(LoggedInTestCase):
 class AlgorithmDeleteViewTests(LoggedInTestCase):
     def test_algorithm_delete_view_valid_delete(self):
         algorithm = Algorithm.objects.create()
-        response = self.client.post(reverse("algorithm_delete", args=(algorithm.pk,)))
-        self.assertEqual(response.status_code, 302)
+        response = self.client.post(
+            reverse("algorithm_delete", args=(algorithm.pk,)), follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.redirect_chain)
         self.assertIsNone(Algorithm.objects.first())
+        self.assertTemplateUsed(response, "algorithm_overview.html")
 
-    @skip
     def test_algorithm_delete_view_invalid_pk(self):
-        response = self.client.post(reverse("algorithm_delete", args=(42,)))
+        response = self.client.post(
+            reverse("algorithm_delete", args=(42,)), follow=True
+        )
         # we expect to be redirected to the algorithm overview
-        self.assertEqual(response.status_code, 302)
-        self.assertIsNone(Algorithm.objects.first())
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.redirect_chain)
+        self.assertTemplateUsed(response, "algorithm_overview.html")
 
 
 class AlgorithmEditViewTest(LoggedInTestCase):

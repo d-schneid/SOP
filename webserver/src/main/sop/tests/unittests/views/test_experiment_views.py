@@ -236,3 +236,29 @@ class ExperimentEditViewTests(LoggedInTestCase):
         self.assertTemplateNotUsed(response, "experiment_edit.html")
         self.assertTemplateNotUsed(response, "experiment_overview.html")
         self.assertNoExperimentChange(response)
+
+
+class ExperimentDeleteViewTests(LoggedInTestCase):
+    def test_experiment_delete_view_valid_delete(self):
+        dataset = Dataset.objects.create(datapoints_total=0, dimensions_total=0, user=self.user)
+        algo = Algorithm.objects.create()
+        experiment = Experiment.objects.create(dataset=dataset, user=self.user)
+        experiment.algorithms.set([algo])
+        experiment.save()
+        response = self.client.post(
+            reverse("experiment_delete", args=(experiment.pk,)), follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.redirect_chain)
+        self.assertIsNone(Experiment.objects.first())
+        self.assertTemplateUsed(response, "experiment_overview.html")
+
+    def test_experiment_delete_view_invalid_pk(self):
+        response = self.client.post(
+            reverse("experiment_delete", args=(42,)), follow=True
+        )
+        # we expect to be redirected to the experiment overview
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.redirect_chain)
+        self.assertTemplateUsed(response, "experiment_overview.html")
+
