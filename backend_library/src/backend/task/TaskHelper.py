@@ -1,5 +1,7 @@
 import os
+import random
 import shutil
+import string
 import zipfile
 
 import numpy as np
@@ -78,4 +80,12 @@ class TaskHelper:
         Deletes the given directory, including all containing files and subdirectories.
         :dir_path: The directory to be deleted (recursively).
         """
-        shutil.rmtree(dir_path) # TODO: handle errors that occur with read-only files (and mention in description)
+        shutil.rmtree(
+            dir_path)  # TODO: handle errors that occur with read-only files (and mention in description)
+
+        import random, string
+
+    @staticmethod
+    def shm_name_generator():
+        letters = string.ascii_lowercase
+        return ''.join(random.choice(letters) for i in range(40))

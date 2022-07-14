@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 
 
 class Schedulable(ABC):
@@ -18,5 +19,8 @@ class Schedulable(ABC):
         return 0
 
     @abstractmethod
-    def do_work(self) -> None:
+    def do_work(self) -> Optional[int]:
+        return None
+
+    def run_later_on_main(self, statuscode: int) -> None:
         return None

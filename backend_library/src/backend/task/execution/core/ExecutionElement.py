@@ -15,15 +15,16 @@ from multiprocessing.shared_memory import SharedMemory
 from backend.task.execution.subspace.Subspace import Subspace
 
 
-class ExecutionElement(Schedulable, ABC):
+class ExecutionElement(Schedulable):
     """
     Is the smallest unit of an Execution.
     Consists of the computation of one algorithm on exactly one subspace.
     """
-    def __init__(self, user_id: int, task_id: int, subspace: Subspace, algorithm: ParameterizedAlgorithm,
-                 result_path: str, subspace_dtype: np.dtype,
-                 get_subspace_data_for_processing: Callable[[], SharedMemory],
-                 execution_element_is_finished: Callable[[bool], None], priority: int = 0):
+
+    def __init__(self, user_id: int, task_id: int, subspace: Subspace,
+                 algorithm: ParameterizedAlgorithm, result_path: str,
+                 subspace_dtype: np.dtype, ss_shm_name: str,
+                 execution_element_is_finished: Callable[[bool], None]):
         """
         :param user_id: The ID of the user belonging to this ExecutionElement. Has to be at least -1.
         :param task_id: The ID of this task. Has to be at least -1.
@@ -31,7 +32,7 @@ class ExecutionElement(Schedulable, ABC):
         :param algorithm: The algorithm that should be computed on the subspace.
         :param result_path: The directory where the result-csv-file of the ExecutionElement-computation will be stored.
         :param subspace_dtype: The dtype of the values that are stored in the dataset for processing.
-        :param get_subspace_data_for_processing: Gets the subspace dataset where the ExecutionElement can
+        :param ss_shm_name: Gets the subspace dataset where the ExecutionElement can
         compute its result.
         :param execution_element_is_finished: Reports the ExecutionSubspace that it finished its execution.
         :param priority: The priority of this Schedulable for the Scheduler.
@@ -41,7 +42,6 @@ class ExecutionElement(Schedulable, ABC):
 
         self._user_id: int = user_id
         self._task_id: int = task_id
-        self._priority: int = priority
 
         self._subspace: Subspace = subspace
         self._algorithm: ParameterizedAlgorithm = algorithm
@@ -49,10 +49,8 @@ class ExecutionElement(Schedulable, ABC):
         self._result_path: str = result_path
         self._subspace_dtype: np.dtype = subspace_dtype
 
-        self._get_subspace_data_for_processing = get_subspace_data_for_processing
+        self._ss_shm_name: str = ss_shm_name
         self._execution_element_is_finished = execution_element_is_finished
-
-        self.execution_element_failed: bool = False
 
     def finished_result_exists(self) -> bool:
         """
@@ -82,9 +80,9 @@ class ExecutionElement(Schedulable, ABC):
         """
         :return: The priority for the Scheduler.
         """
-        return self._priority
+        return 10
 
-    def do_work(self) -> None:
+    def do_work(self) -> int:
         """
         Is called by the Scheduler. \n
         Will compute and store the result of the ExecutionElement. \n
@@ -96,10 +94,10 @@ class ExecutionElement(Schedulable, ABC):
             result_to_save: np.ndarray = self.__convert_result_to_csv(run_algo_result)
             DataIO.write_csv(self._result_path, result_to_save)
         except Exception as e:
-            self.execution_element_failed = True
+            return -1
 
         # ExecutionElement finished
-        self._execution_element_is_finished(self.execution_element_failed)
+        return 0
 
     # do_work()
     def __run_algorithm(self) -> np.ndarray:
@@ -107,7 +105,7 @@ class ExecutionElement(Schedulable, ABC):
         Computes the algorithms on the subspace. \n
         :return: Returns the result of the algorithm on the subspace.
         """
-        ss_shm = self._get_subspace_data_for_processing()
+        ss_shm = SharedMemory(self._ss_shm_name)
         ss_dim_count = self._subspace.get_included_dimension_count()
         ss_point_count = ss_shm.size / self._subspace_dtype.itemsize / ss_dim_count
         ss_arr = np.ndarray((ss_point_count, ss_dim_count), dtype=self._subspace_dtype,
@@ -125,3 +123,6 @@ class ExecutionElement(Schedulable, ABC):
         """
         one_to_n = np.arange(0, run_algo_result.shape[0], 1, self._subspace_dtype)
         return np.concatenate((one_to_n.T, run_algo_result), 1)
+
+    def run_later_on_main(self, statuscode: int) -> None:
+        self._execution_element_is_finished(statuscode != 0)

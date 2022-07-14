@@ -61,15 +61,15 @@ class UnitTestExecutionSubspace(unittest.TestCase):
         self._execution_elements_finished1: int = 0
         # create ExecutionSubspace
         self._es: ExecutionSubspace = ExecutionSubspace(
-            self._user_id,
-            self._task_id,
+            self._user_id, self._task_id,
             self._algorithms,
             self._subspace,
             self._result_path,
             self._subspace_dtype,
-            self.__cache_dataset,
             self.__on_execution_element_finished1,
+            ""
         )
+        self._es.run_later_on_main(0)
 
     def tearDown(self) -> None:
         self.__clear_old_execution_file_structure()
@@ -107,8 +107,8 @@ class UnitTestExecutionSubspace(unittest.TestCase):
                 self._subspace,
                 self._result_path,
                 self._subspace_dtype,
-                self.__cache_dataset,
                 self.__on_execution_element_finished,
+                ""
             )
 
     def test_generate_execution_elements(self):
