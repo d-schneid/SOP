@@ -58,7 +58,7 @@ class ResultZipper(Schedulable):
         :return: None
         """
 
-        TaskHelper.zip_dir(self._zipped_file_path, self._path_to_zip)
+        TaskHelper.zip_dir(zip_path=self._zipped_file_path, dir_path=self._path_to_zip)
         TaskHelper.del_dir(self._path_to_zip)
 
         self._task_progress_callback(self._task_id, TaskState.FINISHED, 1) # TODO
