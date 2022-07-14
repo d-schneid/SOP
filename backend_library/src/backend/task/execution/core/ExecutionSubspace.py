@@ -25,28 +25,10 @@ class ExecutionSubspace(Schedulable):
     """
     Manages the computations of all algorithms of an Execution, that compute their results on the same Subspace.
     """
-
-    @property
-    def user_id(self) -> int:
-        return self._user_id
-
-    @property
-    def task_id(self) -> int:
-        return self._task_id
-
-    @property
-    def priority(self) -> int:
-        return 5
-
-    def do_work(self) -> Optional[int]:
-        self.__load_subspace_from_dataset()
-        return None
-
-    def __init__(self, user_id: int, task_id: int,
-                 algorithms: Iterable[ParameterizedAlgorithm], subspace: Subspace,
-                 result_path: str, subspace_dtype: np.dtype,
-                 on_execution_element_finished_callback: Callable[[bool], None],
-                 ds_shm_name):
+    def __init__(self, user_id: int, task_id: int, algorithms: Iterable[ParameterizedAlgorithm],
+                 subspace: Subspace, result_path: str, subspace_dtype: np.dtype,
+                 cache_dataset_callback: Callable[[Execution], SharedMemory],
+                 on_execution_element_finished_callback: Callable[[bool], None]):
         """
         :param ds_shm_name: name of the shared emory segment containing the full dataset
         :param user_id: The ID of the user belonging to the ExecutionSubspace. Has to be at least -1.
