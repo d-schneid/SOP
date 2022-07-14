@@ -102,7 +102,7 @@ class ExecutionSubspace(Schedulable):
         ss_shm = SharedMemory(self._ds_shm_name, True,
                               self._subspace.get_size_of_subspace_buffer(ds_arr))
         self._subspace.make_subspace_array(ds_arr, ss_shm)
-        return ss_shm
+        return ss_shm   
 
     def __execution_element_is_finished(self, error_occurred: bool) -> None:
         """
