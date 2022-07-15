@@ -5,6 +5,7 @@ from unittest.mock import Mock
 
 import numpy as np
 
+from backend.scheduler.Scheduler import Scheduler
 from backend.task.execution.core.Execution import Execution as ex
 from backend.task.TaskState import TaskState
 from backend.task.TaskHelper import TaskHelper
@@ -186,11 +187,18 @@ class UnitTestExecution(unittest.TestCase):
         self.assertEqual(True, self._ex._has_failed_element)
 
     def test_schedule_already_finished(self):
+        Scheduler._instance = None
+
+        # Finished file doesn't exist -> schedule this object -> raise TypeError because no scheduler exists
+        self.assertRaises(TypeError, self._ex.schedule())
+
         file_content: np.ndarray = np.asarray([["I am just a random value :D"]])
         DataIO.write_csv(self._final_zip_path, file_content)
 
+        # Finished file does already exist -> don't schedule this object -> no Exception
+        self._ex.schedule()
 
-        pass
+        os.remove(self._final_zip_path)
 
 
 if __name__ == '__main__':
