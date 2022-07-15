@@ -13,7 +13,7 @@ from experiments.views.dataset import (
     DatasetDeleteView,
     DatasetEditView
 )
-from experiments.views.execution import ExecutionCreateView
+from experiments.views.execution import ExecutionCreateView, ExecutionDeleteView
 from experiments.views.experiment import ExperimentOverview, ExperimentCreateView, \
     ExperimentDeleteView, ExperimentEditView
 
@@ -67,4 +67,5 @@ urlpatterns = [
 
     # Execution URLs
     path("experiment/<int:experiment_pk>/execution/create/", ExecutionCreateView.as_view(), name="execution_create"),
+    path("experiment/<int:experiment_pk>/execution/<int:pk>/delete/", ExecutionDeleteView.as_view(), name="execution_delete"),
 ]
