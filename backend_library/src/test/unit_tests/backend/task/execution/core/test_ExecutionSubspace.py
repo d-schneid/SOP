@@ -17,6 +17,7 @@ class UnitTestExecutionSubspace(unittest.TestCase):
     # parameters for Execution
     _user_id: int = 21412
     _task_id: int = 424242
+    _priority: int = 13
 
     _subspace: Subspace = Subspace(np.asarray([1, 0, 1, 1, 1]))
 
@@ -52,6 +53,8 @@ class UnitTestExecutionSubspace(unittest.TestCase):
     Scheduler._instance = None
     _debug_scheduler: DebugScheduler2 = DebugScheduler2()
 
+    _ds_shm_name: str = "Shared Memory Name"
+
     def setUp(self) -> None:
         # Scheduler
         Scheduler._instance = None
@@ -67,15 +70,13 @@ class UnitTestExecutionSubspace(unittest.TestCase):
             self._result_path,
             self._subspace_dtype,
             self.__on_execution_element_finished1,
-            ""
+            self._ds_shm_name,
+            self._priority
         )
         self._es.run_later_on_main(0)
 
     def tearDown(self) -> None:
         self.__clear_old_execution_file_structure()
-
-    def __cache_dataset(self) -> SharedMemory:
-        pass
 
     def __on_execution_element_finished(self, error: bool) -> None:
         pass
@@ -95,8 +96,8 @@ class UnitTestExecutionSubspace(unittest.TestCase):
                 self._subspace,
                 self._result_path,
                 self._subspace_dtype,
-                self.__cache_dataset,
                 self.__on_execution_element_finished,
+                self._ds_shm_name
             )
 
         with self.assertRaises(AssertionError) as context:
@@ -110,6 +111,11 @@ class UnitTestExecutionSubspace(unittest.TestCase):
                 self.__on_execution_element_finished,
                 ""
             )
+
+    def test_getter(self):
+        self.assertEqual(self._user_id, self._es.user_id)
+        self.assertEqual(self._task_id, self._es.task_id)
+        self.assertEqual(self._priority, self._es.priority)
 
     def test_generate_execution_elements(self):
         # The method will be called on creation of ExecutionSubspace (in constructor -> just test outcome)
