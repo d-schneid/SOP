@@ -138,22 +138,22 @@ class UnitTestExecutionSubspace(unittest.TestCase):
         )
 
     def test_execution_element_is_finished(self):
-        _unloaded = False
         self._es._ExecutionSubspace__unload_subspace_shared_memory = Mock(return_value=None)
 
         for element in range(0, self._es._total_execution_element_count):
             self.assertEqual(self._es._finished_execution_element_count, element)
             self._es._ExecutionSubspace__execution_element_is_finished(False)
+            # out of range (more elements finished than elements exists)
+            with self.assertRaises(Exception) as context:
+                self._es._ExecutionSubspace__execution_element_is_finished(False)
 
-        # out of range (more elements finished than elements exists)
-        with self.assertRaises(Exception) as context:
-            self._es._ExecutionSubspace__execution_element_is_finished(False)
         self.assertEqual(self._es._finished_execution_element_count, self._es._total_execution_element_count)
 
     def __clear_old_execution_file_structure(self):
 
         if os.path.isdir(self._result_path):
             shutil.rmtree(self._result_path)
+
 
 if __name__ == "__main__":
     unittest.main()

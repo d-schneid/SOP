@@ -1,6 +1,7 @@
 import os.path
 import shutil
 import unittest
+from unittest.mock import Mock
 
 import numpy as np
 
@@ -149,6 +150,30 @@ class UnitTestExecution(unittest.TestCase):
         self.assertEqual(True, self._ex._has_failed_element)
 
         self._ex._Execution__on_execution_element_finished(False)
+        self.assertEqual(True, self._ex._has_failed_element)
+
+    def test_on_execution_element_finished_finished_elements_logic(self):
+        self._ex._Execution__unload_dataset = Mock(return_value=None)
+        self._ex._Execution__schedule_result_zipping = Mock(return_value=None)
+
+        self.assertFalse(self._ex._metric_finished)
+
+        # normal logic -> increase _total_execution_element_count for each method call
+        for i in range(0, self._ex._total_execution_element_count):
+            self.assertEqual(i, self._ex._finished_execution_element_count)
+            self._ex._Execution__on_execution_element_finished(False)
+        self.assertEqual(self._ex._total_execution_element_count,
+                         self._ex._finished_execution_element_count)
+
+        self.assertEqual(False, self._ex._has_failed_element)
+        self.assertTrue(self._ex._metric_finished)
+
+        # out of range (more elements finished than elements exists)
+        with self.assertRaises(Exception) as context:
+            self._ex._Execution__on_execution_element_finished(True)
+
+        # depending on how you look at it, you could not edit the error of Execution when the Exception ist raised
+        # (but here we are applying it)
         self.assertEqual(True, self._ex._has_failed_element)
 
 

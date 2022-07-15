@@ -232,13 +232,16 @@ class Execution(Task, Schedulable):
         if not self._has_failed_element and error:
             self._has_failed_element = True
 
-        with self._execution_element_finished_lock:
-            self._finished_execution_element_count += 1
-            if self._finished_execution_element_count == self._total_execution_element_count:
-                self.__unload_dataset()
-                self._metric_callback(self)
-                self._metric_finished = True
-                self.__schedule_result_zipping()
+        if self._finished_execution_element_count < self._total_execution_element_count:
+            with self._execution_element_finished_lock:
+                self._finished_execution_element_count += 1
+                if self._finished_execution_element_count == self._total_execution_element_count:
+                    self.__unload_dataset()
+                    self._metric_callback(self)
+                    self._metric_finished = True
+                    self.__schedule_result_zipping()
+        else:
+            raise Exception("More execution elements finished than existing")
 
     def __unload_dataset(self) -> None:
         """
