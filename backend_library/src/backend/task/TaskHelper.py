@@ -1,5 +1,8 @@
-import csv
 import os
+import random
+import shutil
+import string
+import zipfile
 
 import numpy as np
 from collections.abc import Iterable
@@ -52,3 +55,37 @@ class TaskHelper:
         :return: Returns the length of the iterable.
         """
         return sum(1 for e in iterable)
+
+    @staticmethod
+    def zip_dir(dir_path: str, zip_path: str) -> None:
+        """
+        Zips the specified directory and saves the created zip-file at the specified location.
+        No files are deleted. The files are compressed when added to the zip archive.
+        :dir_path: The path of the dir to zip.
+        :zip_path: The path to store the created zip-file at.
+        """
+        zipfile_handle: zipfile.ZipFile = zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED)
+
+        for root, dirs, files in os.walk(dir_path):
+            for file in files:
+                zipfile_handle.write(os.path.join(root, file),
+                                     os.path.relpath(os.path.join(root, file),
+                                                     os.path.join(dir_path, '..')))
+
+        zipfile_handle.close()
+
+    @staticmethod
+    def del_dir(dir_path: str):
+        """
+        Deletes the given directory, including all containing files and subdirectories.
+        :dir_path: The directory to be deleted (recursively).
+        """
+        shutil.rmtree(
+            dir_path)  # TODO: handle errors that occur with read-only files (and mention in description)
+
+        import random, string
+
+    @staticmethod
+    def shm_name_generator():
+        letters = string.ascii_lowercase
+        return ''.join(random.choice(letters) for i in range(40))

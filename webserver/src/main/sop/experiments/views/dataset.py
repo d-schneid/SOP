@@ -1,7 +1,7 @@
 import pandas as pd
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
-from django.views.generic import ListView, UpdateView, DeleteView, CreateView
+from django.views.generic import ListView, UpdateView, CreateView
 from pandas import DataFrame
 
 from authentication.mixins import LoginRequiredMixin
@@ -9,6 +9,7 @@ from experiments.forms.create import DatasetUploadForm
 from experiments.forms.edit import DatasetEditForm
 from experiments.models import Dataset
 from experiments.models.managers import DatasetQuerySet
+from experiments.views.generic import PostOnlyDeleteView
 
 
 class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadForm]):
@@ -51,7 +52,7 @@ class DatasetOverview(LoginRequiredMixin, ListView[Dataset]):
         return context
 
 
-class DatasetDeleteView(LoginRequiredMixin, DeleteView[Dataset]):
+class DatasetDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Dataset]):
     model = Dataset
     template_name = "dataset_delete.html"
     success_url = reverse_lazy("dataset_overview")

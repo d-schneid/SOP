@@ -1,11 +1,12 @@
 from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, CreateView, UpdateView
 
 from authentication.mixins import LoginRequiredMixin
 from experiments.forms.create import ExperimentCreateForm
 from experiments.forms.edit import ExperimentEditForm
 from experiments.models import Experiment
 from experiments.models.managers import ExperimentQuerySet
+from experiments.views.generic import PostOnlyDeleteView
 
 
 class ExperimentOverview(LoginRequiredMixin, ListView[Experiment]):
@@ -52,7 +53,7 @@ class ExperimentEditView(
     success_url = reverse_lazy("experiment_overview")
 
 
-class ExperimentDeleteView(LoginRequiredMixin, DeleteView[Experiment]):
+class ExperimentDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Experiment]):
     model = Experiment
     template_name = "experiment_delete.html"
     success_url = reverse_lazy("experiment_overview")

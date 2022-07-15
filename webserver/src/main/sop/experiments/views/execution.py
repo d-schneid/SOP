@@ -1,8 +1,9 @@
 import random
 
+from django.conf import settings
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
-from django.conf import settings
+
 from authentication.mixins import LoginRequiredMixin
 from backend.scheduler.DebugScheduler import DebugScheduler
 from backend.task.TaskState import TaskState
@@ -16,6 +17,7 @@ from backend.task.execution.subspace.UniformSubspaceDistribution import (
 )
 from experiments.forms.create import ExecutionCreateForm
 from experiments.models import Execution, Experiment
+from experiments.views.generic import PostOnlyDeleteView
 
 
 def stub_callback(task_id: int, state: TaskState, progress: float):
@@ -134,3 +136,8 @@ class ExecutionCreateView(LoginRequiredMixin, CreateView):
         )
         schedule_backend(form.instance)
         return response
+
+
+class ExecutionDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Execution]):
+    model = Execution
+    success_url = reverse_lazy("experiment_overview")

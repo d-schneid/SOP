@@ -3,12 +3,11 @@ from typing import Optional
 
 from django.conf import settings
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.http import HttpResponse
+from django.http.response import HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import (
     CreateView,
     ListView,
-    DeleteView,
     UpdateView,
     DetailView,
 )
@@ -23,6 +22,7 @@ from experiments.services.algorithm import (
     delete_temp_algorithm,
     get_signature_of_algorithm,
 )
+from experiments.views.generic import PostOnlyDeleteView
 
 ALGORITHM_ROOT_DIR = settings.MEDIA_ROOT / "algorithms"
 
@@ -76,7 +76,7 @@ class AlgorithmUploadView(
             return super(AlgorithmUploadView, self).form_valid(form)
 
 
-class AlgorithmDeleteView(LoginRequiredMixin, DeleteView[Algorithm]):
+class AlgorithmDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Algorithm]):
     model = Algorithm
     success_url = reverse_lazy("algorithm_overview")
 
