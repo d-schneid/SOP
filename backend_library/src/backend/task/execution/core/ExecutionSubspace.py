@@ -25,10 +25,12 @@ class ExecutionSubspace(Schedulable):
     """
     Manages the computations of all algorithms of an Execution, that compute their results on the same Subspace.
     """
-    def __init__(self, user_id: int, task_id: int, algorithms: Iterable[ParameterizedAlgorithm],
-                 subspace: Subspace, result_path: str, subspace_dtype: np.dtype,
-                 cache_dataset_callback: Callable[[Execution], SharedMemory],
-                 on_execution_element_finished_callback: Callable[[bool], None]):
+
+    def __init__(self, user_id: int, task_id: int,
+                 algorithms: Iterable[ParameterizedAlgorithm], subspace: Subspace,
+                 result_path: str, subspace_dtype: np.dtype,
+                 on_execution_element_finished_callback: Callable[[bool], None],
+                 ds_shm_name: str, priority: int = 5):
         """
         :param ds_shm_name: name of the shared emory segment containing the full dataset
         :param user_id: The ID of the user belonging to the ExecutionSubspace. Has to be at least -1.
@@ -46,13 +48,15 @@ class ExecutionSubspace(Schedulable):
 
         # privates from Constructor
         self._ds_shm_name: str = ds_shm_name
-        self._user_id = user_id
-        self._task_id = task_id
+        self._user_id: int = user_id
+        self._task_id: int = task_id
         self._subspace: Subspace = subspace
         self._algorithms: list[ParameterizedAlgorithm] = list(algorithms)
-        self._result_path = result_path
-        self._subspace_dtype = subspace_dtype
-        self._on_execution_element_finished_callback = on_execution_element_finished_callback
+        self._result_path: str = result_path
+        self._subspace_dtype: np.dtype = subspace_dtype
+        self._on_execution_element_finished_callback: Callable[[bool], None] = \
+            on_execution_element_finished_callback
+        self._priority = priority
 
         # further private variables
         self._finished_execution_element_count: int = 0
@@ -130,3 +134,18 @@ class ExecutionSubspace(Schedulable):
         self.__generate_execution_elements(self._algorithms)
         for ee in self._execution_elements:
             Scheduler.get_instance().schedule(ee)
+
+    @property
+    def user_id(self) -> int:
+        return self._user_id
+
+    @property
+    def task_id(self) -> int:
+        return self._task_id
+
+    @property
+    def priority(self) -> int:
+        return self._priority
+
+    def do_work(self) -> Optional[int]:
+        self.__load_subspace_from_dataset()
