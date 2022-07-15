@@ -51,6 +51,43 @@
                     <a class="flex-fill">{{ execution.status }}</a>
                     <a class="flex-fill">{{ execution.progess }}</a>
                     <a class="flex-fill">{{ execution.creation_date }}</a>
+                    <button type="button"
+                            class="btn btn-danger mr-3"
+                            data-toggle="modal"
+                            data-target="#deleteModal{{ execution.pk }}">
+                        Delete
+                    </button>
+                    <div class="modal fade"
+                         id="deleteModal{{ execution.pk }}"
+                         tabindex="-1"
+                         role="dialog"
+                         aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <div class="text-left">
+                                        <h5><b>Warning</b></h5><br/>
+                                    </div>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="text-center">
+                                        Are you sure you want to delete execution <b>{{ forloop.counter }}</b>?
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <form action="{% url 'execution_delete' model.pk execution.pk %}" method="post">
+                                        {% csrf_token %}
+                                        <button class="btn btn-success mr-3" type="submit">Delete</button>
+                                    </form>
+                                    <button type="button" class="btn btn-danger mr-3" data-dismiss="modal">Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </li>
         </ul>

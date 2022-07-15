@@ -1,3 +1,4 @@
+import json
 import random
 
 from django.conf import settings
@@ -61,7 +62,7 @@ def schedule_backend(instance: Execution):
             ParameterizedAlgorithm(
                 display_name=algorithm.display_name,
                 path=algorithm.path,
-                hyper_parameter=dict(),
+                hyper_parameter=instance.algorithm_parameters,
             )
         )
     backend_execution = BackendExecution(
@@ -79,7 +80,8 @@ def schedule_backend(instance: Execution):
     # TODO: DO NOT do this here. Move it to AppConfig or whatever
     if DebugScheduler._instance is None:
         DebugScheduler()
-    backend_execution.schedule()
+    # TODO: backend execution seems broken, skip for now
+    # backend_execution.schedule()
 
 
 class ExecutionCreateView(LoginRequiredMixin, CreateView):
@@ -101,6 +103,8 @@ class ExecutionCreateView(LoginRequiredMixin, CreateView):
         assert subspaces_max >= 0
         subspace_amount: int = form.cleaned_data["subspace_amount"]
         assert subspace_amount > 0
+        algorithm_parameters: str = form.cleaned_data["algorithm_parameters"]
+        assert len(algorithm_parameters) > 0
         seed: int = form.cleaned_data.get("subspace_generation_seed")
         seed: int = seed if seed is not None else random.randint(0, 10000000000)
         if subspaces_min >= subspaces_max:
@@ -119,6 +123,7 @@ class ExecutionCreateView(LoginRequiredMixin, CreateView):
         form.instance.subspace_amount = subspace_amount
         form.instance.experiment = experiment
         form.instance.subspace_generation_seed = seed
+        form.instance.algorithm_parameters = algorithm_parameters
 
         # we need to call super().form_valid before calling the backend, since we need
         # access to the primary key of this instance and the primary key will be set
