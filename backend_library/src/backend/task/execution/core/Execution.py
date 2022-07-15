@@ -55,7 +55,8 @@ class Execution(Task, Schedulable):
                  dataset_path: str, result_path: str,
                  subspace_generation: SubspaceGenerationDescription,
                  algorithms: Iterable[ParameterizedAlgorithm],
-                 metric_callback: Callable[[Execution], None]):
+                 metric_callback: Callable[[Execution], None],
+                 final_zip_path: str = ""):
         """
         :param user_id: The ID of the user belonging to the Execution. Has to be at least -1.
         :param task_id: The ID of the task. Has to be at least -1.
@@ -64,6 +65,7 @@ class Execution(Task, Schedulable):
         (path ends with .csv)
         :param result_path: The absolute path where the Execution will store its results.
         (Ends with the directory name of this specific Execution. f.e. execution1)
+        :param final_zip_path: The absolute path where the Execution will store its zipped results.
         :param subspace_generation: Contains all parameters for the subspace generation and will generate the subspaces.
         :param algorithms: Contains all algorithms that should be processed on the subspaces.
         :param metric_callback: Called after the Execution-computation is complete. Carries out the metricizes.
@@ -82,7 +84,12 @@ class Execution(Task, Schedulable):
         self.__fill_algorithms_directory_name()
         self.__generate_file_system_structure()
         self.__generate_execution_details_in_filesystem()
-        self._zipped_result_path: str = self._result_path + ".zip"
+        self._final_zip_path: str = final_zip_path
+        if final_zip_path == "":
+            self._final_zip_path = result_path + ".zip"
+
+        # The absolute path where the Execution will store its zipped results while doing the zipping.
+        self._zip_running_path: str = self._result_path + ".zip.running"
 
         # further private variables
         self._has_failed_element: bool = False
@@ -251,7 +258,7 @@ class Execution(Task, Schedulable):
         """
         result_zipper: ResultZipper = ResultZipper(self._user_id, self._task_id, self._has_failed_element,
                                                    self._task_progress_callback, self._result_path,
-                                                   self._zipped_result_path)
+                                                   self._zip_running_path, self._final_zip_path)
         scheduler: Scheduler = Scheduler.get_instance()
         scheduler.schedule(result_zipper)
 
@@ -275,7 +282,7 @@ class Execution(Task, Schedulable):
         """
         :return: The absolute path where the ZIP-file of the result of this Execution can be found.
         """
-        return self._zipped_result_path
+        return self._final_zip_path
 
     def run_later_on_main(self, statuscode: int):
         self.__generate_execution_subspaces()

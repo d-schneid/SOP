@@ -48,8 +48,6 @@ class UnitTestExecution(unittest.TestCase):
               ParameterizedAlgorithm("path3", _hyper_parameter, _display_names[2]),
               ParameterizedAlgorithm("path3", _hyper_parameter, _display_names[3])])
 
-    _subspaces: list[Subspace] = list([Subspace(np.asarray([1, 1, 1]))])
-
     def __task_progress_callback(self, task_id: int, task_state: TaskState, progress: float) -> None:
         # Empty callback
         pass
@@ -65,14 +63,13 @@ class UnitTestExecution(unittest.TestCase):
         # create Execution
         self._ex = ex(self._user_id, self._task_id, self.__task_progress_callback, self._dataset_path,
                       self._result_path, self._subspace_generation, iter(self._algorithms), self.__metric_callback)
-        self._ex._subspaces = self._subspaces
 
     def tearDown(self) -> None:
         self._ex = None
 
     def test_getter(self):
         self.assertEqual(self._algorithms, list(self._ex.algorithms))
-        self.assertEqual(self._subspaces, list(self._ex.subspaces))
+        self.assertEqual(list(self._ex._subspaces), list(self._ex.subspaces))
         self.assertEqual(self._result_path + ".zip", self._ex.zip_result_path)
 
     def test_fill_algorithms_directory_name(self):
@@ -124,6 +121,23 @@ class UnitTestExecution(unittest.TestCase):
 
         if os.path.exists(self._zipped_result_path):
             os.remove(self._zipped_result_path)
+
+    def test_generate_execution_subspaces(self):
+        _subspaces_count_in_execution_subspaces: int = 0
+        _subspaces: list[Subspace] = list(self._ex.subspaces)
+
+        # Check if method generates the right amount of execution subspaces
+        self.assertEqual(0, len(self._ex._execution_subspaces))
+        self._ex._Execution__generate_execution_subspaces()
+        self.assertEqual(len(_subspaces), len(self._ex._execution_subspaces))
+
+        # Check if method generates the correct execution subspaces (One for each subspace)
+        for subspace in _subspaces:
+            for execution_subspace in self._ex._execution_subspaces:
+                if np.equal(execution_subspace._subspace.mask, subspace.mask).all():
+                    _subspaces_count_in_execution_subspaces += 1
+                    _subspaces.remove(subspace)
+                    break
 
 
 if __name__ == '__main__':
