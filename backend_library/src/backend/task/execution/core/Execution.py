@@ -228,7 +228,7 @@ class Execution(Task, Schedulable):
                     self._metric_finished = True
                     self.__schedule_result_zipping()
         else:
-            raise Exception("More execution elements finished than existing")
+            raise AssertionError("More execution elements finished than existing")
 
     def __unload_dataset(self) -> None:
         """

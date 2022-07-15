@@ -5,6 +5,7 @@ from unittest.mock import Mock
 
 import numpy as np
 
+from backend.scheduler.DebugScheduler import DebugScheduler
 from backend.scheduler.Scheduler import Scheduler
 from backend.task.execution.core.Execution import Execution as ex
 from backend.task.TaskState import TaskState
@@ -133,6 +134,12 @@ class UnitTestExecution(unittest.TestCase):
         if os.path.exists(self._zipped_result_path):
             os.remove(self._zipped_result_path)
 
+        if os.path.exists(self._final_zip_path):
+            os.remove(self._zipped_result_path)
+
+        if os.path.exists(self._result_path+".zip.running"):
+            os.remove(self._result_path+".zip.running")
+
     def test_generate_execution_subspaces(self):
         _subspaces_count_in_execution_subspaces: int = 0
         _subspaces: list[Subspace] = list(self._ex.subspaces)
@@ -179,7 +186,7 @@ class UnitTestExecution(unittest.TestCase):
         self.assertTrue(self._ex._metric_finished)
 
         # out of range (more elements finished than elements exists)
-        with self.assertRaises(Exception) as context:
+        with self.assertRaises(AssertionError) as context:
             self._ex._Execution__on_execution_element_finished(True)
 
         # depending on how you look at it, you could not edit the error of Execution when the Exception ist raised
@@ -190,7 +197,8 @@ class UnitTestExecution(unittest.TestCase):
         Scheduler._instance = None
 
         # Finished file doesn't exist -> schedule this object -> raise TypeError because no scheduler exists
-        self.assertRaises(TypeError, self._ex.schedule())
+        with self.assertRaises(AssertionError) as context:
+            self._ex.schedule()
 
         file_content: np.ndarray = np.asarray([["I am just a random value :D"]])
         DataIO.write_csv(self._final_zip_path, file_content)
