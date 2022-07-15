@@ -139,6 +139,18 @@ class UnitTestExecution(unittest.TestCase):
                     _subspaces.remove(subspace)
                     break
 
+    def test_on_execution_element_finished_error_occurred_logic(self):
+        self.assertEqual(False, self._ex._has_failed_element)
+
+        self._ex._Execution__on_execution_element_finished(False)
+        self.assertEqual(False, self._ex._has_failed_element)
+
+        self._ex._Execution__on_execution_element_finished(True)
+        self.assertEqual(True, self._ex._has_failed_element)
+
+        self._ex._Execution__on_execution_element_finished(False)
+        self.assertEqual(True, self._ex._has_failed_element)
+
 
 if __name__ == '__main__':
     unittest.main()
