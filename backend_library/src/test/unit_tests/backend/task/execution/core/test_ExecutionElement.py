@@ -14,6 +14,7 @@ class UnitTestExecutionElement(unittest.TestCase):
     # parameters for Execution Subspace/Element
     _user_id: int = 414
     _task_id: int = 42
+    _priority: int = 312
 
     # create Execution Element
     _dir_name: str = os.getcwd()
@@ -29,7 +30,7 @@ class UnitTestExecutionElement(unittest.TestCase):
         self._ee: ee = ee(self._user_id, self._task_id, self._subspace, self._algorithm,
                           self._result_path,
                           self._subspace_dtype, self._subspace_shared_memory_name,
-                          self.__execution_element_is_finished1)
+                          self.__execution_element_is_finished1, self._priority)
 
         # mock Execution Element for do_work()
         self._ee._ExecutionElement__run_algorithm = Mock(return_value=np.asarray([["algorithm result"]]))
@@ -72,6 +73,7 @@ class UnitTestExecutionElement(unittest.TestCase):
     def test_getter(self):
         self.assertEqual(self._ee.user_id, self._user_id)
         self.assertEqual(self._ee.task_id, self._task_id)
+        self.assertEqual(self._ee.priority, self._priority)
 
     def test_finished_result_exists(self):
         self.assertFalse(self._ee.finished_result_exists())

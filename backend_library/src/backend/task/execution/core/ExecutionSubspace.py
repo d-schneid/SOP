@@ -115,9 +115,12 @@ class ExecutionSubspace(Schedulable):
         :param error_occurred: True if the ExecutionElement finished with an error. Is otherwise False.
         :return: None
         """
-        self._finished_execution_element_count += 1
-        if self._finished_execution_element_count >= self._total_execution_element_count:
-            self.__unload_subspace_shared_memory()
+        if self._finished_execution_element_count < self._total_execution_element_count:
+            self._finished_execution_element_count += 1
+            if self._finished_execution_element_count >= self._total_execution_element_count:
+                self.__unload_subspace_shared_memory()
+        else:
+            raise Exception("More execution elements finished than existing")
         self._on_execution_element_finished_callback(error_occurred)
 
     def __unload_subspace_shared_memory(self) -> None:
