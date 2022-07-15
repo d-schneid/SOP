@@ -105,6 +105,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 FILE_UPLOAD_HANDLERS = [
+    "experiments.views.uploadhandler.UploadProgressCachedHandler",
     "django.core.files.uploadhandler.TemporaryFileUploadHandler",
 ]
 
