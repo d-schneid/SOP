@@ -14,12 +14,15 @@ from backend.task.execution.subspace.UniformSubspaceDistribution import \
     UniformSubspaceDistribution as usd
 from backend.task.execution.subspace.Subspace import Subspace
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
+from backend.DataIO import DataIO
 
 
 class UnitTestExecution(unittest.TestCase):
 
     _user_id: int = 214
     _task_id: int = 1553
+    _priority: int = 1414
+
     _dataset_path: str = "dataset_path.csv"
 
     _dir_name: str = os.getcwd()
@@ -49,6 +52,8 @@ class UnitTestExecution(unittest.TestCase):
               ParameterizedAlgorithm("path3", _hyper_parameter, _display_names[2]),
               ParameterizedAlgorithm("path3", _hyper_parameter, _display_names[3])])
 
+    _final_zip_path = _result_path + "final.zip"
+
     def __task_progress_callback(self, task_id: int, task_state: TaskState, progress: float) -> None:
         # Empty callback
         pass
@@ -63,7 +68,8 @@ class UnitTestExecution(unittest.TestCase):
 
         # create Execution
         self._ex = ex(self._user_id, self._task_id, self.__task_progress_callback, self._dataset_path,
-                      self._result_path, self._subspace_generation, iter(self._algorithms), self.__metric_callback)
+                      self._result_path, self._subspace_generation, iter(self._algorithms), self.__metric_callback,
+                      self._final_zip_path, self._priority)
 
     def tearDown(self) -> None:
         self._ex = None
@@ -71,7 +77,10 @@ class UnitTestExecution(unittest.TestCase):
     def test_getter(self):
         self.assertEqual(self._algorithms, list(self._ex.algorithms))
         self.assertEqual(list(self._ex._subspaces), list(self._ex.subspaces))
-        self.assertEqual(self._result_path + ".zip", self._ex.zip_result_path)
+        self.assertEqual(self._final_zip_path, self._ex.zip_result_path)
+        self.assertEqual(self._priority, self._ex.priority)
+        self.assertEqual(self._user_id, self._ex.user_id)
+        self.assertEqual(self._task_id, self._ex.task_id)
 
     def test_fill_algorithms_directory_name(self):
         iterable = self._ex._algorithms.__iter__()
@@ -175,6 +184,13 @@ class UnitTestExecution(unittest.TestCase):
         # depending on how you look at it, you could not edit the error of Execution when the Exception ist raised
         # (but here we are applying it)
         self.assertEqual(True, self._ex._has_failed_element)
+
+    def test_schedule_already_finished(self):
+        file_content: np.ndarray = np.asarray([["I am just a random value :D"]])
+        DataIO.write_csv(self._final_zip_path, file_content)
+
+
+        pass
 
 
 if __name__ == '__main__':
