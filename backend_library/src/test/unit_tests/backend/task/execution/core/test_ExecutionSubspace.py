@@ -140,12 +140,15 @@ class UnitTestExecutionSubspace(unittest.TestCase):
     def test_execution_element_is_finished(self):
         self._es._ExecutionSubspace__unload_subspace_shared_memory = Mock(return_value=None)
 
+        # normal logic -> count up _finished_execution_element_count
         for element in range(0, self._es._total_execution_element_count):
             self.assertEqual(self._es._finished_execution_element_count, element)
             self._es._ExecutionSubspace__execution_element_is_finished(False)
-            # out of range (more elements finished than elements exists)
-            with self.assertRaises(Exception) as context:
-                self._es._ExecutionSubspace__execution_element_is_finished(False)
+        self.assertEqual(self._es._finished_execution_element_count, self._es._total_execution_element_count)
+
+        # out of range (more elements finished than elements exists)
+        with self.assertRaises(AssertionError) as context:
+            self._es._ExecutionSubspace__execution_element_is_finished(False)
 
         self.assertEqual(self._es._finished_execution_element_count, self._es._total_execution_element_count)
 

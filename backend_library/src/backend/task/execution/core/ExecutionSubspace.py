@@ -120,7 +120,7 @@ class ExecutionSubspace(Schedulable):
             if self._finished_execution_element_count >= self._total_execution_element_count:
                 self.__unload_subspace_shared_memory()
         else:
-            raise Exception("More execution elements finished than existing")
+            raise AssertionError("More execution elements finished than existing")
         self._on_execution_element_finished_callback(error_occurred)
 
     def __unload_subspace_shared_memory(self) -> None:
