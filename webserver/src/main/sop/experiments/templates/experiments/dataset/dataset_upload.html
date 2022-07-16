@@ -34,28 +34,40 @@
                 var freq = 100; // freqency of update in ms
                 var uuid = gen_uuid(); // id for this upload so we can fetch progress info.
                 var progress_url = '/upload_progress/'; // ajax view serving progress info
+                var received_data = false;
 
                 // Append X-Progress-ID uuid form action
                 this.action += (this.action.indexOf('?') == -1 ? '?' : '&') + 'X-Progress-ID=' + uuid;
 
-                var $progress = $('<div id="upload-progress" class="upload-progress mt-3"></div>').appendTo(".upload-container").append('<div class="progress-container">Upload progress: <div class="bg-white border border-dark"><div class="progress-bar hidden progress-bar-striped progress-bar-animated bg-dark" style="width: 0%" role="progressbar" aria-valuemin="0" aria-valuemax="100">0%</div></div></div>');
+                var $progress = $('<div id="upload-progress" class="upload-progress mt-3"></div>').appendTo(".upload-container").append('<div class="progress-container"><div class="progress-status">Preparing upload...</div><div class="bg-white border border-dark"><div class="progress-bar hidden progress-bar-striped progress-bar-animated bg-dark" style="width: 0%" role="progressbar" aria-valuemin="0" aria-valuemax="100">0%</div></div></div>');
 
                 // Update progress bar
                 function update_progress_info() {
                     $progress.show();
                     $.getJSON(progress_url, {'X-Progress-ID': uuid}, function (data, status) {
+                        var width = $progress.find('.upload-container').width();
                         if (data) {
+                            received_data = true;
                             var progress = parseInt(data.uploaded) / parseInt(data.length);
-                            var width = $progress.find('.upload-container').width()
                             $progress.find('.progress-bar').css("width", progress * 100 + "%");
                             $progress.find('.progress-bar').html(parseInt(progress * 100) + '%');
-                            $progress.find('.progress-bar').width(width)
+                            $progress.find('.progress-bar').width(width);
+                            $progress.find('.progress-status').html('Uploading...');
                             window.setTimeout(update_progress_info, freq);
                         } else {
-                            var width = $progress.find('.upload-container').width()
-                            $progress.find('.progress-bar').css("width", 100 + "%");
-                            $progress.find('.progress-bar').html('Saving dataset, this may take a few moments...');
-                            $progress.find('.progress-bar').width(width)
+                            $progress.find('.progress-bar').width(width);
+                            // data is none and we received data before -> upload finished -> no need to check for progress anymore
+                            if (received_data) {
+                                $progress.find('.progress-bar').css("width", 100 + "%");
+                                $progress.find('.progress-status').html('Upload finished...');
+                                $progress.find('.progress-bar').html('Saving dataset, this may take a few moments...');
+                            }
+                            // data is none and we haven't received data before -> upload hasn't started yet
+                            else {
+                                $progress.find('.progress-bar').css("width", 0 + "%");
+                                $progress.find('.progress-status').html('Starting upload...');
+                                window.setTimeout(update_progress_info, freq);
+                            }
                         }
                     });
                 };
