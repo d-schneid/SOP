@@ -36,11 +36,11 @@ class Execution(Task, Schedulable):
 
     @property
     def user_id(self) -> int:
-        return self.user_id
+        return self._user_id
 
     @property
     def task_id(self) -> int:
-        return self.task_id
+        return self._task_id
 
     @property
     def priority(self) -> int:
