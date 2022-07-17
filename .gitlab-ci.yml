@@ -71,7 +71,7 @@ default:
     - apt -y update
     - apt -y upgrade
     - apt-get -yq install software-properties-common
-    - apt -y install apt-utils net-tools default-mysql-client default-libmysqlclient-dev python3-distutils python3-dev gcc
+    - apt -y install apt-utils net-tools default-mysql-client default-libmysqlclient-dev python3-distutils python3-dev gcc memcached
     - "[ ! -d 'venv3.10' ]  && python3 -m venv venv3.10"
     - source venv3.10/bin/activate
     - python3 -m pip install --upgrade pip
@@ -96,16 +96,16 @@ django-tests:
   stage: test
   script:
     - source venv3.10/bin/activate
-    - pip3 install django_coverage_plugin && echo "[run]\nplugins = django_coverage_plugin" > webserver/src/main/sop/.coveragerc
-    - ls
-    - source venv3.10/bin/activate
     - which python3.10
     - cd webserver/src/main/sop
+    - pip3 install django_coverage_plugin
+    - "echo '[run]\nplugins = django_coverage_plugin' > .coveragerc"
+    - memcached -d -u root
     # The MYSQL user only gets permissions for MYSQL_DB, so Django can't create a test database.
     - echo "GRANT ALL on *.* to '${MYSQL_USER}';"| mysql -u root --password="${MYSQL_ROOT_PASSWORD}" -h mysql
     - python3.10 manage.py showmigrations --settings=sop.settings_ci
-    - python3.10 -m coverage run --source="." --omit="media/*","*/migrations/*","*/__init__.py","tests/*","sop/*" manage.py test --settings sop.settings_ci
-    - python3.10 -m coverage report
+    - python3.10 -m coverage run --rcfile=.coveragerc --source="." --omit="media/*","*/migrations/*","*/__init__.py","tests/*","sop/*" manage.py test --settings sop.settings_ci
+    - python3.10 -m coverage report --rcfile=.coveragerc
 
 
 backend-tests:
