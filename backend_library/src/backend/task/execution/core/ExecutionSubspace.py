@@ -40,6 +40,7 @@ class ExecutionSubspace(Schedulable):
 
     def do_work(self) -> Optional[int]:
         self.__load_subspace_from_dataset()
+        return None
 
     def __init__(self, user_id: int, task_id: int,
                  algorithms: Iterable[ParameterizedAlgorithm], subspace: Subspace,
@@ -47,7 +48,7 @@ class ExecutionSubspace(Schedulable):
                  on_execution_element_finished_callback: Callable[[bool], None],
                  ds_shm_name):
         """
-        :param ds_shm_name:
+        :param ds_shm_name: name of the shared emory segment containing the full dataset
         :param user_id: The ID of the user belonging to the ExecutionSubspace. Has to be at least -1.
         :param task_id: The ID of the task. Has to be at least -1.
         :param algorithms: Contains all algorithms that should be processed on the subspaces.
@@ -109,7 +110,7 @@ class ExecutionSubspace(Schedulable):
 
     def __load_subspace_from_dataset(self) -> SharedMemory:
         """
-        :return: Loads the dataset for this subspace into shared_memory, if it isn't loaded into the shared_memory yet.
+        :return: Loads the dataset for this subspace into shared_memory
         """
         ds_shm: SharedMemory = SharedMemory(self._ds_shm_name)
         ds_dim_cnt: int = self._subspace.get_dataset_dimension_count()

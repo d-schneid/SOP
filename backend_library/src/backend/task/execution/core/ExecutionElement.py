@@ -32,10 +32,8 @@ class ExecutionElement(Schedulable):
         :param algorithm: The algorithm that should be computed on the subspace.
         :param result_path: The directory where the result-csv-file of the ExecutionElement-computation will be stored.
         :param subspace_dtype: The dtype of the values that are stored in the dataset for processing.
-        :param ss_shm_name: Gets the subspace dataset where the ExecutionElement can
-        compute its result.
+        :param ss_shm_name: The name of the shared memory containing the subspace data
         :param execution_element_is_finished: Reports the ExecutionSubspace that it finished its execution.
-        :param priority: The priority of this Schedulable for the Scheduler.
         """
         assert user_id >= -1
         assert task_id >= -1
@@ -86,7 +84,7 @@ class ExecutionElement(Schedulable):
         """
         Is called by the Scheduler. \n
         Will compute and store the result of the ExecutionElement. \n
-        :return: None
+        :return: An exitcode provided to run_later_on_main
         """
 
         try:
