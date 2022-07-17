@@ -1,3 +1,5 @@
+import json
+
 from django.core.cache import cache
 from django.core.files.uploadhandler import FileUploadHandler
 from django.http.response import HttpResponse, HttpResponseServerError
@@ -69,11 +71,9 @@ def upload_progress(request):
     elif "X-Progress-ID" in request.META:
         progress_id = request.META["X-Progress-ID"]
     if progress_id:
-        import simplejson
-
         cache_key = "%s_%s" % (request.META["REMOTE_ADDR"], progress_id)
         data = cache.get(cache_key)
-        return HttpResponse(simplejson.dumps(data))
+        return HttpResponse(json.dumps(data))
     else:
         return HttpResponseServerError(
             "Server Error: You must provide X-Progress-ID header or query param."
