@@ -112,7 +112,7 @@ class ExecutionSubspace(Schedulable):
         :return: Loads the dataset for this subspace into shared_memory, if it isn't loaded into the shared_memory yet.
         """
         ds_shm: SharedMemory = SharedMemory(self._ds_shm_name)
-        ds_dim_cnt: int = self._subspace.mask.size
+        ds_dim_cnt: int = self._subspace.get_dataset_dimension_count()
         ds_point_count = ds_shm.size / self._subspace_dtype.itemsize / ds_dim_cnt
         ds_arr = np.ndarray((ds_point_count, ds_dim_cnt), dtype=self._subspace_dtype,
                             buffer=ds_shm.buf)

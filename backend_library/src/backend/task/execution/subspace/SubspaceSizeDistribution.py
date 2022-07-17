@@ -1,10 +1,20 @@
+import math
 from abc import ABC, abstractmethod
 from typing import Dict
 
 
 class SubspaceSizeDistribution(ABC):
+    def has_enough_subspaces(self, requested_subspace_count: int,
+                             dataset_dimension_count: int) -> bool:
+        for k, v in self.get_subspace_counts(requested_subspace_count,
+                                             dataset_dimension_count).items():
+            if v > math.comb(dataset_dimension_count, k):
+                return False
+        return True
+
     @abstractmethod
-    def get_subspace_sizes(self, requested_subspace_count: int, dataset_dimension_count: int) -> Dict[int, int]:
+    def get_subspace_counts(self, requested_subspace_count: int,
+                            dataset_dimension_count: int) -> Dict[int, int]:
         """
         Calculates the number of subspaces to be generated of each size
         :param requested_subspace_count: the number of subspaces that are to be generated
