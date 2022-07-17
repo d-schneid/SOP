@@ -1,17 +1,18 @@
-from collections.abc import Iterable
 from abc import ABC, abstractmethod
+from typing import List
 
 from backend.task.execution.subspace.Subspace import Subspace
 
 
 class SubspaceGenerationDescription(ABC):
+    """"A description of how Subspaces are to be generated deterministically"""
     @abstractmethod
-    def generate(self) -> Iterable[Subspace]:
+    def generate(self) -> List[Subspace]:
         """
         Generates the Subspaces deterministically. \n
         :return: The generated Subspaces.
         """
-        return iter([])
+        raise NotImplementedError
 
     @abstractmethod
     def to_json(self) -> str:

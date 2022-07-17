@@ -89,7 +89,7 @@ class Execution(Task, Schedulable):
         self._metric_finished: bool = False
 
         # generate subspaces
-        self._subspaces: List[Subspace] = list(self._subspace_generation.generate())
+        self._subspaces: List[Subspace] = self._subspace_generation.generate()
         self._subspaces_count = len(self._subspaces)
         self._total_execution_element_count: int = self._subspaces_count * len(self._algorithms)
 

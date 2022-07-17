@@ -21,8 +21,8 @@ class UniformSubspaceDistribution(SubspaceSizeDistribution, ABC):
         self._subspace_size_min: int = subspace_size_min
         self._subspace_size_max: int = subspace_size_max
 
-    def get_subspace_sizes(self, requested_subspace_count: int,
-                           dataset_dimension_count: int) -> Dict[int, int]:
+    def get_subspace_counts(self, requested_subspace_count: int,
+                            dataset_dimension_count: int) -> Dict[int, int]:
         """
         Calculates how many subspaces there are of each Size
         :param requested_subspace_count: How may subspaces are needed
