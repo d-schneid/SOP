@@ -5,4 +5,7 @@ python3 manage.py migrate --no-input
 python3 manage.py collectstatic --no-input
 python3 manage.py createsuperuser --no-input
 
+# Launch memcached for worker syncronization
+memcached -d -u root
+
 gunicorn sop.wsgi:application --bind 0.0.0.0:8000 --workers=2 --threads=4
