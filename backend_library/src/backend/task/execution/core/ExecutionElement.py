@@ -6,6 +6,7 @@ from abc import ABC
 
 import numpy as np
 
+from backend.task.TaskHelper import TaskHelper
 from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 from backend.scheduler.Schedulable import Schedulable
@@ -92,6 +93,7 @@ class ExecutionElement(Schedulable):
             result_to_save: np.ndarray = self.__convert_result_to_csv(run_algo_result)
             DataIO.write_csv(self._result_path, result_to_save)
         except Exception as e:
+            TaskHelper.save_error_csv(self._result_path, str(e))
             return -1
 
         # ExecutionElement finished
