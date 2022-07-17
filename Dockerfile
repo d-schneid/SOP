@@ -12,7 +12,7 @@ ENV PYTHONUNBUFFERED 1
 
 # install psycopg2 dependencies
 RUN apt update -y && apt upgrade -y \
-    && apt install -y python3-dev
+    && apt install -y python3-dev memcached
 
 COPY requirements.txt ./
 COPY requirements_deploy.txt ./

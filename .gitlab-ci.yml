@@ -71,7 +71,7 @@ default:
     - apt -y update
     - apt -y upgrade
     - apt-get -yq install software-properties-common
-    - apt -y install apt-utils net-tools default-mysql-client default-libmysqlclient-dev python3-distutils python3-dev gcc
+    - apt -y install apt-utils net-tools default-mysql-client default-libmysqlclient-dev python3-distutils python3-dev gcc memcached
     - "[ ! -d 'venv3.10' ]  && python3 -m venv venv3.10"
     - source venv3.10/bin/activate
     - python3 -m pip install --upgrade pip
