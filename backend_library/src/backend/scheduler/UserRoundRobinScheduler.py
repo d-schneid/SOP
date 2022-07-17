@@ -1,13 +1,12 @@
 import heapq
 import itertools
+import math
 import multiprocessing
 import sys
 import threading
 from collections import OrderedDict
 from dataclasses import dataclass, field
-from enum import Enum
 from multiprocessing import Condition, Process
-from multiprocessing.process import BaseProcess
 from threading import Thread
 from typing import Callable, Optional, Dict, List, Tuple
 
@@ -16,14 +15,13 @@ from backend.scheduler.Scheduler import Scheduler
 
 
 class UserRoundRobinScheduler(Scheduler):
+    """Scheduler that schedules round-robin by user id
+    with priorities within the user queues,
+    supports abort_by_user, abort_by_task and graceful_shutdown"""
+
     def __init__(self):
         super().__init__()
-        assert "fork" in multiprocessing.get_all_start_methods(), \
-            "Multiprocessing will not work under native windows use linux"
-        if multiprocessing.get_start_method(True) is None:
-            multiprocessing.set_start_method("fork")
-        assert multiprocessing.get_start_method(True) == "fork", \
-            "apparently the setting the start method of processes was not possible"
+        UserRoundRobinScheduler.__start_by_fork()
         self.__shutdown_ongoing: bool = False
         self.__on_shutdown_completed: Optional[Callable] = None
         self.__empty_queue: Condition = Condition()
@@ -35,7 +33,18 @@ class UserRoundRobinScheduler(Scheduler):
         for i in range(self.__get_targeted_worker_count()):
             self.__make_worker_thread()
 
+    @staticmethod
+    def __start_by_fork():
+        """Ensures that the process starting method is fork"""
+        assert "fork" in multiprocessing.get_all_start_methods(), \
+            "Multiprocessing will not work under native windows use linux"
+        if multiprocessing.get_start_method(True) is None:
+            multiprocessing.set_start_method("fork")
+        assert multiprocessing.get_start_method(True) == "fork", \
+            "apparently the setting the start method of processes was not possible"
+
     def __make_worker_thread(self):
+        """Creates a new supervisor thread"""
         t = Thread(
             target=UserRoundRobinScheduler.__thread_main,
             args=(self,))
@@ -49,6 +58,7 @@ class UserRoundRobinScheduler(Scheduler):
         self.__abort(lambda x: x.user_id == user_id)
 
     def __abort(self, selector: Callable[[Schedulable], bool]):
+        """Aborts all Tasks matching the selector provided"""
         with self.__empty_queue:
             for _, q in self.__user_queues.values():
                 for i in range(len(q)):
@@ -97,12 +107,16 @@ class UserRoundRobinScheduler(Scheduler):
             self.__empty_queue.notify()
 
     def __process_main(self, sched: Schedulable):
+        """main method executed by worker processes,
+         just runs a schedulable and dies with it's statuscode"""
         r = sched.do_work()
         if r is None:
             r = 0
         sys.exit(r)
 
     def __thread_main(self) -> None:
+        """main method executed by supervisor threads,
+        starts worker processes when schedulables are available"""
         while not self.__shutdown_ongoing:
             with self.__empty_queue:
                 next_sched = self.__get_next_schedulable()
@@ -123,6 +137,7 @@ class UserRoundRobinScheduler(Scheduler):
         self.__handle_graceful_shutdown()
 
     def __handle_graceful_shutdown(self) -> None:
+        """Handles a graceful shutdown when detected"""
         if self.__on_shutdown_completed is not None:
             with self.__empty_queue:
                 self.__threads.remove(threading.current_thread())
@@ -130,6 +145,7 @@ class UserRoundRobinScheduler(Scheduler):
                     self.__on_shutdown_completed()
 
     def __get_next_schedulable(self) -> Optional[Schedulable]:
+        """Retrieves the next schedulable to run, to be run within __empty_queue only"""
         if self.__next_queue == -1:
             return None
         queues_after_current = \
@@ -145,11 +161,13 @@ class UserRoundRobinScheduler(Scheduler):
         return None
 
     def __get_targeted_worker_count(self) -> int:
-        return multiprocessing.cpu_count() * 2
+        """Calculates the number of worker threads to use"""
+        return math.ceil(multiprocessing.cpu_count() * 1.4)
 
 
 @dataclass(order=True)
 class PrioritizedSchedulable:
+    """dataclass for ordering schedulables by priority"""
     priority: int
     schedulable: Schedulable = field(compare=False)
 

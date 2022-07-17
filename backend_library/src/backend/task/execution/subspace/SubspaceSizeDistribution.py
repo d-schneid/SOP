@@ -6,6 +6,10 @@ from typing import Dict
 class SubspaceSizeDistribution(ABC):
     def has_enough_subspaces(self, requested_subspace_count: int,
                              dataset_dimension_count: int) -> bool:
+        """
+        Checks that the requested number of subspace can be generated
+        with the distribution given
+        """
         for k, v in self.get_subspace_counts(requested_subspace_count,
                                              dataset_dimension_count).items():
             if v > math.comb(dataset_dimension_count, k):
@@ -17,7 +21,8 @@ class SubspaceSizeDistribution(ABC):
                             dataset_dimension_count: int) -> Dict[int, int]:
         """
         Calculates the number of subspaces to be generated of each size
-        :param requested_subspace_count: the number of subspaces that are to be generated
+        :param requested_subspace_count: the number of subspaces,
+        that are to be generated
         :param dataset_dimension_count: the number of dimensions the dataset has
         :return: a dictionary mapping a number of subspaces to some subspace sizes.
          The sum of all values has to be requested_subspace_count,
