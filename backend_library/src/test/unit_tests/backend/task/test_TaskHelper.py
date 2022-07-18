@@ -39,13 +39,13 @@ class UnitTestTaskHelper(unittest.TestCase):
         self.assertEqual(error_message, DataIO.read_uncleaned_csv(self._error_path1)[0][0])
 
         # Not valid path (doesn't end with .csv) -> Raise AssertionError
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(AssertionError):
             TaskHelper.save_error_csv(self._path2, error_message)
         self.assertFalse(os.path.isfile(self._error_path2))
 
         # empty string -> Raise AssertionError
         empty_message: str = ""
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(AssertionError):
             TaskHelper.save_error_csv(self._path3, empty_message)
         self.assertFalse(os.path.isfile(self._error_path3))
 
