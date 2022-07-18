@@ -82,27 +82,6 @@ class UnitTestExecutionElement(unittest.TestCase):
         os.remove(self._result_path)
         self.assertFalse(self._ee.finished_result_exists())
 
-    def test_do_work(self):
-        self.assertFalse(self._ee.finished_result_exists())
-        self.assertFalse(self._ee1_is_finished)
-
-        # Method that should be tested
-        statuscode = self._ee.do_work()
-        self.assertEqual(0, statuscode)
-        self._ee.run_later_on_main(statuscode)
-
-        # Tests if do_work() saved the converted algorithm result
-        self.assertTrue(self._ee.finished_result_exists())
-        self.assertEqual(DataIO.read_uncleaned_csv(self._result_path)[0, 0],
-                         "converted algorithm result")
-
-        # Test callback
-        self.assertTrue(self._ee1_is_finished)
-
-        # clean up
-        os.remove(self._result_path)
-        self.assertFalse(self._ee.finished_result_exists())
-
     def test_do_work_failed(self):
         self._ee_faulty: ee = ee(self._user_id, self._task_id, self._subspace, self._algorithm,
                                  self._result_path,
