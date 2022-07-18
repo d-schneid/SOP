@@ -21,6 +21,7 @@ class UnitTestTaskHelper(unittest.TestCase):
 
     def setUp(self) -> None:
         self.__clean_created_files_and_directories()
+        os.makedirs(self._test_dir_path)
 
     def tearDown(self):
         self.__clean_created_files_and_directories()
@@ -71,12 +72,13 @@ class UnitTestTaskHelper(unittest.TestCase):
 
     def test_zip_dir_correct(self):
         # first, create a directory with files to zip
-        zip_test_dir: str = os.path.join(self._test_dir_path, "test_zip_dir")
+        zip_test_dir: str = os.path.join(self._test_dir_path, "test_zip_dir_correct")
 
         UnitTestTaskHelper._create_dirs_and_text_files(zip_test_dir,
-            [["dir_01", "baum.txt", "Hier steht ein Baum."],
-             ["dir_01/sub_dir", "me.mo", "Wer das liest ist doof."],
-             ["dir_03/sub_dir_01/sub_sub_dir", "motto", "War is peace. Freedom is slavery. Ignorance is strength."]])
+                                                       [["dir_01", "baum.txt", "Hier steht ein Baum."],
+                                                        ["dir_01/sub_dir", "me.mo", "Wer das liest ist doof."],
+                                                        ["dir_03/sub_dir_01/sub_sub_dir", "motto",
+                                                         "War is peace. Freedom is slavery. Ignorance is strength."]])
 
         # then, zip the directory
         zip_file: str = os.path.join(self._test_dir_path, "test_zip_01.zip")
@@ -84,6 +86,32 @@ class UnitTestTaskHelper(unittest.TestCase):
         #  check if the zipping was successful
         TaskHelper.zip_dir(zip_test_dir, zip_file)
         self.assertTrue(UnitTestTaskHelper._check_zip_identical(zip_file, zip_test_dir))
+
+    def test_zip_bad_params(self):
+        # first, create a path to a non-existing directory and write a file
+        dir_missing: str = os.path.join(self._test_dir_path, "test_zip_bad_params__missing")
+
+        dir_existing: str = os.path.join(self._test_dir_path, "test_zip_bad_params__existing")
+        UnitTestTaskHelper._create_dirs_and_text_files(dir_existing,
+                                                       [["dir_01", "baum.txt", "Hier steht ein Baum."],
+                                                        ["dir_01/sub_dir", "me.mo", "Wer das liest ist doof."],
+                                                        ["dir_03/sub_dir_01/sub_sub_dir", "motto",
+                                                         "War is peace. Freedom is slavery. Ignorance is strength."]])
+
+        file_existing: str = os.path.join(self._test_dir_path, "existing_file.txt")
+        with open(file_existing, "w") as file:
+            file.write("Diese Datei existiert schon!")
+
+        # try to zip with bad parameters
+        for dir_path, zip_path, compression_level, did_file_exist in [
+            [dir_missing, os.path.join(self._test_dir_path, "non-existing-file.txt"), 5, False],
+            [dir_existing, file_existing, 5, True],
+            [dir_existing, os.path.join(self._test_dir_path, "non-existing-file-2.txt"), 100, False],
+            [dir_missing, file_existing, 200, True]]:
+            with self.assertRaises(AssertionError):
+                TaskHelper.zip_dir(dir_path, zip_path, compression_level)
+            if not did_file_exist:
+                self.assertFalse(os.path.isfile(zip_path))
 
     # ---- static helper methods ---
 
