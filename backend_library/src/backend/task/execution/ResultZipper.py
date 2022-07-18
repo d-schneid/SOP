@@ -67,7 +67,7 @@ class ResultZipper(Schedulable):
         """
 
         # Check for debug mode
-        if (self._is_debug):
+        if self._is_debug:
             TaskHelper.create_directory(self._zipped_file_path)
             return
 
@@ -76,6 +76,9 @@ class ResultZipper(Schedulable):
         TaskHelper.zip_dir(zip_path=self._zipped_file_path, dir_path=self._path_to_zip)
         TaskHelper.del_dir(self._path_to_zip)
 
-        self._task_progress_callback(self._task_id, TaskState.FINISHED, 1) # TODO
+        if self._error_occurred:
+            self._task_progress_callback(self._task_id, TaskState.FINISHED_WITH_ERROR, 1)
+        else:
+            self._task_progress_callback(self._task_id, TaskState.FINISHED, 1)
 
 
