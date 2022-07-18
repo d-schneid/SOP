@@ -1,3 +1,4 @@
+import os
 from typing import Callable
 
 from backend.scheduler.Schedulable import Schedulable
@@ -17,14 +18,19 @@ class ResultZipper(Schedulable):
         :param task_id: The ID of the task. Has to be greater than or equal to -1.
         :param error_occurred: Did at least one ExecutionElement fail during the Execution
         :param task_progress_callback: The Execution uses this callback to return its progress.
-        :param path_to_zip: Absolute path to the directory that should be zipped
-        :param zipped_file_path: Absolute path to the directory where the result of the zipping will be saved
+        :param path_to_zip: Absolute path to the directory that should be zipped. Must exist.
+        :param zipped_file_path: Absolute path to the directory where the result of the zipping will be saved.
+                                 Must not exist.
         :param is_debug: If true, the ResultZipper runs in debug mode.
                          In debug mode, e.g. no files are deleted. For specific differences check the relevant
                          method descriptions.
         """
+
         assert user_id >= -1
         assert task_id >= -1
+        assert os.path.isdir(path_to_zip)
+        assert not os.path.isfile(zipped_file_path)
+
         self._user_id: int = user_id
         self._task_id: int = task_id
         self._error_occurred: bool = error_occurred
