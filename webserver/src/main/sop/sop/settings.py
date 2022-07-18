@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
@@ -48,6 +49,14 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+# We use LocMemCache in development but in CI, testing and production we use PyMemcacheCache.
+# Important to remember if you do something with djangos caching framework and something doesn't work.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+    }
+}
 
 ROOT_URLCONF = "sop.urls"
 
@@ -105,6 +114,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 FILE_UPLOAD_HANDLERS = [
+    "experiments.views.uploadhandler.UploadProgressCachedHandler",
     "django.core.files.uploadhandler.TemporaryFileUploadHandler",
 ]
 
@@ -123,7 +133,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = "static/"
-
+STATIC_ROOT = BASE_DIR / "static"
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 

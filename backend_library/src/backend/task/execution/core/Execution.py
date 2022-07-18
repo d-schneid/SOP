@@ -34,6 +34,22 @@ class Execution(Task, Schedulable):
         When scheduled by the Scheduler it executes an execution with the selected cleaned dataset and algorithms.
     """
 
+    @property
+    def user_id(self) -> int:
+        return self._user_id
+
+    @property
+    def task_id(self) -> int:
+        return self._task_id
+
+    @property
+    def priority(self) -> int:
+        return 0
+
+    def do_work(self) -> Optional[int]:
+        self.__load_dataset()
+        return None
+
     def __init__(self, user_id: int, task_id: int,
                  task_progress_callback: Callable[[int, TaskState, float], None],
                  dataset_path: str, result_path: str,
@@ -83,7 +99,7 @@ class Execution(Task, Schedulable):
         self._metric_finished: bool = False
 
         # generate subspaces
-        self._subspaces: List[Subspace] = list(self._subspace_generation.generate())
+        self._subspaces: List[Subspace] = self._subspace_generation.generate()
         self._subspaces_count = len(self._subspaces)
         self._total_execution_element_count: int = self._subspaces_count * len(self._algorithms)
 
@@ -199,8 +215,7 @@ class Execution(Task, Schedulable):
 
     def __load_dataset(self) -> None:
         """
-        Load the cleaned dataset, if it isn't loaded into the shared memory yet. \n
-        :return: The shared_memory_name of the cleaned dataset.
+        Load the cleaned dataset into shared memory
         """
         data = DataIO.read_cleaned_csv(self._dataset_path)
         size = data.size * data.itemsize

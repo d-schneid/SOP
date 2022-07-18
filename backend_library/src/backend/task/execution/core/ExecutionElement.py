@@ -6,6 +6,7 @@ from abc import ABC
 
 import numpy as np
 
+from backend.task.TaskHelper import TaskHelper
 from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 from backend.scheduler.Schedulable import Schedulable
@@ -32,10 +33,8 @@ class ExecutionElement(Schedulable):
         :param algorithm: The algorithm that should be computed on the subspace.
         :param result_path: The directory where the result-csv-file of the ExecutionElement-computation will be stored.
         :param subspace_dtype: The dtype of the values that are stored in the dataset for processing.
-        :param ss_shm_name: Gets the subspace dataset where the ExecutionElement can
-        compute its result.
+        :param ss_shm_name: The name of the shared memory containing the subspace data
         :param execution_element_is_finished: Reports the ExecutionSubspace that it finished its execution.
-        :param priority: The priority of this Schedulable for the Scheduler.
         """
         assert user_id >= -1
         assert task_id >= -1
@@ -87,7 +86,7 @@ class ExecutionElement(Schedulable):
         """
         Is called by the Scheduler. \n
         Will compute and store the result of the ExecutionElement. \n
-        :return: None
+        :return: An exitcode provided to run_later_on_main
         """
 
         try:
@@ -95,6 +94,7 @@ class ExecutionElement(Schedulable):
             result_to_save: np.ndarray = self.__convert_result_to_csv(run_algo_result)
             DataIO.write_csv(self._result_path, result_to_save)
         except Exception as e:
+            TaskHelper.save_error_csv(self._result_path, str(e))
             return -1
 
         # ExecutionElement finished

@@ -48,7 +48,7 @@ class Scheduler(ABC):
 
     @abstractmethod
     def graceful_shutdown(self, on_shutdown_completed: Callable) -> None:
-        """Waits for active Tasks to finish, no new ones are starte after this
+        """Waits for active Tasks to finish, no new ones are started after this
          :raises NotImplementedError if not supported"""
         pass
 

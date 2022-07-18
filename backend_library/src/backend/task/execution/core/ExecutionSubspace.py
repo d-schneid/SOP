@@ -26,13 +26,29 @@ class ExecutionSubspace(Schedulable):
     Manages the computations of all algorithms of an Execution, that compute their results on the same Subspace.
     """
 
+    @property
+    def user_id(self) -> int:
+        return self._user_id
+
+    @property
+    def task_id(self) -> int:
+        return self._task_id
+
+    @property
+    def priority(self) -> int:
+        return 5
+
+    def do_work(self) -> Optional[int]:
+        self.__load_subspace_from_dataset()
+        return None
+
     def __init__(self, user_id: int, task_id: int,
                  algorithms: Iterable[ParameterizedAlgorithm], subspace: Subspace,
                  result_path: str, subspace_dtype: np.dtype,
                  on_execution_element_finished_callback: Callable[[bool], None],
                  ds_shm_name: str, priority: int = 5):
         """
-        :param ds_shm_name:
+        :param ds_shm_name: name of the shared emory segment containing the full dataset
         :param user_id: The ID of the user belonging to the ExecutionSubspace. Has to be at least -1.
         :param task_id: The ID of the task. Has to be at least -1.
         :param algorithms: Contains all algorithms that should be processed on the subspaces.
@@ -96,10 +112,10 @@ class ExecutionSubspace(Schedulable):
 
     def __load_subspace_from_dataset(self) -> SharedMemory:
         """
-        :return: Loads the dataset for this subspace into shared_memory, if it isn't loaded into the shared_memory yet.
+        :return: Loads the dataset for this subspace into shared_memory
         """
         ds_shm: SharedMemory = SharedMemory(self._ds_shm_name)
-        ds_dim_cnt: int = self._subspace.mask.size
+        ds_dim_cnt: int = self._subspace.get_dataset_dimension_count()
         ds_point_count = ds_shm.size / self._subspace_dtype.itemsize / ds_dim_cnt
         ds_arr = np.ndarray((ds_point_count, ds_dim_cnt), dtype=self._subspace_dtype,
                             buffer=ds_shm.buf)

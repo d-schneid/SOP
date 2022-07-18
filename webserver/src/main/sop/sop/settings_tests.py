@@ -49,6 +49,13 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.memcached.PyMemcacheCache",
+        "LOCATION": "127.0.0.1:11211",
+    }
+}
+
 ROOT_URLCONF = "sop.urls"
 
 TEMPLATES = [
@@ -105,6 +112,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 FILE_UPLOAD_HANDLERS = [
+    "experiments.views.uploadhandler.UploadProgressCachedHandler",
     "django.core.files.uploadhandler.TemporaryFileUploadHandler",
 ]
 
