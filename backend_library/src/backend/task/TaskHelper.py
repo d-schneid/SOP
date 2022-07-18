@@ -45,9 +45,7 @@ class TaskHelper:
         :param path: The absolute path where the new directory will be created
         :return: None
         """
-        if not os.path.isdir(path):
-            new_directory = os.path.join(path)  # TODO: Test this
-            os.makedirs(new_directory)
+        os.makedirs(path, exist_ok=True)
 
     @staticmethod
     def iterable_length(iterable: Iterable) -> int:
