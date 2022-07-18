@@ -69,9 +69,9 @@ class TaskHelper:
 
         Errors due to missing read / write permissions and missing libraries (zlib) are not caught.
 
-        :dir_path: The path of the dir to zip.
-        :zip_path: The path to store the created zip-file at. The file must not exist.
-        :compression_level: The level of compression. Values from 0 to 9 are accepted.
+        :param dir_path: The path of the dir to zip.
+        :param zip_path: The path to store the created zip-file at. The file must not exist.
+        :param compression_level: The level of compression. Values from 0 to 9 are accepted.
                             Standard is the standard value of the zlib module, which offers a compromise in
                             speed and compression.
         """
@@ -104,7 +104,7 @@ class TaskHelper:
         Errors due to missing read / write permissions (e.g. when attempting to
         delete read-only files) are not caught.
 
-        :dir_path: The directory to be deleted (recursively).
+        :param dir_path: The directory to be deleted (recursively).
         """
         shutil.rmtree(dir_path)
 
