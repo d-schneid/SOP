@@ -29,7 +29,8 @@ class DatasetCleaning(Task, Schedulable, ABC):
 
     def __init__(self, user_id: int, task_id: int, task_progress_callback: Callable[[int, TaskState, float], None],
                  uncleaned_dataset_path: str, cleaned_dataset_path: str,
-                 cleaning_steps: Iterable[DatasetCleaningStep] = None, priority: int = 100):
+                 cleaning_steps: Iterable[DatasetCleaningStep] = None, priority: int = 100,
+                 running_dataset_cleaning_path: str = ""):
         """
         :param user_id: The ID of the user belonging to the DatasetCleaning. Has to be at least -1.
         :param task_id: The ID of the task. Has to be at least -1.
@@ -41,6 +42,8 @@ class DatasetCleaning(Task, Schedulable, ABC):
         :param cleaning_steps: Specifies the cleaning pipeline that will be used for cleaning. If None is inputted the
         default cleaning pipeline is used.
         :param priority: The priority of the task for the Scheduling.
+        :param running_dataset_cleaning_path: The path where the DatasetCleaning writes it temporary results to.
+        If "" was inputted it writes the temporary result relatively to the uncleaned_dataset_path.
         """
         Task.__init__(self, user_id, task_id, task_progress_callback)
         if cleaning_steps is None:
@@ -51,6 +54,10 @@ class DatasetCleaning(Task, Schedulable, ABC):
         self._cleaning_steps: Iterable[DatasetCleaningStep] = cleaning_steps
         self._cleaning_steps_count: int = TaskHelper.iterable_length(self._cleaning_steps)
         self._priority = priority
+        if running_dataset_cleaning_path == "":
+            self._running_dataset_cleaning_path = uncleaned_dataset_path + ".running"
+        else:
+            self._running_dataset_cleaning_path = running_dataset_cleaning_path
 
     def schedule(self) -> None:
         """
@@ -117,7 +124,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
             return
 
         # store cleaned dataset in path
-        DataIO.write_csv(self._cleaned_dataset_path, cleaned_dataset)
+        DataIO.save_write_csv(self._running_dataset_cleaning_path, self._cleaned_dataset_path, cleaned_dataset)
 
         # report webserver the task progress
         self._task_progress_callback(self._task_id, TaskState.FINISHED, 1.0)
