@@ -69,14 +69,15 @@ class TaskHelper:
 
         Errors due to missing read / write permissions and missing libraries (zlib) are not caught.
 
-        :param dir_path: The path of the dir to zip.
+        :param dir_path: The path of the dir to zip. The directory must exist.
         :param zip_path: The path to store the created zip-file at. The file must not exist.
         :param compression_level: The level of compression. Values from 0 to 9 are accepted.
                             Standard is the standard value of the zlib module, which offers a compromise in
                             speed and compression.
         """
         assert (0 <= compression_level <= 9) or (compression_level == zlib.Z_DEFAULT_COMPRESSION)
-        assert not os.path.exists(zip_path)
+        assert not os.path.isfile(zip_path)
+        assert os.path.isdir(dir_path)
 
         temp_zip_path: str = zip_path + ".temp"  # temporary file path, with ".temp" suffix
 
