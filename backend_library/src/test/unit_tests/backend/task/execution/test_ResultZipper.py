@@ -51,6 +51,31 @@ class UnitTestResultZipper(unittest.TestCase):
         with open(UnitTestResultZipper._callback_file_path) as file:
             self.assertTrue(file.read() == str([task_id, TaskState.TaskState.FINISHED, 1]))
 
+    def test_bad_args(self):
+        dir_missing: str = os.path.join(UnitTestResultZipper._test_dir_path, "dir-not-existing")
+        dir_existing: str = os.path.join(UnitTestResultZipper._test_dir_path, "dir-is-existing")
+        UnitTestResultZipper._create_dirs_and_text_files(dir_existing,
+                                                         [["dir_01", "baum.txt", "Hier steht ein Baum."],
+                                                          ["dir_01/sub_dir", "me.mo", "Wer das liest ist doof."],
+                                                          ["dir_03/sub_dir_01/sub_sub_dir", "motto",
+                                                           "War is peace. Freedom is slavery. Ignorance is strength."]])
+
+        file_missing: str = os.path.join(UnitTestResultZipper._test_dir_path, "file-not-existing")
+        file_existing: str = os.path.join(UnitTestResultZipper._test_dir_path, "file-is-existing")
+        with open(file_existing, "w") as file:
+            file.write("Diese Datei existiert.")
+
+        for user_id, task_id, error_occured, callback, dir_path, zip_path, did_file_exist in [
+            [-5, 2, True, UnitTestResultZipper._test_callback, dir_existing, file_missing, False],
+            [5, -3, False, UnitTestResultZipper._test_callback, dir_existing, file_missing, False],
+            [5, 3, True, UnitTestResultZipper._test_callback, dir_missing, file_missing, False],
+            [5, 3, False, UnitTestResultZipper._test_callback, dir_existing, file_existing, True],
+            [-5, -15, True, UnitTestResultZipper._test_callback, dir_missing, file_existing, True]]:
+
+            with self.assertRaises(AssertionError):
+                ResultZipper.ResultZipper(user_id, task_id, error_occured, callback, dir_path, zip_path)
+            if not did_file_exist:
+                self.assertFalse(os.path.isfile(zip_path))
 
     # ---- static helper methods ----
 
