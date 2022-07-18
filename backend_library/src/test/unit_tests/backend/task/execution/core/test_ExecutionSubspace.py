@@ -2,6 +2,7 @@ import os
 import shutil
 import unittest
 from multiprocessing.shared_memory import SharedMemory
+from unittest.mock import Mock
 
 import numpy as np
 
@@ -17,6 +18,7 @@ class UnitTestExecutionSubspace(unittest.TestCase):
     # parameters for Execution
     _user_id: int = 21412
     _task_id: int = 424242
+    _priority: int = 13
 
     _subspace: Subspace = Subspace(np.asarray([1, 0, 1, 1, 1]))
 
@@ -52,6 +54,8 @@ class UnitTestExecutionSubspace(unittest.TestCase):
     Scheduler._instance = None
     _debug_scheduler: DebugScheduler2 = DebugScheduler2()
 
+    _ds_shm_name: str = "Shared Memory Name"
+
     def setUp(self) -> None:
         # Scheduler
         Scheduler._instance = None
@@ -67,15 +71,13 @@ class UnitTestExecutionSubspace(unittest.TestCase):
             self._result_path,
             self._subspace_dtype,
             self.__on_execution_element_finished1,
-            ""
+            self._ds_shm_name,
+            self._priority
         )
         self._es.run_later_on_main(0)
 
     def tearDown(self) -> None:
         self.__clear_old_execution_file_structure()
-
-    def __cache_dataset(self) -> SharedMemory:
-        pass
 
     def __on_execution_element_finished(self, error: bool) -> None:
         pass
@@ -95,8 +97,8 @@ class UnitTestExecutionSubspace(unittest.TestCase):
                 self._subspace,
                 self._result_path,
                 self._subspace_dtype,
-                self.__cache_dataset,
                 self.__on_execution_element_finished,
+                self._ds_shm_name
             )
 
         with self.assertRaises(AssertionError) as context:
@@ -110,6 +112,11 @@ class UnitTestExecutionSubspace(unittest.TestCase):
                 self.__on_execution_element_finished,
                 ""
             )
+
+    def test_getter(self):
+        self.assertEqual(self._user_id, self._es.user_id)
+        self.assertEqual(self._task_id, self._es.task_id)
+        self.assertEqual(self._priority, self._es.priority)
 
     def test_generate_execution_elements(self):
         # The method will be called on creation of ExecutionSubspace (in constructor -> just test outcome)
@@ -129,6 +136,21 @@ class UnitTestExecutionSubspace(unittest.TestCase):
         self.assertEqual(
             self._debug_scheduler.called_scheduler_amount, len(self._algorithms)
         )
+
+    def test_execution_element_is_finished(self):
+        self._es._ExecutionSubspace__unload_subspace_shared_memory = Mock(return_value=None)
+
+        # normal logic -> count up _finished_execution_element_count
+        for element in range(0, self._es._total_execution_element_count):
+            self.assertEqual(self._es._finished_execution_element_count, element)
+            self._es._ExecutionSubspace__execution_element_is_finished(False)
+        self.assertEqual(self._es._finished_execution_element_count, self._es._total_execution_element_count)
+
+        # out of range (more elements finished than elements exists)
+        with self.assertRaises(AssertionError) as context:
+            self._es._ExecutionSubspace__execution_element_is_finished(False)
+
+        self.assertEqual(self._es._finished_execution_element_count, self._es._total_execution_element_count)
 
     def __clear_old_execution_file_structure(self):
 
