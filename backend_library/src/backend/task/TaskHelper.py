@@ -3,6 +3,7 @@ import random
 import shutil
 import string
 import zipfile
+import zlib
 
 import numpy as np
 from collections.abc import Iterable
@@ -57,18 +58,33 @@ class TaskHelper:
         return sum(1 for e in iterable)
 
     @staticmethod
-    def zip_dir(dir_path: str, zip_path: str) -> None:
+    def zip_dir(dir_path: str, zip_path: str, compression_level: int = zlib.Z_DEFAULT_COMPRESSION) -> None:
         """
         Zips the specified directory and saves the created zip-file at the specified location.
-        No files are deleted. The files are compressed when added to the zip archive.
+
+        No files are deleted. The files are compressed when added to the zip archive (with the zlib module).
         A ".temp" suffix is appended at the end of the file that is removed when the complete
         zipping process has finished, so that in case of e.g. a server crash a corrupted file can be spotted.
+        If the ZIP-file is larger than 4 GiB, than a ZIP-file with the ZIP64 extension is created automatically.
+
+        Errors due to missing read / write permissions and missing libraries (zlib) are not caught.
+
         :dir_path: The path of the dir to zip.
-        :zip_path: The path to store the created zip-file at.
+        :zip_path: The path to store the created zip-file at. The file must not exist.
+        :compression_level: The level of compression. Values from 0 to 9 are accepted.
+                            Standard is the standard value of the zlib module, which offers a compromise in
+                            speed and compression.
         """
+        assert (0 <= compression_level <= 9) or (compression_level == zlib.Z_DEFAULT_COMPRESSION)
+        assert not os.path.exists(zip_path)
+
         temp_zip_path: str = zip_path + ".temp"  # temporary file path, with ".temp" suffix
 
-        zipfile_handle: zipfile.ZipFile = zipfile.ZipFile(temp_zip_path, "w", zipfile.ZIP_DEFLATED)
+        # use package os, as shutil.make_archive() is not thread-safe
+        zipfile_handle: zipfile.ZipFile = zipfile.ZipFile(temp_zip_path, mode="x",
+                                                          compression=zipfile.ZIP_DEFLATED,
+                                                          allowZip64=True,
+                                                          compresslevel=compression_level)
 
         for root, dirs, files in os.walk(dir_path):
             for file in files:
@@ -80,17 +96,17 @@ class TaskHelper:
 
         os.rename(temp_zip_path, zip_path)  # is a atomic operation (POSIX requirement)
 
-        # TODO: handle errors associated with file permissions (and mention in description)
-
     @staticmethod
     def del_dir(dir_path: str):
         """
         Deletes the given directory, including all containing files and subdirectories.
+
+        Errors due to missing read / write permissions (e.g. when attempting to
+        delete read-only files) are not caught.
+
         :dir_path: The directory to be deleted (recursively).
         """
         shutil.rmtree(dir_path)
-
-        # TODO: handle errors that occur with read-only files (and mention in description)
 
     @staticmethod
     def shm_name_generator():
