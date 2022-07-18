@@ -104,8 +104,10 @@ class TaskHelper:
         Errors due to missing read / write permissions (e.g. when attempting to
         delete read-only files) are not caught.
 
-        :param dir_path: The directory to be deleted (recursively).
+        :param dir_path: The directory to be deleted (recursively). Must not be a single file.
         """
+        assert os.path.isdir(dir_path)
+
         shutil.rmtree(dir_path)
 
     @staticmethod
