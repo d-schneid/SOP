@@ -61,10 +61,14 @@ class TaskHelper:
         """
         Zips the specified directory and saves the created zip-file at the specified location.
         No files are deleted. The files are compressed when added to the zip archive.
+        A ".temp" suffix is appended at the end of the file that is removed when the complete
+        zipping process has finished, so that in case of e.g. a server crash a corrupted file can be spotted.
         :dir_path: The path of the dir to zip.
         :zip_path: The path to store the created zip-file at.
         """
-        zipfile_handle: zipfile.ZipFile = zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED)
+        temp_zip_path: str = zip_path + ".temp"  # temporary file path, with ".temp" suffix
+
+        zipfile_handle: zipfile.ZipFile = zipfile.ZipFile(temp_zip_path, "w", zipfile.ZIP_DEFLATED)
 
         for root, dirs, files in os.walk(dir_path):
             for file in files:
@@ -73,6 +77,10 @@ class TaskHelper:
                                                      os.path.join(dir_path, '..')))
 
         zipfile_handle.close()
+
+        os.rename(temp_zip_path, zip_path)  # is a atomic operation (POSIX requirement)
+
+        # TODO: handle errors associated with file permissions (and mention in description)
 
     @staticmethod
     def del_dir(dir_path: str):
