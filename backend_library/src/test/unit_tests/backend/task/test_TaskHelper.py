@@ -113,6 +113,25 @@ class UnitTestTaskHelper(unittest.TestCase):
             if not did_file_exist:
                 self.assertFalse(os.path.isfile(zip_path))
 
+    def test_del_dir_correct(self):
+        # first, create a directory to delete
+        test_del_dir: str = os.path.join(self._test_dir_path, "test_del_dir_correct")
+
+        UnitTestTaskHelper._create_dirs_and_text_files(test_del_dir,
+                                                       [["dir_01", "baum.txt", "Hier steht ein Baum."],
+                                                        ["dir_01/sub_dir", "me.mo", "Wer das liest ist doof."],
+                                                        ["dir_03/sub_dir_01/sub_sub_dir", "motto",
+                                                         "War is peace. Freedom is slavery. Ignorance is strength."]])
+
+        TaskHelper.del_dir(test_del_dir)
+        self.assertFalse(os.path.isdir(test_del_dir))
+
+    def test_del_dir_bad_params(self):
+        dir_non_existing: str = os.path.join(self._test_dir_path, "test_del_dir_missing")
+
+        with self.assertRaises(AssertionError):
+            TaskHelper.del_dir(dir_non_existing)
+
     # ---- static helper methods ---
 
     @staticmethod
