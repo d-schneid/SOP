@@ -94,7 +94,10 @@ class ExecutionElement(Schedulable):
             result_to_save: np.ndarray = self.__convert_result_to_csv(run_algo_result)
             DataIO.write_csv(self._result_path, result_to_save)
         except Exception as e:
-            TaskHelper.save_error_csv(self._result_path, str(e))
+            error_message = str(e)
+            if error_message == "":
+                error_message = "Error occurred while processing the ExecutionElement"
+            TaskHelper.save_error_csv(self._result_path, error_message)
             return -1
 
         # ExecutionElement finished

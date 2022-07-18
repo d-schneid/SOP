@@ -105,12 +105,12 @@ class UnitTestExecutionElement(unittest.TestCase):
 
     def test_do_work_failed(self):
         self._ee_faulty: ee = ee(self._user_id, self._task_id, self._subspace, self._algorithm,
-                          self._result_path,
-                          self._subspace_dtype, self._subspace_shared_memory_name,
-                          self.__execution_element_is_finished1)
+                                 self._result_path,
+                                 self._subspace_dtype, self._subspace_shared_memory_name,
+                                 self.__execution_element_is_finished1)
 
         # mock Execution Element for do_work()
-        self._ee._ExecutionElement__run_algorithm = Mock(side_effect=Exception())
+        self._ee._ExecutionElement__run_algorithm = Mock(side_effect=Exception("I am going to throw an evil exception"))
 
         # Method that should be tested
         statuscode = self._ee.do_work()
