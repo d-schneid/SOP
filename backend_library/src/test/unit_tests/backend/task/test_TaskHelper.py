@@ -1,5 +1,7 @@
 import os
+import shutil
 import unittest
+from typing import List
 
 from backend.task.TaskHelper import TaskHelper
 from backend.DataIO import DataIO
@@ -7,7 +9,7 @@ from backend.DataIO import DataIO
 
 class UnitTestTaskHelper(unittest.TestCase):
     _dir_name: str = os.getcwd()
-    _new_dir_path: str = os.path.join(_dir_name, "new_dir")
+    _test_dir_path: str = os.path.join(_dir_name, "new_dir")
 
     _path1: str = os.path.join(_dir_name, "error.csv")
     _path2: str = os.path.join(_dir_name, "error")  # path ends not with .csv
@@ -23,15 +25,7 @@ class UnitTestTaskHelper(unittest.TestCase):
         self.__clean_created_files_and_directories()
 
     def __clean_created_files_and_directories(self):
-        if os.path.isfile(self._error_path1):
-            os.remove(self._error_path1)
-        if os.path.isfile(self._error_path2):
-            os.remove(self._error_path2)
-        if os.path.isfile(self._error_path3):
-            os.remove(self._error_path3)
-
-        if os.path.isdir(self._new_dir_path):
-            os.rmdir(self._new_dir_path)
+        shutil.rmtree(self._test_dir_path)
 
     def test_create_error_csv(self):
         error_message: str = "basic error"
@@ -53,20 +47,18 @@ class UnitTestTaskHelper(unittest.TestCase):
         self.assertFalse(os.path.isfile(self._error_path3))
 
     def test_convert_to_error_csv_path(self):
-        string1: str = ""
-        self.assertEqual(".error", TaskHelper.convert_to_error_csv_path(string1))  # add assertion here
+        strings: List[str] = ["", "PSE IST DIE BESTE ERFINDUNG DER WELT", "...hier ist ein komischer string?!?..."]
 
-        string2: str = "PSE IST DIE BESTE ERFINDUNG DER WELT"
-        self.assertEqual("PSE IST DIE BESTE ERFINDUNG DER WELT.error",
-                         TaskHelper.convert_to_error_csv_path(string2))  # add assertion here
+        for string in strings:
+            self.assertEqual(string + ".error", TaskHelper.convert_to_error_csv_path(string))
 
     def test_create_directory(self):
-        TaskHelper.create_directory(self._new_dir_path)
-        self.assertTrue(os.path.isdir(self._new_dir_path))
+        TaskHelper.create_directory(self._test_dir_path)
+        self.assertTrue(os.path.isdir(self._test_dir_path))
 
         # Works also when the directory already exists:
-        TaskHelper.create_directory(self._new_dir_path)
-        self.assertTrue(os.path.isdir(self._new_dir_path))
+        TaskHelper.create_directory(self._test_dir_path)
+        self.assertTrue(os.path.isdir(self._test_dir_path))
 
     def test_iterable_length(self):
         self.assertEqual(0, TaskHelper.iterable_length(iter([])))
