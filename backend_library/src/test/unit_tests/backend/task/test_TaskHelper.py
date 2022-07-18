@@ -107,23 +107,6 @@ class UnitTestTaskHelper(unittest.TestCase):
                 # if all matches, delete the original file
                 os.remove(org_file)
 
-
-
-        """# compare every file in the extracted directory
-        unzip_dir_path: str = zip_file + "_extract/"
-        for root, dirs, files in os.walk(unzip_dir_path):
-            for file in files:
-                extracted_file: str = os.path.join(root, file)
-                rel_file_path: str = os.path.relpath(extracted_file, unzip_dir_path)
-                original_file: str = os.path.join(org_dir_path, "..", rel_file_path)  # TODO
-
-                if os.path.isfile(original_file):
-                    if UnitTestTaskHelper._check_same_file_content(extracted_file, original_file):
-                        os.remove(extracted_file)
-                        os.remove(original_file)
-                    else:
-                        return False"""
-
         # check, if there are files in the original directory left --> they have not been zipped
         for root, dirs, files in os.walk(org_dir_path):
             for file in files:
@@ -136,8 +119,6 @@ class UnitTestTaskHelper(unittest.TestCase):
     @staticmethod
     def _create_dirs_and_text_files(abs_path: str, content: List[List[str]]):
         for dir_name, file_name, file_content in content:
-            # print (dir_name, file_name, file_content)
-
             abs_dir: str = os.path.join(abs_path, dir_name)
 
             os.makedirs(abs_dir)
