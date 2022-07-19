@@ -111,3 +111,17 @@ class DataIO:
         shutil.move(path_running, path_final)
 
 
+    @staticmethod
+    def save_write_csv(running_path: str, final_path: str, data: np.ndarray, add_index_column: bool = False):
+        """
+        Write csv first at running path (e.g. ends with .running) and renames the file after writing
+        it to the final path.
+        :param running_path: The absolute path where to write the csv file to before renaming it.
+        :param final_path: The absolute path where the final written csv file will be stored.
+        :param data: The dataset that should be created and written to.
+        :param add_index_column: If True create an additional column at the start of the array with
+        indexes for each row. If False don't change anything.
+        :return:
+        """
+        DataIO.write_csv(running_path, data, add_index_column)
+        shutil.move(running_path, final_path)
