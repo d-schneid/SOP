@@ -18,7 +18,8 @@ class Subspace:
 
     def get_included_dimension_count(self) -> int:
         """Counts the dimensions included in the Subspace"""
-        return self._mask.sum()
+        assert int(self._mask.sum()) == self._mask.sum()
+        return int(self._mask.sum())
 
     def get_dataset_dimension_count(self) -> int:
         """Calculates the number of dimensions a dataset has to have to run
@@ -45,7 +46,7 @@ class Subspace:
             -> np.ndarray:
         """Builds an ndarray in the specified SharedMemory,
          containing the Subspace of the dataset"""
-        shape = (full_dataset.shape[1], self.get_included_dimension_count())
+        shape = (full_dataset.shape[0], self.get_included_dimension_count())
         result = np.ndarray(shape, full_dataset.dtype, buffer=target_shm.buf)
         result[:] = full_dataset[:, self._mask]
         return result

@@ -39,7 +39,7 @@ class Execution(Task, Schedulable):
                  dataset_path: str, result_path: str,
                  subspace_generation: SubspaceGenerationDescription,
                  algorithms: Iterable[ParameterizedAlgorithm],
-                 metric_callback: Callable[[Execution], None],
+                 metric_callback: Callable[[Execution], None], datapoint_count: int,
                  final_zip_path: str = "", priority: int = 0):
         """
         :param user_id: The ID of the user belonging to the Execution. Has to be at least -1.
@@ -60,6 +60,7 @@ class Execution(Task, Schedulable):
 
         Task.__init__(self, user_id, task_id, task_progress_callback)
         self._priority = priority
+        self._datapoint_count = datapoint_count
 
         self._dataset_path: str = dataset_path
         self._result_path: str = result_path
@@ -163,7 +164,7 @@ class Execution(Task, Schedulable):
                 ExecutionSubspace(self._user_id, self._task_id, self._algorithms,
                                   subspace, self._result_path, self._subspace_dtype,
                                   self.__on_execution_element_finished,
-                                  self._shared_memory_name))
+                                  self._shared_memory_name, self._datapoint_count))
 
     # schedule
     def schedule(self) -> None:

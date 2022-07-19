@@ -66,9 +66,11 @@ class SystemTest_Execution(unittest.TestCase):
         self._last_progress_report: float = 0
 
         # create Execution
-        self._ex = Execution(self._user_id, self._task_id, self.__task_progress_callback, self._dataset_path,
-                             self._result_path, self._subspace_generation, iter(self._algorithms),
-                             self.__metric_callback,
+        self._ex = Execution(self._user_id, self._task_id,
+                             self.__task_progress_callback, self._dataset_path,
+                             self._result_path, self._subspace_generation,
+                             iter(self._algorithms),
+                             self.__metric_callback, 29222,
                              self._final_zip_path)
 
     def test_schedule(self):
