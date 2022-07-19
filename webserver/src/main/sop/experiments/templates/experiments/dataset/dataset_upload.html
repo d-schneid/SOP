@@ -5,35 +5,6 @@
 {% endblock %}
 
 {% block content %}
-    <form id="upload" method="post" onsubmit="openProgressBar(); return true;" enctype="multipart/form-data">{% csrf_token %}
-        <div class="card shadow mt-4 mb-4">
-            <div class="card-header bg-dark d-flex">
-                <div>{{ form.display_name.errors }}</div>
-                <div class="flex-fill">{{ form.display_name }}</div>
-            </div>
-            <div class="card-body show d-flex flex-column">
-                <div>
-                    {{ form.descirption.errors }}
-                    <label for="{{ form.description.id_for_label }}">Description:</label>
-                    {{ form.description }}
-                </div>
-                <div class="mt-3">
-                    {{ form.path_original.errors }}
-                    <label for="{{ form.path_original.id_for_label }}">Dataset File (.csv):</label>
-                    {{ form.path_original }}
-                </div>
-            </div>
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item">
-                    <div class="d-flex mt-1 mb-1">
-                        <a class="btn btn-dark" href="{% url "dataset_overview" %}">Cancel</a>
-                        <button class="btn btn-warning ml-auto" type="submit">Create</button>
-                    </div>
-                </li>
-            </ul>
-        </div>
-    </form>
-
     <script type="text/javascript">
         interval = null;
         function openProgressBar() {
@@ -52,7 +23,6 @@
                 },
                 200
             );
-        }
         }
 
         // Add upload progress for multipart forms.
@@ -85,4 +55,32 @@
             });
         }
     </script>
+    <form id="upload" method="post" onsubmit="openProgressBar(); return true;" enctype="multipart/form-data">{% csrf_token %}
+        <div class="card shadow mt-4 mb-4">
+            <div class="card-header bg-dark d-flex">
+                <div>{{ form.display_name.errors }}</div>
+                <div class="flex-fill">{{ form.display_name }}</div>
+            </div>
+            <div class="card-body show d-flex flex-column">
+                <div>
+                    {{ form.descirption.errors }}
+                    <label for="{{ form.description.id_for_label }}">Description:</label>
+                    {{ form.description }}
+                </div>
+                <div class="mt-3">
+                    {{ form.path_original.errors }}
+                    <label for="{{ form.path_original.id_for_label }}">Dataset File (.csv):</label>
+                    {{ form.path_original }}
+                </div>
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <div class="d-flex mt-1 mb-1">
+                        <a class="btn btn-dark" href="{% url "dataset_overview" %}">Cancel</a>
+                        <button class="btn btn-warning ml-auto" type="submit">Create</button>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </form>
 {% endblock %}
