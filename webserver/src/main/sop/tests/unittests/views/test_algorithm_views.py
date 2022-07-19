@@ -20,7 +20,9 @@ class AlgorithmOverviewTests(LoggedInTestCase):
         self.assertQuerysetEqual(response.context[self.QUERYSET_NAME], [])
 
     def test_algorithm_overview_one_algorithm(self):
-        algorithm = Algorithm.objects.create(display_name="test_algo", user=self.user)
+        algorithm = Algorithm.objects.create(
+            display_name="test_algo", user=self.user, signature=""
+        )
         response = self.client.get(reverse("algorithm_overview"), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "algorithm_overview.html")
@@ -28,9 +30,15 @@ class AlgorithmOverviewTests(LoggedInTestCase):
         self.assertQuerysetEqual(response.context[self.QUERYSET_NAME], [algorithm])
 
     def test_algorithm_overview_multiple_algorithms(self):
-        algo1 = Algorithm.objects.create(display_name="name_b", user=self.user)
-        algo2 = Algorithm.objects.create(display_name="name_a", user=self.user)
-        algo3 = Algorithm.objects.create(display_name="name_c", user=self.user)
+        algo1 = Algorithm.objects.create(
+            display_name="name_b", user=self.user, signature=""
+        )
+        algo2 = Algorithm.objects.create(
+            display_name="name_a", user=self.user, signature=""
+        )
+        algo3 = Algorithm.objects.create(
+            display_name="name_c", user=self.user, signature=""
+        )
         response = self.client.get(reverse("algorithm_overview"), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "algorithm_overview.html")
@@ -43,13 +51,13 @@ class AlgorithmOverviewTests(LoggedInTestCase):
 
     def test_algorithm_overview_sort_by_group(self):
         algo1 = Algorithm.objects.create(
-            group=Algorithm.AlgorithmGroup.PROBABILISTIC, user=self.user
+            group=Algorithm.AlgorithmGroup.PROBABILISTIC, user=self.user, signature=""
         )
         algo2 = Algorithm.objects.create(
-            group=Algorithm.AlgorithmGroup.COMBINATION, user=self.user
+            group=Algorithm.AlgorithmGroup.COMBINATION, user=self.user, signature=""
         )
         algo3 = Algorithm.objects.create(
-            group=Algorithm.AlgorithmGroup.LINEAR_MODEL, user=self.user
+            group=Algorithm.AlgorithmGroup.LINEAR_MODEL, user=self.user, signature=""
         )
         url = reverse("algorithm_overview_sorted", args=("group",))
         response = self.client.get(url, follow=True)
@@ -63,9 +71,15 @@ class AlgorithmOverviewTests(LoggedInTestCase):
         )
 
     def test_algorithm_overview_sort_by_upload_date(self):
-        algo1 = Algorithm.objects.create(display_name="name_c", user=self.user)
-        algo2 = Algorithm.objects.create(display_name="name_a", user=self.user)
-        algo3 = Algorithm.objects.create(display_name="name_b", user=self.user)
+        algo1 = Algorithm.objects.create(
+            display_name="name_c", user=self.user, signature=""
+        )
+        algo2 = Algorithm.objects.create(
+            display_name="name_a", user=self.user, signature=""
+        )
+        algo3 = Algorithm.objects.create(
+            display_name="name_b", user=self.user, signature=""
+        )
         url = reverse("algorithm_overview_sorted", args=("upload_date",))
         response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, 200)
@@ -78,10 +92,14 @@ class AlgorithmOverviewTests(LoggedInTestCase):
         )
 
     def test_algorithm_overview_do_not_display_public_algorithms(self):
-        algo1 = Algorithm.objects.create(display_name="name_c", user=self.user)
-        Algorithm.objects.create(display_name="name_a")
-        algo2 = Algorithm.objects.create(display_name="name_b", user=self.user)
-        Algorithm.objects.create(display_name="name_d")
+        algo1 = Algorithm.objects.create(
+            display_name="name_c", user=self.user, signature=""
+        )
+        Algorithm.objects.create(display_name="name_a", signature="")
+        algo2 = Algorithm.objects.create(
+            display_name="name_b", user=self.user, signature=""
+        )
+        Algorithm.objects.create(display_name="name_d", signature="")
         url = reverse("algorithm_overview_sorted", args=("name",))
         response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, 200)
@@ -102,7 +120,6 @@ def upload_algorithm(client, name, group, description, file_name):
             "description": description,
             "path": file,
         }
-
         return client.post(reverse("algorithm_upload"), data=data, follow=True)
 
 
@@ -188,7 +205,7 @@ class AlgorithmUploadViewTests(LoggedInTestCase):
 
 class AlgorithmDeleteViewTests(LoggedInTestCase):
     def test_algorithm_delete_view_valid_delete(self):
-        algorithm = Algorithm.objects.create()
+        algorithm = Algorithm.objects.create(signature="")
         response = self.client.post(
             reverse("algorithm_delete", args=(algorithm.pk,)), follow=True
         )
@@ -251,6 +268,7 @@ class AlgorithmEditViewTest(LoggedInTestCase):
             group=self.group,
             description=self.description,
             user=self.user,
+            signature="",
         )
 
     def test_algorithm_edit_view_valid_edit(self):

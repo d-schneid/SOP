@@ -1,7 +1,9 @@
 import os
 import shutil
+from inspect import Parameter
 from pathlib import Path
-from typing import Final
+from types import MappingProxyType
+from typing import Final, List
 
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
@@ -48,3 +50,14 @@ def get_signature_of_algorithm(path: str) -> str:
     keys_values = algorithm_parameters.items()
     string_dict = {key: str(value) for key, value in keys_values}
     return ",".join(string_dict.values())
+
+
+def convert_param_mapping_to_signature_dict(
+    mapping: MappingProxyType[str, Parameter]
+) -> dict[str, List[dict[str, object]]]:
+    dikt = dict()
+    for name, param in mapping.items():
+        # we need to do this check, because the kwargs default parameter is a type,
+        # and we can't handle that better
+        dikt[name] = param.default if type(param.default) != type else None
+    return dikt
