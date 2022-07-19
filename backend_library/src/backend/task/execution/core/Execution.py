@@ -150,7 +150,7 @@ class Execution(Task, Schedulable):
 
         # save JSON-str
         details_json_str: str = json.dumps(details_dict, indent=4)
-        with open(details_path, 'w') as f:  # TODO: Test if this is correct
+        with open(details_path, 'w') as f:
             json.dump(details_json_str, f)
 
     def __generate_execution_subspaces(self) -> None:
@@ -194,6 +194,7 @@ class Execution(Task, Schedulable):
         """
         execution_element_progress: float = float(self._finished_execution_element_count) \
                                             / float(self._total_execution_element_count)
+        execution_element_progress *= 0.98  # So all progress is shown (so that the clamping doesn't remove information)
         progress: float = max(0., min(execution_element_progress, 0.98))  # clamp the progress to be more accurate
         if self._metric_finished:
             progress += 0.01
