@@ -13,7 +13,7 @@ class Execution(models.Model):
     subspace_amount = models.IntegerField()  # type: ignore
     subspaces_min = models.IntegerField()  # type: ignore
     subspaces_max = models.IntegerField()  # type: ignore
-    subspace_generation_seed = models.IntegerField(blank=True)  # type: ignore
+    subspace_generation_seed = models.BigIntegerField(blank=True)  # type: ignore
     algorithm_parameters = models.JSONField()
     result_path = models.FileField()
     objects = ExecutionManager.from_queryset(ExecutionQuerySet)()
