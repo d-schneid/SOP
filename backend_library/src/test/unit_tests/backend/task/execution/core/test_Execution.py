@@ -119,6 +119,7 @@ class UnitTestExecution(unittest.TestCase):
         for i in range(0, execution_element_count + 1):
             self._ex._finished_execution_element_count = i
             progress: float = i / execution_element_count
+            progress *= 0.98
             if progress <= 0.98:
                 self.assertAlmostEqual(progress, self._ex._Execution__compute_progress())
             else:
