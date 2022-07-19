@@ -1,4 +1,3 @@
-import json
 import random
 
 from django.conf import settings
@@ -6,7 +5,7 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView
 
 from authentication.mixins import LoginRequiredMixin
-from backend.scheduler.DebugScheduler import DebugScheduler
+from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
 from backend.task.TaskState import TaskState
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 from backend.task.execution.core.Execution import Execution as BackendExecution
@@ -18,6 +17,7 @@ from backend.task.execution.subspace.UniformSubspaceDistribution import (
 )
 from experiments.forms.create import ExecutionCreateForm
 from experiments.models import Execution, Experiment
+from experiments.services.execution import get_params_out_of_form
 from experiments.views.generic import PostOnlyDeleteView
 
 
@@ -62,33 +62,39 @@ def schedule_backend(instance: Execution):
             ParameterizedAlgorithm(
                 display_name=algorithm.display_name,
                 path=algorithm.path,
-                hyper_parameter=instance.algorithm_parameters,
+                hyper_parameter=instance.algorithm_parameters[str(algorithm.pk)],
             )
         )
     backend_execution = BackendExecution(
         user_id=user.pk,
         task_id=instance.pk,
         task_progress_callback=stub_callback,
-        # TODO: use real cleaned path
-        # dataset_path=dataset.path_cleaned,
-        dataset_path=str(dataset.path_original),
-        result_path=str(instance.result_path),
+        dataset_path=str(settings.MEDIA_ROOT / str(dataset.path_cleaned)),
+        result_path=str(settings.MEDIA_ROOT / str(instance.result_path)),
         subspace_generation=subspace_generation_description,
         algorithms=parameterized_algorithms,
         metric_callback=stub_metric_callback,
     )
     # TODO: DO NOT do this here. Move it to AppConfig or whatever
-    if DebugScheduler._instance is None:
-        DebugScheduler()
-    # TODO: backend execution seems broken, skip for now
+    if UserRoundRobinScheduler._instance is None:
+        UserRoundRobinScheduler()
     # backend_execution.schedule()
 
 
-class ExecutionCreateView(LoginRequiredMixin, CreateView):
+class ExecutionCreateView(
+    LoginRequiredMixin, CreateView[Execution, ExecutionCreateForm]
+):
     model = Execution
-    template_name = "experiments/execution/execution_create.html"
+    template_name = "execution_create.html"
     form_class = ExecutionCreateForm
     success_url = reverse_lazy("experiment_overview")
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        experiment_id = self.kwargs["experiment_pk"]
+        experiment = Experiment.objects.get(pk=experiment_id)
+        context.update({"experiment": experiment})
+        return context
 
     def form_valid(self, form):
         # Get data from form
@@ -103,10 +109,12 @@ class ExecutionCreateView(LoginRequiredMixin, CreateView):
         assert subspaces_max >= 0
         subspace_amount: int = form.cleaned_data["subspace_amount"]
         assert subspace_amount > 0
-        algorithm_parameters: str = form.cleaned_data["algorithm_parameters"]
-        assert len(algorithm_parameters) > 0
+        dikt = get_params_out_of_form(self.request, experiment)
+        assert dikt is not None
+        form.instance.algorithm_parameters = dikt
+        # TODO: add seed field to create form
         seed: int = form.cleaned_data.get("subspace_generation_seed")
-        seed: int = seed if seed is not None else random.randint(0, 10000000000)
+        seed = seed if seed is not None else random.randint(0, 10000000000)
         if subspaces_min >= subspaces_max:
             form.errors.update(
                 {
@@ -123,7 +131,6 @@ class ExecutionCreateView(LoginRequiredMixin, CreateView):
         form.instance.subspace_amount = subspace_amount
         form.instance.experiment = experiment
         form.instance.subspace_generation_seed = seed
-        form.instance.algorithm_parameters = algorithm_parameters
 
         # we need to call super().form_valid before calling the backend, since we need
         # access to the primary key of this instance and the primary key will be set
@@ -132,6 +139,7 @@ class ExecutionCreateView(LoginRequiredMixin, CreateView):
         assert form.instance.pk is not None
         assert experiment.user.pk is not None
         assert experiment.pk is not None
+        assert form.instance.algorithm_parameters is not None
         form.instance.result_path = (
             settings.MEDIA_ROOT
             / "experiments"

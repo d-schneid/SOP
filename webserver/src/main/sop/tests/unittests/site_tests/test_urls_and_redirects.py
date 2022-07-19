@@ -32,7 +32,7 @@ class LoggedInSiteTests(LoggedInTestCase):
         self.assertTemplateUsed(response, "algorithm_upload.html")
 
     def test_algorithm_edit_urls_logged_in(self):
-        algo = Algorithm.objects.create(user=self.user)
+        algo = Algorithm.objects.create(user=self.user, signature="")
         response = self.client.get(f"/algorithm/{algo.pk}/edit/")
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "algorithm_edit.html")
@@ -45,7 +45,7 @@ class LoggedInSiteTests(LoggedInTestCase):
         self.assertTemplateNotUsed(response, "algorithm_delete.html")
 
     def test_algorithm_delete_urls_algorithm_exists_logged_in(self):
-        algo = Algorithm.objects.create()
+        algo = Algorithm.objects.create(signature="")
         response = self.client.get(f"/algorithm/{algo.pk}/delete/", follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.redirect_chain)
@@ -92,7 +92,9 @@ class LoggedInSiteTests(LoggedInTestCase):
         self.assertTemplateNotUsed(response, "dataset_delete.html")
 
     def test_dataset_delete_urls_dataset_exists_logged_in(self):
-        dataset = Dataset.objects.create(datapoints_total=0, dimensions_total=0, user=self.user)
+        dataset = Dataset.objects.create(
+            datapoints_total=0, dimensions_total=0, user=self.user
+        )
         response = self.client.get(f"/dataset/{dataset.pk}/delete/", follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.redirect_chain)
@@ -133,8 +135,10 @@ class LoggedInSiteTests(LoggedInTestCase):
         self.assertTemplateUsed(response, "experiment_edit.html")
 
     def test_experiment_delete_urls_no_experiment_logged_in(self):
-        dataset = Dataset.objects.create(datapoints_total=0, dimensions_total=0, user=self.user)
-        algo = Algorithm.objects.create()
+        dataset = Dataset.objects.create(
+            datapoints_total=0, dimensions_total=0, user=self.user
+        )
+        algo = Algorithm.objects.create(signature="")
         experiment = Experiment.objects.create(dataset=dataset, user=self.user)
         experiment.algorithms.set([algo])
         response = self.client.get("/experiment/42/delete/", follow=True)
@@ -144,8 +148,10 @@ class LoggedInSiteTests(LoggedInTestCase):
         self.assertTemplateNotUsed(response, "experiment_delete.html")
 
     def test_experiment_delete_urls_experiment_exists_logged_in(self):
-        dataset = Dataset.objects.create(datapoints_total=0, dimensions_total=0, user=self.user)
-        algo = Algorithm.objects.create()
+        dataset = Dataset.objects.create(
+            datapoints_total=0, dimensions_total=0, user=self.user
+        )
+        algo = Algorithm.objects.create(signature="")
         experiment = Experiment.objects.create(dataset=dataset, user=self.user)
         experiment.algorithms.set([algo])
         experiment.save()

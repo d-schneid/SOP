@@ -48,7 +48,6 @@ class ExecutionCreateForm(forms.ModelForm[Execution]):
     class Meta:
         model = Execution
         fields = (
-            "algorithm_parameters",
             "subspaces_min",
             "subspaces_max",
             "subspace_amount",
