@@ -25,7 +25,8 @@ class ExecutionElement(Schedulable):
     def __init__(self, user_id: int, task_id: int, subspace: Subspace,
                  algorithm: ParameterizedAlgorithm, result_path: str,
                  subspace_dtype: np.dtype, ss_shm_name: str,
-                 execution_element_is_finished: Callable[[bool], None], priority: int = 10):
+                 execution_element_is_finished: Callable[[bool], None],
+                 datapoint_count: int, priority: int = 10):
         """
         :param user_id: The ID of the user belonging to this ExecutionElement. Has to be at least -1.
         :param task_id: The ID of this task. Has to be at least -1.
@@ -46,6 +47,7 @@ class ExecutionElement(Schedulable):
         self._task_id: int = task_id
         self._priority: int = priority
 
+        self._datapoint_count = datapoint_count
         self._subspace: Subspace = subspace
         self._algorithm: ParameterizedAlgorithm = algorithm
 
@@ -114,10 +116,10 @@ class ExecutionElement(Schedulable):
         """
         ss_shm = SharedMemory(self._ss_shm_name)
         ss_dim_count = self._subspace.get_included_dimension_count()
-        ss_point_count = ss_shm.size / self._subspace_dtype.itemsize / ss_dim_count
-        ss_arr = np.ndarray((ss_point_count, ss_dim_count), dtype=self._subspace_dtype,
-                            buffer=ss_shm)
-        algo = AlgorithmLoader.get_algorithm_object(self._algorithm.path, self._algorithm.hyper_parameter)
+        ss_arr = np.ndarray((self._datapoint_count, ss_dim_count),
+                            dtype=self._subspace_dtype, buffer=ss_shm)
+        algo = AlgorithmLoader.get_algorithm_object(self._algorithm.path,
+                                                    self._algorithm.hyper_parameter)
         results = algo.decision_function(ss_arr)
         ss_shm.close()
         return results
