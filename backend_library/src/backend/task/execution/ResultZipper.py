@@ -12,15 +12,18 @@ class ResultZipper(Schedulable):
     """
     def __init__(self, user_id: int, task_id: int, error_occurred: bool,
                  task_progress_callback: Callable[[int, TaskState, float], None],
-                 path_to_zip: str, zipped_file_path: str, is_debug: bool = False):
+                 path_to_zip: str, zip_running_path: str, final_zip_path: str, is_debug: bool = False):
+
         """
         :param user_id: The ID of the user belonging to the Execution. Has to be greater than or equal to -1.
         :param task_id: The ID of the task. Has to be greater than or equal to -1.
         :param error_occurred: Did at least one ExecutionElement fail during the Execution
         :param task_progress_callback: The Execution uses this callback to return its progress.
-        :param path_to_zip: Absolute path to the directory that should be zipped. Must exist.
-        :param zipped_file_path: Absolute path to the directory where the result of the zipping will be saved.
-                                 Must not exist.
+        :param path_to_zip: Absolute path to the directory that should be zipped
+        :param zip_running_path: The absolute path to the directory where the result of
+        the zipping will be located while the zipping is performed
+        :param final_zip_path: The absolute path to the directory where the result of
+        the zipping will be located after the zipping is completed
         :param is_debug: If true, the ResultZipper runs in debug mode.
                          In debug mode, e.g. no files are deleted. For specific differences check the relevant
                          method descriptions.
@@ -29,14 +32,16 @@ class ResultZipper(Schedulable):
         assert user_id >= -1
         assert task_id >= -1
         assert os.path.isdir(path_to_zip)
-        assert not os.path.isfile(zipped_file_path)
+        assert not os.path.isfile(zip_running_path)
+        assert not os.path.isfile(final_zip_path)
 
         self._user_id: int = user_id
         self._task_id: int = task_id
         self._error_occurred: bool = error_occurred
         self._task_progress_callback: Callable = task_progress_callback
         self._path_to_zip: str = path_to_zip
-        self._zipped_file_path: str = zipped_file_path
+        self._zip_running_path: str = zip_running_path
+        self._final_zip_path: str = final_zip_path
         self._is_debug = is_debug
 
     @property
@@ -79,12 +84,13 @@ class ResultZipper(Schedulable):
 
         # Else, proceed with the normal operations
 
-        TaskHelper.zip_dir(zip_path=self._zipped_file_path, dir_path=self._path_to_zip)
+        TaskHelper.zip_dir(zip_path=self._zipped_file_path, dir_path=self._path_to_zip)  # TODO: pfade anschauen
         TaskHelper.del_dir(self._path_to_zip)
 
         if self._error_occurred:
             self._task_progress_callback(self._task_id, TaskState.FINISHED_WITH_ERROR, 1)
         else:
             self._task_progress_callback(self._task_id, TaskState.FINISHED, 1)
+
 
 

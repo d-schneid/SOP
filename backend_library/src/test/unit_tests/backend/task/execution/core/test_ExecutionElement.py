@@ -14,6 +14,7 @@ class UnitTestExecutionElement(unittest.TestCase):
     # parameters for Execution Subspace/Element
     _user_id: int = 414
     _task_id: int = 42
+    _priority: int = 312
 
     # create Execution Element
     _dir_name: str = os.getcwd()
@@ -23,12 +24,13 @@ class UnitTestExecutionElement(unittest.TestCase):
     _algorithm: ParameterizedAlgorithm = ParameterizedAlgorithm("algorithm_path", {}, "display_name")
 
     _subspace_dtype: np.dtype = np.dtype('f4')
+    _subspace_shared_memory_name: str = "Subspace Shared Memory Name"
 
     def setUp(self) -> None:
         self._ee: ee = ee(self._user_id, self._task_id, self._subspace, self._algorithm,
                           self._result_path,
-                          self._subspace_dtype, "",
-                          self.__execution_element_is_finished1)
+                          self._subspace_dtype, self._subspace_shared_memory_name,
+                          self.__execution_element_is_finished1, self._priority)
 
         # mock Execution Element for do_work()
         self._ee._ExecutionElement__run_algorithm = Mock(return_value=np.asarray([["algorithm result"]]))
@@ -71,6 +73,7 @@ class UnitTestExecutionElement(unittest.TestCase):
     def test_getter(self):
         self.assertEqual(self._ee.user_id, self._user_id)
         self.assertEqual(self._ee.task_id, self._task_id)
+        self.assertEqual(self._ee.priority, self._priority)
 
     def test_finished_result_exists(self):
         self.assertFalse(self._ee.finished_result_exists())
@@ -79,24 +82,22 @@ class UnitTestExecutionElement(unittest.TestCase):
         os.remove(self._result_path)
         self.assertFalse(self._ee.finished_result_exists())
 
-    def test_do_work(self):
-        self.assertFalse(self._ee.finished_result_exists())
-        self.assertFalse(self._ee1_is_finished)
+    def test_do_work_failed(self):
+        self._ee_faulty: ee = ee(self._user_id, self._task_id, self._subspace, self._algorithm,
+                                 self._result_path,
+                                 self._subspace_dtype, self._subspace_shared_memory_name,
+                                 self.__execution_element_is_finished1)
+
+        # mock Execution Element for do_work()
+        self._ee._ExecutionElement__run_algorithm = Mock(side_effect=Exception("I am going to throw an evil exception"))
 
         # Method that should be tested
         statuscode = self._ee.do_work()
+        self.assertEqual(-1, statuscode)
         self._ee.run_later_on_main(statuscode)
 
-        # Tests if do_work() saved the converted algorithm result
-        self.assertTrue(self._ee.finished_result_exists())
-        self.assertEqual(DataIO.read_uncleaned_csv(self._result_path)[0, 0],
-                         "converted algorithm result")
-
-        # Test callback
-        self.assertTrue(self._ee1_is_finished)
-
         # clean up
-        os.remove(self._result_path)
+        self.assertFalse(os.path.isfile(self._result_path))
         self.assertFalse(self._ee.finished_result_exists())
 
 

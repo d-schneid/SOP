@@ -34,28 +34,13 @@ class Execution(Task, Schedulable):
         When scheduled by the Scheduler it executes an execution with the selected cleaned dataset and algorithms.
     """
 
-    @property
-    def user_id(self) -> int:
-        return self._user_id
-
-    @property
-    def task_id(self) -> int:
-        return self._task_id
-
-    @property
-    def priority(self) -> int:
-        return 0
-
-    def do_work(self) -> Optional[int]:
-        self.__load_dataset()
-        return None
-
     def __init__(self, user_id: int, task_id: int,
                  task_progress_callback: Callable[[int, TaskState, float], None],
                  dataset_path: str, result_path: str,
                  subspace_generation: SubspaceGenerationDescription,
                  algorithms: Iterable[ParameterizedAlgorithm],
-                 metric_callback: Callable[[Execution], None]):
+                 metric_callback: Callable[[Execution], None],
+                 final_zip_path: str = "", priority: int = 0):
         """
         :param user_id: The ID of the user belonging to the Execution. Has to be at least -1.
         :param task_id: The ID of the task. Has to be at least -1.
@@ -64,6 +49,7 @@ class Execution(Task, Schedulable):
         (path ends with .csv)
         :param result_path: The absolute path where the Execution will store its results.
         (Ends with the directory name of this specific Execution. f.e. execution1)
+        :param final_zip_path: The absolute path where the Execution will store its zipped results.
         :param subspace_generation: Contains all parameters for the subspace generation and will generate the subspaces.
         :param algorithms: Contains all algorithms that should be processed on the subspaces.
         :param metric_callback: Called after the Execution-computation is complete. Carries out the metricizes.
@@ -71,6 +57,8 @@ class Execution(Task, Schedulable):
         assert dataset_path.endswith(".csv")
 
         Task.__init__(self, user_id, task_id, task_progress_callback)
+        self._priority = priority
+
         self._dataset_path: str = dataset_path
         self._result_path: str = result_path
         self._subspace_generation: SubspaceGenerationDescription = subspace_generation
@@ -82,7 +70,12 @@ class Execution(Task, Schedulable):
         self.__fill_algorithms_directory_name()
         self.__generate_file_system_structure()
         self.__generate_execution_details_in_filesystem()
-        self._zipped_result_path: str = self._result_path + ".zip"
+        self._final_zip_path: str = final_zip_path
+        if final_zip_path == "":
+            self._final_zip_path = result_path + ".zip"
+
+        # The absolute path where the Execution will store its zipped results while doing the zipping.
+        self._zip_running_path: str = self._result_path + ".zip.running"
 
         # further private variables
         self._has_failed_element: bool = False
@@ -90,7 +83,7 @@ class Execution(Task, Schedulable):
         self._metric_finished: bool = False
 
         # generate subspaces
-        self._subspaces: List[Subspace] = self._subspace_generation.generate()
+        self._subspaces: List[Subspace] = list(self._subspace_generation.generate())
         self._subspaces_count = len(self._subspaces)
         self._total_execution_element_count: int = self._subspaces_count * len(self._algorithms)
 
@@ -188,7 +181,7 @@ class Execution(Task, Schedulable):
         is finished by checking for the finished ZIP-file. \n
         :return: True if the ZIP-file of the Execution-result exists. Otherwise, return False.
         """
-        return os.path.exists(self._zipped_result_path)
+        return os.path.exists(self._final_zip_path)
 
     def __compute_progress(self) -> float:
         """
@@ -225,13 +218,16 @@ class Execution(Task, Schedulable):
         if not self._has_failed_element and error:
             self._has_failed_element = True
 
-        with self._execution_element_finished_lock:
-            self._finished_execution_element_count += 1
-            if self._finished_execution_element_count == self._total_execution_element_count:
-                self.__unload_dataset()
-                self._metric_callback(self)
-                self._metric_finished = True
-                self.__schedule_result_zipping()
+        if self._finished_execution_element_count < self._total_execution_element_count:
+            with self._execution_element_finished_lock:
+                self._finished_execution_element_count += 1
+                if self._finished_execution_element_count == self._total_execution_element_count:
+                    self.__unload_dataset()
+                    self._metric_callback(self)
+                    self._metric_finished = True
+                    self.__schedule_result_zipping()
+        else:
+            raise AssertionError("More execution elements finished than existing")
 
     def __unload_dataset(self) -> None:
         """
@@ -251,7 +247,7 @@ class Execution(Task, Schedulable):
         """
         result_zipper: ResultZipper = ResultZipper(self._user_id, self._task_id, self._has_failed_element,
                                                    self._task_progress_callback, self._result_path,
-                                                   self._zipped_result_path)
+                                                   self._zip_running_path, self._final_zip_path)
         scheduler: Scheduler = Scheduler.get_instance()
         scheduler.schedule(result_zipper)
 
@@ -275,9 +271,24 @@ class Execution(Task, Schedulable):
         """
         :return: The absolute path where the ZIP-file of the result of this Execution can be found.
         """
-        return self._zipped_result_path
+        return self._final_zip_path
 
     def run_later_on_main(self, statuscode: int):
         self.__generate_execution_subspaces()
         for ess in self._execution_subspaces:
             Scheduler.get_instance().schedule(ess)
+
+    @property
+    def user_id(self) -> int:
+        return self._user_id
+
+    @property
+    def task_id(self) -> int:
+        return self._task_id
+
+    @property
+    def priority(self) -> int:
+        return self._priority
+
+    def do_work(self) -> Optional[int]:
+        self.__load_dataset()

@@ -25,7 +25,7 @@ class ExecutionElement(Schedulable):
     def __init__(self, user_id: int, task_id: int, subspace: Subspace,
                  algorithm: ParameterizedAlgorithm, result_path: str,
                  subspace_dtype: np.dtype, ss_shm_name: str,
-                 execution_element_is_finished: Callable[[bool], None]):
+                 execution_element_is_finished: Callable[[bool], None], priority: int = 10):
         """
         :param user_id: The ID of the user belonging to this ExecutionElement. Has to be at least -1.
         :param task_id: The ID of this task. Has to be at least -1.
@@ -41,6 +41,7 @@ class ExecutionElement(Schedulable):
 
         self._user_id: int = user_id
         self._task_id: int = task_id
+        self._priority: int = priority
 
         self._subspace: Subspace = subspace
         self._algorithm: ParameterizedAlgorithm = algorithm
@@ -79,7 +80,7 @@ class ExecutionElement(Schedulable):
         """
         :return: The priority for the Scheduler.
         """
-        return 10
+        return self._priority
 
     def do_work(self) -> int:
         """
@@ -93,7 +94,10 @@ class ExecutionElement(Schedulable):
             result_to_save: np.ndarray = self.__convert_result_to_csv(run_algo_result)
             DataIO.write_csv(self._result_path, result_to_save)
         except Exception as e:
-            TaskHelper.save_error_csv(self._result_path, str(e))
+            error_message = str(e)
+            if error_message == "":
+                error_message = "Error occurred while processing the ExecutionElement"
+            TaskHelper.save_error_csv(self._result_path, error_message)
             return -1
 
         # ExecutionElement finished
