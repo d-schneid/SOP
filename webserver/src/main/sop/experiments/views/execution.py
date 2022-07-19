@@ -23,19 +23,12 @@ from experiments.views.generic import PostOnlyDeleteView
 
 def stub_callback(task_id: int, state: TaskState, progress: float):
     print("CALLBACK!!!!")
-    print(task_id, state.name, progress)
+    print(f"{task_id = }, {state.name = }, {progress = }")
 
 
-def stub_metric_callback(execution: Execution):
+def stub_metric_callback(execution: BackendExecution):
     print("METRIC CALLBACK!!")
-    print(
-        execution.pk,
-        execution.result_path,
-        "created at",
-        execution.creation_date,
-        "finished at",
-        execution.finished_date,
-    )
+    print(f"{execution.task_id = }, {execution.user_id = }, {execution.subspaces}")
 
 
 def schedule_backend(instance: Execution):
@@ -78,7 +71,7 @@ def schedule_backend(instance: Execution):
     # TODO: DO NOT do this here. Move it to AppConfig or whatever
     if UserRoundRobinScheduler._instance is None:
         UserRoundRobinScheduler()
-    # backend_execution.schedule()
+    backend_execution.schedule()
 
 
 class ExecutionCreateView(
@@ -153,7 +146,8 @@ class ExecutionCreateView(
             / ("experiment_" + str(experiment.pk))
             / ("execution_" + str(form.instance.pk))
         )
-        schedule_backend(form.instance)
+        # TODO:start scheduling as soon as DatasetCleaning on Dataset upload is implemented
+        # schedule_backend(form.instance)
         return response
 
 
