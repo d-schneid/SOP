@@ -1,9 +1,9 @@
 #!/bin/bash
 
 cd /app/webserver/src/main/sop || exit
-python3 manage.py migrate --no-input
-python3 manage.py collectstatic --no-input
-python3 manage.py createsuperuser --no-input
+python3.9 manage.py migrate --no-input
+python3.9 manage.py collectstatic --no-input
+python3.9 manage.py createsuperuser --no-input
 
 # Launch memcached for worker syncronization
 memcached -d -u root
