@@ -4,7 +4,6 @@ from django.core.cache import cache
 from django.core.files.uploadhandler import FileUploadHandler
 from django.http.response import HttpResponse, HttpResponseServerError
 
-
 class UploadProgressCachedHandler(FileUploadHandler):
     """
     Tracks progress for file uploads.
@@ -35,7 +34,7 @@ class UploadProgressCachedHandler(FileUploadHandler):
                 self.request.META["REMOTE_ADDR"],
                 self.progress_id,
             )
-            cache.set(self.cache_key, {"length": self.content_length, "uploaded": 0})
+            cache.set(self.cache_key, {"size": self.content_length, "received": 0, "state": "uploading"})
 
     def new_file(*args, **kwargs) -> None:
         pass
@@ -43,7 +42,7 @@ class UploadProgressCachedHandler(FileUploadHandler):
     def receive_data_chunk(self, raw_data, start):
         if self.cache_key:
             data = cache.get(self.cache_key)
-            data["uploaded"] += self.chunk_size
+            data["received"] += self.chunk_size
             cache.set(self.cache_key, data)
         return raw_data
 
@@ -52,7 +51,9 @@ class UploadProgressCachedHandler(FileUploadHandler):
 
     def upload_complete(self):
         if self.cache_key:
-            cache.delete(self.cache_key)
+            data = cache.get(self.cache_key)
+            data["state"] = "done"
+            cache.set(self.cache_key, data)
 
 
 def upload_progress(request):
@@ -72,7 +73,9 @@ def upload_progress(request):
         progress_id = request.META["X-Progress-ID"]
     if progress_id:
         cache_key = "%s_%s" % (request.META["REMOTE_ADDR"], progress_id)
+        print(f"{cache_key = }")
         data = cache.get(cache_key)
+        data = data or {"state": "starting"}
         return HttpResponse(json.dumps(data))
     else:
         return HttpResponseServerError(
