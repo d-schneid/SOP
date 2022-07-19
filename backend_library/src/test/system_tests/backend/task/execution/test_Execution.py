@@ -15,7 +15,6 @@ from backend.task.execution.core.Execution import Execution
 class SystemTest_Execution(unittest.TestCase):
     _user_id: int = 214
     _task_id: int = 1553
-    _priority: int = 1414
 
     _dataset_path: str = "dataset_path.csv"
 
@@ -40,13 +39,13 @@ class SystemTest_Execution(unittest.TestCase):
     _directory_names_in_execution: list[str] = ["display_name", "display_name (1)", "different_display_name",
                                                 "display_name (2)"]
 
-    _paths: list[str] = ["path0 TODO", "path1 TODO", "path2 TODO"]
+    _path: str = "./test/algorithms/DebugAlgorithm.py"
 
     _algorithms: list[ParameterizedAlgorithm] = \
-        list([ParameterizedAlgorithm(_paths[0], _hyper_parameter, _display_names[0]),
-              ParameterizedAlgorithm(_paths[1], _hyper_parameter, _display_names[1]),
-              ParameterizedAlgorithm(_paths[2], _hyper_parameter, _display_names[2]),
-              ParameterizedAlgorithm(_paths[3], _hyper_parameter, _display_names[3])])
+        list([ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[0]),
+              ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[1]),
+              ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[2]),
+              ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[3])])
 
     _final_zip_path = _result_path + "final.zip"
 
@@ -68,15 +67,15 @@ class SystemTest_Execution(unittest.TestCase):
         self._ex = Execution(self._user_id, self._task_id, self.__task_progress_callback, self._dataset_path,
                              self._result_path, self._subspace_generation, iter(self._algorithms),
                              self.__metric_callback,
-                             self._final_zip_path, self._priority)
+                             self._final_zip_path)
 
     def test_schedule(self):
-        # TODO: Somehow get correct algorithm paths
-        self.assertEqual(True, True)  # add assertion here
+        self._ex.schedule()
 
-
-
-
+        self.assertTrue(self._metric_was_called)
+        self.assertTrue(self._started_running)
+        self.assertTrue(self._execution_finished)
+        self.assertEqual(1, self._last_progress_report)
 
     def __clear_old_execution_file_structure(self):
         if os.path.isdir(self._result_path):
