@@ -6,9 +6,31 @@
 
 {% block content %}
     <form method="post">{% csrf_token %}
-        {{ form.as_p }}
-        <a class="button btn-dark" href="{% url "experiment_overview" %}">Cancel</a>
-        <button class="btn btn-warning" type="submit">Create</button>
+        <div class="card shadow mt-4 mb-4">
+            <div class="card-header bg-dark d-flex">
+                <div class="flex-fill">{{ form.display_name }}</div>
+            </div>
+            <div class="card-body show mb-3">
+                <div class="d-flex flex-column">
+                    <div>
+                        {{ form.dataset.errors }}
+                        <label for="{{ form.dataset.id_for_label }}">Dataset:</label>
+                        {{ form.dataset }}</div>
+                    <div class="mt-3">
+                        {{ form.algorithms.errors }}
+                        <label for="{{ form.algorithms.id_for_label }}">Algorithms:</label>
+                        {{ form.algorithms }}
+                    </div>
+                </div>
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <div class="d-flex mb-1 mt-1">
+                        <a class="btn btn-dark" href="{% url "experiment_overview" %}">Cancel</a>
+                        <button class="btn btn-warning ml-auto" type="submit">Create</button>
+                    </div>
+                </li>
+            </ul>
+        </div>
     </form>
-
 {% endblock %}
