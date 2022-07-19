@@ -140,6 +140,12 @@ class ExecutionCreateView(
         assert experiment.user.pk is not None
         assert experiment.pk is not None
         assert form.instance.algorithm_parameters is not None
+        # TODO: WARNING! This path will not be saved in the model, as the model isn't saved
+        # after this declaration. It is used though in the schedule_backend() function to
+        # tell the backend where to save the result. We have to set this again when we have
+        # a result in the filesystem to put a valid path into the model.
+        # Maybe move this path calculation into schedule_backend() to remove confusion about
+        # this being an attribute of the model, but not being accessible later
         form.instance.result_path = (
             settings.MEDIA_ROOT
             / "experiments"
@@ -149,6 +155,23 @@ class ExecutionCreateView(
         )
         schedule_backend(form.instance)
         return response
+
+
+class ExecutionDuplicateView(ExecutionCreateView):
+    def get_initial(self):
+        form = {}
+        if self.request.method == "GET":
+            og_execution_pk = self.kwargs["pk"]
+            original = Execution.objects.get(pk=og_execution_pk)
+            form["subspaces_min"] = original.subspaces_min
+            form["subspaces_max"] = original.subspaces_max
+            form["subspace_amount"] = original.subspace_amount
+        return form
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["original"] = Execution.objects.get(pk=self.kwargs["pk"])
+        return context
 
 
 class ExecutionDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Execution]):

@@ -13,12 +13,17 @@ from experiments.views.dataset import (
     DatasetDeleteView,
     DatasetEditView,
 )
-from experiments.views.execution import ExecutionCreateView, ExecutionDeleteView
+from experiments.views.execution import (
+    ExecutionCreateView,
+    ExecutionDeleteView,
+    ExecutionDuplicateView,
+)
 from experiments.views.experiment import (
     ExperimentOverview,
     ExperimentCreateView,
     ExperimentDeleteView,
     ExperimentEditView,
+    ExperimentDuplicateView,
 )
 from experiments.views.uploadhandler import upload_progress
 
@@ -98,6 +103,11 @@ urlpatterns = [
         ExperimentEditView.as_view(),
         name="experiment_edit",
     ),
+    path(
+        "experiment/<int:pk>/duplicate/",
+        ExperimentDuplicateView.as_view(),
+        name="experiment_duplicate",
+    ),
     # Execution URLs
     path(
         "experiment/<int:experiment_pk>/execution/create/",
@@ -108,6 +118,11 @@ urlpatterns = [
         "experiment/<int:experiment_pk>/execution/<int:pk>/delete/",
         ExecutionDeleteView.as_view(),
         name="execution_delete",
+    ),
+    path(
+        "experiment/<int:experiment_pk>/execution/<int:pk>/duplicate/",
+        ExecutionDuplicateView.as_view(),
+        name="execution_duplicate",
     ),
     # upload progress
     path("upload_progress/", upload_progress, name="upload-progress"),

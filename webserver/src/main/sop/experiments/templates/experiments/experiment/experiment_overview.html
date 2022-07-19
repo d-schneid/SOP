@@ -54,6 +54,7 @@
                     <a class="flex-fill">{{ execution.status }}</a>
                     <a class="flex-fill">{{ execution.progess }}</a>
                     <a class="flex-fill">{{ execution.creation_date }}</a>
+                    <a href="{% url "execution_duplicate" model.pk execution.pk %}" class="btn btn-warning mr-3">Duplicate</a>
                     <button type="button"
                             class="btn btn-danger mr-3"
                             data-toggle="modal"
@@ -134,6 +135,7 @@
                         </div>
                     </div>
                 </div>
+                <a href="{% url "experiment_duplicate" model.pk %}" class="btn btn-warning mr-3">Duplicate Experiment</a>
                 <a href="{% url 'experiment_edit' model.pk %}"
                    class="btn btn-warning mr-3">Edit Experiment</a>
             </div>

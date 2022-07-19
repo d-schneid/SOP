@@ -43,6 +43,18 @@ class ExperimentCreateView(
         return super(ExperimentCreateView, self).form_valid(form)
 
 
+class ExperimentDuplicateView(ExperimentCreateView):
+    def get_initial(self):
+        form = {}
+        if self.request.method == "GET":
+            og_experiment_pk = self.kwargs["pk"]
+            original = Experiment.objects.get(pk=og_experiment_pk)
+            form["display_name"] = original.display_name
+            form["dataset"] = original.dataset
+            form["algorithms"] = original.algorithms.all()
+        return form
+
+
 class ExperimentEditView(
     LoginRequiredMixin, UpdateView[Experiment, ExperimentEditForm]
 ):
