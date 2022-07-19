@@ -56,7 +56,6 @@ default:
   cache:
     key: build-cache
     paths:
-      - venv3.9/
       - ~/.cache/pip/
   #
   # Pick zero or more services to be used on all builds.
