@@ -42,6 +42,8 @@ class ExecutionSubspace(Schedulable):
         :param subspace_dtype: The dtype of the values that are stored in the dataset for processing
         :param on_execution_element_finished_callback: Reports the Execution that a ExecutionElement finished.
         """
+        assert priority < 10
+        assert priority >= 5
 
         assert user_id >= -1
         assert task_id >= -1

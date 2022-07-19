@@ -55,6 +55,8 @@ class Execution(Task, Schedulable):
         :param metric_callback: Called after the Execution-computation is complete. Carries out the metricizes.
         """
         assert dataset_path.endswith(".csv")
+        assert priority >= 0
+        assert priority < 5
 
         Task.__init__(self, user_id, task_id, task_progress_callback)
         self._priority = priority

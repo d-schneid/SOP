@@ -36,6 +36,9 @@ class ExecutionElement(Schedulable):
         :param ss_shm_name: The name of the shared memory containing the subspace data
         :param execution_element_is_finished: Reports the ExecutionSubspace that it finished its execution.
         """
+        assert priority <= 100
+        assert priority >= 10
+
         assert user_id >= -1
         assert task_id >= -1
 
