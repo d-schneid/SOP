@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Optional
 
 from django.contrib import admin, messages
@@ -62,7 +64,7 @@ class AlgorithmAdmin(admin.ModelAdmin[Algorithm]):
         object_id: str,
         extra_context: Optional[dict[str, object]] = None,
     ) -> HttpResponse:
-        algorithm: Algorithm | None = self.get_object(request, object_id)
+        algorithm: Optional[Algorithm] = self.get_object(request, object_id)
         assert algorithm is not None  # TODO: handle algorithm is None
 
         if algorithm.experiment_set.count() > 0:  # type: ignore
