@@ -35,8 +35,7 @@ class ExperimentCreateView(
 ):
     model = Experiment
     template_name = "experiment_create.html"
-    # TODO: use ExperimentCreateForm
-    fields = ("display_name", "dataset", "algorithms")
+    form_class = ExperimentCreateForm
     success_url = reverse_lazy("experiment_overview")
 
     def form_valid(self, form):
