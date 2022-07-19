@@ -1,6 +1,8 @@
 import os
 import shutil
 import unittest
+
+from backend.scheduler.DebugScheduler import DebugScheduler
 from backend.scheduler.Scheduler import Scheduler
 from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
 from backend.task.TaskState import TaskState
@@ -16,7 +18,7 @@ class SystemTest_Execution(unittest.TestCase):
     _user_id: int = 214
     _task_id: int = 1553
 
-    _dataset_path: str = "dataset_path.csv"
+    _dataset_path: str = "./test/datasets/canada_climate_cleaned_to_compare.csv"
 
     _dir_name: str = os.getcwd()
 
@@ -52,7 +54,7 @@ class SystemTest_Execution(unittest.TestCase):
     def setUp(self) -> None:
         # Scheduler
         Scheduler._instance = None
-        UserRoundRobinScheduler()
+        DebugScheduler()
 
         # Delete all folders and files of the old execution structure: BEFORE creating the new execution!
         self.__clear_old_execution_file_structure()
