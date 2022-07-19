@@ -123,5 +123,5 @@ class DataIO:
         indexes for each row. If False don't change anything.
         :return:
         """
-        DataIO.write_csv(running_path, data, add_index_column)
+        DataIO.write_csv(running_path, data, add_index_column, "")
         shutil.move(running_path, final_path)
