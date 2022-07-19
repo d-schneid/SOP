@@ -11,7 +11,7 @@ from experiments.views.dataset import (
     DatasetOverview,
     DatasetUploadView,
     DatasetDeleteView,
-    DatasetEditView,
+    DatasetEditView, download_cleaned_dataset, download_uncleaned_dataset,
 )
 from experiments.views.execution import (
     ExecutionCreateView,
@@ -74,6 +74,10 @@ urlpatterns = [
         "dataset/<int:pk>/delete/", DatasetDeleteView.as_view(), name="dataset_delete"
     ),
     path("dataset/<int:pk>/edit/", DatasetEditView.as_view(), name="dataset_edit"),
+    path("dataset/<int:pk>/download_cleaned/",
+         download_cleaned_dataset, name="dataset_download_cleaned"),
+    path("dataset/<int:pk>/download_uncleaned/",
+         download_uncleaned_dataset, name="dataset_download_uncleaned"),
     # Experiment URLs
     path(
         "experiment/",
