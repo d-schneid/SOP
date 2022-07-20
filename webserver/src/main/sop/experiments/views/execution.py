@@ -19,23 +19,7 @@ from backend.task.execution.subspace.UniformSubspaceDistribution import (
 from experiments.forms.create import ExecutionCreateForm
 from experiments.models import Execution, Experiment
 from experiments.views.generic import PostOnlyDeleteView
-
-
-def stub_callback(task_id: int, state: TaskState, progress: float):
-    print("CALLBACK!!!!")
-    print(task_id, state.name, progress)
-
-
-def stub_metric_callback(execution: Execution):
-    print("METRIC CALLBACK!!")
-    print(
-        execution.pk,
-        execution.result_path,
-        "created at",
-        execution.creation_date,
-        "finished at",
-        execution.finished_date,
-    )
+from experiments.callback import ExecutionCallbacks
 
 
 def schedule_backend(instance: Execution):
@@ -68,14 +52,14 @@ def schedule_backend(instance: Execution):
     backend_execution = BackendExecution(
         user_id=user.pk,
         task_id=instance.pk,
-        task_progress_callback=stub_callback,
+        task_progress_callback=ExecutionCallbacks.execution_callback,
         # TODO: use real cleaned path
         # dataset_path=dataset.path_cleaned,
         dataset_path=str(dataset.path_original),
         result_path=str(instance.result_path),
         subspace_generation=subspace_generation_description,
         algorithms=parameterized_algorithms,
-        metric_callback=stub_metric_callback,
+        metric_callback=ExecutionCallbacks.metric_callback,
     )
     # TODO: DO NOT do this here. Move it to AppConfig or whatever
     if DebugScheduler._instance is None:
