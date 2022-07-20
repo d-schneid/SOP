@@ -39,7 +39,7 @@ class SystemTest_Execution(unittest.TestCase):
                                     _data_dimensions_count, _subspace_amount, _subspace_seed)
 
     # parameterized algorithms
-    _algorithm_result: np.ndarray = np.ndarray[[42]]
+    _algorithm_result: np.ndarray = np.asarray([[42]])
     _hyper_parameter: dict = {'algorithm_result': _algorithm_result}
     _display_names: list[str] = ["display_name", "display_name", "different_display_name", "display_name"]
     _directory_names_in_execution: list[str] = ["display_name", "display_name (1)", "different_display_name",

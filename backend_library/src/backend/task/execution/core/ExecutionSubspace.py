@@ -80,7 +80,7 @@ class ExecutionSubspace(Schedulable):
         """
         for algorithm in algorithms:
             result_path: str = os.path.join(self._result_path,
-                                            algorithm.directory_name_in_execution)  # TODO: TEST THIS!
+                                            algorithm.directory_name_in_execution + ".csv")  # TODO: TEST THIS!
             self._execution_elements.append(
                 ExecutionElement.ExecutionElement(self._user_id, self._task_id,
                                                   self._subspace, algorithm,
