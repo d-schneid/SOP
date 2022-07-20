@@ -51,6 +51,6 @@
 {% block delete %}
     <form action="{% url 'algorithm_delete' model.pk %}" method="post">
         {% csrf_token %}
-        <button type="submit" class="btn btn-success mr-3">Yes</button>
+        <button type="submit" class="btn btn-danger ml-auto mr-3">Yes</button>
     </form>
 {% endblock %}
