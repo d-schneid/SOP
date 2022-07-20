@@ -19,5 +19,5 @@ def save_dataset_finally_uncleaned(temp_path: str, identifier: str) -> str:
 
 
 def path_dataset_finally_cleaned(identifier: str) -> str:
-    final_path: str = os.path.join(DATASET_ROOT_DIR, "dataset_" + identifier + "_uncleaned")
+    final_path: str = os.path.join(DATASET_ROOT_DIR, "dataset_" + identifier + "_cleaned")
     return final_path
