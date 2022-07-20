@@ -117,7 +117,7 @@ class ExecutionElement(Schedulable):
         ss_shm = SharedMemory(self._ss_shm_name)
         ss_dim_count = self._subspace.get_included_dimension_count()
         ss_arr = np.ndarray((self._datapoint_count, ss_dim_count),
-                            dtype=self._subspace_dtype, buffer=ss_shm)
+                            dtype=self._subspace_dtype, buffer=ss_shm.buf)
         algo = AlgorithmLoader.get_algorithm_object(self._algorithm.path,
                                                     self._algorithm.hyper_parameter)
         results = algo.decision_function(ss_arr)
