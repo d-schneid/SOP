@@ -2,7 +2,6 @@ import os
 import shutil
 import unittest
 from typing import List
-from unittest import skip
 
 from backend.task.execution import ResultZipper
 from backend.task import TaskState
@@ -19,7 +18,6 @@ class UnitTestResultZipper(unittest.TestCase):
     def tearDown(self) -> None:
         UnitTestResultZipper._clean_dir(UnitTestResultZipper._test_dir_path)
 
-    @skip("broken, pls fix")
     def test_correct(self):
         # create a ResultZipper object
         user_id: int = 5
@@ -33,10 +31,12 @@ class UnitTestResultZipper(unittest.TestCase):
                                                         ["dir_03/sub_dir_01/sub_sub_dir", "motto",
                                                          "War is peace. Freedom is slavery. Ignorance is strength."]])
 
-        zip_path: str = os.path.join(UnitTestResultZipper._test_dir_path, "test_correct_non_exst_file")
+        zip_path_temp: str = os.path.join(UnitTestResultZipper._test_dir_path, "test_correct_non_exst_file_temp")
+        zip_path_final: str = os.path.join(UnitTestResultZipper._test_dir_path, "test_correct_non_exst_file_final")
 
         result_zipper = ResultZipper.ResultZipper(user_id, task_id, error_occurred,
-                                                  UnitTestResultZipper._test_callback, dir_path, zip_path)
+                                                  UnitTestResultZipper._test_callback, dir_path,
+                                                  zip_path_temp, zip_path_final)
 
         # check the properties
         self.assertEqual(result_zipper.task_id, task_id)
@@ -46,14 +46,13 @@ class UnitTestResultZipper(unittest.TestCase):
         result_zipper.do_work()
 
         # check, if a zip-file was created and the directory deleted
-        self.assertTrue(os.path.isfile(zip_path))
+        self.assertTrue(os.path.isfile(zip_path_final))
         self.assertFalse(os.path.isdir(dir_path))
 
         # check, if the callback-function worked
         with open(UnitTestResultZipper._callback_file_path) as file:
             self.assertTrue(file.read() == str([task_id, TaskState.TaskState.FINISHED, 1]))
 
-    @skip("broken, pls fix")
     def test_bad_args(self):
         dir_missing: str = os.path.join(UnitTestResultZipper._test_dir_path, "dir-not-existing")
         dir_existing: str = os.path.join(UnitTestResultZipper._test_dir_path, "dir-is-existing")
@@ -63,22 +62,30 @@ class UnitTestResultZipper(unittest.TestCase):
                                                           ["dir_03/sub_dir_01/sub_sub_dir", "motto",
                                                            "War is peace. Freedom is slavery. Ignorance is strength."]])
 
-        file_missing: str = os.path.join(UnitTestResultZipper._test_dir_path, "file-not-existing")
-        file_existing: str = os.path.join(UnitTestResultZipper._test_dir_path, "file-is-existing")
+        file_missing_form: str = os.path.join(UnitTestResultZipper._test_dir_path, "file-not-existing{count}.zip")
+        file_existing: str = os.path.join(UnitTestResultZipper._test_dir_path, "file-is-existing.zip")
         with open(file_existing, "w") as file:
             file.write("Diese Datei existiert.")
 
-        for user_id, task_id, error_occured, callback, dir_path, zip_path, did_file_exist in [
-            [-5, 2, True, UnitTestResultZipper._test_callback, dir_existing, file_missing, False],
-            [5, -3, False, UnitTestResultZipper._test_callback, dir_existing, file_missing, False],
-            [5, 3, True, UnitTestResultZipper._test_callback, dir_missing, file_missing, False],
-            [5, 3, False, UnitTestResultZipper._test_callback, dir_existing, file_existing, True],
-            [-5, -15, True, UnitTestResultZipper._test_callback, dir_missing, file_existing, True]]:
+        for user_id, task_id, error_occured, callback, dir_path, zip_path_temp, zip_path_final,\
+            f_temp_exist, f_final_exist in [
+            [-5, 2, True, UnitTestResultZipper._test_callback, dir_existing,
+             file_missing_form.format(count=0), file_missing_form.format(count=1), False, False],
+            [5, -3, False, UnitTestResultZipper._test_callback, dir_existing,
+             file_missing_form.format(count=2), file_missing_form.format(count=3), False, False],
+            [5, 3, True, UnitTestResultZipper._test_callback, dir_missing,
+             file_missing_form.format(count=4), file_missing_form.format(count=5), False, False],
+            [5, 3, False, UnitTestResultZipper._test_callback, dir_missing,
+             file_existing, file_existing, True, True],
+            [-5, -15, True, UnitTestResultZipper._test_callback, dir_missing,
+             file_existing, file_missing_form.format(count=6), True, False]]:
 
             with self.assertRaises(AssertionError):
-                ResultZipper.ResultZipper(user_id, task_id, error_occured, callback, dir_path, zip_path)
-            if not did_file_exist:
-                self.assertFalse(os.path.isfile(zip_path))
+                ResultZipper.ResultZipper(user_id, task_id, error_occured, callback, dir_path,
+                                          zip_path_temp, zip_path_final)
+
+            if not f_final_exist:
+                self.assertFalse(os.path.isfile(zip_path_final))
 
     # ---- static helper methods ----
 
