@@ -36,13 +36,14 @@ class SystemTest_Execution(unittest.TestCase):
                                     _data_dimensions_count, _subspace_amount, _subspace_seed)
 
     # parameterized algorithms
-    _hyper_parameter: dict = {'seed': 0}
-    _display_names: list[str] = ["display_name", "display_name", "different_display_name", "display_name"]
+    _hyper_parameter: dict = {}  # {'seed': 0}
+    _display_names: list[str] = ["display_name", "display_name",
+                                 "different_display_name", "display_name"]
     _directory_names_in_execution: list[str] = ["display_name", "display_name (1)", "different_display_name",
                                                 "display_name (2)"]
 
     _path: str = "./test/algorithms/DebugAlgorithm.py"
-
+    _root_dir: str = "./test/"
     _algorithms: list[ParameterizedAlgorithm] = \
         list([ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[0]),
               ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[1]),
@@ -64,7 +65,7 @@ class SystemTest_Execution(unittest.TestCase):
         self._started_running: bool = False
         self._execution_finished: bool = False
         self._last_progress_report: float = 0
-
+        AlgorithmLoader.set_algorithm_root_dir(self._root_dir)
         # create Execution
         self._ex = Execution(self._user_id, self._task_id,
                              self.__task_progress_callback, self._dataset_path,
@@ -95,6 +96,7 @@ class SystemTest_Execution(unittest.TestCase):
             os.remove(self._result_path + ".zip.running")
 
     def __task_progress_callback(self, task_id: int, task_state: TaskState, progress: float) -> None:
+        self.assertFalse(task_state.error_occurred())
         if task_state.is_running():
             self._started_running = True
         if task_state.is_finished():
