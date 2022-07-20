@@ -77,7 +77,7 @@ class DataIO:
 
         df.to_csv(temp_path, index=add_index_column)
 
-        os.rename(temp_path, path)  # # is a atomic operation (POSIX requirement)
+        os.rename(temp_path, path)  # is an atomic operation (POSIX requirement)
 
     @staticmethod
     def save_write_csv(running_path: str, final_path: str, data: np.ndarray, add_index_column: bool = False):
