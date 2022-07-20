@@ -55,35 +55,26 @@ class DataIO:
         return to_convert
 
     @staticmethod
-    def write_csv(path: str, data: np.ndarray, add_index_column: bool = False, running_suffix: str = ".running"):
+    def write_csv(path: str, data: np.ndarray, add_index_column: bool = False):
         """
         Writes the given 2D-dataset to a csv-file.
-
-        While the data is written to the file, a suffix (by default: ".running") is added at the end of the path,
-        which is renamed after the writing has finished,
-        so that a corrupted file due to a server crash can be detected.
-
         :param path: The absolute path to the location of the csv-file to be created and written to.
         :param data: The dataset that should be written to the file.
         :param add_index_column: If True create an additional column at the start of the array with
         indexes for each row. If False don't change anything.
-        :param running_suffix: Specifies the suffix to be added to the file during writing.
         """
-
-        temp_path: str = path + running_suffix
 
         df = pd.DataFrame(data)
         assert len(df.shape) == 2
 
-        df.to_csv(temp_path, index=add_index_column)
-
-        os.rename(temp_path, path)  # is an atomic operation (POSIX requirement)
+        df.to_csv(path, index=add_index_column)
 
     @staticmethod
     def save_write_csv(running_path: str, final_path: str, data: np.ndarray, add_index_column: bool = False):
         """
         Write csv first at running path (e.g. ends with .running) and renames the file after writing
-        it to the final path.
+        it to the final path, so that a corrupted file due to a server crash can be detected.
+
         :param running_path: The absolute path where to write the csv file to before renaming it.
         :param final_path: The absolute path where the final written csv file will be stored.
         :param data: The dataset that should be created and written to.
@@ -91,5 +82,5 @@ class DataIO:
         indexes for each row. If False don't change anything.
         :return:
         """
-        DataIO.write_csv(running_path, data, add_index_column, "")
+        DataIO.write_csv(running_path, data, add_index_column)
         shutil.move(running_path, final_path)
