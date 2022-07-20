@@ -32,7 +32,7 @@
         <a>{{ model.creation_date }}</a>
 
         <a href="{% url 'execution_create' model.pk %}"
-           class="btn btn-success ml-auto">Create Execution</a>
+           class="btn btn-outline-dark ml-auto">New Execution</a>
     </div>
     <div class="d-flex">
         <a>Dataset: {{ model.dataset.display_name }}</a>
@@ -85,12 +85,12 @@
                                     </div>
                                 </div>
                                 <div class="modal-footer">
+                                    <button type="button" class="btn btn-dark mr-3" data-dismiss="modal">Cancel
+                                    </button>
                                     <form action="{% url 'execution_delete' model.pk execution.pk %}" method="post">
                                         {% csrf_token %}
-                                        <button class="btn btn-success mr-3" type="submit">Delete</button>
+                                        <button class="btn btn-danger mr-3" type="submit">Delete</button>
                                     </form>
-                                    <button type="button" class="btn btn-danger mr-3" data-dismiss="modal">Cancel
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -129,11 +129,11 @@
                                 </div>
                             </div>
                             <div class="modal-footer">
+                                <button type="button" class="btn btn-dark mr-3" data-dismiss="modal">Cancel</button>
                                 <form action="{% url 'experiment_delete' model.pk %}" method="post">
                                     {% csrf_token %}
-                                    <button class="btn btn-success mr-3" type="submit">Delete</button>
+                                    <button class="btn btn-danger mr-3" type="submit">Delete</button>
                                 </form>
-                                <button type="button" class="btn btn-danger mr-3" data-dismiss="modal">Cancel</button>
                             </div>
                         </div>
                     </div>
