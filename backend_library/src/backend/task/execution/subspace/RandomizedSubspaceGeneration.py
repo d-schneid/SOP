@@ -83,7 +83,9 @@ class RandomizedSubspaceGeneration(SubspaceGenerationDescription, ABC):
     def __subspace_from_bytes(b: bytes, ds_dim_count: int) -> Subspace:
         """creates a subspace for dataset of specified size from a bytes object"""
         packed_bits = np.frombuffer(b, dtype=np.dtype('u1'))
-        return Subspace(np.unpackbits(packed_bits, count=ds_dim_count))
+        unpacked_bits = np.unpackbits(packed_bits, count=ds_dim_count)
+        unpacked_bits.dtype = np.dtype("bool")
+        return Subspace(unpacked_bits)
 
     def __generate_dense_subspace_bits(self, ss_size: int, count: int):
         """Performance improved subspace generation when more than 50% of the subspaces
