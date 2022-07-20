@@ -25,7 +25,7 @@ class ExperimentInline(admin.StackedInline[Model, Experiment]):
         return False
 
     def has_delete_permission(self, request, obj=None):
-        return True
+        return False
 
 
 @admin.register(Algorithm)
