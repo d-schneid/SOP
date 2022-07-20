@@ -43,20 +43,19 @@ Add to your `docker-compose.yaml`:
 
 ```yaml
 version: '3.7'
-  services:
-    sop_app:
-      container_name: sop_app
-      build: ./implementierung
-      restart: unless-stopped
-      env_file: sop.env
-      expose:
-        - 8000
-      volumes:
-        - /sop-deployment/static:/static
-        - /sop-deployment/app/media:/app/webserver/src/main/sop/media
-      depends_on:
-        - sop_db
-
+services:
+  sop_app:
+    container_name: sop_app
+    build: ./implementierung
+    restart: unless-stopped
+    env_file: sop.env
+    expose:
+      - 8000
+    volumes:
+      - ./static:/static
+      - ./media:/app/webserver/src/main/sop/media
+    depends_on:
+      - sop_db
 ```
 
 TODO: BACKEND needs persistent storage??????
@@ -67,10 +66,14 @@ TODO: BACKEND needs persistent storage??????
 + `expose`: Expose port 8000 to docker API (this is where gunicorn is listening)
 + `volumes`: If you want [persistent storage](https://docs.docker.com/storage) (and you probably do) use docker volumes
   or bind mounts for locations `/static` and `/app/webserver/src/main/sop/media`
-  (if the system you are deploying on uses SELinux, you might need a [:Z](https://docs.docker.com/storage/bind-mounts/)
-  tag at the
-  end of you bind mount)
 + `depends_on`: If you are using an external database, make sure the database starts before sop does.
+
+#### Notes:
+
++ If you are using bind mounts, create the directories (here `static` and `media` in the current directory, but you can
+  use whatever you want).
++ If the system you are deploying on uses SELinux, you might need a [:Z](https://docs.docker.com/storage/bind-mounts/)
+  tag at the end of you bind mount.
 
 ---
 
@@ -87,18 +90,18 @@ For example, add the following lines to `docker-compose.yaml` under the
 existing content:
 
 ```yaml
-    sop_nginx:
-      container_name: sop_nginx
-      restart: unless-stopped
-      image: nginx:latest
-      ports:
-        - 80:80
-        - 443:443
-      volumes:
-        - /sop-deployment/static:/static
-        - ./sop.conf:/etc/nginx/conf.d/sop.conf
-      depends_on:
-        - sop_app
+  sop_nginx:
+    container_name: sop_nginx
+    restart: unless-stopped
+    image: nginx:latest
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./static:/static
+      - ./sop.conf:/etc/nginx/conf.d/sop.conf
+    depends_on:
+      - sop_app
 ```
 
 #### Explanation:
@@ -170,13 +173,13 @@ We will use `postgres` for this example, but feel free to use MariaDB/MySQL.
 Add the following to your `docker-compose.yaml`:
 
 ```yaml
-      sop_db:
-        container_name: sop_db
-        restart: unless-stopped
-        image: postgres:12.0-alpine
-        env_file: sop.env
-        volumes:
-          - /sop-deployment/db/data:/var/lib/postgresql/data/
+  sop_db:
+    container_name: sop_db
+    restart: unless-stopped
+    image: postgres:12.0-alpine
+    env_file: sop.env
+    volumes:
+      - ./db-data:/var/lib/postgresql/data
 ```
 
 #### Explanation:
@@ -205,9 +208,9 @@ DJANGO_CSRF_TRUSTED_ORIGINS="https://your-domain.com http://127.0.0.1"
 
 #Django database config
 DATABASE_ENGINE="django.db.backends.postgresql"
-DATABASE_NAME=$POSTGRES_DB
-DATABASE_USER=$POSTGRES_USER
-DATABASE_PASSWORD=$POSTGRES_PASSWORD
+DATABASE_NAME="django_db" # Same as POSTGRES_DB
+DATABASE_USER="db_user" # Same as POSTGRES_USER
+DATABASE_PASSWORD="securepassword123" # Same as POSTGRES_PASSWORD
 DATABASE_HOST="sop_db"
 DATABASE_PORT="5432"
 
@@ -227,11 +230,52 @@ DJANGO_SUPERUSER_EMAIL="admin@admin.com"
   messages should be displayed on invalid requests (insecure) and CSRF trusted origins
   when requests are proxied (has to specify protocol -> http / https).
 + `Django database config`: Define the Database django should connect to. `DATABASE_HOST`
-  must be the name of the Database container.
+  must be the name of the Database container. Specify the same user, password and database name
+  as in the database config.
 + `Django admin user creation`: Django will create a superuser with the defined credentials
   during initial startup, so the deployer is able to log in to the site and create users
 
-Now that oyu have defined the docker services and environment variables, you're all set.
+Now that oyu have defined the docker services and environment variables, you're all set.  
+Your `docker-compose.yaml` should now look similar to this:
+
+```yaml
+version: '3.7'
+
+services:
+  sop_app:
+    container_name: sop_app
+    build: ./implementierung
+    restart: unless-stopped
+    env_file: sop.env
+    expose:
+      - 8000
+    volumes:
+      - ./static:/static
+      - ./media:/app/webserver/src/main/sop/media
+    depends_on:
+      - sop_db
+
+  sop_nginx:
+    container_name: sop_nginx
+    restart: unless-stopped
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./static:/static
+      - ./sop.conf:/etc/nginx/conf.d/sop.conf
+    depends_on:
+      - sop_app
+
+  sop_db:
+    container_name: sop_db
+    restart: unless-stopped
+    image: postgres:12.0-alpine
+    env_file: sop.env
+    volumes:
+      - ./db-data:/var/lib/postgresql/data
+```
 
 Run `docker-compose up -d` and navigate to `http://127.0.0.1` or your custom domain to see
 the app.
