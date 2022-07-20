@@ -14,9 +14,11 @@ class UnitTestExecutionElement(unittest.TestCase):
     # parameters for Execution Subspace/Element
     _user_id: int = 414
     _task_id: int = 42
-    _priority: int = 312
+    _priority: int = 10
 
     # create Execution Element
+    _datapoint_count: int = 1
+
     _dir_name: str = os.getcwd()
     _result_path: str = os.path.join(_dir_name, "ee_result_path.csv")
 
@@ -61,14 +63,16 @@ class UnitTestExecutionElement(unittest.TestCase):
                                             self._subspace,
                                             self._algorithm, self._result_path,
                                             self._subspace_dtype, "",
-                                            self.__execution_element_is_finished)
+                                            self.__execution_element_is_finished,
+                                            self._datapoint_count)
 
         with self.assertRaises(AssertionError) as context:
             self._ee_wrong_task_id: ee = ee(self._user_id, _wrong_task_id,
                                             self._subspace,
                                             self._algorithm, self._result_path,
                                             self._subspace_dtype, "",
-                                            self.__execution_element_is_finished)
+                                            self.__execution_element_is_finished,
+                                            self._datapoint_count)
 
     def test_getter(self):
         self.assertEqual(self._ee.user_id, self._user_id)
@@ -86,10 +90,11 @@ class UnitTestExecutionElement(unittest.TestCase):
         self._ee_faulty: ee = ee(self._user_id, self._task_id, self._subspace, self._algorithm,
                                  self._result_path,
                                  self._subspace_dtype, self._subspace_shared_memory_name,
-                                 self.__execution_element_is_finished1)
+                                 self.__execution_element_is_finished1, self._datapoint_count)
 
         # mock Execution Element for do_work()
-        self._ee._ExecutionElement__run_algorithm = Mock(side_effect=Exception("I am going to throw an evil exception"))
+        self._ee._ExecutionElement__run_algorithm = Mock(side_effect
+                                                         = Exception("I am going to throw an evil exception"))
 
         # Method that should be tested
         statuscode = self._ee.do_work()
@@ -99,6 +104,15 @@ class UnitTestExecutionElement(unittest.TestCase):
         # clean up
         self.assertFalse(os.path.isfile(self._result_path))
         self.assertFalse(self._ee.finished_result_exists())
+
+    def test_wrong_priority(self):
+        self._wrong_priority: list[int] = list([0, 4, -1, 9, -12313, 12431, 101, 102])
+        for wrong_priority in self._wrong_priority:
+            with self.assertRaises(AssertionError):
+                ee(self._user_id, self._task_id, self._subspace, self._algorithm,
+                   self._result_path,
+                   self._subspace_dtype, self._subspace_shared_memory_name,
+                   self.__execution_element_is_finished1, wrong_priority)
 
 
 if __name__ == '__main__':

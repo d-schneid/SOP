@@ -20,10 +20,9 @@ from backend.DataIO import DataIO
 
 
 class UnitTestExecution(unittest.TestCase):
-
     _user_id: int = 214
     _task_id: int = 1553
-    _priority: int = 1414
+    _priority: int = 0
 
     _dataset_path: str = "dataset_path.csv"
 
@@ -32,6 +31,8 @@ class UnitTestExecution(unittest.TestCase):
     _result_path: str = os.path.join(_dir_name, "execution_folder")
     _zipped_result_path: str = _result_path + ".zip"
     _details_path: str = os.path.join(_result_path, 'details.json')
+
+    _datapoint_count: int = 1
 
     # subspace generation
     _subspace_size_min: int = 1
@@ -71,7 +72,7 @@ class UnitTestExecution(unittest.TestCase):
         # create Execution
         self._ex = ex(self._user_id, self._task_id, self.__task_progress_callback, self._dataset_path,
                       self._result_path, self._subspace_generation, iter(self._algorithms), self.__metric_callback,
-                      self._final_zip_path, self._priority)
+                      self._datapoint_count, self._final_zip_path, self._priority)
 
     def tearDown(self) -> None:
         self._ex = None
@@ -138,8 +139,8 @@ class UnitTestExecution(unittest.TestCase):
         if os.path.exists(self._final_zip_path):
             os.remove(self._zipped_result_path)
 
-        if os.path.exists(self._result_path+".zip.running"):
-            os.remove(self._result_path+".zip.running")
+        if os.path.exists(self._result_path + ".zip.running"):
+            os.remove(self._result_path + ".zip.running")
 
     def test_generate_execution_subspaces(self):
         _subspaces_count_in_execution_subspaces: int = 0
@@ -208,6 +209,14 @@ class UnitTestExecution(unittest.TestCase):
         self._ex.schedule()
 
         os.remove(self._final_zip_path)
+
+    def test_wrong_priority(self):
+        self._wrong_priority: list[int] = list([-1, -12313, 12431, 5])
+        for wrong_priority in self._wrong_priority:
+            with self.assertRaises(AssertionError) as context:
+                ex(self._user_id, self._task_id, self.__task_progress_callback, self._dataset_path,
+                   self._result_path, self._subspace_generation, iter(self._algorithms), self.__metric_callback,
+                   self._datapoint_count, self._final_zip_path, wrong_priority)
 
 
 if __name__ == '__main__':
