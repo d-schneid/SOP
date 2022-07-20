@@ -12,12 +12,13 @@ def check_if_file_is_csv(path: str) -> bool:
     # TODO -Finn (ist etwas mehr kompplex, muss ich mir selber basteln)
 
 
-def save_dataset_finally_uncleaned(temp_path: str, identifier: str) -> str:
-    final_path: str = os.path.join(DATASET_ROOT_DIR, "dataset_" + identifier + "_uncleaned")
+def generate_path_dataset_uncleaned_and_move_dataset(temp_path: str, user_id: int, dataset_id: int) -> str:
+    final_path: str = os.path.join(DATASET_ROOT_DIR, "user_" + str(user_id),
+                                   "dataset_" + str(dataset_id)  + "_uncleaned")
     shutil.move(temp_path, final_path)
     return final_path
 
 
-def path_dataset_finally_cleaned(identifier: str) -> str:
-    final_path: str = os.path.join(DATASET_ROOT_DIR, "dataset_" + identifier + "_cleaned")
-    return final_path
+def generate_path_dataset_cleaned(user_id: int, dataset_id: int) -> str:
+    return os.path.join(DATASET_ROOT_DIR, "user_" + str(user_id),
+                                   "dataset_" + str(dataset_id) + "_cleaned")

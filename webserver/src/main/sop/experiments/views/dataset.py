@@ -1,5 +1,3 @@
-import uuid
-
 import pandas as pd
 from django.http import HttpResponse, HttpRequest
 from django.http import HttpResponseRedirect
@@ -8,15 +6,37 @@ from django.views.generic import ListView, UpdateView, CreateView
 from pandas import DataFrame
 
 from authentication.mixins import LoginRequiredMixin
+from backend.task.cleaning import DatasetCleaning
+from experiments.callback import DatasetCallbacks
 from experiments.forms.create import DatasetUploadForm
 from experiments.forms.edit import DatasetEditForm
 from experiments.models import Dataset
 from experiments.models.managers import DatasetQuerySet
+from experiments.services.dataset import check_if_file_is_csv, generate_path_dataset_uncleaned_and_move_dataset, \
+    generate_path_dataset_cleaned
 from experiments.views.generic import PostOnlyDeleteView
-from experiments.services.dataset import check_if_file_is_csv, save_dataset_finally_uncleaned, path_dataset_finally_cleaned
-from experiments.callback import DatasetCallbacks
 
-from backend.task.cleaning import DatasetCleaning
+
+def schedule_backend(dataset: Dataset) -> None:
+
+    # set and save all the missing datafield entries and move the files to the correct position
+    dataset.path_original = generate_path_dataset_uncleaned_and_move_dataset(
+        temp_path=dataset.path_original, user_id=dataset.user.pk, dataset_id=dataset.pk)
+    dataset.path_cleaned = generate_path_dataset_cleaned(user_id=dataset.user.pk, dataset_id=dataset.pk)
+    dataset.save()
+
+    # create DatasetCleaning object
+    dataset_cleaning: DatasetCleaning = DatasetCleaning(
+        user_id=dataset.user.pk,
+        task_id=dataset.pk,
+        task_progress_callback=DatasetCallbacks.cleaning_callback,
+        uncleaned_dataset_path=dataset.path_original,
+        cleaned_dataset_path=dataset.path_cleaned,
+        cleaning_steps=None  # can be changed later on
+    )
+
+    # start the cleaning
+    dataset_cleaning.schedule()
 
 
 class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadForm]):
@@ -34,26 +54,24 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
             form.add_error("path_original", "The given file is not a valid csv.-file.")
             return super(DatasetUploadView, self).form_invalid()
 
-        else:
-            # add the model data to the form
-            csv_frame: DataFrame = pd.read_csv(temp_file_path)
-            form.instance.datapoints_total = csv_frame.shape[0]  # TODO: size vs. shpae[0]
-            form.instance.dimensions_total = csv_frame.shape[1]
+        # Else:
+        # add the model data to the form
+        csv_frame: DataFrame = pd.read_csv(temp_file_path)
+        form.instance.datapoints_total = csv_frame.shape[0]  # TODO: size vs. shpae[0]
+        form.instance.dimensions_total = csv_frame.shape[1]
 
-            form.instance.user = self.request.user
-            form.instance.is_cleaned = False
-            form.instance.uuid = uuid.uuid1()  # solves the problem that the dataset has (currently) no id
-            form.instance.path_original = save_dataset_finally_uncleaned(temp_file_path, str(uuid))
-            form.instance.path_cleaned = path_dataset_finally_cleaned(str(uuid))
+        form.instance.user = self.request.user
+        form.instance.is_cleaned = False
 
-            # start Dataset Cleaning
-            dataset_cleaning: DatasetCleaning = DatasetCleaning(form.instance.user.id,
-                                                                form.instance.uuid.int,
-                                                                DatasetCallbacks.cleaning_callback,
-                                                                form.instance.path_original,
-                                                                form.instance.path_cleaned)
+        # call the super().form_valid() before creating the DatasetCleaning, as the primary key is needed
+        # to create the DatasetCleaning
+        response = super(DatasetUploadView, self).form_valid(form)
+        assert form.instance.pk is not None
 
-            return super(DatasetUploadView, self).form_valid(form)
+        # start Dataset Cleaning
+        schedule_backend(form.instance)
+
+        return response
 
 
 class DatasetOverview(LoginRequiredMixin, ListView[Dataset]):

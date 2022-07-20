@@ -29,8 +29,6 @@ class Dataset(models.Model):
     is_cleaned = models.BooleanField(default=False)  # type: ignore
     objects = DatasetManager.from_queryset(DatasetQuerySet)()
 
-    uuid = models.IntegerField()  # type: ignore
-
     class Meta:
         """
         Contains meta-information about Dataset Model
