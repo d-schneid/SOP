@@ -81,11 +81,12 @@ class UnitTestTaskHelper(unittest.TestCase):
                                                          "War is peace. Freedom is slavery. Ignorance is strength."]])
 
         # then, zip the directory
-        zip_file: str = os.path.join(self._test_dir_path, "test_zip_01.zip")
+        zip_file_running: str = os.path.join(self._test_dir_path, "test_zip_01_running.zip")
+        zip_file_final: str = os.path.join(self._test_dir_path, "test_zip_01_final.zip")
 
         #  check if the zipping was successful
-        TaskHelper.zip_dir(zip_test_dir, zip_file)
-        self.assertTrue(UnitTestTaskHelper._check_zip_identical(zip_file, zip_test_dir))
+        TaskHelper.zip_dir(zip_path_running=zip_file_running, zip_path_final=zip_file_final, dir_path=zip_test_dir)
+        self.assertTrue(UnitTestTaskHelper._check_zip_identical(zip_file_final, zip_test_dir))
 
     def test_zip_bad_params(self):
         # first, create a path to a non-existing directory and write a file
@@ -101,17 +102,26 @@ class UnitTestTaskHelper(unittest.TestCase):
         file_existing: str = os.path.join(self._test_dir_path, "existing_file.txt")
         with open(file_existing, "w") as file:
             file.write("Diese Datei existiert schon!")
+        file_missing_form: str = os.path.join(self._test_dir_path, "non-existing-file{count}.txt")
 
         # try to zip with bad parameters
-        for dir_path, zip_path, compression_level, did_file_exist in [
-            [dir_missing, os.path.join(self._test_dir_path, "non-existing-file.txt"), 5, False],
-            [dir_existing, file_existing, 5, True],
-            [dir_existing, os.path.join(self._test_dir_path, "non-existing-file-2.txt"), 100, False],
-            [dir_missing, file_existing, 200, True]]:
+        for dir_path, zip_path_running, zip_path_final, compression_level, f_run_exist, f_final_exist in [
+            [dir_missing, file_missing_form.format(count=0), file_missing_form.format(count=1), 5, False, False],
+            [dir_existing, file_existing, file_missing_form.format(count=2), 5, True, False],
+            [dir_existing, file_missing_form.format(count=3), file_existing, 68, False, True],
+            [dir_existing, file_missing_form.format(count=4), file_missing_form.format(count=5), 100, False, False],
+            [dir_missing, file_existing, file_missing_form.format(count=6), 200, True, False]]:
+
             with self.assertRaises(AssertionError):
-                TaskHelper.zip_dir(dir_path, zip_path, compression_level)
-            if not did_file_exist:
-                self.assertFalse(os.path.isfile(zip_path))
+                TaskHelper.zip_dir(dir_path=dir_path, zip_path_running=zip_path_running,
+                                   zip_path_final=zip_path_final, compression_level=compression_level)
+
+            if not f_run_exist:
+                self.assertFalse(os.path.isfile(zip_path_running))
+            if not f_final_exist:
+                self.assertFalse(os.path.isfile(zip_path_final))
+
+    # ---- tests for del_dir ----
 
     def test_del_dir_correct(self):
         # first, create a directory to delete
