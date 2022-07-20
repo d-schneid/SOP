@@ -1,11 +1,10 @@
 import os
 import shutil
 
+from django.conf import settings
 from django.urls import reverse
 
 from experiments.models import Experiment, Dataset, Algorithm
-from django.conf import settings
-
 from tests.unittests.views.LoggedInTestCase import LoggedInTestCase
 
 
@@ -26,11 +25,13 @@ class ExperimentOverviewTests(LoggedInTestCase):
             display_name="First Algorithm",
             group=Algorithm.AlgorithmGroup.PROBABILISTIC,
             user=self.user,
+            signature="",
         )
         algo2 = Algorithm.objects.create(
             display_name="Second Algorithm",
             group=Algorithm.AlgorithmGroup.COMBINATION,
             user=self.user,
+            signature="",
         )
         exp = Experiment.objects.create(
             display_name=name, user=self.user, dataset=dataset
@@ -107,11 +108,13 @@ class ExperimentCreateViewTests(LoggedInTestCase):
                 display_name="First Algorithm",
                 group=Algorithm.AlgorithmGroup.PROBABILISTIC,
                 user=self.user,
+                signature="",
             ),
             Algorithm.objects.create(
                 display_name="Second Algorithm",
                 group=Algorithm.AlgorithmGroup.COMBINATION,
                 user=self.user,
+                signature="",
             ),
         ]
 
@@ -204,11 +207,13 @@ class ExperimentEditViewTests(LoggedInTestCase):
                 display_name="First Algorithm",
                 group=Algorithm.AlgorithmGroup.PROBABILISTIC,
                 user=self.user,
+                signature="",
             ),
             Algorithm.objects.create(
                 display_name="Second Algorithm",
                 group=Algorithm.AlgorithmGroup.COMBINATION,
                 user=self.user,
+                signature="",
             ),
         ]
         self.experiment = Experiment.objects.create(
@@ -240,8 +245,10 @@ class ExperimentEditViewTests(LoggedInTestCase):
 
 class ExperimentDeleteViewTests(LoggedInTestCase):
     def test_experiment_delete_view_valid_delete(self):
-        dataset = Dataset.objects.create(datapoints_total=0, dimensions_total=0, user=self.user)
-        algo = Algorithm.objects.create()
+        dataset = Dataset.objects.create(
+            datapoints_total=0, dimensions_total=0, user=self.user
+        )
+        algo = Algorithm.objects.create(signature="")
         experiment = Experiment.objects.create(dataset=dataset, user=self.user)
         experiment.algorithms.set([algo])
         experiment.save()
@@ -261,4 +268,3 @@ class ExperimentDeleteViewTests(LoggedInTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.redirect_chain)
         self.assertTemplateUsed(response, "experiment_overview.html")
-

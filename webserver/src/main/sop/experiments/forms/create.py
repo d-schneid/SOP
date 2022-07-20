@@ -41,14 +41,29 @@ class DatasetUploadForm(forms.ModelForm[Dataset]):
 
 
 class ExperimentCreateForm(forms.ModelForm[Experiment]):
-    pass
+    class Meta:
+        model = Experiment
+        fields = ("display_name", "dataset", "algorithms")
+        widgets = {
+            "display_name": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "Experiment name"}
+            ),
+            "dataset": forms.Select(attrs={"class": "form-control"}),
+            "algorithms": forms.SelectMultiple(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Experiment name",
+                    "multiple": "mutliple",
+                    "size": "12",
+                }
+            ),
+        }
 
 
 class ExecutionCreateForm(forms.ModelForm[Execution]):
     class Meta:
         model = Execution
         fields = (
-            "algorithm_parameters",
             "subspaces_min",
             "subspaces_max",
             "subspace_amount",

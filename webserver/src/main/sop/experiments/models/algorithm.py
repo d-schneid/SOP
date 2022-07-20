@@ -1,3 +1,5 @@
+import json
+
 from django.conf import settings
 from django.core.validators import FileExtensionValidator
 from django.db import models
@@ -27,7 +29,7 @@ class Algorithm(models.Model):
     # TODO: check max_length, blank, and null
     display_name = models.CharField(max_length=80)  # type: ignore
     group = models.CharField(max_length=80, choices=AlgorithmGroup.choices)  # type: ignore
-    signature = models.CharField(max_length=80)  # type: ignore
+    signature = models.JSONField()
     path = models.FileField(
         upload_to=_get_algorithm_upload_path,
         validators=(FileExtensionValidator(allowed_extensions=["py"]),),
@@ -39,6 +41,9 @@ class Algorithm(models.Model):
     )
 
     objects = AlgorithmManager.from_queryset(AlgorithmQuerySet)()
+
+    def get_signature_as_json(self) -> dict:
+        return json.loads(self.signature)
 
     def __str__(self) -> str:
         return str(self.display_name)

@@ -5,85 +5,85 @@
 {% endblock %}
 
 {% block content %}
-    <div class="upload-container">
-        <form id="upload" method="post" enctype="multipart/form-data">{% csrf_token %}
-            {{ form.as_p }}
-            <div class="d-flex" id="buttons">
-                <a href="{% url 'dataset_overview' %}" class="btn btn-dark">Cancel</a>
-                <input class="btn btn-dark ml-auto" type="submit" value="Save">
+    <form id="upload" method="post" onsubmit="openProgressBar(); return true;"
+          enctype="multipart/form-data">{% csrf_token %}
+        <div class="card shadow mt-4 mb-4">
+            <div class="card-header bg-dark d-flex">
+                <div>{{ form.display_name.errors }}</div>
+                <div class="flex-fill">{{ form.display_name }}</div>
             </div>
-        </form>
-    </div>
-
+            <div class="card-body show d-flex flex-column">
+                <div>
+                    {{ form.descirption.errors }}
+                    <label for="{{ form.description.id_for_label }}">Description:</label>
+                    {{ form.description }}
+                </div>
+                <div class="mt-3">
+                    {{ form.path_original.errors }}
+                    <label for="{{ form.path_original.id_for_label }}">Dataset File (.csv):</label>
+                    {{ form.path_original }}
+                </div>
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <div class="d-flex mt-1 mb-1">
+                        <a class="btn btn-dark" href="{% url "dataset_overview" %}">Cancel</a>
+                        <button class="btn btn-success ml-auto" type="submit">Create</button>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </form>
     <script type="text/javascript">
-        // Generate 32 char random uuid
-        function gen_uuid() {
-            var uuid = ""
-            for (var i = 0; i < 32; i++) {
+        interval = null;
+
+        function openProgressBar() {
+            /* generate random progress-id */
+            uuid = "";
+            for (i = 0; i < 32; i++) {
                 uuid += Math.floor(Math.random() * 16).toString(16);
             }
-            return uuid
+            /* patch the form-action tag to include the progress-id */
+            document.getElementById("upload").action += '?X-Progress-ID=' + uuid;
+
+
+            /* show progress bar */
+            var $progress = $('<div id="upload-progress" class="upload-progress mt-3"></div>').appendTo(".card-body").append('<div class="progress-container"><div class="progress-status">Preparing upload...</div><div class="bg-white border border-dark"><div class="progress-bar hidden progress-bar-striped progress-bar-animated bg-dark" style="width: 0%" role="progressbar" aria-valuemin="0" aria-valuemax="100">0%</div></div></div>');
+            $progress.show();
+
+            /* call the progress-updater periodically */
+            interval = window.setInterval(
+                function () {
+                    fetch(uuid, $progress);
+                },
+                100
+            );
         }
 
         // Add upload progress for multipart forms.
-        $(function () {
-            $('#upload').submit(function () {
-                // Prevent multiple submits
-                if ($.data(this, 'submitted')) return false;
-
-                var freq = 100; // freqency of update in ms
-                var uuid = gen_uuid(); // id for this upload so we can fetch progress info.
-                var progress_url = '/upload_progress/'; // ajax view serving progress info
-                var received_data = false;
-
-                // Append X-Progress-ID uuid form action
-                this.action += (this.action.indexOf('?') == -1 ? '?' : '&') + 'X-Progress-ID=' + uuid;
-
-                var $progress = $('<div id="upload-progress" class="upload-progress mt-3"></div>').appendTo(".upload-container").append('<div class="progress-container"><div class="progress-status">Preparing upload...</div><div class="bg-white border border-dark"><div class="progress-bar hidden progress-bar-striped progress-bar-animated bg-dark" style="width: 0%" role="progressbar" aria-valuemin="0" aria-valuemax="100">0%</div></div></div>');
-
-                // Update progress bar
-                function update_progress_info() {
-                    $progress.show();
-                    $.getJSON(progress_url, {'X-Progress-ID': uuid}, function (data, status) {
-                        var width = $progress.find('.upload-container').width();
-                        if (data) {
-                            received_data = true;
-                            var progress = parseInt(data.uploaded) / parseInt(data.length);
-                            $progress.find('.progress-bar').css("width", progress * 100 + "%");
-                            $progress.find('.progress-bar').html(parseInt(progress * 100) + '%');
-                            $progress.find('.progress-bar').width(width);
-                            $progress.find('.progress-status').html('Uploading...');
-                            window.setTimeout(update_progress_info, freq);
-                        } else {
-                            $progress.find('.progress-bar').width(width);
-                            // data is none and we received data before -> upload finished -> no need to check for progress anymore
-                            if (received_data) {
-                                $progress.find('.progress-bar').css("width", 100 + "%");
-                                $progress.find('.progress-status').html('Upload finished...');
-                                $progress.find('.progress-bar').html('Saving dataset, this may take a few moments...');
-                            }
-                            // data is none and we haven't received data before -> upload hasn't started yet
-                            else {
-                                $progress.find('.progress-bar').css("width", 0 + "%");
-                                $progress.find('.progress-status').html('Starting upload...');
-                                window.setTimeout(update_progress_info, freq);
-                            }
-                        }
-                    });
-                };
-                window.setTimeout(update_progress_info, freq);
-
-                $.data(this, 'submitted', true); // mark form as submitted.
+        function fetch(uuid, $progress) {
+            var progress_url = '/upload_progress/'; // ajax view serving progress info
+            $.getJSON(progress_url, {'X-Progress-ID': uuid}, function (upload, status) {
+                var width = $progress.find('.upload-container').width();
+                if (upload.state == "starting") {
+                    console.log("starting")
+                    $progress.find('.progress-bar').css("width", 0 + "%");
+                    $progress.find('.progress-status').html('Starting upload...');
+                } else if (upload.state == "uploading") {
+                    console.log("uploading")
+                    var progress = parseInt(upload.received) / parseInt(upload.size);
+                    $progress.find('.progress-bar').css("width", progress * 100 + "%");
+                    $progress.find('.progress-bar').html(parseInt(progress * 100) + '%');
+                    $progress.find('.progress-bar').width(width);
+                    $progress.find('.progress-status').html('Uploading...');
+                } else if (upload.state == "done") {
+                    console.log("done")
+                    $progress.find('.progress-bar').css("width", 100 + "%");
+                    $progress.find('.progress-status').html('Upload finished...');
+                    $progress.find('.progress-bar').html('Saving dataset, this may take a few moments...');
+                    window.clearTimeout(interval)
+                }
             });
-        });
+        }
     </script>
-    <!---
-    <div class="upload-progress" id="upload-progress">
-        <div class="progress-container">Upload progress:
-            <div class="progress-bar hidden progress-bar-striped" role="progressbar" style="width: 50%"
-                 aria-valuemin="0" aria-valuemax="100">50%
-            </div>
-        </div>
-    </div>
-    --->
 {% endblock %}

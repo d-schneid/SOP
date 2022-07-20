@@ -11,14 +11,20 @@ from experiments.views.dataset import (
     DatasetOverview,
     DatasetUploadView,
     DatasetDeleteView,
-    DatasetEditView,
+    DatasetEditView, download_cleaned_dataset, download_uncleaned_dataset,
 )
-from experiments.views.execution import ExecutionCreateView, ExecutionDeleteView
+from experiments.views.execution import (
+    ExecutionCreateView,
+    ExecutionDeleteView,
+    ExecutionDuplicateView,
+    download_execution_result,
+)
 from experiments.views.experiment import (
     ExperimentOverview,
     ExperimentCreateView,
     ExperimentDeleteView,
     ExperimentEditView,
+    ExperimentDuplicateView,
 )
 from experiments.views.uploadhandler import upload_progress
 
@@ -69,6 +75,10 @@ urlpatterns = [
         "dataset/<int:pk>/delete/", DatasetDeleteView.as_view(), name="dataset_delete"
     ),
     path("dataset/<int:pk>/edit/", DatasetEditView.as_view(), name="dataset_edit"),
+    path("dataset/<int:pk>/download_cleaned/",
+         download_cleaned_dataset, name="dataset_download_cleaned"),
+    path("dataset/<int:pk>/download_uncleaned/",
+         download_uncleaned_dataset, name="dataset_download_uncleaned"),
     # Experiment URLs
     path(
         "experiment/",
@@ -98,6 +108,11 @@ urlpatterns = [
         ExperimentEditView.as_view(),
         name="experiment_edit",
     ),
+    path(
+        "experiment/<int:pk>/duplicate/",
+        ExperimentDuplicateView.as_view(),
+        name="experiment_duplicate",
+    ),
     # Execution URLs
     path(
         "experiment/<int:experiment_pk>/execution/create/",
@@ -108,6 +123,16 @@ urlpatterns = [
         "experiment/<int:experiment_pk>/execution/<int:pk>/delete/",
         ExecutionDeleteView.as_view(),
         name="execution_delete",
+    ),
+    path(
+        "experiment/<int:experiment_pk>/execution/<int:pk>/duplicate/",
+        ExecutionDuplicateView.as_view(),
+        name="execution_duplicate",
+    ),
+    path(
+        "experiment/<int:experiment_pk>/execution/<int:pk>/download_results/",
+        download_execution_result,
+        name="execution_download_result",
     ),
     # upload progress
     path("upload_progress/", upload_progress, name="upload-progress"),

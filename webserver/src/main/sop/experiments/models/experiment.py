@@ -19,8 +19,5 @@ class Experiment(models.Model):
     creation_date = models.DateTimeField(auto_now_add=True)  # type: ignore
     objects = ExperimentManager.from_queryset(ExperimentQuerySet)()
 
-    class Meta:
-        unique_together = ["display_name", "user"]
-
     def __str__(self) -> str:
         return str(self.display_name)

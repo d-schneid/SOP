@@ -15,13 +15,16 @@
 {% endblock %}
 
 {% block card-header %}
-    <h5 class="mb-0 w-80">
+    <h5 class="flex-grow-1 mb-0">
         <a class="btn-link btn-block text-white{% if not forloop.first %} collapsed{% endif %}"
            aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
            aria-controls="collapse_{{ model.pk }}">
             {{ model.display_name }}
         </a>
     </h5>
+    <div class="ml-3 mr-1 text-white">
+        Execuions: {{ model.execution_set.all.count }}
+    </div>
 {% endblock %}
 
 {% block card-body %}
@@ -29,7 +32,7 @@
         <a>{{ model.creation_date }}</a>
 
         <a href="{% url 'execution_create' model.pk %}"
-           class="btn btn-success ml-auto">Create Execution</a>
+           class="btn btn-outline-dark ml-auto">New Execution</a>
     </div>
     <div class="d-flex">
         <a>Dataset: {{ model.dataset.display_name }}</a>
@@ -51,6 +54,10 @@
                     <a class="flex-fill">{{ execution.status }}</a>
                     <a class="flex-fill">{{ execution.progess }}</a>
                     <a class="flex-fill">{{ execution.creation_date }}</a>
+                    {% if execution.is_finished and not execution.error_occurred %}
+                    <a href="{% url 'execution_download_result' model.pk execution.pk %}" class="btn btn-info mr-3">Download Result</a>
+                    {% endif %}
+                    <a href="{% url "execution_duplicate" model.pk execution.pk %}" class="btn btn-warning mr-3">Duplicate</a>
                     <button type="button"
                             class="btn btn-danger mr-3"
                             data-toggle="modal"
@@ -78,12 +85,12 @@
                                     </div>
                                 </div>
                                 <div class="modal-footer">
+                                    <button type="button" class="btn btn-dark mr-3" data-dismiss="modal">Cancel
+                                    </button>
                                     <form action="{% url 'execution_delete' model.pk execution.pk %}" method="post">
                                         {% csrf_token %}
-                                        <button class="btn btn-success mr-3" type="submit">Delete</button>
+                                        <button class="btn btn-danger mr-3" type="submit">Delete</button>
                                     </form>
-                                    <button type="button" class="btn btn-danger mr-3" data-dismiss="modal">Cancel
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -122,15 +129,16 @@
                                 </div>
                             </div>
                             <div class="modal-footer">
+                                <button type="button" class="btn btn-dark mr-3" data-dismiss="modal">Cancel</button>
                                 <form action="{% url 'experiment_delete' model.pk %}" method="post">
                                     {% csrf_token %}
-                                    <button class="btn btn-success mr-3" type="submit">Delete</button>
+                                    <button class="btn btn-danger mr-3" type="submit">Delete</button>
                                 </form>
-                                <button type="button" class="btn btn-danger mr-3" data-dismiss="modal">Cancel</button>
                             </div>
                         </div>
                     </div>
                 </div>
+                <a href="{% url "experiment_duplicate" model.pk %}" class="btn btn-warning mr-3">Duplicate Experiment</a>
                 <a href="{% url 'experiment_edit' model.pk %}"
                    class="btn btn-warning mr-3">Edit Experiment</a>
             </div>

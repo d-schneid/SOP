@@ -35,13 +35,24 @@ class ExperimentCreateView(
 ):
     model = Experiment
     template_name = "experiment_create.html"
-    # TODO: use ExperimentCreateForm
-    fields = ("display_name", "dataset", "algorithms")
+    form_class = ExperimentCreateForm
     success_url = reverse_lazy("experiment_overview")
 
     def form_valid(self, form):
         form.instance.user = self.request.user
         return super(ExperimentCreateView, self).form_valid(form)
+
+
+class ExperimentDuplicateView(ExperimentCreateView):
+    def get_initial(self):
+        form = {}
+        if self.request.method == "GET":
+            og_experiment_pk = self.kwargs["pk"]
+            original = Experiment.objects.get(pk=og_experiment_pk)
+            form["display_name"] = original.display_name
+            form["dataset"] = original.dataset
+            form["algorithms"] = original.algorithms.all()
+        return form
 
 
 class ExperimentEditView(

@@ -1,6 +1,7 @@
 import uuid
 
 import pandas as pd
+from django.http import HttpResponse, HttpRequest
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views.generic import ListView, UpdateView, CreateView
@@ -96,3 +97,30 @@ class DatasetEditView(LoginRequiredMixin, UpdateView[Dataset, DatasetEditForm]):
     form_class = DatasetEditForm
     template_name = "dataset_edit.html"
     success_url = reverse_lazy("dataset_overview")
+
+
+def get_download_response(file, download_name: str):
+    response = HttpResponse(file.read())
+    response["Content-Type"] = "text/plain"
+    response["Content-Disposition"] = f"attachment; filename={download_name}"
+    return response
+
+
+def download_uncleaned_dataset(request: HttpRequest, pk: int):
+    if request.method == "GET":
+        dataset: Dataset = Dataset.objects.filter(pk=pk).first()
+        if dataset is None:
+            return HttpResponseRedirect(reverse_lazy("dataset_overview"))
+
+        with dataset.path_original as file:
+            return get_download_response(file, f"{dataset.display_name}.csv")
+
+
+def download_cleaned_dataset(request, pk: int):
+    if request.method == "GET":
+        dataset: Dataset = Dataset.objects.filter(pk=pk).first()
+        if dataset is None:
+            return HttpResponseRedirect(reverse_lazy("dataset_overview"))
+
+        with dataset.path_cleaned as file:
+            return get_download_response(file, f"{dataset.display_name}_cleaned.csv")

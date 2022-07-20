@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Optional
 
 from django.contrib import admin, messages
@@ -23,7 +25,7 @@ class ExperimentInline(admin.StackedInline[Model, Experiment]):
         return False
 
     def has_delete_permission(self, request, obj=None):
-        return True
+        return False
 
 
 @admin.register(Algorithm)
@@ -62,8 +64,9 @@ class AlgorithmAdmin(admin.ModelAdmin[Algorithm]):
         object_id: str,
         extra_context: Optional[dict[str, object]] = None,
     ) -> HttpResponse:
-        algorithm: Algorithm | None = self.get_object(request, object_id)
-        assert algorithm is not None  # TODO: handle algorithm is None
+        algorithm: Optional[Algorithm] = self.get_object(request, object_id)
+        if algorithm is None:
+            return
 
         if algorithm.experiment_set.count() > 0:  # type: ignore
             messages.error(
