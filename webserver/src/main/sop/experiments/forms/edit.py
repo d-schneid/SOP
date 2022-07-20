@@ -12,6 +12,9 @@ class AlgorithmEditForm(forms.ModelForm[Algorithm]):
                 attrs={"class": "form-control", "placeholder": "Algorithm name"}
             ),
             "group": forms.Select(attrs={"class": "form-control"}),
+            "description": forms.Textarea(
+                attrs={"class": "form-control", "placeholder": "Algorithm Description"}
+            ),
         }
 
 
@@ -22,7 +25,10 @@ class DatasetEditForm(forms.ModelForm[Dataset]):
         widgets = {
             "display_name": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "Dataset name"}
-            )
+            ),
+            "description": forms.Textarea(
+                attrs={"class": "form-control", "placeholder": "Dataset Description"}
+            ),
         }
 
 
