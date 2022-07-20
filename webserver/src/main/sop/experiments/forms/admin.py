@@ -47,4 +47,4 @@ class AdminAddAlgorithmForm(forms.ModelForm[Algorithm]):
 class AdminChangeAlgorithmForm(forms.ModelForm[Algorithm]):
     class Meta:
         model = Algorithm
-        exclude = ["path", "signature"]
+        exclude = ["path", "signature", "user"]

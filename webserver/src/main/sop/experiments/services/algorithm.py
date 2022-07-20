@@ -9,7 +9,6 @@ from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
 
 from authentication.models import User
-from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 
 ALGORITHM_ROOT_DIR: Final = settings.MEDIA_ROOT / "algorithms"
 
