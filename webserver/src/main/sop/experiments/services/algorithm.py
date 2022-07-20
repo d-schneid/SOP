@@ -45,13 +45,6 @@ def delete_temp_algorithm(temp_file_path: Path):
         shutil.rmtree(parent_folder)
 
 
-def get_signature_of_algorithm(path: str) -> str:
-    algorithm_parameters = AlgorithmLoader.get_algorithm_parameters(path)
-    keys_values = algorithm_parameters.items()
-    string_dict = {key: str(value) for key, value in keys_values}
-    return ",".join(string_dict.values())
-
-
 def convert_param_mapping_to_signature_dict(
     mapping: MappingProxyType[str, Parameter]
 ) -> dict[str, List[dict[str, object]]]:

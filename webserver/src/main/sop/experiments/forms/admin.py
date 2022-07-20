@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from typing import Optional, Final
 
@@ -10,7 +11,7 @@ from experiments.models import Algorithm
 from experiments.services.algorithm import (
     save_temp_algorithm,
     delete_temp_algorithm,
-    get_signature_of_algorithm,
+    convert_param_mapping_to_signature_dict,
 )
 
 ALGORITHM_ROOT_DIR: Final = settings.MEDIA_ROOT / "algorithms"
@@ -30,7 +31,9 @@ class AdminAddAlgorithmForm(forms.ModelForm[Algorithm]):
         AlgorithmLoader.ensure_root_dir_in_path()
         error: Optional[str] = AlgorithmLoader.is_algorithm_valid(str(temp_path))
         if error is None:
-            self.instance.signature = get_signature_of_algorithm(str(temp_path))
+            mapping = AlgorithmLoader.get_algorithm_parameters(str(temp_path))
+            dikt = convert_param_mapping_to_signature_dict(mapping)
+            self.instance.signature = json.dumps(dikt)
         delete_temp_algorithm(temp_path)
 
         if error is not None:
