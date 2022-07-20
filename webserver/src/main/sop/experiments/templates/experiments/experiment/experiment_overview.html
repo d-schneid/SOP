@@ -54,6 +54,9 @@
                     <a class="flex-fill">{{ execution.status }}</a>
                     <a class="flex-fill">{{ execution.progess }}</a>
                     <a class="flex-fill">{{ execution.creation_date }}</a>
+                    {% if execution.is_finished and not execution.error_occurred %}
+                    <a href="{% url 'execution_download_result' model.pk execution.pk %}" class="btn btn-info mr-3">Download Result</a>
+                    {% endif %}
                     <a href="{% url "execution_duplicate" model.pk execution.pk %}" class="btn btn-warning mr-3">Duplicate</a>
                     <button type="button"
                             class="btn btn-danger mr-3"
