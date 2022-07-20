@@ -40,6 +40,13 @@
 {% block edit %}
     <a href="{% url 'dataset_edit' model.pk %}"
        class="btn btn-warning mr-3">Edit</a>
+    <div class="flex-grow-1">
+        <a href="{% url 'dataset_download_uncleaned' model.pk %}" class="btn btn-info mr-3">Download Uncleaned</a>
+        {% if model.is_cleaned %}
+            <a href="{% url 'dataset_download_cleaned' model.pk %}" class="btn btn-info mr-3">Download
+                Cleaned</a>
+        {% endif %}
+    </div>
 {% endblock %}
 
 {% block error %}
