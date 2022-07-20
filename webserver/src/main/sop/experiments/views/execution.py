@@ -1,6 +1,8 @@
 import random
+from typing import Optional
 
 from django.conf import settings
+from django.http import HttpRequest, HttpResponseRedirect, HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
 
@@ -171,3 +173,20 @@ class ExecutionDuplicateView(ExecutionCreateView):
 class ExecutionDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Execution]):
     model = Execution
     success_url = reverse_lazy("experiment_overview")
+
+
+def download_execution_result(request: HttpRequest, pk: int) -> HttpResponse:
+    if request.method == "GET":
+        execution: Optional[Execution] = Execution.objects.filter(pk=pk).first()
+        if execution is None:
+            return HttpResponseRedirect(reverse_lazy("experiment_overview"))
+
+        file_name = "result.zip"
+        with execution.result_path as file:
+            response = HttpResponse(file.read())
+            response["Content-Type"] = "text/plain"
+            response["Content-Disposition"] = f"attachment; filename={file_name}"
+        return response
+    else:
+        assert request.method in ("POST", "PUT")
+        return HttpResponseRedirect(reverse_lazy("experiment_overview"))
