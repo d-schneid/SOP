@@ -238,7 +238,8 @@ class Execution(Task, Schedulable):
         Unloads the cleaned dataset from shared_memory. \n
         :return: None
         """
-        assert self._shared_memory_name is None, "If there is no shred memory currently loaded it can not be unloaded"
+        assert self._shared_memory_name is not None, \
+            "If there is no shared memory currently loaded it can not be unloaded"
         shm = shared_memory.SharedMemory(self._shared_memory_name)
         shm.unlink()
         shm.close()
