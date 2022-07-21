@@ -63,10 +63,9 @@ class UnitTestDatasetCleaning(unittest.TestCase):
         if task_state.is_finished():
             self._finished_cleaning = True
 
-    @skip("broken, pls fix me!")
     def test_load_uncleaned_dataset(self):
         # No uncleaned Dataset -> throw exception
-        with self.assertRaises(FileNotFoundError) as context:
+        with self.assertRaises(AssertionError) as context:
             self._dc._DatasetCleaning__load_uncleaned_dataset()
 
     def task_progress_callback(self, _task_id: int, task_state: TaskState, progress: float) -> None:

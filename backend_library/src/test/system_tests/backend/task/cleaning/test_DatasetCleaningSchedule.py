@@ -117,7 +117,6 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
         if os.path.isfile(self._cleaned_dataset_path3 + ".error"):
             os.remove(self._cleaned_dataset_path3 + ".error")
 
-    @skip("broken, pls fix")
     def test_run_cleaning_pipeline1(self):
         # progress is zero
         self.assertFalse(self._run_cleaning)
@@ -137,7 +136,6 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
         # clean up
         self.__clean_created_files_and_directories()
 
-    @skip("broken, pls fix")
     def test_run_cleaning_pipeline2(self):
         # progress is zero
         self.assertFalse(self._run_cleaning)
@@ -164,7 +162,6 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
         # clean up
         self.__clean_created_files_and_directories()
 
-    @skip("broken, pls fix")
     def test_run_cleaning_pipeline3(self):
         # progress is zero
         self.assertFalse(self._run_cleaning)
@@ -185,7 +182,6 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
         # clean up
         self.__clean_created_files_and_directories()
 
-    @skip("broken, pls fix me!")
     def test_dont_run_cleaning_pipeline3_because_finished(self):
         # progress is zero
         self.assertFalse(self._run_cleaning)

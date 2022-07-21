@@ -25,7 +25,6 @@ class UnitTestUrrs(unittest.TestCase):
 
     to_be_changed = Manager().Value('b', False)
 
-    @skip
     def test_priority(self):
         Scheduler._instance = None
         sched = UserRoundRobinSchedulerMock()
@@ -47,7 +46,6 @@ class UnitTestUrrs(unittest.TestCase):
         sched.schedule(TestSched(1, -1, 2))
         self.assertNotEqual(sched.next_sched().user_id, sched.next_sched().user_id)
 
-    @skip
     def test_exec(self):
         Scheduler._instance = None
         urss = UserRoundRobinScheduler()
