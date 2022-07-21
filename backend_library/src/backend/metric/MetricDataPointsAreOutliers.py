@@ -9,9 +9,11 @@ class MetricDataPointsAreOutliers(ABC):
     def compute_metric(execution: Execution, metric_result_path: str) -> None:
         """
         :param execution: The Execution to which this metric belongs to.
-        :param metric_result_path: The path where the metric will store it's results to. Has to and with .csv
+        :param metric_result_path: The path where the metric will store its results to. Has to end with .csv
         :return: None
         """
         assert metric_result_path.endswith(".csv")
+
+
 
 

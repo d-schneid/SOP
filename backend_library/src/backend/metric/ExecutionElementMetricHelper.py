@@ -1,3 +1,4 @@
+from glob import glob
 import os
 
 import numpy as np
@@ -42,3 +43,15 @@ class ExecutionElementMetricHelper:
                 outlier_data_points.append(False)
 
         return np.asarray(outlier_data_points)
+
+    @staticmethod
+    def GetExecutionElementsResultPaths(execution_folder_path: str):
+        """
+        Return a list of all paths in this directory in its children directories that end with .csv
+        :param execution_folder_path: The directory that should be scanned for files that end with .csv
+        :return: The list of paths to .csv files.
+        """
+        all_csv_files: list[str] = [file
+                                    for path, subdir, files in os.walk(execution_folder_path)
+                                    for file in glob(os.path.join(path, "*.csv"))]
+        return all_csv_files
