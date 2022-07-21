@@ -82,10 +82,15 @@ class AlgorithmAdminTests(AdminLoggedInTestCase):
         self.assertContains(response, "Add algorithm")
 
     def test_algorithm_admin_change_view(self):
+        dataset = Dataset.objects.create(datapoints_total=1, dimensions_total=1, user=self.admin)
+        exp = Experiment.objects.create(display_name="exp", dataset=dataset, user=self.admin)
+        # Experiment shall be shown in inline
+        exp.algorithms.add(self.algo)
         url = reverse("admin:experiments_algorithm_change", args=(self.algo.pk,))
         response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "experiment_inline.html")
+        self.assertContains(response, f"{exp.display_name}")
         self.assertContains(response, "Usage in experiments")
         self.assertContains(response, "Change algorithm")
 
