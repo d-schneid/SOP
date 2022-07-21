@@ -61,7 +61,6 @@ class AlgorithmUploadView(
 
         temp_path: Path = save_temp_algorithm(self.request.user, file)
         AlgorithmLoader.set_algorithm_root_dir(str(ALGORITHM_ROOT_DIR))
-        AlgorithmLoader.ensure_root_dir_in_path()
         error: Optional[str] = AlgorithmLoader.is_algorithm_valid(str(temp_path))
         if error is None:
             mapping = AlgorithmLoader.get_algorithm_parameters(str(temp_path))
