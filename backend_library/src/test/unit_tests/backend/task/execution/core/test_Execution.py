@@ -135,7 +135,7 @@ class UnitTestExecution(unittest.TestCase):
             os.remove(self._zipped_result_path)
 
         if os.path.exists(self._final_zip_path):
-            os.remove(self._zipped_result_path)
+            os.remove(self._final_zip_path)
 
         if os.path.exists(self._result_path+".zip.running"):
             os.remove(self._result_path+".zip.running")
