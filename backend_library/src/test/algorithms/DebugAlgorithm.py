@@ -1,10 +1,9 @@
-from abc import ABC
 import numpy as np
 
 from pyod.models.base import BaseDetector
 
 
-class DebugAlgorithm(BaseDetector, ABC):
+class DebugAlgorithm(BaseDetector):
 
     def __init__(self, algorithm_result: int = 1):
         """

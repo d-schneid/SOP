@@ -1,3 +1,4 @@
+import abc
 import importlib
 import inspect
 import os.path
@@ -58,6 +59,8 @@ class AlgorithmLoader:
         requested_class = getattr(module, class_name)
         assert issubclass(requested_class, BaseDetector), \
             f"{class_name} is not a subclass of pyod.models.base.BaseDetector"
+        assert not issubclass(requested_class, abc.ABC), \
+            f"{class_name} must not be a subclass abc.ABC aka must not be abstract"
         return requested_class
 
     @staticmethod
