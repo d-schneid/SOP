@@ -34,7 +34,7 @@ class AlgorithmAdmin(admin.ModelAdmin[Algorithm]):
     list_display = ["display_name", "group", "user", "upload_date"]
     raw_id_fields = ["user"]
     list_filter = ["user", "group"]
-    search_fields = ["name"]
+    search_fields = ["display_name"]
     actions = ["delete_selected"]
 
     # override to get current user in form
