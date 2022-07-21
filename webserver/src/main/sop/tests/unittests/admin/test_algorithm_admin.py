@@ -3,15 +3,15 @@ from django.urls import reverse
 
 from experiments.admin.algorithm import ExperimentInline
 from experiments.models.algorithm import Algorithm
-from experiments.models.experiment import Experiment
-from experiments.models.dataset import Dataset
 from tests.unittests.views.LoggedInTestCase import AdminLoggedInTestCase
 
 
 class MockRequest:
     pass
 
+
 request = MockRequest()
+
 
 class ExperimentInlineTests(AdminLoggedInTestCase):
 
@@ -59,11 +59,14 @@ class AlgorithmAdminTests(AdminLoggedInTestCase):
         url = reverse("admin:experiments_algorithm_changelist")
         response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Select algorithm to change")
+        self.assertContains(response, f"{self.algo.display_name}")
 
     def test_algorithm_admin_add_view(self):
         url = reverse("admin:experiments_algorithm_add")
         response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Add algorithm")
 
     def test_algorithm_admin_change_view(self):
         url = reverse("admin:experiments_algorithm_change", args=(self.algo.pk,))
@@ -71,8 +74,9 @@ class AlgorithmAdminTests(AdminLoggedInTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "experiment_inline.html")
         self.assertContains(response, "Usage in experiments")
+        self.assertContains(response, "Change algorithm")
 
-    def test_algorithm_admin_delete_view(self):
+    def test_admin_delete_algorithm(self):
         self.assertTrue(Algorithm.objects.exists())
         # confirm deletion on confirmation site
         data = {"post": "yes"}
@@ -82,7 +86,7 @@ class AlgorithmAdminTests(AdminLoggedInTestCase):
         self.assertContains(response, f"{self.algo.display_name}")
         self.assertContains(response, "was deleted successfully")
         self.assertFalse(Algorithm.objects.exists())
-        self.assertEqual(response.resolver_match.url_name, "experiments_algorithm_changelist")
+        self.assertEqual("experiments_algorithm_changelist", response.resolver_match.url_name)
 
     def test_admin_add_valid_algorithm(self):
         test_name = "Test Valid Algorithm"
@@ -93,7 +97,8 @@ class AlgorithmAdminTests(AdminLoggedInTestCase):
             self.client, test_name, test_group, test_description, test_file_name
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.resolver_match.url_name, "experiments_algorithm_changelist")
+        self.assertEqual("experiments_algorithm_changelist", response.resolver_match.url_name)
+        self.assertContains(response, "Select algorithm to change")
 
     def test_admin_add_invalid_algorithm(self):
         test_name = "Test Valid Algorithm"
@@ -104,10 +109,10 @@ class AlgorithmAdminTests(AdminLoggedInTestCase):
             self.client, test_name, test_group, test_description, test_file_name
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.resolver_match.url_name, "experiments_algorithm_add")
+        self.assertEqual("experiments_algorithm_add", response.resolver_match.url_name)
         self.assertContains(response, "This is not a valid algorithm")
 
-    def test_action_delete_selected(self):
+    def test_admin_delete_selected_algorithms_action(self):
         Algorithm.objects.create(signature="")
         self.assertTrue(Algorithm.objects.exists())
         algo_queryset = Algorithm.objects.all()
@@ -120,4 +125,4 @@ class AlgorithmAdminTests(AdminLoggedInTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, f"Successfully deleted {algo_queryset.count()} algorithms")
         self.assertFalse(Algorithm.objects.exists())
-        self.assertEqual(response.resolver_match.url_name, "experiments_algorithm_changelist")
+        self.assertEqual("experiments_algorithm_changelist", response.resolver_match.url_name)
