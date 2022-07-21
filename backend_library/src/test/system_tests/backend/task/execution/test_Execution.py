@@ -39,9 +39,9 @@ class SystemTest_Execution(unittest.TestCase):
                                     _data_dimensions_count, _subspace_amount, _subspace_seed)
 
     # parameterized algorithms
-    _hyper_parameter: dict = {}  # {'seed': 0}
-    _display_names: list[str] = ["display_name", "display_name",
-                                 "different_display_name", "display_name"]
+    _algorithm_result: int = 42
+    _hyper_parameter: dict = {'algorithm_result': _algorithm_result}
+    _display_names: list[str] = ["display_name", "display_name", "different_display_name", "display_name"]
     _directory_names_in_execution: list[str] = ["display_name", "display_name (1)", "different_display_name",
                                                 "display_name (2)"]
 
