@@ -6,11 +6,11 @@ from pyod.models.base import BaseDetector
 
 class DebugAlgorithm(BaseDetector, ABC):
 
-    def __init__(self, algorithm_result: np.ndarray = np.asarray([[1]])):
+    def __init__(self, algorithm_result: int = 1):
         """
         :param algorithm_result: The result that will be outputted by calling decision_function()
         """
-        self._algorithm_result: np.ndarray = algorithm_result
+        self._algorithm_result: np.ndarray = np.asarray([[algorithm_result]])
 
     def decision_function(self, X):
         return self._algorithm_result
