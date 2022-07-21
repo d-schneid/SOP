@@ -128,6 +128,7 @@ publish-build:
     - docker build -t $TAG_COMMIT -t $TAG_LATEST --cache-from $TAG_LATEST .
     - docker push $TAG_COMMIT
     - docker push $TAG_LATEST
+    - docker image rm -f $TAG_COMMIT
 
 deploy-app:
   inherit:
