@@ -3,6 +3,8 @@ from django.urls import reverse
 
 from experiments.admin.algorithm import ExperimentInline
 from experiments.models.algorithm import Algorithm
+from experiments.models.experiment import Experiment
+from experiments.models.dataset import Dataset
 from tests.unittests.views.LoggedInTestCase import AdminLoggedInTestCase
 
 
@@ -48,6 +50,17 @@ def upload_algorithm(client, name, group, description, file_name):
             "path": file,
         }
         return client.post(reverse("admin:experiments_algorithm_add"), data=data, follow=True)
+
+
+def delete_selected_algorithms(client):
+    Algorithm.objects.create(signature="")
+    algo_queryset = Algorithm.objects.all()
+    data = {"action": "delete_selected",
+            "_selected_action": [algo.pk for algo in algo_queryset],
+            # confirm deletion on confirmation site
+            "post": "yes"}
+    url = reverse("admin:experiments_algorithm_changelist")
+    return client.post(url, data, follow=True)
 
 
 class AlgorithmAdminTests(AdminLoggedInTestCase):
@@ -112,17 +125,21 @@ class AlgorithmAdminTests(AdminLoggedInTestCase):
         self.assertEqual("experiments_algorithm_add", response.resolver_match.url_name)
         self.assertContains(response, "This is not a valid algorithm")
 
-    def test_admin_delete_selected_algorithms_action(self):
-        Algorithm.objects.create(signature="")
+    def test_admin_delete_selected_algorithms_action_valid(self):
         self.assertTrue(Algorithm.objects.exists())
-        algo_queryset = Algorithm.objects.all()
-        data = {"action": "delete_selected",
-                "_selected_action": [algo.pk for algo in algo_queryset],
-                # confirm deletion on confirmation site
-                "post": "yes"}
-        url = reverse("admin:experiments_algorithm_changelist")
-        response = self.client.post(url, data, follow=True)
+        response = delete_selected_algorithms(self.client)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, f"Successfully deleted {algo_queryset.count()} algorithms")
+        self.assertContains(response, "Successfully deleted")
         self.assertFalse(Algorithm.objects.exists())
+        self.assertEqual("experiments_algorithm_changelist", response.resolver_match.url_name)
+
+    def test_admin_delete_selected_algorithms_action_invalid(self):
+        dataset = Dataset.objects.create(datapoints_total=1, dimensions_total=1, user=self.admin)
+        exp = Experiment.objects.create(dataset=dataset, user=self.admin)
+        # Algorithm is used in experiemnt, therefore no bulk deletion possible
+        exp.algorithms.add(self.algo)
+        response = delete_selected_algorithms(self.client)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Bulk deletion cannot be executed")
+        self.assertTrue(Algorithm.objects.exists())
         self.assertEqual("experiments_algorithm_changelist", response.resolver_match.url_name)
