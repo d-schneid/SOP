@@ -45,8 +45,8 @@ class AlgorithmLoader:
             (x for x in dir(module) if x.lower() == lower_class_name), None)
         assert class_name is not None, 'file does not contain a class of the same name'
         requested_class = getattr(module, class_name)
-        assert issubclass(requested_class,
-                          BaseDetector), f"{class_name} is not a subclass of pyod.models.base.BaseDetector"
+        assert issubclass(requested_class, BaseDetector), \
+            f"{class_name} is not a subclass of pyod.models.base.BaseDetector"
         return requested_class
 
     @staticmethod
