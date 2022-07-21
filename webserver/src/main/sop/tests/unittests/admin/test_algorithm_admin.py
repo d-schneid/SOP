@@ -81,7 +81,7 @@ class AlgorithmAdminTests(AdminLoggedInTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Add algorithm")
 
-    def test_algorithm_admin_change_view(self):
+    def test_algorithm_admin_change_view_inline(self):
         dataset = Dataset.objects.create(datapoints_total=1, dimensions_total=1, user=self.admin)
         exp = Experiment.objects.create(display_name="exp", dataset=dataset, user=self.admin)
         # Experiment shall be shown in inline
@@ -89,10 +89,19 @@ class AlgorithmAdminTests(AdminLoggedInTestCase):
         url = reverse("admin:experiments_algorithm_change", args=(self.algo.pk,))
         response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "experiment_inline.html")
-        self.assertContains(response, f"{exp.display_name}")
-        self.assertContains(response, "Usage in experiments")
         self.assertContains(response, "Change algorithm")
+        self.assertTemplateUsed(response, "experiment_inline.html")
+        self.assertContains(response, "Usage in experiments")
+        self.assertContains(response, f"{exp.display_name}")
+
+    def test_algorithm_admin_change_view_no_inline(self):
+        url = reverse("admin:experiments_algorithm_change", args=(self.algo.pk,))
+        response = self.client.get(url, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Change algorithm")
+        self.assertTemplateUsed(response, "experiment_inline.html")
+        self.assertContains(response, "Usage in experiments")
+        self.assertContains(response, "This algorithm is not used in any experiment")
 
     def test_admin_delete_algorithm(self):
         self.assertTrue(Algorithm.objects.exists())
