@@ -26,14 +26,14 @@ class UnitTest_ExecutionElementMetricHelper(unittest.TestCase):
     def setUp(self) -> None:
         self.__clean_existing_files()
 
-    def test_GetExecutionElementsResultPaths(self):
+    def test_GetCSVFilesInDirectory(self):
         # No .csv files
-        self.assertEqual(len(ExecutionElementMetricHelper.GetExecutionElementsResultPaths(self._dir_path)), 0)
+        self.assertEqual(len(ExecutionElementMetricHelper.GetCSVFilesInDirectory(self._dir_path)), 0)
 
         # csv files in this directory
         for i in range(0, len(self._csv_paths_in_this_directory)):
             DataIO.write_csv(self._csv_paths_in_this_directory[i], self._csv_to_store)
-            self.assertEqual(len(ExecutionElementMetricHelper.GetExecutionElementsResultPaths(self._dir_path)), i+1)
+            self.assertEqual(len(ExecutionElementMetricHelper.GetCSVFilesInDirectory(self._dir_path)), i+1)
 
         # ignore error files
         DataIO.write_csv(self._error_csv_path, self._csv_to_store)

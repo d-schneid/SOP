@@ -44,8 +44,10 @@ class ExecutionElementMetricHelper:
 
         return np.asarray(outlier_data_points)
 
+    #GetExecutionElementsResultPaths
+
     @staticmethod
-    def GetExecutionElementsResultPaths(execution_folder_path: str):
+    def GetCSVFilesInDirectory(execution_folder_path: str):
         """
         Return a list of all paths in this directory in its children directories that end with .csv
         :param execution_folder_path: The directory that should be scanned for files that end with .csv
