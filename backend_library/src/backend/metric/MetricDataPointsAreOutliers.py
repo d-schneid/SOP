@@ -19,19 +19,19 @@ class MetricDataPointsAreOutliers(ABC, Metric):
         """
         assert metric_result_path.endswith(".csv")
 
+        # Get all .csv files (ExecutionElement result)
         execution_result_path: list[str] = eem_helper. \
             get_execution_elements_result_paths(execution.algorithm_directory_paths)
 
-        outlier_data_points: list[np.ndarray] = list([])
-
-        # fill outlier_data_points with all information about which datapoint is an outlier
+        # Fill outlier_data_points with all information about which datapoint is an outlier
         # (1 bool array for each ExecutionElement result)
+        outlier_data_points: list[np.ndarray] = list([])
         for result_path in execution_result_path:
             outlier_data_points.append(eem_helper.compute_outlier_data_points(result_path))
 
         # Compute the metric result:
-        data_points_outlier_in_subspace: list[bool] = eem_helper.compute_data_point_outlier_count(outlier_data_points)
+        data_points_outlier_in_subspace: list[int] = eem_helper.compute_data_point_outlier_count(outlier_data_points)
 
         # save metric
-        DataIO.save_write_csv(metric_result_path+".running", metric_result_path,
+        DataIO.save_write_csv(metric_result_path + ".running", metric_result_path,
                               np.asarray([data_points_outlier_in_subspace]), True)
