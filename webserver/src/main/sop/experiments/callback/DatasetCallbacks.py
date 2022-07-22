@@ -3,7 +3,7 @@ from experiments.models import Dataset
 
 
 def cleaning_callback(task_id: int, task_state: TaskState.TaskState, progress: float) -> None:
-    dataset: Dataset = Dataset.objects.get(uuid=task_id)
+    dataset: Dataset = Dataset.objects.get(pk=task_id)
 
     # if the task has finished, update the database
     if task_state == TaskState.TaskState.FINISHED:
