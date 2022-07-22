@@ -81,25 +81,25 @@ TODO: BACKEND needs persistent storage??????
 
 The second step is to define the webserver. We recommend using nginx.
 
-The easiest way to get this up and running, is to use any `nginx:...`
-image from [ dockerhub ](https://hub.docker.com/_/nginx) and your config files
-as described in
-the [NGINX documentation](https://docs.nginx.com/nginx/admin-guide/installing-nginx/installing-nginx-docker/)
+The easiest way to get nginx up and running, is to use our nginx image, prepacked with
+the upload progress module.
 
-For example, add the following lines to `docker-compose.yaml` under the
+Of course, you can also use any other image containing nginx
+like [ this one ](https://hub.docker.com/_/nginx)(see [Example NGINX config](#example-nginx-config)).
+
+For example, to use our image, add the following lines to `docker-compose.yaml` under the
 existing content:
 
 ```yaml
   sop_nginx:
     container_name: sop_nginx
     restart: unless-stopped
-    image: nginx:latest
+    image: albinoboi/nginx-sop:latest
     ports:
-      - 80:80
-      - 443:443
+      - "80:80"
+      - "443:443"
     volumes:
       - ./static:/static
-      - ./sop.conf:/etc/nginx/conf.d/sop.conf
     depends_on:
       - sop_app
 ```
@@ -114,7 +114,13 @@ existing content:
 
 #### Example nginx config:
 
+If you want to provide a custom nginx config file (to make the site available from other hosts than localhost, for
+example)
+or use another image that is not `albinoboi/nginx-sop`, you will have to provide a config file.
+(see [NGINX config documentation](https://nginx.org/en/docs/beginners_guide.html)).
 An example NGINX config `sop.conf` with the progressbar module enabled:
+
+More info: [NGINX documentation](https://docs.nginx.com/nginx/admin-guide/installing-nginx/installing-nginx-docker/).
 
 ```text
 # Define upstream django server to forward requests to
@@ -160,9 +166,11 @@ server {
 #### Notes:
 
 + The upstream `server` name **must** be the same as the django docker container name.
++ If you are using our nginx image and not replacing the config file, your SOP container name **has** to be `sop_app`.
 + for upload progressbars to work correctly under nginx, you have to include
   the [NGINX upload progress module](https://www.nginx.com/resources/wiki/modules/upload_progress/)
   this is because NGINX buffers the uploads before transferring them to django.
+  (already packaged in `albinoboi/nginx-sop`)
 
 ---
 

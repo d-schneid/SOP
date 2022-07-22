@@ -91,10 +91,9 @@ class IntegrationTestDatasetCleaningNoUncleanedDataset(unittest.TestCase):
             os.remove(self._cleaned_dataset_path)
         self._dc_missing_uncleaned_dataset = None
 
-    @skip("broken, pls fix me!")
     def test_load_uncleaned_dataset(self):
         # No uncleaned Dataset -> throw exception
-        with self.assertRaises(FileNotFoundError) as context:
+        with self.assertRaises(AssertionError) as context:
             self._dc_missing_uncleaned_dataset._DatasetCleaning__load_uncleaned_dataset()
 
     def task_progress_callback(self, _task_id: int, task_state: TaskState, progress: float) -> None:

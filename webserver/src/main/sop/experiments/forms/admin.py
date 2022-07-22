@@ -28,7 +28,6 @@ class AdminAddAlgorithmForm(forms.ModelForm[Algorithm]):
         # current user is set in ModelAdmin of Algorithm
         temp_path: Path = save_temp_algorithm(self.current_user, cleaned_file)  # type: ignore
         AlgorithmLoader.set_algorithm_root_dir(str(ALGORITHM_ROOT_DIR))
-        AlgorithmLoader.ensure_root_dir_in_path()
         error: Optional[str] = AlgorithmLoader.is_algorithm_valid(str(temp_path))
         if error is None:
             mapping = AlgorithmLoader.get_algorithm_parameters(str(temp_path))
