@@ -44,7 +44,9 @@ class ExecutionElementMetricHelper:
 
         return np.asarray(outlier_data_points)
 
-    #GetExecutionElementsResultPaths
+    #@staticmethod
+    #get GetExecutionElementsResultPaths(algortihm_directory)
+
 
     @staticmethod
     def __getCSVFilesInDirectory(execution_folder_path: str):
