@@ -9,9 +9,9 @@ from backend.DataIO import DataIO
 
 
 class UnitTest_ExecutionElementMetricHelper(unittest.TestCase):
-    _dir_path: str = os.getcwd() + "\\test\\unit_tests\\backend\\metric"
-    # os.path.join(os.path.join(os.path.join(
-    # os.path.join(os.getcwd(), "test"), "unit_test"), "backend"), "metric")
+    _dir_path: str = os.path.join(os.path.join(os.path.join(
+        os.path.join(os.getcwd(), "test"), "unit_test"), "backend"), "metric")
+    # + "\\test\\unit_tests\\backend\\metric"
 
     _csv_to_store: np.ndarray = np.asarray([[42]])
 
