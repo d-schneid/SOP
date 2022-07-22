@@ -47,7 +47,7 @@
           {{ inline_admin_form.form.non_field_errors }}
         {% endif %}
         {% for fieldset in inline_admin_form %}
-          {% include "admin/includes/fieldset.html" %}
+            {% block template %}{% endblock %}
         {% endfor %}
         {% if inline_admin_form.needs_explicit_pk_field %}
           {{ inline_admin_form.pk_field.field }}

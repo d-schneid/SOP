@@ -33,11 +33,8 @@ class ExperimentInlineTests(AdminLoggedInTestCase):
     def test_experiment_inline_delete_permission(self):
         self.assertEqual(self.experiment_inline.has_change_permission(request), False)
 
-    def test_experiment_inline_verbose_name(self):
-        self.assertEqual(self.experiment_inline.verbose_name, "Experiment")
-
     def test_experiment_inline_template(self):
-        self.assertEqual(self.experiment_inline.template, "experiment_inline.html")
+        self.assertEqual(self.experiment_inline.template, "admin/experiment/experiment_inline_algorithm.html")
 
 
 def upload_algorithm(client, name, group, description, file_name):
@@ -90,7 +87,7 @@ class AlgorithmAdminTests(AdminLoggedInTestCase):
         response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Change algorithm")
-        self.assertTemplateUsed(response, "experiment_inline.html")
+        self.assertTemplateUsed(response, "admin/experiment/experiment_inline_algorithm.html")
         self.assertContains(response, "Usage in experiments")
         self.assertContains(response, f"{exp.display_name}")
 
@@ -99,7 +96,7 @@ class AlgorithmAdminTests(AdminLoggedInTestCase):
         response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Change algorithm")
-        self.assertTemplateUsed(response, "experiment_inline.html")
+        self.assertTemplateUsed(response, "admin/experiment/experiment_inline_algorithm.html")
         self.assertContains(response, "Usage in experiments")
         self.assertContains(response, "Not used in any experiment")
 
