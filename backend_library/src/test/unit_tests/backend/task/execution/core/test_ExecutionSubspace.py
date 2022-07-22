@@ -1,7 +1,6 @@
 import os
 import shutil
 import unittest
-from multiprocessing.shared_memory import SharedMemory
 from unittest.mock import Mock
 
 import numpy as np
@@ -18,9 +17,11 @@ class UnitTestExecutionSubspace(unittest.TestCase):
     # parameters for Execution
     _user_id: int = 21412
     _task_id: int = 424242
-    _priority: int = 13
+    _priority: int = 5
 
-    _subspace: Subspace = Subspace(np.asarray([1, 0, 1, 1, 1]))
+    _datapoint_count: int = 1
+
+    _subspace: Subspace = Subspace(np.asarray([True, False, True, True, True]))
 
     # parameterized algorithms
     _hyper_parameter: dict = {"seed": 0}
@@ -72,6 +73,7 @@ class UnitTestExecutionSubspace(unittest.TestCase):
             self._subspace_dtype,
             self.__on_execution_element_finished1,
             self._ds_shm_name,
+            self._datapoint_count,
             self._priority
         )
         self._es.run_later_on_main(0)
@@ -98,7 +100,8 @@ class UnitTestExecutionSubspace(unittest.TestCase):
                 self._result_path,
                 self._subspace_dtype,
                 self.__on_execution_element_finished,
-                self._ds_shm_name
+                self._ds_shm_name,
+                self._datapoint_count
             )
 
         with self.assertRaises(AssertionError) as context:
@@ -110,7 +113,8 @@ class UnitTestExecutionSubspace(unittest.TestCase):
                 self._result_path,
                 self._subspace_dtype,
                 self.__on_execution_element_finished,
-                ""
+                "",
+                self._datapoint_count
             )
 
     def test_getter(self):
@@ -156,6 +160,22 @@ class UnitTestExecutionSubspace(unittest.TestCase):
 
         if os.path.isdir(self._result_path):
             shutil.rmtree(self._result_path)
+
+    def test_wrong_priority(self):
+        self._wrong_priority: list[int] = list([0, 4, -1, 10, -12313, 12431])
+        for wrong_priority in self._wrong_priority:
+            with self.assertRaises(AssertionError):
+                self._es: ExecutionSubspace = ExecutionSubspace(
+                    self._user_id, self._task_id,
+                    self._algorithms,
+                    self._subspace,
+                    self._result_path,
+                    self._subspace_dtype,
+                    self.__on_execution_element_finished1,
+                    self._ds_shm_name,
+                    wrong_priority,
+                    self._datapoint_count
+                )
 
 
 if __name__ == "__main__":

@@ -30,7 +30,7 @@ class ExecutionSubspace(Schedulable):
                  algorithms: Iterable[ParameterizedAlgorithm], subspace: Subspace,
                  result_path: str, subspace_dtype: np.dtype,
                  on_execution_element_finished_callback: Callable[[bool], None],
-                 ds_shm_name: str, priority: int = 5):
+                 ds_shm_name: str, datapoint_count: int, priority: int = 5):
         """
         :param ds_shm_name: name of the shared emory segment containing the full dataset
         :param user_id: The ID of the user belonging to the ExecutionSubspace. Has to be at least -1.
@@ -42,11 +42,14 @@ class ExecutionSubspace(Schedulable):
         :param subspace_dtype: The dtype of the values that are stored in the dataset for processing
         :param on_execution_element_finished_callback: Reports the Execution that a ExecutionElement finished.
         """
+        assert priority < 10
+        assert priority >= 5
 
         assert user_id >= -1
         assert task_id >= -1
 
         # privates from Constructor
+        self._datapoint_count = datapoint_count
         self._ds_shm_name: str = ds_shm_name
         self._user_id: int = user_id
         self._task_id: int = task_id
@@ -77,13 +80,14 @@ class ExecutionSubspace(Schedulable):
         """
         for algorithm in algorithms:
             result_path: str = os.path.join(self._result_path,
-                                            algorithm.directory_name_in_execution)  # TODO: TEST THIS!
+                                            algorithm.directory_name_in_execution + ".csv")  # TODO: TEST THIS!
             self._execution_elements.append(
                 ExecutionElement.ExecutionElement(self._user_id, self._task_id,
                                                   self._subspace, algorithm,
                                                   result_path, self._subspace_dtype,
                                                   self._subspace_shared_memory_name,
-                                                  self.__execution_element_is_finished))
+                                                  self.__execution_element_is_finished,
+                                                  self._datapoint_count))
 
     def __schedule_execution_elements(self) -> None:
         """
@@ -100,11 +104,10 @@ class ExecutionSubspace(Schedulable):
         """
         ds_shm: SharedMemory = SharedMemory(self._ds_shm_name)
         ds_dim_cnt: int = self._subspace.get_dataset_dimension_count()
-        ds_point_count = ds_shm.size / self._subspace_dtype.itemsize / ds_dim_cnt
-        ds_arr = np.ndarray((ds_point_count, ds_dim_cnt), dtype=self._subspace_dtype,
-                            buffer=ds_shm.buf)
-        ss_shm = SharedMemory(self._ds_shm_name, True,
-                              self._subspace.get_size_of_subspace_buffer(ds_arr))
+        ds_arr = np.ndarray((self._datapoint_count, ds_dim_cnt),
+                            dtype=self._subspace_dtype, buffer=ds_shm.buf)
+        buffer_size = self._subspace.get_size_of_subspace_buffer(ds_arr)
+        ss_shm = SharedMemory(self._subspace_shared_memory_name, True, buffer_size)
         self._subspace.make_subspace_array(ds_arr, ss_shm)
         return ss_shm   
 
