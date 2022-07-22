@@ -60,6 +60,8 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
         # save the file temporarily to disk
         temp_file_path: str = save_dataset(self.request.FILES["path_original"], self.request.user)
 
+        assert os.path.isfile(temp_file_path)
+
         # check if the file is a csv file
         if not check_if_file_is_csv(temp_file_path):
             form.add_error("path_original", "The given file is not a valid csv.-file.")
