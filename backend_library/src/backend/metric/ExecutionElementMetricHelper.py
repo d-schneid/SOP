@@ -50,10 +50,13 @@ class ExecutionElementMetricHelper:
         :param algorithm_directory_paths: The selected algorithm directories that should be scanned for the files.
         :return: A list containing all paths to the files that end with .csv in the inputted directories.
         """
-        all_execution_element_results: list[str] = list()
+        all_execution_element_results: list[str] = list([])
         for algorithm_directory in algorithm_directory_paths:
+            assert os.path.isdir(algorithm_directory)
+
             all_execution_element_results.extend(ExecutionElementMetricHelper
-                                                 .__getCSVFilesInDirectory(algorithm_directory))
+                                                 .__get_csv_files_in_directory(algorithm_directory))
+        return all_execution_element_results
 
     @staticmethod
     def __get_csv_files_in_directory(execution_folder_path: str) -> list[str]:
