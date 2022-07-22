@@ -57,6 +57,9 @@ class UnitTest_ExecutionElementMetricHelper(unittest.TestCase):
         self.assertEqual(len(ExecutionElementMetricHelper.
                              _ExecutionElementMetricHelper__getCSVFilesInDirectory(self._dir_path)), 0)
 
+    def test_GetExecutionElementsResultPaths(self):
+        pass
+
     def __clean_existing_files(self):
         if os.path.isdir(self._child_directory):
             shutil.rmtree(self._child_directory)
