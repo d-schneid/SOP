@@ -5,6 +5,7 @@ import numpy as np
 from backend.metric.Metric import Metric
 from backend.task.execution.core.Execution import Execution
 from backend.metric.ExecutionElementMetricHelper import ExecutionElementMetricHelper as eem_helper
+from backend.DataIO import DataIO
 
 
 class MetricDataPointsAreOutliers(ABC, Metric):
@@ -28,4 +29,9 @@ class MetricDataPointsAreOutliers(ABC, Metric):
         for result_path in execution_result_path:
             outlier_data_points.append(eem_helper.compute_outlier_data_points(result_path))
 
-        # Here starts the metric
+        # Compute the metric result:
+        data_points_outlier_in_subspace: list[bool] = eem_helper.compute_data_point_outlier_count(outlier_data_points)
+
+        # save metric
+        DataIO.save_write_csv(metric_result_path+".running", metric_result_path,
+                              np.asarray([data_points_outlier_in_subspace]), True)

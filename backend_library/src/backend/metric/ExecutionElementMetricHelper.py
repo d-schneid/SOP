@@ -72,7 +72,7 @@ class ExecutionElementMetricHelper:
         return all_csv_files
 
     @staticmethod
-    def compute_data_point_outlier_count(data_points_outlier_in_subspace: list[np.ndarray]):
+    def compute_data_point_outlier_count(data_points_outlier_in_subspace: list[np.ndarray]) -> list[bool]:
         """
         :param data_points_outlier_in_subspace: The list containes for each subspace one entry.
         These entries are 1D bool array that say for each data point if it was an outlier or not
@@ -90,3 +90,4 @@ class ExecutionElementMetricHelper:
                     data_points_outlier_count[data_point] += 1
 
         return data_points_outlier_count
+
