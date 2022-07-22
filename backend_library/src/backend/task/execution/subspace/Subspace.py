@@ -8,7 +8,7 @@ import numpy as np
 class Subspace:
     """Represents a Subspace of a n-dimensional Space"""
     def __init__(self, mask: np.array):
-        assert str(mask.dtype) == "bool"
+        assert mask.dtype == np.dtype("?")
         self._mask = mask
 
     @property

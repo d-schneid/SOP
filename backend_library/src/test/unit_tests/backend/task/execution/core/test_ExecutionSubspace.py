@@ -1,7 +1,6 @@
 import os
 import shutil
 import unittest
-from multiprocessing.shared_memory import SharedMemory
 from unittest.mock import Mock
 
 import numpy as np
@@ -22,7 +21,7 @@ class UnitTestExecutionSubspace(unittest.TestCase):
 
     _datapoint_count: int = 1
 
-    _subspace: Subspace = Subspace(np.asarray([1, 0, 1, 1, 1]))
+    _subspace: Subspace = Subspace(np.asarray([True, False, True, True, True]))
 
     # parameterized algorithms
     _hyper_parameter: dict = {"seed": 0}

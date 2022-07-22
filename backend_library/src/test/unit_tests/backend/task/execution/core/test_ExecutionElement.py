@@ -22,8 +22,9 @@ class UnitTestExecutionElement(unittest.TestCase):
     _dir_name: str = os.getcwd()
     _result_path: str = os.path.join(_dir_name, "ee_result_path.csv")
 
-    _subspace: Subspace = Subspace(np.asarray([1, 1, 1]))
-    _algorithm: ParameterizedAlgorithm = ParameterizedAlgorithm("algorithm_path", {}, "display_name")
+    _subspace: Subspace = Subspace(np.asarray([True, True, True]))
+    _algorithm: ParameterizedAlgorithm = ParameterizedAlgorithm("algorithm_path", {},
+                                                                "display_name")
 
     _subspace_dtype: np.dtype = np.dtype('f4')
     _subspace_shared_memory_name: str = "Subspace Shared Memory Name"
