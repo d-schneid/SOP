@@ -1,0 +1,5 @@
+{% extends "admin/fieldset.html" %}
+
+{%  block link %}
+    <a href="{% url 'admin:experiments_experiment_change' inline_admin_form.original.pk %}">{{ field.contents }}</a>
+{% endblock %}
