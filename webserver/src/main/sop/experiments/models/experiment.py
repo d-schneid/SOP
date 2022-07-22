@@ -11,7 +11,7 @@ class Experiment(models.Model):
     Database model of an experiment
     """
 
-    display_name = models.CharField(max_length=80)  # type: ignore
+    display_name = models.CharField(max_length=80, verbose_name="Experiment")  # type: ignore
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # type: ignore
     # We do not allow deletion of a dataset if it's used in an experiment
     dataset = models.ForeignKey(to=Dataset, on_delete=models.PROTECT)  # type: ignore

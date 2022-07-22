@@ -16,7 +16,7 @@
 
     {% if inline_admin_formset.formset.total_form_count <= 0 %}
       <br>
-      This algorithm is not used in any experiment.
+      Not used in any experiment.
     {% else %}
     {% for inline_admin_form in inline_admin_formset %}
       <div class="inline-related
@@ -47,7 +47,7 @@
           {{ inline_admin_form.form.non_field_errors }}
         {% endif %}
         {% for fieldset in inline_admin_form %}
-          {% include "admin/includes/fieldset.html" %}
+            {% block template %}{% endblock %}
         {% endfor %}
         {% if inline_admin_form.needs_explicit_pk_field %}
           {{ inline_admin_form.pk_field.field }}
