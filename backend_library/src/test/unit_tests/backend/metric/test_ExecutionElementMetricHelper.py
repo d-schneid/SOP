@@ -138,6 +138,28 @@ class UnitTest_ExecutionElementMetricHelper(unittest.TestCase):
                                       compute_data_point_outlier_count(_execution_element_outlier_result_dataset1),
                                       _expected_result1)
 
+    def test_compute_subspace_outlier_amount(self):
+        _execution_element_outlier_result_dataset1: dict[str, list[np.ndarray]] = {
+            "subspace1": list([
+                np.asarray([True, True, True, True, False, False, False, False]),
+                np.asarray([True, True, False, False, False, False, False, False])]),
+            "subspace2": list([
+                np.asarray([True, False, False, False, False, False, False, False]),
+                np.asarray([False, False, False, False, False, False, False, False])]),
+            "AHHHH, everything is an outlier D:": list([
+                np.asarray([True, True, True, True, True, True, True, True]),
+                np.asarray([True, True, True, True, True, True, True, True])]),
+            "Not even one outlier :)": list([
+                np.asarray([False, False, False, False, False, False, False, False]),
+                np.asarray([False, False, False, False, False, False, False, False])])
+        }
+
+        _expected_result1: np.ndarray[int] = np.asarray(list([4+2, 1+0, 8+8, 0+0]))
+
+        np.testing.assert_array_equal(ExecutionElementMetricHelper.
+                                      compute_subspace_outlier_amount(_execution_element_outlier_result_dataset1),
+                                      _expected_result1)
+
 
     def __clean_existing_files(self):
         if os.path.isdir(self._child_directory):

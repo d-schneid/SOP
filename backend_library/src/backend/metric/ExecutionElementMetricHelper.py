@@ -77,7 +77,7 @@ class ExecutionElementMetricHelper:
         """
         :param data_points_outlier_in_subspace: The list contains for each ExecutionElement result one entry.
         These entries are 1D bool array that say for each data point if it was an outlier or not.
-        :return: Return an list with an entry for each data point (ordered after the data point index).
+        :return: Return a list with an entry for each data point (ordered after the data point index).
         The entry shows the amount of subspaces in which this data point was detected as an outlier
         """
         assert len(data_points_outlier_in_subspace) > 0
@@ -95,28 +95,37 @@ class ExecutionElementMetricHelper:
         return data_points_outlier_count
 
     @staticmethod
-    def compute_subspace_outlier_amount(data_points_outlier_in_subspace: dict[list[np.ndarray]]) -> list[int]:
+    def compute_subspace_outlier_amount(data_points_outlier_in_subspace: dict[str, list[np.ndarray]]) -> list[int]:
         """
         :param data_points_outlier_in_subspace:
-        The outer list: Contains one entry for each subspace.  TODO rework
-            Its entries contain all ExecutionElement results for this subspace
+        The outer dictionary: Contains one entry for each subspace.
+        Its entries contain all ExecutionElement results for this subspace
         \n
         The inner list: Contains one entry for each ExecutionElement result (using the same subspace)
         \n
         The array: 1D bool array that contains one entry for each data point.
         It says if the data point is an outlier or not
 
-        :return:
+        :return: Return a list with an entry for each subspace. It contains the number of outliers in this subspace.
         """
         assert len(data_points_outlier_in_subspace) > 0
 
         # Each subspace has a list entry -> Create as many list entries for the result
         subspace_outlier_amount: list[int] = [0] * len(data_points_outlier_in_subspace)
 
-        for subspace_result in data_points_outlier_in_subspace:
-            for data_point in range(0, subspace_result.shape[0]):
-                if subspace_result[data_point]:
-                    subspace_outlier_amount[subspace_result] += 1
+        for subspace_index in range(0, len(data_points_outlier_in_subspace)):
+            print(subspace_index)
+            print(list(data_points_outlier_in_subspace.keys())[subspace_index])
+
+        for subspace_index in range(0, len(data_points_outlier_in_subspace)):
+            subspace_key: str = list(data_points_outlier_in_subspace.keys())[subspace_index]  # get key to dict index
+            for execution_element_result in data_points_outlier_in_subspace[subspace_key]:
+                # a execution_element_result is a 1D bool array (if datapoint is Outlier of not)
+                print("subspace result: " + str(execution_element_result))
+
+                for data_point in range(0, execution_element_result.size):
+                    if execution_element_result[data_point]:
+                        subspace_outlier_amount[subspace_index] += 1
 
         return subspace_outlier_amount
 
