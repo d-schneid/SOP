@@ -10,7 +10,7 @@ from backend.DataInfo import DataInfo
 
 class ExecutionElementMetricHelper:
     @staticmethod
-    def ComputeOutlierDataPoints(execution_element_result_path: str, quantile: float = 0.99) -> np.ndarray:
+    def compute_outlier_data_points(execution_element_result_path: str, quantile: float = 0.99) -> np.ndarray:
         """
         Interprets one result of an ExecutionElement and
         returns an array which says for each data point if it is an outlier or not \n
@@ -45,7 +45,7 @@ class ExecutionElementMetricHelper:
         return np.asarray(outlier_data_points)
 
     @staticmethod
-    def GetExecutionElementsResultPaths(algorithm_directory_paths: list[str]):
+    def get_execution_elements_result_paths(algorithm_directory_paths: list[str]):
         """ Gets all files that end with .csv in the selected directory. \n
         :param algorithm_directory_paths: The selected algorithm directories that should be scanned for the files.
         :return: A list containing all paths to the files that end with .csv in the inputted directories.
@@ -56,7 +56,7 @@ class ExecutionElementMetricHelper:
                                                  .__getCSVFilesInDirectory(algorithm_directory))
 
     @staticmethod
-    def __getCSVFilesInDirectory(execution_folder_path: str) -> list[str]:
+    def __get_csv_files_in_directory(execution_folder_path: str) -> list[str]:
         """
         Return a list of all paths in this directory in its children directories that end with .csv. \n
         :param execution_folder_path: The directory that should be scanned for files that end with .csv.
