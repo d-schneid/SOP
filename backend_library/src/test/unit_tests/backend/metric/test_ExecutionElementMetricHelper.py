@@ -110,6 +110,23 @@ class UnitTest_ExecutionElementMetricHelper(unittest.TestCase):
 
         self.__clean_existing_files()
 
+    def test_convert_paths_into_subspace_identifier(self):
+        # one element
+        self.assertEqual(list(["first"]), ExecutionElementMetricHelper.
+                         convert_paths_into_subspace_identifier(list([self._csv_paths_in_this_directory[0]])))
+
+        # n elements
+        self.assertEqual(list(["first", "second", "random_name"]), ExecutionElementMetricHelper.
+                         convert_paths_into_subspace_identifier(list([self._csv_paths_in_this_directory[0],
+                                                                      self._csv_paths_in_this_directory[1],
+                                                                      self._csv_paths_in_this_directory[2]])))
+
+        # empty
+        self.assertEqual(list([""]), ExecutionElementMetricHelper.
+                         convert_paths_into_subspace_identifier(list([""])))
+
+        self.__clean_existing_files()
+
     def __clean_existing_files(self):
         if os.path.isdir(self._child_directory):
             shutil.rmtree(self._child_directory)
