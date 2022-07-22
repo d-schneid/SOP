@@ -1,7 +1,7 @@
 from django.contrib.admin.sites import AdminSite
 from django.urls import reverse
 
-from experiments.admin.algorithm import ExperimentInline
+from experiments.admin.inlines import ExperimentInlineAlgorithm
 from experiments.models.algorithm import Algorithm
 from experiments.models.experiment import Experiment
 from experiments.models.dataset import Dataset
@@ -21,7 +21,7 @@ class ExperimentInlineTests(AdminLoggedInTestCase):
         super().setUp()
         request.user = self.admin
         self.site = AdminSite()
-        self.experiment_inline = ExperimentInline(Algorithm, self.site)
+        self.experiment_inline = ExperimentInlineAlgorithm(Algorithm, self.site)
 
     def test_experiment_inline_add_permission(self):
         algorithm = Algorithm.objects.create(signature="")
@@ -101,7 +101,7 @@ class AlgorithmAdminTests(AdminLoggedInTestCase):
         self.assertContains(response, "Change algorithm")
         self.assertTemplateUsed(response, "experiment_inline.html")
         self.assertContains(response, "Usage in experiments")
-        self.assertContains(response, "This algorithm is not used in any experiment")
+        self.assertContains(response, "Not used in any experiment")
 
     def test_admin_delete_algorithm(self):
         self.assertTrue(Algorithm.objects.exists())
