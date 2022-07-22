@@ -155,6 +155,11 @@ class UnitTest_ExecutionElementMetricHelper_ComputeOutlierDataPoints(unittest.Te
     _execution_element_result_dataset1: np.ndarray = \
         np.asarray([[0, 1], [1, 0], [2, 0], [3, 0], [4, 0], [5, 1], [6, 1]])
 
+    _execution_element_result_path2: str = os.path.join(os.getcwd(), "result_path2.csv")
+    _execution_element_result_dataset2: np.ndarray = \
+        np.asarray([[0, 0], [1, 0.1], [2, 0.2], [3, 0.3], [4, 0.4],
+                    [5, 0.5], [6, 0.6], [7, 0.7], [8, 0.8], [9, 0.9], [10, 0.99], [10, 1]])
+
     def setUp(self) -> None:
         self.__clean_existing_files()
 
@@ -163,17 +168,25 @@ class UnitTest_ExecutionElementMetricHelper_ComputeOutlierDataPoints(unittest.Te
             os.remove(self._execution_element_result_path1)
 
     def test_compute_outlier_data_points(self):
+        # invalid path
         with self.assertRaises(AssertionError) as context:
             ExecutionElementMetricHelper.compute_outlier_data_points(self._execution_element_result_wrong_path)
 
+        # dataset 1 (only 1 or 0 -> yes/no answers)
         DataIO.write_csv(self._execution_element_result_path1, self._execution_element_result_dataset1)
-
         execution_element_expected_result1: np.ndarray = \
             np.asarray([True, False, False, False, False, True, True])
         np.testing.assert_array_equal(execution_element_expected_result1,
                                       ExecutionElementMetricHelper.
                                       compute_outlier_data_points(self._execution_element_result_path1))
 
+        # dataset 2 (answers range between 0 and 1). Only last entry is beyond percentile -> only one Outlier
+        DataIO.write_csv(self._execution_element_result_path2, self._execution_element_result_dataset2)
+        execution_element_expected_result2: np.ndarray = \
+            np.asarray([False, False, False, False, False, False, False, False, False, False, False, True])
+        np.testing.assert_array_equal(execution_element_expected_result2,
+                                      ExecutionElementMetricHelper.
+                                      compute_outlier_data_points(self._execution_element_result_path2))
 
 if __name__ == '__main__':
     unittest.main()
