@@ -36,7 +36,6 @@ class ExecutionElementMetricHelper:
         min_outlier_score_to_be_an_outlier: float = execution_element_result_df.quantile(quantile).iloc[1]
 
         # Convert and return requested array
-        # TODO: TEST THIS!!!
         outlier_data_points: list[bool] = list()
 
         for i in range(0, len(execution_element_result_df[1])):

@@ -151,14 +151,23 @@ class UnitTest_ExecutionElementMetricHelper_ComputeOutlierDataPoints(unittest.Te
 
     _execution_element_result_wrong_path: str = "I don't end with .csv so now I'm evil?!"
 
+    # dataset 1
     _execution_element_result_path1: str = os.path.join(os.getcwd(), "result_path1.csv")
     _execution_element_result_dataset1: np.ndarray = \
         np.asarray([[0, 1], [1, 0], [2, 0], [3, 0], [4, 0], [5, 1], [6, 1]])
 
+    # dataset 2
     _execution_element_result_path2: str = os.path.join(os.getcwd(), "result_path2.csv")
     _execution_element_result_dataset2: np.ndarray = \
         np.asarray([[0, 0], [1, 0.1], [2, 0.2], [3, 0.3], [4, 0.4],
                     [5, 0.5], [6, 0.6], [7, 0.7], [8, 0.8], [9, 0.9], [10, 0.99], [10, 1]])
+
+    # dataset 3
+    _array_values: list[float] = list(range(0, 10000))
+    _normalized_values: list[float] = list([])
+    for val in _array_values:
+        _normalized_values.append(val / 10000.0)
+    _execution_element_result_path3: str = os.path.join(os.getcwd(), "result_path3.csv")
 
     def setUp(self) -> None:
         self.__clean_existing_files()
@@ -166,6 +175,12 @@ class UnitTest_ExecutionElementMetricHelper_ComputeOutlierDataPoints(unittest.Te
     def __clean_existing_files(self):
         if os.path.isfile(self._execution_element_result_path1):
             os.remove(self._execution_element_result_path1)
+
+        if os.path.isfile(self._execution_element_result_path2):
+            os.remove(self._execution_element_result_path2)
+
+        if os.path.isfile(self._execution_element_result_path3):
+            os.remove(self._execution_element_result_path3)
 
     def test_compute_outlier_data_points(self):
         # invalid path
@@ -187,6 +202,24 @@ class UnitTest_ExecutionElementMetricHelper_ComputeOutlierDataPoints(unittest.Te
         np.testing.assert_array_equal(execution_element_expected_result2,
                                       ExecutionElementMetricHelper.
                                       compute_outlier_data_points(self._execution_element_result_path2))
+
+        # dataset 3
+        DataIO.write_csv(self._execution_element_result_path3, np.asarray(self._normalized_values), True)
+
+        _expected_result3_list: list[bool] = list([])
+        for val in range(0, 9900):  # Because we use a 0.99 quantile and have 1000 entries
+            _expected_result3_list.append(False)
+        for val in range(0, 100):
+            _expected_result3_list.append(True)
+        _expected_result3: np.ndarray = np.asarray(_expected_result3_list)
+
+        np.testing.assert_array_equal(_expected_result3,
+                                      ExecutionElementMetricHelper.
+                                      compute_outlier_data_points(self._execution_element_result_path3))
+
+        # clean up
+        self.__clean_existing_files()
+
 
 if __name__ == '__main__':
     unittest.main()
