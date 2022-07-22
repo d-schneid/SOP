@@ -131,6 +131,11 @@ class ExecutionElementMetricHelper:
 
     @staticmethod
     def convert_paths_into_subspace_identifier(paths_to_convert: list[str]) -> list[str]:
+        """
+        Converts the inserted path to the name of the file: in this case the Subspace Identifier. \n
+        :param paths_to_convert: The paths that should be converted.
+        :return: A list containing the subspace identifier for each inserted path.
+        """
         converted_paths: list[str] = list([])
         for path in paths_to_convert:
             converted_paths.append(Path(path).stem)
