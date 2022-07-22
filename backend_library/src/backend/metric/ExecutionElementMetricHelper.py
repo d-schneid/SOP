@@ -7,6 +7,7 @@ import pandas as pd
 
 from backend.DataIO import DataIO
 from backend.DataInfo import DataInfo
+from backend.task.execution.core.Execution import Execution
 
 
 class ExecutionElementMetricHelper:
@@ -72,10 +73,10 @@ class ExecutionElementMetricHelper:
         return all_csv_files
 
     @staticmethod
-    def compute_data_point_outlier_count(data_points_outlier_in_subspace: list[np.ndarray]) -> list[bool]:
+    def compute_data_point_outlier_count(data_points_outlier_in_subspace: list[np.ndarray]) -> list[int]:
         """
-        :param data_points_outlier_in_subspace: The list containes for each subspace one entry.
-        These entries are 1D bool array that say for each data point if it was an outlier or not
+        :param data_points_outlier_in_subspace: The list contains for each subspace one entry. // TODO IST FALSCH, da ein eintrag für jedes Execution Element :(
+        These entries are 1D bool array that say for each data point if it was an outlier or not.
         :return: Return an list with an entry for each data point (ordered after the data point index).
         The entry shows the amount of subspaces in which this data point was detected as an outlier
         """
@@ -91,3 +92,21 @@ class ExecutionElementMetricHelper:
 
         return data_points_outlier_count
 
+    @staticmethod
+    def compute_subspace_outlier_amount(data_points_outlier_in_subspace: list[np.ndarray]) -> list[int]:
+        """
+        :param data_points_outlier_in_subspace: The list contains for each subspace one entry. // TODO IST FALSCH, da ein eintrag für jedes Execution Element :(
+        These entries are 1D bool array that say for each data point if it was an outlier or not.
+        :return:
+        """
+        assert len(data_points_outlier_in_subspace) > 0
+
+        # Each subspace has a list entry -> Create as many list entries for the result
+        subspace_outlier_amount: list[int] = [0] * len(data_points_outlier_in_subspace)
+
+        for subspace_result in data_points_outlier_in_subspace:
+            for data_point in range(0, subspace_result.shape[0]):
+                if subspace_result[data_point] is True:
+                    subspace_outlier_amount[subspace_result] += 1
+
+        return subspace_outlier_amount
