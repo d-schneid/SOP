@@ -11,7 +11,7 @@ class DatasetAdmin(AbstractModelAdmin):
     inlines = [ExperimentInlineDataset]
     list_display = ["display_name", "user", "datapoints_total", "dimensions_total", "upload_date", "is_cleaned"]
     raw_id_fields = ["user"]
-    list_filter = ["user", "upload_date", "is_cleaned"]
+    list_filter = ["upload_date", "is_cleaned"]
     search_fields = ["display_name"]
     actions = ["delete_selected"]
 

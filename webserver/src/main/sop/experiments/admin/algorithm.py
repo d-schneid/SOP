@@ -13,7 +13,7 @@ class AlgorithmAdmin(AbstractModelAdmin):
     inlines = [ExperimentInlineAlgorithm]
     list_display = ["display_name", "group", "user", "upload_date"]
     raw_id_fields = ["user"]
-    list_filter = ["user", "group"]
+    list_filter = ["upload_date", "group"]
     search_fields = ["display_name"]
     actions = ["delete_selected"]
 
