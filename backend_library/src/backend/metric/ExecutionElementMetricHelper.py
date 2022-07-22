@@ -81,13 +81,15 @@ class ExecutionElementMetricHelper:
         The entry shows the amount of subspaces in which this data point was detected as an outlier
         """
         assert len(data_points_outlier_in_subspace) > 0
-        assert data_points_outlier_in_subspace[0].shape[0] == 1
+        assert data_points_outlier_in_subspace[0].shape is not None
 
         data_points_outlier_count: list[int] = [0] * data_points_outlier_in_subspace[0].shape[0]
 
         for execution_element_result in data_points_outlier_in_subspace:
             for data_point in range(0, execution_element_result.shape[0]):
-                if execution_element_result[data_point] is True:
+                print("I'm here")
+                if execution_element_result[data_point]:
+                    print("INCREASE!!!")
                     data_points_outlier_count[data_point] += 1
 
         return data_points_outlier_count
@@ -111,11 +113,9 @@ class ExecutionElementMetricHelper:
         # Each subspace has a list entry -> Create as many list entries for the result
         subspace_outlier_amount: list[int] = [0] * len(data_points_outlier_in_subspace)
 
-        # TODO: Rework
-
         for subspace_result in data_points_outlier_in_subspace:
             for data_point in range(0, subspace_result.shape[0]):
-                if subspace_result[data_point] is True:
+                if subspace_result[data_point]:
                     subspace_outlier_amount[subspace_result] += 1
 
         return subspace_outlier_amount

@@ -10,8 +10,7 @@ from backend.DataIO import DataIO
 
 class UnitTest_ExecutionElementMetricHelper(unittest.TestCase):
     _dir_path: str = os.path.join(os.path.join(os.path.join(
-        os.path.join(os.getcwd(), "test"), "unit_test"), "backend"), "metric")
-    # + "\\test\\unit_tests\\backend\\metric"
+        os.path.join(os.getcwd(), "test"), "unit_tests"), "backend"), "metric")
 
     _csv_to_store: np.ndarray = np.asarray([[42]])
 
@@ -127,6 +126,19 @@ class UnitTest_ExecutionElementMetricHelper(unittest.TestCase):
 
         self.__clean_existing_files()
 
+    def test_compute_data_point_outlier_count(self):
+        _execution_element_outlier_result_dataset1: list[np.ndarray] = list([
+            np.asarray([True, True, True, True, False, False, False, False]),
+            np.asarray([True, True, False, False, False, False, False, False]),
+            np.asarray([True, False, False, False, False, False, False, False]),
+            np.asarray([False, False, False, False, False, False, False, False])])
+        _expected_result1: np.ndarray[int] = np.asarray(list([3, 2, 1, 1, 0, 0, 0, 0]))
+
+        np.testing.assert_array_equal(ExecutionElementMetricHelper.
+                                      compute_data_point_outlier_count(_execution_element_outlier_result_dataset1),
+                                      _expected_result1)
+
+
     def __clean_existing_files(self):
         if os.path.isdir(self._child_directory):
             shutil.rmtree(self._child_directory)
@@ -207,7 +219,7 @@ class UnitTest_ExecutionElementMetricHelper_ComputeOutlierDataPoints(unittest.Te
         DataIO.write_csv(self._execution_element_result_path3, np.asarray(self._normalized_values), True)
 
         _expected_result3_list: list[bool] = list([])
-        for val in range(0, 9900):  # Because we use a 0.99 quantile and have 1000 entries
+        for val in range(0, 9900):  # Because we use a 0.99 quantile and have 10000 entries
             _expected_result3_list.append(False)
         for val in range(0, 100):
             _expected_result3_list.append(True)
