@@ -84,6 +84,11 @@ class UnitTestExecution(unittest.TestCase):
         self.assertEqual(self._user_id, self._ex.user_id)
         self.assertEqual(self._task_id, self._ex.task_id)
 
+        directory_names: list[str] = list()
+        for algorithm in self._algorithms:
+            directory_names.append(os.path.join(self._result_path, algorithm.directory_name_in_execution))
+        self.assertEqual(directory_names, self._ex.algorithm_directory_paths)
+
     def test_fill_algorithms_directory_name(self):
         iterable = self._ex._algorithms.__iter__()
         self.assertEqual(next(iterable).directory_name_in_execution, self._directory_names_in_execution[0])
