@@ -1,4 +1,9 @@
+import os.path
+import io
+
+import pandas
 import pandas as pd
+from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpResponse, HttpRequest
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
@@ -14,7 +19,7 @@ from experiments.forms.edit import DatasetEditForm
 from experiments.models import Dataset
 from experiments.models.managers import DatasetQuerySet
 from experiments.services.dataset import check_if_file_is_csv, generate_path_dataset_uncleaned_and_move_dataset, \
-    generate_path_dataset_cleaned, get_full_file_path
+    generate_path_dataset_cleaned, save_dataset
 from experiments.views.generic import PostOnlyDeleteView
 
 
@@ -39,6 +44,7 @@ def schedule_backend(dataset: Dataset) -> None:
     # TODO: DO NOT do this here. Move it to AppConfig or whatever
     if UserRoundRobinScheduler._instance is None:
         UserRoundRobinScheduler()
+
     # start the cleaning
     dataset_cleaning.schedule()
 
@@ -51,7 +57,8 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
 
     def form_valid(self, form):
 
-        temp_file_path: str = get_full_file_path(self.request.FILES["path_original"], self.request.user)
+        # save the file temporarily to disk
+        temp_file_path: str = save_dataset(self.request.FILES["path_original"], self.request.user)
 
         # check if the file is a csv file
         if not check_if_file_is_csv(temp_file_path):
@@ -60,7 +67,7 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
 
         # Else:
         # add the model data to the form
-        csv_frame: DataFrame = pd.read_csv(temp_file_path)
+        csv_frame: pd.DataFrame = pandas.read_csv(temp_file_path)
         form.instance.datapoints_total = csv_frame.shape[0]  # TODO: size vs. shpae[0]
         form.instance.dimensions_total = csv_frame.shape[1]
 
