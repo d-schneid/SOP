@@ -113,7 +113,7 @@ class UnitTestExecutionElement(unittest.TestCase):
                 ee(self._user_id, self._task_id, self._subspace, self._algorithm,
                    self._result_path,
                    self._subspace_dtype, self._subspace_shared_memory_name,
-                   self.__execution_element_is_finished1, wrong_priority)
+                   self.__execution_element_is_finished1, 1, wrong_priority)
 
 
 if __name__ == '__main__':
