@@ -145,5 +145,35 @@ class UnitTest_ExecutionElementMetricHelper(unittest.TestCase):
             os.remove(self._error_csv_path)
 
 
+class UnitTest_ExecutionElementMetricHelper_ComputeOutlierDataPoints(unittest.TestCase):
+    _dir_path: str = os.path.join(os.path.join(os.path.join(
+        os.path.join(os.getcwd(), "test"), "unit_test"), "backend"), "metric")
+
+    _execution_element_result_wrong_path: str = "I don't end with .csv so now I'm evil?!"
+
+    _execution_element_result_path1: str = os.path.join(os.getcwd(), "result_path1.csv")
+    _execution_element_result_dataset1: np.ndarray = \
+        np.asarray([[0, 1], [1, 0], [2, 0], [3, 0], [4, 0], [5, 1], [6, 1]])
+
+    def setUp(self) -> None:
+        self.__clean_existing_files()
+
+    def __clean_existing_files(self):
+        if os.path.isfile(self._execution_element_result_path1):
+            os.remove(self._execution_element_result_path1)
+
+    def test_compute_outlier_data_points(self):
+        with self.assertRaises(AssertionError) as context:
+            ExecutionElementMetricHelper.compute_outlier_data_points(self._execution_element_result_wrong_path)
+
+        DataIO.write_csv(self._execution_element_result_path1, self._execution_element_result_dataset1)
+
+        execution_element_expected_result1: np.ndarray = \
+            np.asarray([True, False, False, False, False, True, True])
+        np.testing.assert_array_equal(execution_element_expected_result1,
+                                      ExecutionElementMetricHelper.
+                                      compute_outlier_data_points(self._execution_element_result_path1))
+
+
 if __name__ == '__main__':
     unittest.main()
