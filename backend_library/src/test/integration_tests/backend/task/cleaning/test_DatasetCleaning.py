@@ -103,7 +103,7 @@ class IntegrationTestDatasetCleaningNoUncleanedDataset(unittest.TestCase):
 class IntegrationTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
     _dir_name: str = os.getcwd()
     # dataset 1
-    _uncleaned_dataset_path: str = os.path.join(_dir_name, "uncleaned_dataset1.csv")
+    _uncleaned_dataset_path: str = os.path.join(_dir_name, "uncleaned_dataset1.csv.error")
     _cleaned_dataset_path: str = os.path.join(_dir_name, "cleaned_dataset1.csv")
 
     _uncleaned_dataset1: np.ndarray = ds().cat_dataset3

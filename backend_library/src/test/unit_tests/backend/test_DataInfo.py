@@ -11,7 +11,7 @@ from test.DatasetsForTesting import Datasets as ds
 
 class UnitTestDataInfo(unittest.TestCase):
     _dir_name: str = os.getcwd()
-    _uncleaned_dataset_path1: str = os.path.join(_dir_name, "uncleaned_dataset1.csv")
+    _uncleaned_dataset_path1: str = os.path.join(_dir_name, "uncleaned_dataset1.csv.error")
     _uncleaned_dataset_path2: str = os.path.join(_dir_name, "uncleaned_dataset2.csv")
     _uncleaned_dataset_path3: str = os.path.join(_dir_name, "uncleaned_dataset3.csv")
 

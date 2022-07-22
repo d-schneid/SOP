@@ -260,11 +260,31 @@ class Execution(Task, Schedulable):
         return iter(self._algorithms)
 
     @property
+    def algorithm_directory_paths(self) -> List[str]:
+        """
+        :return: A list which contains all the paths to the folder of the selected algorithms (in this Execution). \n
+        """
+        directory_names: list[str] = list([])
+        for algorithm in self._algorithms:
+            directory_names.append(os.path.join(self._result_path, algorithm.directory_name_in_execution))
+        return directory_names
+
+    @property
     def subspaces(self) -> Iterable[Subspace]:
         """
         :return: The subspaces belonging to this Execution.
         """
         return iter(self._subspaces)
+
+    @property
+    def subspace_identifier(self) -> list[str]:
+        """ TODO TEST THIS!
+        :return: A list which contains all the subspace identifier of the selected subspaces (in this Execution). \n
+        """
+        subspace_identifier: list[str] = list([])
+        for subspace in self._subspaces:
+            subspace_identifier.append(subspace.get_subspace_identifier())
+        return subspace_identifier
 
     @property
     def zip_result_path(self) -> str:
