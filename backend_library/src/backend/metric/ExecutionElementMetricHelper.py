@@ -1,5 +1,6 @@
 from glob import glob
 import os
+from typing import Iterator
 
 import numpy as np
 import pandas as pd
@@ -69,3 +70,23 @@ class ExecutionElementMetricHelper:
                                     for path, subdir, files in os.walk(execution_folder_path)
                                     for file in glob(os.path.join(path, "*.csv"))]
         return all_csv_files
+
+    @staticmethod
+    def compute_data_point_outlier_count(data_points_outlier_in_subspace: list[np.ndarray]):
+        """
+        :param data_points_outlier_in_subspace: The list containes for each subspace one entry.
+        These entries are 1D bool array that say for each data point if it was an outlier or not
+        :return: Return an list with an entry for each data point (ordered after the data point index).
+        The entry shows the amount of subspaces in which this data point was detected as an outlier
+        """
+        assert len(data_points_outlier_in_subspace) > 0
+        assert data_points_outlier_in_subspace[0].shape[0] == 1
+
+        data_points_outlier_count: list[int] = [0] * data_points_outlier_in_subspace[0].shape[0]
+
+        for subspace_result in data_points_outlier_in_subspace:
+            for data_point in range(0, subspace_result.shape[0]):
+                if subspace_result[data_point] is True:
+                    data_points_outlier_count[data_point] += 1
+
+        return data_points_outlier_count
