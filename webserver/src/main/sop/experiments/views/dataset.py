@@ -14,7 +14,7 @@ from experiments.forms.edit import DatasetEditForm
 from experiments.models import Dataset
 from experiments.models.managers import DatasetQuerySet
 from experiments.services.dataset import check_if_file_is_csv, generate_path_dataset_uncleaned_and_move_dataset, \
-    generate_path_dataset_cleaned
+    generate_path_dataset_cleaned, get_full_file_path
 from experiments.views.generic import PostOnlyDeleteView
 
 
@@ -51,7 +51,7 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
 
     def form_valid(self, form):
 
-        temp_file_path: str = self.request.FILES["path_original"].temporary_file_path()
+        temp_file_path: str = get_full_file_path(self.request.FILES["path_original"], self.request.user)
 
         # check if the file is a csv file
         if not check_if_file_is_csv(temp_file_path):

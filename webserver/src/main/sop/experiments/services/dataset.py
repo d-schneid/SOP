@@ -1,10 +1,17 @@
 import shutil
 from typing import Final
+from django.core.files.uploadedfile import UploadedFile
+
+from authentication.models import User
 from sop import settings
 
 import os
 
 DATASET_ROOT_DIR: Final = settings.MEDIA_ROOT / "datasets"
+
+
+def get_full_file_path(file: UploadedFile, user: User):
+    return os.path.join(DATASET_ROOT_DIR, "user_" + user.pk, file.name)
 
 
 def check_if_file_is_csv(path: str) -> bool:
