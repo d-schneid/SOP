@@ -21,7 +21,7 @@ def schedule_backend(dataset: Dataset) -> None:
 
     # set and save all the missing datafield entries and move the files to the correct position
     dataset.path_original = generate_path_dataset_uncleaned_and_move_dataset(
-        temp_path=dataset.path_original, user_id=dataset.user.pk, dataset_id=dataset.pk)
+        temp_path=dataset.path_original.path, user_id=dataset.user.pk, dataset_id=dataset.pk)
     dataset.path_cleaned = generate_path_dataset_cleaned(user_id=dataset.user.pk, dataset_id=dataset.pk)
     dataset.save()
 
@@ -30,8 +30,8 @@ def schedule_backend(dataset: Dataset) -> None:
         user_id=dataset.user.pk,
         task_id=dataset.pk,
         task_progress_callback=DatasetCallbacks.cleaning_callback,
-        uncleaned_dataset_path=dataset.path_original,
-        cleaned_dataset_path=dataset.path_cleaned,
+        uncleaned_dataset_path=dataset.path_original.path,  # type: ignore
+        cleaned_dataset_path=dataset.path_cleaned.path,  # type: ignore
         cleaning_steps=None  # can be changed later on
     )
 

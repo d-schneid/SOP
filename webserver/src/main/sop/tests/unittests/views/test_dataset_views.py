@@ -80,9 +80,9 @@ class DatasetUploadViewTests(LoggedInTestCase):
             shutil.rmtree(settings.MEDIA_ROOT)
         super().tearDown()
 
-    def upload_dataset(self, client, file_name):
-        path = f"tests/sample_datasets/{file_name}"
-        with open(path, "r") as file:
+    def upload_dataset(self, client: str, file_name: str):
+        file_path = os.path.join("tests", "sample_datasets", file_name)
+        with open(file_path, "r") as file:
             data = {
                 "display_name": self.name,
                 "description": self.description,
