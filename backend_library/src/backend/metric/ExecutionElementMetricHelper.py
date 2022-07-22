@@ -47,7 +47,7 @@ class ExecutionElementMetricHelper:
     #GetExecutionElementsResultPaths
 
     @staticmethod
-    def GetCSVFilesInDirectory(execution_folder_path: str):
+    def __getCSVFilesInDirectory(execution_folder_path: str):
         """
         Return a list of all paths in this directory in its children directories that end with .csv
         :param execution_folder_path: The directory that should be scanned for files that end with .csv

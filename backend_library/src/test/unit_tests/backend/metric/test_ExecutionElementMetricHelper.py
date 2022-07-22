@@ -28,26 +28,34 @@ class UnitTest_ExecutionElementMetricHelper(unittest.TestCase):
 
     def test_GetCSVFilesInDirectory(self):
         # No .csv files
-        self.assertEqual(len(ExecutionElementMetricHelper.GetCSVFilesInDirectory(self._dir_path)), 0)
+        self.assertEqual(len(ExecutionElementMetricHelper.
+                             _ExecutionElementMetricHelper__getCSVFilesInDirectory(self._dir_path)), 0)
 
         # csv files in this directory
         for i in range(0, len(self._csv_paths_in_this_directory)):
             DataIO.write_csv(self._csv_paths_in_this_directory[i], self._csv_to_store)
-            self.assertEqual(len(ExecutionElementMetricHelper.GetCSVFilesInDirectory(self._dir_path)), i+1)
+            self.assertEqual(len(ExecutionElementMetricHelper.
+                                 _ExecutionElementMetricHelper__getCSVFilesInDirectory(self._dir_path)), i+1)
 
         # ignore error files
         DataIO.write_csv(self._error_csv_path, self._csv_to_store)
-        self.assertEqual(len(ExecutionElementMetricHelper.GetExecutionElementsResultPaths(self._dir_path)),
+        self.assertEqual(len(ExecutionElementMetricHelper.
+                             _ExecutionElementMetricHelper__getCSVFilesInDirectory(self._dir_path)),
                          len(self._csv_paths_in_this_directory))
 
         # csv files in child directory
         os.mkdir(self._child_directory)
         for i in range(0, len(self._csv_paths_in_child_directory)):
             DataIO.write_csv(self._csv_paths_in_child_directory[i], self._csv_to_store)
-            self.assertEqual(len(ExecutionElementMetricHelper.GetExecutionElementsResultPaths(self._dir_path)),
+            self.assertEqual(len(ExecutionElementMetricHelper.
+                                 _ExecutionElementMetricHelper__getCSVFilesInDirectory(self._dir_path)),
                              len(self._csv_paths_in_this_directory)+i+1)
 
         self.__clean_existing_files()
+
+        # No .csv files
+        self.assertEqual(len(ExecutionElementMetricHelper.
+                             _ExecutionElementMetricHelper__getCSVFilesInDirectory(self._dir_path)), 0)
 
     def __clean_existing_files(self):
         if os.path.isdir(self._child_directory):
