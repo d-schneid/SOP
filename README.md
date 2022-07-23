@@ -7,7 +7,8 @@
 "Subspace Outlier Profiler" or SOP for short, provides a Platform
 for running outlier detection algorithms written in Python on subspaces of
 multidimensional datasets.  
-SOP is built with the web-framework [Django](https://djangoproject.com).
+SOP is built with the web-framework [Django](https://djangoproject.com) and the frontend
+toolkit [Boostrap](https://getbootstrap.com/).
 
 ---
 
