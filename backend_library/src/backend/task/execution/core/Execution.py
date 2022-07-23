@@ -8,7 +8,7 @@ import sys
 from multiprocessing import shared_memory
 from abc import ABC
 from multiprocessing.shared_memory import SharedMemory
-from typing import Callable, Optional
+from typing import Callable
 from typing import List
 from collections.abc import Iterable
 
@@ -290,5 +290,5 @@ class Execution(Task, Schedulable):
     def priority(self) -> int:
         return self._priority
 
-    def do_work(self) -> Optional[int]:
+    def do_work(self) -> None:
         self.__load_dataset()
