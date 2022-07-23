@@ -2,7 +2,6 @@ import time
 import unittest
 from multiprocessing import Manager
 from typing import Optional
-from unittest import skip
 
 from backend.scheduler.Schedulable import Schedulable
 from backend.scheduler.Scheduler import Scheduler
@@ -23,9 +22,10 @@ class UnitTestUrrs(unittest.TestCase):
     def tearDown(self) -> None:
         Scheduler.get_instance().hard_shutdown()
 
-    to_be_changed = Manager().Value('b', False)
+    manager = Manager()
+    to_be_changed = manager.Value('b', False)
+    to_be_changed2 = manager.Value('b', False)
 
-    @skip
     def test_priority(self):
         Scheduler._instance = None
         sched = UserRoundRobinSchedulerMock()
@@ -47,14 +47,16 @@ class UnitTestUrrs(unittest.TestCase):
         sched.schedule(TestSched(1, -1, 2))
         self.assertNotEqual(sched.next_sched().user_id, sched.next_sched().user_id)
 
-    @skip
     def test_exec(self):
         Scheduler._instance = None
-        urss = UserRoundRobinScheduler()
-        urss.schedule(TestSched(-1, -1, 0))
+        urrs = UserRoundRobinScheduler()
+        urrs.schedule(TestSched(-1, -1, 0))
         time.sleep(2)
         self.assertTrue(UnitTestUrrs.to_be_changed.value)
-
+        urrs.graceful_shutdown(lambda: UnitTestUrrs.to_be_changed2.set(True))
+        time.sleep(2)
+        self.assertTrue(UnitTestUrrs.to_be_changed2.value)
+        self.assertTrue(Scheduler.get_instance().is_shutting_down())
 
 if __name__ == '__main__':
     unittest.main()
