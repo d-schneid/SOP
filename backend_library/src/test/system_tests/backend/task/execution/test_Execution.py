@@ -1,12 +1,15 @@
 import os
 import shutil
 import unittest
+import zipfile
+from unittest.mock import Mock
 
 import numpy as np
 
 from backend.scheduler.DebugScheduler import DebugScheduler
 from backend.scheduler.Scheduler import Scheduler
 from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
+from backend.task.TaskHelper import TaskHelper
 from backend.task.TaskState import TaskState
 from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
@@ -100,6 +103,7 @@ class SystemTest_Execution(unittest.TestCase):
         self.__clear_old_execution_file_structure()
 
     def test_schedule_result_folder(self):
+        # The result folder does not exist yet
         self.assertFalse(os.path.exists(self._final_zip_path))
 
         # perform the Execution
@@ -114,7 +118,39 @@ class SystemTest_Execution(unittest.TestCase):
         self.__clear_old_execution_file_structure()
 
     def test_schedule_result_folder_already_exists(self):
-        pass
+        """
+        Do not perform the Execution when its result already exist
+        """
+        self.__clear_old_execution_file_structure()
+        self._ex._Execution__unload_dataset = Mock(side_effect
+                                                   =Exception("Scheduler was called -> Execution was started"))
+        with self.assertRaises(Exception):
+            self._ex.schedule()  # Scheduler was called because no Execution result exists
+
+        # Create the result of Execution by hand
+        _test_folder: str = self._result_path + "_test_folder"
+        if os.path.exists(_test_folder):
+            os.remove(_test_folder)
+        os.mkdir(_test_folder)
+
+        TaskHelper.zip_dir(_test_folder, self._running_path, self._zipped_result_path)
+        self.assertTrue(os.path.exists(self._final_zip_path))
+
+        # check if only the result folder exists (and is zipped)
+        self.assertFalse(os.path.isdir(self._result_path))
+        self.assertFalse(os.path.isdir(self._running_path))
+        self.assertTrue(os.path.exists(self._final_zip_path))
+
+        self._ex.schedule()  # No Exception -> Execution wasn't scheduled -> Execution was correctly skipped
+
+        # Check callback result
+        self.assertFalse(self._started_running)
+        self.assertFalse(self._metric_was_called)
+        self.assertTrue(self._execution_finished)
+        self.assertEqual(1, self._last_progress_report)
+
+        # Clean up
+        self.__clear_old_execution_file_structure()
 
     def __clear_old_execution_file_structure(self):
         if os.path.isdir(self._result_path):
@@ -127,7 +163,7 @@ class SystemTest_Execution(unittest.TestCase):
             shutil.rmtree(self._final_zip_path)
 
         if os.path.exists(self._running_path):
-            os.remove(self._running_path)
+            shutil.rmtree(self._running_path)
 
     def __task_progress_callback(self, task_id: int, task_state: TaskState, progress: float) -> None:
         self.assertFalse(task_state.error_occurred())
