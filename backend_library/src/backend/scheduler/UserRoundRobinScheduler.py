@@ -60,7 +60,7 @@ class UserRoundRobinScheduler(Scheduler):
     def __abort(self, selector: Callable[[Schedulable], bool]):
         """Aborts all Tasks matching the selector provided"""
         with self.__empty_queue:
-            for _, q in self.__user_queues.values():
+            for _, q in self.__user_queues.values().mapping:
                 for i in range(len(q)):
                     if selector(q[i]):
                         # there is no way to delete nicely from python heapqs
