@@ -21,16 +21,7 @@ from experiments.forms.create import ExecutionCreateForm
 from experiments.models import Execution, Experiment
 from experiments.services.execution import get_params_out_of_form
 from experiments.views.generic import PostOnlyDeleteView
-
-
-def stub_callback(task_id: int, state: TaskState, progress: float) -> None:
-    print("CALLBACK!!!!")
-    print(f"{task_id = }, {state.name = }, {progress = }")
-
-
-def stub_metric_callback(execution: BackendExecution) -> None:
-    print("METRIC CALLBACK!!")
-    print(f"{execution.task_id = }, {execution.user_id = }, {execution.subspaces}")
+from experiments.callback import ExecutionCallbacks
 
 
 def schedule_backend(instance: Execution) -> None:
@@ -63,12 +54,12 @@ def schedule_backend(instance: Execution) -> None:
     backend_execution = BackendExecution(
         user_id=user.pk,
         task_id=instance.pk,
-        task_progress_callback=stub_callback,
+        task_progress_callback=ExecutionCallbacks.execution_callback,
         dataset_path=str(settings.MEDIA_ROOT / str(dataset.path_cleaned)),
         result_path=str(settings.MEDIA_ROOT / str(instance.result_path)),
         subspace_generation=subspace_generation_description,
         algorithms=parameterized_algorithms,
-        metric_callback=stub_metric_callback,
+        metric_callback=ExecutionCallbacks.metric_callback,
     )
     # TODO: DO NOT do this here. Move it to AppConfig or whatever
     if UserRoundRobinScheduler._instance is None:

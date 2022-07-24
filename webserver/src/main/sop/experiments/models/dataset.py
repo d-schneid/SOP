@@ -1,4 +1,6 @@
 from __future__ import annotations
+import os.path
+
 
 from django.conf import settings
 from django.core.validators import FileExtensionValidator
@@ -9,7 +11,7 @@ from experiments.models.managers import DatasetManager, DatasetQuerySet
 
 def _get_dataset_upload_path(instance: Dataset, filename: str) -> str:
     user_id = instance.user.id
-    return f"datasets/user_{user_id}/{filename}"
+    return os.path.join("datasets", "user_" + str(user_id), filename)
 
 
 class Dataset(models.Model):
