@@ -53,6 +53,7 @@ class SystemTest_Execution(unittest.TestCase):
               ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[2]),
               ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[3])])
 
+    _running_path = _result_path + ".I_am_running"
     _final_zip_path = _result_path + ".zip"
 
     def setUp(self) -> None:
@@ -76,7 +77,8 @@ class SystemTest_Execution(unittest.TestCase):
                              self._result_path, self._subspace_generation,
                              iter(self._algorithms),
                              self.__metric_callback, 29221,
-                             self._final_zip_path)
+                             self._final_zip_path,
+                             zip_running_path=self._zipped_result_path)
 
     def test_schedule_callbacks(self):
         # Test if all the callbacks where initialized correctly
@@ -97,6 +99,23 @@ class SystemTest_Execution(unittest.TestCase):
         # Clean up
         self.__clear_old_execution_file_structure()
 
+    def test_schedule_result_folder(self):
+        self.assertFalse(os.path.exists(self._final_zip_path))
+
+        # perform the Execution
+        self._ex.schedule()
+
+        # check if only the result folder exists (and is zipped)
+        self.assertFalse(os.path.isdir(self._result_path))
+        self.assertFalse(os.path.isdir(self._running_path))
+        self.assertTrue(os.path.exists(self._final_zip_path))
+
+        # Clean up
+        self.__clear_old_execution_file_structure()
+
+    def test_schedule_result_folder_already_exists(self):
+        pass
+
     def __clear_old_execution_file_structure(self):
         if os.path.isdir(self._result_path):
             shutil.rmtree(self._result_path)
@@ -107,8 +126,8 @@ class SystemTest_Execution(unittest.TestCase):
         if os.path.exists(self._final_zip_path):
             shutil.rmtree(self._final_zip_path)
 
-        if os.path.exists(self._final_zip_path + ".running"):
-            os.remove(self._final_zip_path + ".running")
+        if os.path.exists(self._running_path):
+            os.remove(self._running_path)
 
     def __task_progress_callback(self, task_id: int, task_state: TaskState, progress: float) -> None:
         self.assertFalse(task_state.error_occurred())
