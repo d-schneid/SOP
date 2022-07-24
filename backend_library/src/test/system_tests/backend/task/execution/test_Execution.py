@@ -21,7 +21,7 @@ class SystemTest_Execution(unittest.TestCase):
     _user_id: int = 214
     _task_id: int = 1553
 
-    _dataset_path: str = "./test/datasets/canada_climate_cleaned_to_compare.csv"
+    _dataset_path: str = os.path.join(os.getcwd(), "./test/datasets/canada_climate_cleaned_to_compare.csv")
 
     _dir_name: str = os.getcwd()
 
