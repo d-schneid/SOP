@@ -25,7 +25,7 @@ class SystemTest_Execution(unittest.TestCase):
 
     _dir_name: str = os.getcwd()
 
-    _result_path: str = os.path.join(_dir_name, "execution_folder")
+    _result_path: str = "./test/system_tests/backend/task/execution/execution_folder_system_test1"
     _zipped_result_path: str = _result_path + ".zip"
     _details_path: str = os.path.join(_result_path, 'details.json')
 
@@ -53,7 +53,7 @@ class SystemTest_Execution(unittest.TestCase):
               ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[2]),
               ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[3])])
 
-    _final_zip_path = _result_path + "final.zip"
+    _final_zip_path = _result_path + ".zip"
 
     def setUp(self) -> None:
         # Scheduler
@@ -80,10 +80,14 @@ class SystemTest_Execution(unittest.TestCase):
     def test_schedule(self):
         self._ex.schedule()
 
+        # Test if all the callbacks where performed
         self.assertTrue(self._metric_was_called)
         self.assertTrue(self._started_running)
         self.assertTrue(self._execution_finished)
         self.assertEqual(1, self._last_progress_report)
+
+        # Clean up
+        self.__clear_old_execution_file_structure()
 
     def __clear_old_execution_file_structure(self):
         if os.path.isdir(self._result_path):
@@ -93,10 +97,10 @@ class SystemTest_Execution(unittest.TestCase):
             os.remove(self._zipped_result_path)
 
         if os.path.exists(self._final_zip_path):
-            os.remove(self._zipped_result_path)
+            shutil.rmtree(self._final_zip_path)
 
-        if os.path.exists(self._result_path + ".zip.running"):
-            os.remove(self._result_path + ".zip.running")
+        if os.path.exists(self._final_zip_path + ".running"):
+            os.remove(self._final_zip_path + ".running")
 
     def __task_progress_callback(self, task_id: int, task_state: TaskState, progress: float) -> None:
         self.assertFalse(task_state.error_occurred())
