@@ -69,6 +69,7 @@ class SystemTest_Execution(unittest.TestCase):
         self._execution_finished: bool = False
         self._last_progress_report: float = 0
         AlgorithmLoader.set_algorithm_root_dir(self._root_dir)
+
         # create Execution
         self._ex = Execution(self._user_id, self._task_id,
                              self.__task_progress_callback, self._dataset_path,
@@ -77,8 +78,14 @@ class SystemTest_Execution(unittest.TestCase):
                              self.__metric_callback, 29221,
                              self._final_zip_path)
 
-    def test_schedule(self):
+    def test_schedule_callbacks(self):
         self._ex.schedule()
+
+        # Test if all the callbacks where initialized correctly
+        self.assertFalse(self._metric_was_called)
+        self.assertFalse(self._started_running)
+        self.assertFalse(self._execution_finished)
+        self.assertEqual(0, self._last_progress_report)
 
         # Test if all the callbacks where performed
         self.assertTrue(self._metric_was_called)
