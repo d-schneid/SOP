@@ -3,6 +3,7 @@ import shutil
 
 import numpy as np
 import pandas as pd
+from pandas.errors import ParserError, EmptyDataError
 
 
 class DataIO:
@@ -30,7 +31,13 @@ class DataIO:
         """
         assert os.path.isfile(path)
 
-        df: pd.DataFrame = pd.read_csv(path, dtype=object)
+        # process errors that can occur when the given csv-file is not valid (in terms for pandas)
+        df: pd.DataFrame
+        try:
+            df = pd.read_csv(path, dtype=object)
+        except (ParserError, EmptyDataError) as err:
+            raise DataIO.DataIoInputException("An error occurred while reading the given file", err)
+
         return DataIO.__save_convert_to_float(df.to_numpy())
 
     @staticmethod
@@ -107,3 +114,9 @@ class DataIO:
         """
         DataIO.write_csv(running_path, data, add_index_column, "")
         shutil.move(running_path, final_path)
+
+
+    class DataIoInputException(ValueError):
+        def __int__(self, message: str, exception: ValueError) -> None:
+            super().__init__(message + "; reference error message: " + str(exception))
+            self.errors: ValueError = exception
