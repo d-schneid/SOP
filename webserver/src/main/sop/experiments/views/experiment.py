@@ -1,3 +1,8 @@
+from __future__ import annotations
+
+from typing import Any, Dict
+
+from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView
 
@@ -13,7 +18,7 @@ class ExperimentOverview(LoginRequiredMixin, ListView[Experiment]):
     model = Experiment
     template_name = "experiment_overview.html"
 
-    def get_context_data(self, *, object_list=None, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         experiments: ExperimentQuerySet = Experiment.objects.get_by_user(
             self.request.user
@@ -38,14 +43,16 @@ class ExperimentCreateView(
     form_class = ExperimentCreateForm
     success_url = reverse_lazy("experiment_overview")
 
-    def form_valid(self, form):
+    def form_valid(self, form: ExperimentCreateForm) -> HttpResponse:
         form.instance.user = self.request.user
         return super(ExperimentCreateView, self).form_valid(form)
 
 
 class ExperimentDuplicateView(ExperimentCreateView):
-    def get_initial(self):
-        form = {}
+    def get_initial(
+        self,
+    ) -> Dict[str, Any]:
+        form: Dict[str, Any] = {}
         if self.request.method == "GET":
             og_experiment_pk = self.kwargs["pk"]
             original = Experiment.objects.get(pk=og_experiment_pk)

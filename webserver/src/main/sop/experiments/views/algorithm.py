@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict, Any
 
 from django.conf import settings
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -32,9 +32,9 @@ class AlgorithmOverview(LoginRequiredMixin, ListView[Algorithm]):
     model = Algorithm
     template_name = "algorithm_overview.html"
 
-    def get_context_data(self, *, object_list=None, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        sorted_list = Algorithm.objects.get_by_user(self.request.user)
+        sorted_list = Algorithm.objects.get_by_user(self.request.user)  # type: ignore
         # Get sort by variable and get sorted set
         sort_by = self.kwargs["sort"]
         if sort_by == "group":
@@ -56,7 +56,7 @@ class AlgorithmUploadView(
     template_name = "algorithm_upload.html"
     success_url = reverse_lazy("algorithm_overview")
 
-    def form_valid(self, form) -> HttpResponse:
+    def form_valid(self, form: AlgorithmUploadForm) -> HttpResponse:
         file: InMemoryUploadedFile = self.request.FILES["path"]  # type: ignore
 
         temp_path: Path = save_temp_algorithm(self.request.user, file)

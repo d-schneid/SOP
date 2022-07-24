@@ -8,6 +8,7 @@ import numpy as np
 class Subspace:
     """Represents a Subspace of a n-dimensional Space"""
     def __init__(self, mask: np.array):
+        assert mask.dtype == np.dtype("?")
         self._mask = mask
 
     @property
@@ -18,7 +19,8 @@ class Subspace:
 
     def get_included_dimension_count(self) -> int:
         """Counts the dimensions included in the Subspace"""
-        return self._mask.sum()
+        assert int(self._mask.sum()) == self._mask.sum()
+        return int(self._mask.sum())
 
     def get_dataset_dimension_count(self) -> int:
         """Calculates the number of dimensions a dataset has to have to run
@@ -38,14 +40,15 @@ class Subspace:
         """Calculates how bug a buffer for an numpy array would have to be
         to fit this Subspace
         :param full_dataset the dataset for which to run this calculation"""
-        item_count = full_dataset.shape[1] * self.get_included_dimension_count()
+        item_count = full_dataset.shape[0] * self.get_included_dimension_count()
         return item_count * full_dataset.itemsize
 
     def make_subspace_array(self, full_dataset: np.ndarray, target_shm: SharedMemory) \
             -> np.ndarray:
         """Builds an ndarray in the specified SharedMemory,
          containing the Subspace of the dataset"""
-        shape = (full_dataset.shape[1], self.get_included_dimension_count())
+        shape = (full_dataset.shape[0], self.get_included_dimension_count())
+        assert target_shm.size >= self.get_size_of_subspace_buffer(full_dataset)
         result = np.ndarray(shape, full_dataset.dtype, buffer=target_shm.buf)
         result[:] = full_dataset[:, self._mask]
         return result

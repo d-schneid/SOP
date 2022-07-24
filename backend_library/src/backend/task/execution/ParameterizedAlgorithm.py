@@ -37,7 +37,7 @@ class ParameterizedAlgorithm(object):
         return self._path
 
     @property
-    def hyper_parameter(self) -> dict:
+    def hyper_parameter(self) -> dict[str, object]:
         """
         :return: The hyperparameter of the algorithm with the selected values. Each parameter
          gets his own dictionary entry.

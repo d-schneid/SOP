@@ -1,4 +1,5 @@
 import os
+from typing import Any
 
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
@@ -6,7 +7,7 @@ from django.dispatch import receiver
 from experiments.models import Algorithm, Dataset, Execution
 
 
-def _delete_file(path):
+def _delete_file(path: str) -> None:
     if os.path.isfile(path):
         os.remove(path)
     if not any(os.scandir(os.path.dirname(path))):
@@ -20,14 +21,19 @@ def _delete_file(path):
 # signal handlers will trigger as well.
 # Signal handlers trigger on any delete operation of the respective model instance.
 
+
 @receiver(post_delete, sender=Algorithm)
-def delete_algorithm_file(sender, instance, *args, **kwargs):
+def delete_algorithm_file(
+    sender: Algorithm, instance: Algorithm, *args: Any, **kwargs: Any
+) -> None:
     if instance.path:
         _delete_file(instance.path.path)
 
 
 @receiver(post_delete, sender=Dataset)
-def delete_dataset_file(sender, instance, *args, **kwargs):
+def delete_dataset_file(
+    sender: Dataset, instance: Dataset, *args: Any, **kwargs: Any
+) -> None:
     if instance.path_original:
         _delete_file(instance.path_original.path)
     if instance.path_cleaned:
@@ -35,6 +41,8 @@ def delete_dataset_file(sender, instance, *args, **kwargs):
 
 
 @receiver(post_delete, sender=Execution)
-def delete_result_file(sender, instance, *args, **kwargs):
+def delete_result_file(
+    sender: Execution, instance: Execution, *args: Any, **kwargs: Any
+) -> None:
     if instance.result_path:
         _delete_file(instance.result_path.path)

@@ -1,8 +1,11 @@
 import json
+from typing import Any, Dict, IO, Optional
 
 from django.core.cache import cache
 from django.core.files.uploadhandler import FileUploadHandler
+from django.http import HttpRequest
 from django.http.response import HttpResponse, HttpResponseServerError
+
 
 class UploadProgressCachedHandler(FileUploadHandler):
     """
@@ -16,14 +19,22 @@ class UploadProgressCachedHandler(FileUploadHandler):
     See views.py for upload_progress function...
     """
 
-    def __init__(self, request=None):
+    def __init__(self, request: Optional[HttpRequest] = None) -> None:
         super(UploadProgressCachedHandler, self).__init__(request)
-        self.progress_id = None
-        self.cache_key = None
+        self.progress_id: Optional[str] = None
+        self.cache_key: Optional[str] = None
 
     def handle_raw_input(
-        self, input_data, META, content_length, boundary, encoding=None
-    ):
+        self,
+        input_data: IO[bytes],
+        META: Dict[str, str],
+        content_length: int,
+        boundary: str,
+        encoding: Optional[str] = None,
+    ) -> None:
+        if self.request is None:
+            return
+
         self.content_length = content_length
         if "X-Progress-ID" in self.request.GET:
             self.progress_id = self.request.GET["X-Progress-ID"]
@@ -34,29 +45,32 @@ class UploadProgressCachedHandler(FileUploadHandler):
                 self.request.META["REMOTE_ADDR"],
                 self.progress_id,
             )
-            cache.set(self.cache_key, {"size": self.content_length, "received": 0, "state": "uploading"})
+            cache.set(
+                self.cache_key,
+                {"size": self.content_length, "received": 0, "state": "uploading"},
+            )
 
-    def new_file(*args, **kwargs) -> None:
+    def new_file(*args: Any, **kwargs: Any) -> None:
         pass
 
-    def receive_data_chunk(self, raw_data, start):
+    def receive_data_chunk(self, raw_data: bytes, start: int) -> bytes:
         if self.cache_key:
             data = cache.get(self.cache_key)
             data["received"] += self.chunk_size
             cache.set(self.cache_key, data)
         return raw_data
 
-    def file_complete(self, file_size):
+    def file_complete(self, file_size: int) -> None:
         pass
 
-    def upload_complete(self):
+    def upload_complete(self) -> None:
         if self.cache_key:
             data = cache.get(self.cache_key)
             data["state"] = "done"
             cache.set(self.cache_key, data)
 
 
-def upload_progress(request):
+def upload_progress(request: HttpRequest) -> HttpResponse:
     """
     A view to report back on upload progress.
     Return JSON object with information about the progress of an upload.
