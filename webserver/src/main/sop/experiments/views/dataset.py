@@ -61,18 +61,22 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
 
         # check if the file is a csv file
 
-        # TODO
+        # TODO: check if correct csv; if no return an error
+        #  and delete the file while returning an error
+        """
         if not check_if_file_is_csv(temp_file_path):
             form.add_error("path_original", "The given file is not a valid csv.-file.")
-            return super(DatasetUploadView, self).form_invalid()
+            
+            os.remove(temp_file_path)
+            assert not os.path.isfile(temp_file_path)
+            
+            return super(DatasetUploadView, self).form_invalid()"""
 
         # Else:
         # add the model data to the form
-
-        # TODO has to change
         csv_frame: pd.DataFrame = pandas.read_csv(temp_file_path)
-        form.instance.datapoints_total = 1 #csv_frame.shape[0]  # number of lines
-        form.instance.dimensions_total = 1 #csv_frame.shape[1]  # number of columns
+        form.instance.datapoints_total = csv_frame.shape[0]  # number of lines
+        form.instance.dimensions_total = csv_frame.shape[1]  # number of columns
 
 
         # delete temp file
