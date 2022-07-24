@@ -64,8 +64,8 @@ class SystemTest_Execution(unittest.TestCase):
         self.__clear_old_execution_file_structure()
 
         # Reset callback variables
-        self._metric_was_called: bool = False
         self._started_running: bool = False
+        self._metric_was_called: bool = False
         self._execution_finished: bool = False
         self._last_progress_report: float = 0
         AlgorithmLoader.set_algorithm_root_dir(self._root_dir)
@@ -79,17 +79,18 @@ class SystemTest_Execution(unittest.TestCase):
                              self._final_zip_path)
 
     def test_schedule_callbacks(self):
-        self._ex.schedule()
-
         # Test if all the callbacks where initialized correctly
-        self.assertFalse(self._metric_was_called)
         self.assertFalse(self._started_running)
+        self.assertFalse(self._metric_was_called)
         self.assertFalse(self._execution_finished)
         self.assertEqual(0, self._last_progress_report)
 
+        # perform the Execution
+        self._ex.schedule()
+
         # Test if all the callbacks where performed
-        self.assertTrue(self._metric_was_called)
         self.assertTrue(self._started_running)
+        self.assertTrue(self._metric_was_called)
         self.assertTrue(self._execution_finished)
         self.assertEqual(1, self._last_progress_report)
 
