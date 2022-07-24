@@ -36,7 +36,7 @@ class Execution(Task, Schedulable):
                  subspace_generation: SubspaceGenerationDescription,
                  algorithms: Iterable[ParameterizedAlgorithm],
                  metric_callback: Callable[[Execution], None], datapoint_count: int,
-                 final_zip_path: str = "", priority: int = 0):
+                 final_zip_path: str = "", priority: int = 0, zip_running_path: str = ""):
         """
         :param user_id: The ID of the user belonging to the Execution. Has to be at least -1.
         :param task_id: The ID of the task. Has to be at least -1.
@@ -46,6 +46,8 @@ class Execution(Task, Schedulable):
         :param result_path: The absolute path where the Execution will store its results.
         (Ends with the directory name of this specific Execution. f.e. execution1)
         :param final_zip_path: The absolute path where the Execution will store its zipped results.
+        :param zip_running_path: The absolute path where the Execution will store its
+            unfinished zipped results while doing the zipping.
         :param subspace_generation: Contains all parameters for the subspace generation and will generate the subspaces.
         :param algorithms: Contains all algorithms that should be processed on the subspaces.
         :param metric_callback: Called after the Execution-computation is complete. Carries out the metricizes.
@@ -69,12 +71,14 @@ class Execution(Task, Schedulable):
         self.__fill_algorithms_directory_name()
         self.__generate_file_system_structure()
         self.__generate_execution_details_in_filesystem()
+
         self._final_zip_path: str = final_zip_path
         if final_zip_path == "":
             self._final_zip_path = result_path + ".zip"
 
-        # The absolute path where the Execution will store its zipped results while doing the zipping.
-        self._zip_running_path: str = self._result_path + ".zip.running"
+        self._zip_running_path: str = zip_running_path
+        if zip_running_path == "":
+            self._zip_running_path = self._final_zip_path + ".running"
 
         # further private variables
         self._has_failed_element: bool = False
