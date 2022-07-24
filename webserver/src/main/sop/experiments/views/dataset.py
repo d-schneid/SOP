@@ -25,7 +25,7 @@ from experiments.views.generic import PostOnlyDeleteView
 def schedule_backend(dataset: Dataset) -> None:
 
     # set and save the missing datafield entry for the cleaned csv file
-    dataset.path_cleaned = generate_path_dataset_cleaned(dataset.path_original.path)
+    dataset.path_cleaned = generate_path_dataset_cleaned(dataset.path_original.name)
     dataset.save()
 
     # create DatasetCleaning object
