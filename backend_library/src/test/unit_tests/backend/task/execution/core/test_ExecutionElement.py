@@ -95,7 +95,7 @@ class UnitTestExecutionElement(unittest.TestCase):
 
         # mock Execution Element for do_work()
         self._ee._ExecutionElement__run_algorithm = Mock(side_effect
-                                                         = Exception("I am going to throw an evil exception"))
+                                                         =Exception("I am going to throw an evil exception"))
 
         # Method that should be tested
         statuscode = self._ee.do_work()
