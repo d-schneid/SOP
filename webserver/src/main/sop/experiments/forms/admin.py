@@ -22,7 +22,7 @@ class AdminAddAlgorithmForm(forms.ModelForm[Algorithm]):
         model = Algorithm
         exclude = ["signature", "upload_date"]
 
-    def clean_path(self):
+    def clean_path(self) -> Optional[TemporaryUploadedFile]:
         cleaned_file: TemporaryUploadedFile = self.cleaned_data.get("path")  # type: ignore
 
         # current user is set in ModelAdmin of Algorithm
@@ -41,6 +41,8 @@ class AdminAddAlgorithmForm(forms.ModelForm[Algorithm]):
         elif error is None:
             # No need to assign user, admin can decide to which user this algorithm belongs to
             return cleaned_file
+
+        return None
 
 
 class AdminChangeAlgorithmForm(forms.ModelForm[Algorithm]):
