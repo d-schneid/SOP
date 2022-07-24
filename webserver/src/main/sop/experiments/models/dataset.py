@@ -1,3 +1,5 @@
+import os.path
+
 from django.conf import settings
 from django.core.validators import FileExtensionValidator
 from django.db import models
@@ -6,8 +8,8 @@ from experiments.models.managers import DatasetManager, DatasetQuerySet
 
 
 def _get_dataset_upload_path(instance, filename) -> str:
-    user_id = instance.user.id
-    return f"datasets/user_{user_id}/{filename}"  # TODO: check -Finn
+    user_id: int = instance.user.id
+    return os.path.join("datasets", "user_" + str(user_id), filename)
 
 
 class Dataset(models.Model):

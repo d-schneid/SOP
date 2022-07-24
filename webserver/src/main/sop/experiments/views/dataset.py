@@ -18,17 +18,14 @@ from experiments.forms.create import DatasetUploadForm
 from experiments.forms.edit import DatasetEditForm
 from experiments.models import Dataset
 from experiments.models.managers import DatasetQuerySet
-from experiments.services.dataset import check_if_file_is_csv, generate_path_dataset_uncleaned_and_move_dataset, \
-    generate_path_dataset_cleaned, save_dataset
+from experiments.services.dataset import generate_path_dataset_cleaned, save_dataset
 from experiments.views.generic import PostOnlyDeleteView
 
 
 def schedule_backend(dataset: Dataset) -> None:
 
-    # set and save all the missing datafield entries and move the files to the correct position
-    dataset.path_original = generate_path_dataset_uncleaned_and_move_dataset(
-        temp_path=dataset.path_original.path, user_id=dataset.user.pk, dataset_id=dataset.pk)
-    dataset.path_cleaned = generate_path_dataset_cleaned(user_id=dataset.user.pk, dataset_id=dataset.pk)
+    # set and save the missing datafield entry for the cleaned csv file
+    dataset.path_cleaned = generate_path_dataset_cleaned(dataset.path_original.path)
     dataset.save()
 
     # create DatasetCleaning object
@@ -63,15 +60,23 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
         assert os.path.isfile(temp_file_path)
 
         # check if the file is a csv file
+
+        # TODO
         if not check_if_file_is_csv(temp_file_path):
             form.add_error("path_original", "The given file is not a valid csv.-file.")
             return super(DatasetUploadView, self).form_invalid()
 
         # Else:
         # add the model data to the form
+
+        # TODO has to change
         csv_frame: pd.DataFrame = pandas.read_csv(temp_file_path)
-        form.instance.datapoints_total = csv_frame.shape[0]  # TODO: size vs. shpae[0]
-        form.instance.dimensions_total = csv_frame.shape[1]
+        form.instance.datapoints_total = 1 #csv_frame.shape[0]  # number of lines
+        form.instance.dimensions_total = 1 #csv_frame.shape[1]  # number of columns
+
+
+        # delete temp file
+        os.remove(temp_file_path)
 
         form.instance.user = self.request.user
         form.instance.is_cleaned = False
@@ -83,6 +88,8 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
 
         # start Dataset Cleaning
         schedule_backend(form.instance)
+
+        assert not os.path.isfile(temp_file_path)
 
         return response
 

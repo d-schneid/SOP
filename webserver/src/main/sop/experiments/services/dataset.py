@@ -1,4 +1,3 @@
-import shutil
 import uuid
 from typing import Final
 from django.core.files.uploadedfile import UploadedFile
@@ -28,19 +27,6 @@ def save_dataset(file: UploadedFile, user: User) -> str:
     return temp_file_path
 
 
-def check_if_file_is_csv(path: str) -> bool:
-    return True
-    # TODO -Finn (ist etwas mehr kompplex, muss ich mir selber basteln)
-
-
-# TODO: Konsistende Umbenennung: user_id --> user.pk
-def generate_path_dataset_uncleaned_and_move_dataset(temp_path: str, user_id: int, dataset_id: int) -> str:
-    final_path: str = os.path.join(DATASET_ROOT_DIR, "user_" + str(user_id),
-                                   "dataset_" + str(dataset_id) + "_uncleaned.csv")
-    os.rename(temp_path, final_path)  # atomic operation
-    return final_path
-
-
-def generate_path_dataset_cleaned(user_id: int, dataset_id: int) -> str:
-    return os.path.join(DATASET_ROOT_DIR, "user_" + str(user_id),
-                                   "dataset_" + str(dataset_id) + "_cleaned.csv")
+def generate_path_dataset_cleaned(uncleaned_path: str) -> str:
+    (root, ext) = os.path.splitext(uncleaned_path)
+    return root + "_cleaned" + ext
