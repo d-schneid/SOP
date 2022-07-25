@@ -19,8 +19,8 @@ class IntegrationTest_MetricDataPointsAreOutlier(unittest.TestCase):
     def setUp(self) -> None:
         self._metric = MetricSubspaceOutlierAmount()
 
-    def test_compute_metric(self):
-        self.assertEqual(True, False)  # add assertion here
+    #def test_compute_metric(self):
+    #    self.assertEqual(True, False)  # add assertion here
 
     def test_wrong_metric_path(self):
         # Path doesn't end with .csv

@@ -26,6 +26,8 @@ class ExecutionElementMetricHelper:
         assert os.path.isfile(execution_element_result_path)
 
         # The ExecutionElement result has to be in the right format: (first column indices, second outlier score)
+        print("TO TEST")
+        print(DataInfo.get_dataset_dimension(execution_element_result_path))
         assert DataInfo.get_dataset_dimension(execution_element_result_path) == 2
 
         # Read ExecutionElement Result
@@ -53,7 +55,7 @@ class ExecutionElementMetricHelper:
         :return: A list containing all paths to the files that end with .csv in the inputted directories.
         """
         all_execution_element_results: list[str] = list([])
-        for algorithm_directory in algorithm_directory_paths:
+        for algorithm_directory in algorithm_directory_paths:#
             assert os.path.isdir(algorithm_directory)
 
             all_execution_element_results.extend(ExecutionElementMetricHelper
@@ -87,9 +89,7 @@ class ExecutionElementMetricHelper:
 
         for execution_element_result in data_points_outlier_in_subspace:
             for data_point in range(0, execution_element_result.shape[0]):
-                print("I'm here")
                 if execution_element_result[data_point]:
-                    print("INCREASE!!!")
                     data_points_outlier_count[data_point] += 1
 
         return data_points_outlier_count
