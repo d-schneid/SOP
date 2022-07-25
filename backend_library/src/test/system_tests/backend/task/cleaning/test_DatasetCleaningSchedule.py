@@ -25,10 +25,10 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
     _dir_name: str = os.getcwd()
 
     # dataset 1
-    _uncleaned_dataset_path1: str = os.path.join(_dir_name, "uncleaned_dataset1.csv.error")
-    _cleaned_dataset_path1: str = os.path.join(_dir_name, "cleaned_dataset1.csv")
+    _uncleaned_dataset_path1: str = os.path.join(_dir_name, "system_test_uncleaned_dataset1.csv.error")
+    _cleaned_dataset_path1: str = os.path.join(_dir_name, "system_test_cleaned_dataset1.csv")
 
-    _uncleaned_dataset1: np.ndarray = ds().cat_dataset3
+    _uncleaned_dataset1: np.ndarray = ds().system_test1
     _cleaned_dataset1: np.ndarray = np.asarray([[0., 0.]])
 
     _run_cleaning1: bool = False
@@ -36,10 +36,10 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
     _latest_progress: float = 0.
 
     # dataset 2
-    _uncleaned_dataset_path2: str = os.path.join(_dir_name, "uncleaned_dataset2.csv")
-    _cleaned_dataset_path2: str = os.path.join(_dir_name, "cleaned_dataset2.csv")
+    _uncleaned_dataset_path2: str = os.path.join(_dir_name, "system_test_uncleaned_dataset2.csv")
+    _cleaned_dataset_path2: str = os.path.join(_dir_name, "system_test_cleaned_dataset2.csv")
 
-    _uncleaned_dataset2: np.ndarray = ds().big_dataset1
+    _uncleaned_dataset2: np.ndarray = ds().system_test2
 
     # dataset 3: canada_climate.csv
     _uncleaned_dataset_path3: str = "test/datasets/canada_climate_uncleaned.csv"
@@ -70,8 +70,8 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
         # DatasetCleaning creation
         self.__clean_created_files_and_directories()
 
-        self._dataIO.write_csv(self._uncleaned_dataset_path1, self._uncleaned_dataset1)
-        self._dataIO.write_csv(self._uncleaned_dataset_path2, self._uncleaned_dataset2)
+        self._dataIO.write_csv(self._uncleaned_dataset_path1, self._uncleaned_dataset1, False)
+        self._dataIO.write_csv(self._uncleaned_dataset_path2, self._uncleaned_dataset2, False)
 
         self._dc1: DatasetCleaning = DatasetCleaning(self._user_id, self._task_id,
                                                      self.task_progress_callback, self._uncleaned_dataset_path1,

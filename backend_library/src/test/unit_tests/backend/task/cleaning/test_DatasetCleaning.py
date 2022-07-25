@@ -53,7 +53,7 @@ class UnitTestDatasetCleaning(unittest.TestCase):
         self.assertTrue(self._dc._DatasetCleaning__empty_cleaning_result_handler(empty))
         self.assertTrue(os.path.isfile(self._error_path))
         # compare error message
-        self.assertEqual(self._error_message, DataIO.read_uncleaned_csv(self._error_path)[0][0])
+        self.assertEqual(self._error_message, DataIO.read_uncleaned_csv(self._error_path, has_header=None)[0][0])
 
         # clean up
         os.remove(self._error_path)
