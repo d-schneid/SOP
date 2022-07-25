@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 
 from backend.task.execution.core.Execution import Execution
 from backend.metric.ExecutionElementMetricHelper import ExecutionElementMetricHelper as eem_helper
@@ -8,6 +8,7 @@ class Metric(ABC):
     _eem_helper = eem_helper()
 
     @staticmethod
+    @abstractmethod
     def compute_metric(metric_result_path: str, algorithm_directory_paths: list[str]) -> None:
         """
         :param metric_result_path: The path where the metric will store its results to. Has to and with .csv

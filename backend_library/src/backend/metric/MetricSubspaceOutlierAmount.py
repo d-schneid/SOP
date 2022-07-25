@@ -1,14 +1,11 @@
-from abc import ABC
-
 import numpy as np
 
-from backend.metric.Metric import Metric
-from backend.task.execution.core.Execution import Execution
-from backend.metric.ExecutionElementMetricHelper import ExecutionElementMetricHelper as eem_helper
 from backend.DataIO import DataIO
+from backend.metric.ExecutionElementMetricHelper import ExecutionElementMetricHelper as eem_helper
+from backend.metric.Metric import Metric
 
 
-class MetricSubspaceOutlierAmount(ABC, Metric):
+class MetricSubspaceOutlierAmount(Metric):
 
     @staticmethod
     def compute_metric(metric_result_path: str, algorithm_directory_paths: list[str]) -> None:
