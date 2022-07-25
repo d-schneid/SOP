@@ -5,7 +5,7 @@ from typing import Type
 from django.contrib import admin
 
 from experiments.admin.inlines import ExperimentInlineAlgorithm
-from experiments.admin.model import AbstractModelAdmin
+from experiments.admin.abstract_model_admin import AbstractModelAdmin
 from experiments.forms.admin.algorithm import (
     AdminAddAlgorithmForm,
     AdminChangeAlgorithmForm,

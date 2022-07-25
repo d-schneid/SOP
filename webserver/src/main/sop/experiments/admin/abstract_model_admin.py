@@ -78,7 +78,7 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
             if instance.experiment_set.count() > 0:  # type: ignore
                 messages.error(request,
                                "Bulk deletion cannot be executed, " \
-                               f"since at least {self.get_model_name()} {instance.display_name}"
+                               f"since at least {self.get_model_name()} {instance.display_name} "
                                "is used in at least one experiment"
                                )
                 return

@@ -3,7 +3,7 @@ from typing import Type
 from django.contrib import admin
 
 from experiments.admin.inlines import ExperimentInlineDataset
-from experiments.admin.model import AbstractModelAdmin
+from experiments.admin.abstract_model_admin import AbstractModelAdmin
 from experiments.forms.admin.dataset import AdminAddDatasetForm, AdminChangeDatasetForm
 from experiments.models import Dataset
 

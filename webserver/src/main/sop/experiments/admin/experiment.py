@@ -1,4 +1,7 @@
+from typing import Sequence, Optional
+
 from django.contrib import admin
+from django.http import HttpRequest
 
 from experiments.models.experiment import Experiment
 
@@ -13,7 +16,7 @@ class ExperimentAdmin(admin.ModelAdmin[Experiment]):
                      "algorithms__display_name",
                      "dataset__display_name"]
 
-    def get_readonly_fields(self, request, obj=None):
+    def get_readonly_fields(self, request: HttpRequest, obj: Optional[Experiment] = None) -> Sequence[str]:
         # for editing an existing experiment
         if obj:
             return ["user", "dataset", "algorithms"]
