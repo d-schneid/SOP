@@ -1,5 +1,6 @@
 import os
 import shutil
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -7,30 +8,32 @@ import pandas as pd
 
 class DataIO:
     @staticmethod
-    def read_cleaned_csv(path: str) -> np.ndarray:
+    def read_cleaned_csv(path: str, has_header: Optional[int] = None) -> np.ndarray:
         """
         Returns the cleaned dataset. \n
         Raises an ValueError exception if the dataset is not cleaned (cast into float32 did not succeed).
         :param path: The absolute path where to read the dataset from.
+        :param has_header: The header of the dataset that should be read.
         :return: The cleaned dataset (or an exception).
         """
         assert os.path.isfile(path)
 
-        loaded_dataset = DataIO.read_uncleaned_csv(path)
+        loaded_dataset = DataIO.read_uncleaned_csv(path, has_header)
         cleaned_dataset: np.ndarray = loaded_dataset.astype(np.float32)  # cast ndarray to float32
 
         return cleaned_dataset
 
     @staticmethod
-    def read_uncleaned_csv(path: str) -> np.ndarray:
+    def read_uncleaned_csv(path: str, has_header: Optional[int] = 0) -> np.ndarray:
         """
         Returns the uncleaned dataset. \n
-        :path: The absolute path where to read the dataset from.
+        :param path: The absolute path where to read the dataset from.
+        :param has_header: The header of the dataset that should be read.
         :return: The uncleaned dataset.
         """
         assert os.path.isfile(path)
 
-        df: pd.DataFrame = pd.read_csv(path, dtype=object)
+        df: pd.DataFrame = pd.read_csv(path, dtype=object, header=has_header)
         return DataIO.__save_convert_to_float(df.to_numpy())
 
     @staticmethod
@@ -58,7 +61,8 @@ class DataIO:
         return to_convert
 
     @staticmethod
-    def write_csv(path: str, data: np.ndarray, add_index_column: bool = False, running_suffix: str = ".running"):
+    def write_csv(path: str, data: np.ndarray, add_index_column: bool = False, running_suffix: str = ".running",
+                  has_header: Optional[int] = None):
         """
         Writes the given 2D-dataset to a csv-file.
 

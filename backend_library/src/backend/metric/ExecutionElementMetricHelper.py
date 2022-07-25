@@ -26,13 +26,15 @@ class ExecutionElementMetricHelper:
         assert os.path.isfile(execution_element_result_path)
 
         # The ExecutionElement result has to be in the right format: (first column indices, second outlier score)
-        print("TO TEST")
-        print(DataInfo.get_dataset_dimension(execution_element_result_path))
         assert DataInfo.get_dataset_dimension(execution_element_result_path) == 2
 
         # Read ExecutionElement Result
         execution_element_result_df: pd.DataFrame = \
             pd.DataFrame(DataIO.read_cleaned_csv(execution_element_result_path))
+
+        print("TEST THIS")
+        print(DataIO.read_cleaned_csv(execution_element_result_path))
+        print(execution_element_result_df)
 
         # Get quantile of second column (the outlier scores)
         min_outlier_score_to_be_an_outlier: float = execution_element_result_df.quantile(quantile).iloc[1]
