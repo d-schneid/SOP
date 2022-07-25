@@ -1,3 +1,4 @@
+import os
 import unittest
 
 from backend.metric.MetricDataPointsAreOutliers import MetricDataPointsAreOutliers
@@ -19,7 +20,12 @@ class IntegrationTest_MetricDataPointsAreOutlier(unittest.TestCase):
     def setUp(self) -> None:
         self._metric = MetricDataPointsAreOutliers()
 
+        for algorithm_path in self._algorithm_directory_paths:
+            self.assertTrue(os.path.isdir(algorithm_path))
+
     def test_compute_metric(self):
+        self._metric.compute_metric(self._metric_result_path, self._algorithm_directory_paths)
+        print("finish metric")
         self.assertEqual(True, False)  # add assertion here
 
     def test_wrong_metric_path(self):
