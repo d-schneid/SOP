@@ -8,6 +8,7 @@ class ExperimentAdmin(admin.ModelAdmin[Experiment]):
     list_display = ["display_name", "user", "creation_date"]
     raw_id_fields = ["user"]
     list_filter = ["creation_date"]
+    readonly_fields = ["user", "dataset", "algorithms"]
     search_fields = ["display_name",
                      "user__username",
                      "algorithms__display_name",
