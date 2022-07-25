@@ -2,6 +2,7 @@ import os
 import shutil
 import unittest
 import zipfile
+from unittest import skip
 from unittest.mock import Mock
 
 import numpy as np
@@ -117,6 +118,7 @@ class SystemTest_Execution(unittest.TestCase):
         # Clean up
         self.__clear_old_execution_file_structure()
 
+    @skip
     def test_schedule_result_folder_already_exists(self):
         """
         Do not perform the Execution when its result already exist

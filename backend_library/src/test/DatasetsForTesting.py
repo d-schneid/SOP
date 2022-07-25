@@ -78,3 +78,16 @@ class Datasets:
                          [12, -1234, None, 1, 15215, 4, None, 12, 12],
                          [None, None, None, None, None, None, None, None, None],
                          [12, -1234, None, 1, 15215, 4, None, 12, 12]])
+
+    @property
+    def system_test1(self) -> np.ndarray:
+        return np.asarray([[0, 1, 2, 3], [1, 412, "I am an evil String", None]], object)
+
+    @property
+    def system_test2(self) -> np.ndarray:
+        return np.array([[0, 1, 2, 3, 4, 5, 6, 7, 8],
+                         [-1, 1234, 12, 53, 6, 124, None, 151245124, 1541],
+                         [214123, 1, 21, None, 1241, "Eve the evil String", None, 213, -124512],
+                         [12, -1234, None, 1, 15215, 4, None, 12, 12],
+                         [None, None, None, None, None, None, None, None, None],
+                         [12, -1234, None, 1, 15215, 4, None, 12, 12]])
