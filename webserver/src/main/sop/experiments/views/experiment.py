@@ -1,17 +1,19 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView
 
+import experiments.models
 from authentication.mixins import LoginRequiredMixin
 from experiments.forms.create import ExperimentCreateForm
 from experiments.forms.edit import ExperimentEditForm
 from experiments.models import Experiment
 from experiments.models.managers import ExperimentQuerySet
 from experiments.views.generic import PostOnlyDeleteView
+from experiments.models.algorithm import Algorithm
 
 
 class ExperimentOverview(LoginRequiredMixin, ListView[Experiment]):
@@ -45,7 +47,30 @@ class ExperimentCreateView(
 
     def form_valid(self, form: ExperimentCreateForm) -> HttpResponse:
         form.instance.user = self.request.user
-        return super(ExperimentCreateView, self).form_valid(form)
+
+        # get algorithms
+        algos: List[Algorithm] = [Algorithm.objects.get(pk=key) for key in self.request.POST.getlist("check-algo")]
+        if len(algos) == 0:
+            form.errors.update({"algorithm_error": "You have to select at least one algorithm"})
+            return super().form_invalid(form)
+
+        response: HttpResponse = super().form_valid(form)
+
+        # Add algorithms to experiment
+        for algo in algos:
+            form.instance.algorithms.add(algo)
+
+        form.instance.save()
+
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            "algorithm_groups": Algorithm.AlgorithmGroup,
+            "algorithms": Algorithm.objects.get_by_user_and_public(self.request.user),
+        })
+        return context
 
 
 class ExperimentDuplicateView(ExperimentCreateView):
