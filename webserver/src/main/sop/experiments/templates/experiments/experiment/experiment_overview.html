@@ -49,48 +49,58 @@
     {% for execution in model.execution_set.all %}
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
-                <div class="d-flex">
-                    <a class="flex-fill">Execution {{ forloop.counter }}</a>
-                    <a class="flex-fill">{{ execution.status }}</a>
-                    <a class="flex-fill">{{ execution.progess }}</a>
-                    <a class="flex-fill">{{ execution.creation_date }}</a>
-                    {% if execution.is_finished and not execution.error_occurred %}
-                    <a href="{% url 'execution_download_result' model.pk execution.pk %}" class="btn btn-info mr-3">Download Result</a>
-                    {% endif %}
-                    <a href="{% url "execution_duplicate" model.pk execution.pk %}" class="btn btn-warning mr-3">Duplicate</a>
-                    <button type="button"
-                            class="btn btn-danger mr-3"
-                            data-toggle="modal"
-                            data-target="#deleteModal{{ execution.pk }}">
-                        Delete
-                    </button>
-                    <div class="modal fade"
-                         id="deleteModal{{ execution.pk }}"
-                         tabindex="-1"
-                         role="dialog"
-                         aria-hidden="true">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <div class="text-left">
-                                        <h5><b>Warning</b></h5><br/>
+                <div class="d-flex flex-column-reverse">
+                    <div>
+                        {% if not execution.is_finished %}
+                            <div class="flex-grow-1 mr-3 execution-progress-div"
+                                 id="container-{{ execution.pk }}"></div>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex">
+                        <a class="flex-fill">Execution {{ forloop.counter }}</a>
+                        <a class="flex-fill" id="execution-status-{{ execution.pk }}">{{ execution.status }}</a>
+                        <a class="flex-fill">{{ execution.progess }}</a>
+                        <a class="flex-fill">{{ execution.creation_date }}</a>
+
+                        <a href="{% url 'execution_download_result' model.pk execution.pk %}"
+                           class="btn btn-info mr-3" id="execution-download-{{ execution.pk }}"
+                           style="display: {% if not execution.is_finished %}none{% endif %}">Download
+                            Result</a>
+                        <a href="{% url "execution_duplicate" model.pk execution.pk %}" class="btn btn-warning mr-3">Duplicate</a>
+                        <button type="button"
+                                class="btn btn-danger mr-3"
+                                data-toggle="modal"
+                                data-target="#deleteModal{{ execution.pk }}">
+                            Delete
+                        </button>
+                        <div class="modal fade"
+                             id="deleteModal{{ execution.pk }}"
+                             tabindex="-1"
+                             role="dialog"
+                             aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <div class="text-left">
+                                            <h5><b>Warning</b></h5><br/>
+                                        </div>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
                                     </div>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="text-center">
-                                        Are you sure you want to delete execution <b>{{ forloop.counter }}</b>?
+                                    <div class="modal-body">
+                                        <div class="text-center">
+                                            Are you sure you want to delete execution <b>{{ forloop.counter }}</b>?
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-dark mr-3" data-dismiss="modal">Cancel
-                                    </button>
-                                    <form action="{% url 'execution_delete' model.pk execution.pk %}" method="post">
-                                        {% csrf_token %}
-                                        <button class="btn btn-danger mr-3" type="submit">Delete</button>
-                                    </form>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-dark mr-3" data-dismiss="modal">Cancel
+                                        </button>
+                                        <form action="{% url 'execution_delete' model.pk execution.pk %}" method="post">
+                                            {% csrf_token %}
+                                            <button class="btn btn-danger mr-3" type="submit">Delete</button>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -138,10 +148,51 @@
                         </div>
                     </div>
                 </div>
-                <a href="{% url "experiment_duplicate" model.pk %}" class="btn btn-warning mr-3">Duplicate Experiment</a>
+                <a href="{% url "experiment_duplicate" model.pk %}" class="btn btn-warning mr-3">Duplicate
+                    Experiment</a>
                 <a href="{% url 'experiment_edit' model.pk %}"
                    class="btn btn-warning mr-3">Edit Experiment</a>
             </div>
         </li>
     </ul>
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        $(document).ready(function () {
+            console.log("on ready function call")
+            let containers = document.getElementsByClassName("execution-progress-div")
+            for (let i = 0; i < containers.length; i++) {
+                let container = containers[i]
+                let id = container.id.replace("container-", "")
+                console.log("creating bar for container with id: " + id)
+
+                let $progress = $('<div id="execution-progress-' + id + '" class="execution-progress mt-3"></div>').appendTo(container).append('<div class="progress-container"><div class="progress-status"></div><div class="bg-white border border-dark"><div class="progress-bar hidden progress-bar-striped progress-bar-animated bg-dark" style="width: 0%" role="progressbar" aria-valuemin="0" aria-valuemax="100">0%</div></div></div>');
+                $progress.show();
+
+                /* call the progress-updater periodically */
+                fetch($progress, id)
+                window.setInterval(
+                    function () {
+                        fetch($progress, id);
+                    },
+                    5000
+                );
+            }
+        });
+
+        function fetch($progress, id) {
+            progress_url = "/execution_progress/"
+            $.getJSON(progress_url, {'execution_pk': Number(id)}, function (data, status) {
+                if (data.progress < 1) {
+                    var progress = parseFloat(data.progress);
+                    $progress.find('.progress-bar').css("width", progress * 100 + "%");
+                    $progress.find('.progress-bar').html(parseInt(progress * 100) + '%');
+                } else {
+                    $progress.find('.progress-bar').css("width", 100 + "%");
+                    $progress.find('.progress-bar').html('refresh page to refresh execution state');
+                }
+            });
+        }
+    </script>
 {% endblock %}

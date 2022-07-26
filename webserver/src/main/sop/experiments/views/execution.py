@@ -1,13 +1,18 @@
+import json
+import random
 from typing import Optional, Dict, Any
 
 from django.conf import settings
 from django.db.models import QuerySet
-from django.http import HttpRequest, HttpResponseRedirect, HttpResponse
+from django.http import HttpRequest, HttpResponseRedirect, HttpResponse, \
+    HttpResponseServerError
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
 
 from authentication.mixins import LoginRequiredMixin
+from backend.scheduler.DebugScheduler import DebugScheduler
 from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
+from backend.task.TaskState import TaskState
 from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 from backend.task.execution.core.Execution import Execution as BackendExecution
@@ -228,7 +233,8 @@ class ExecutionDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Execution]):
     success_url = reverse_lazy("experiment_overview")
 
 
-def download_execution_result(request: HttpRequest, pk: int) -> HttpResponse:
+def download_execution_result(request: HttpRequest, experiment_pk: int,
+                              pk: int) -> HttpResponse:
     if request.method == "GET":
         execution: Optional[Execution] = Execution.objects.filter(pk=pk).first()
         if execution is None:
@@ -243,3 +249,23 @@ def download_execution_result(request: HttpRequest, pk: int) -> HttpResponse:
     else:
         assert request.method in ("POST", "PUT")
         return HttpResponseRedirect(reverse_lazy("experiment_overview"))
+
+
+def get_execution_progress(request: HttpRequest) -> HttpResponse:
+    pk = 0
+    if "execution_pk" in request.GET:
+        pk = request.GET["execution_pk"]
+    elif "execution_pk" in request.META:
+        pk = request.META["execution_pk"]
+    if pk:
+        execution: Optional[Execution] = Execution.objects.filter(pk=pk).first()
+        data = {}
+        if execution is not None:
+            data["progress"] = execution.progress
+
+        return HttpResponse(json.dumps(data))
+
+    else:
+        return HttpResponseServerError(
+            "Server Error: You must provide execution_pk header or query param."
+        )

@@ -55,6 +55,9 @@ class Execution(models.Model):
         assert state is not None
         return state.is_running()
 
+    @property
+    def progress_as_percent(self):
+        return self.progress * 100
 
 def get_result_path(execution: Execution) -> str:
     return str(

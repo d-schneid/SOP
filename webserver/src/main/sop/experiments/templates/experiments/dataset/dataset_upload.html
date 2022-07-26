@@ -66,18 +66,15 @@
             $.getJSON(progress_url, {'X-Progress-ID': uuid}, function (upload, status) {
                 var width = $progress.find('.upload-container').width();
                 if (upload.state == "starting") {
-                    console.log("starting")
                     $progress.find('.progress-bar').css("width", 0 + "%");
                     $progress.find('.progress-status').html('Starting upload...');
                 } else if (upload.state == "uploading") {
-                    console.log("uploading")
                     var progress = parseInt(upload.received) / parseInt(upload.size);
                     $progress.find('.progress-bar').css("width", progress * 100 + "%");
                     $progress.find('.progress-bar').html(parseInt(progress * 100) + '%');
                     $progress.find('.progress-bar').width(width);
                     $progress.find('.progress-status').html('Uploading...');
                 } else if (upload.state == "done") {
-                    console.log("done")
                     $progress.find('.progress-bar').css("width", 100 + "%");
                     $progress.find('.progress-status').html('Upload finished...');
                     $progress.find('.progress-bar').html('Saving dataset, this may take a few moments...');
