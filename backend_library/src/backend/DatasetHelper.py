@@ -1,5 +1,5 @@
 import pandas as pd
-import DataIO
+from backend.DataIO import DataIO
 from typing import Optional, Tuple
 
 
@@ -14,12 +14,12 @@ class DatasetHelper:
         """
         try:
             has_header: Optional[int] = 0
-            df: pd.DataFrame = DataIO.read_uncleaned_csv(path, has_header=has_header)
+            DataIO.read_uncleaned_csv(path, has_header=has_header)
 
             # if no error was thrown, the dataset is valid
             return True
 
-        except DataIO.DataIO.DataIoInputException:
+        except DataIO.DataIoInputException:
             # if an error was thrown, the dataset is invalid
             return False
 

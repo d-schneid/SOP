@@ -8,6 +8,7 @@ from django.views.generic import ListView, UpdateView, CreateView
 from authentication.mixins import LoginRequiredMixin
 from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
 from backend.task.cleaning import DatasetCleaning
+from backend.DatasetHelper import DatasetHelper
 from experiments.callback import DatasetCallbacks
 from experiments.forms.create import DatasetUploadForm
 from experiments.forms.edit import DatasetEditForm
@@ -56,17 +57,18 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
         assert os.path.isfile(temp_file_path)
 
         # check if the file is a csv file
-
-        # TODO: check if correct csv; if no return an error
-        #  and delete the file while returning an error
-        """
-        if not check_if_file_is_csv(temp_file_path):
-            form.add_error("path_original", "The given file is not a valid csv.-file.")
-            
+        if not DatasetHelper.is_dataset_valid(temp_file_path):
+            # delete temp file
             os.remove(temp_file_path)
+
+            # return an error
+            form.add_error("path_original", "The given file is not a valid csv.-file.")
             assert not os.path.isfile(temp_file_path)
-            
-            return super(DatasetUploadView, self).form_invalid()"""
+            return super(DatasetUploadView, self).form_invalid()
+
+        # otherwise, add the necessary data to the model
+        form.instance.datapoints_total = DatasetHelper.number_datapoints(temp_file_path)
+        form.instance.dimensions_total = DatasetHelper.number_dimensions(temp_file_path)
 
         # delete temp file
         os.remove(temp_file_path)
