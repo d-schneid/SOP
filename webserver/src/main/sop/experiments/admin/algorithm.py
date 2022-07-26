@@ -20,7 +20,7 @@ class AlgorithmAdmin(AbstractModelAdmin):
     list_display = ["display_name", "group", "user", "upload_date"]
     raw_id_fields = ["user"]
     list_filter = ["upload_date", "group"]
-    search_fields = ["display_name"]
+    search_fields = ["display_name", "user__username", "group", "description"]
     actions = ["delete_selected"]
 
     def get_readonly_fields(self, request: HttpRequest, obj: Optional[Algorithm] = None) -> Sequence[str]:
