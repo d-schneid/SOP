@@ -72,6 +72,7 @@ class UnitTestDataIO(unittest.TestCase):
         nd_array: np.ndarray = np.ndarray(shape=(2,5), dtype=int, buffer=array)
 
         DataIO.DataIO.write_csv(test_file_path, nd_array, has_header=True)
+        # TODO: Check, ob erste Zeile als Header oder Datenpunkte geschrieben werden
 
         # check the written data
         with open(test_file_path) as file:
