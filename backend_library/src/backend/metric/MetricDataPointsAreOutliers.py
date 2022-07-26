@@ -21,15 +21,11 @@ class MetricDataPointsAreOutliers(Metric):
         execution_result_path: list[str] = eem_helper. \
             get_execution_elements_result_paths(algorithm_directory_paths)
 
-        # TODO Test: Bis hierhin geht es
-
         # Fill outlier_data_points with all information about which datapoint is an outlier
         # (1 bool array for each ExecutionElement result)
         outlier_data_points: list[np.ndarray] = list([])
         for result_path in execution_result_path:
             outlier_data_points.append(eem_helper.compute_outlier_data_points(result_path))
-
-        print(outlier_data_points)
 
         # Compute the metric result:
         data_points_outlier_in_subspace: list[int] = eem_helper.compute_data_point_outlier_count(outlier_data_points)

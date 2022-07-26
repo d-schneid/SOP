@@ -41,7 +41,7 @@ class MetricSubspaceOutlierAmount(Metric):
             eem_helper.compute_subspace_outlier_amount(outlier_data_points_divided_in_subspaces)
 
         # convert into result
-        metric_result: np.ndarray = np.hstack(all_subspace_identifier, outlier_data_points)
+        metric_result: np.ndarray = np.hstack(([all_subspace_identifier], [outlier_data_points]))
 
         # save metric result
-        DataIO.save_write_csv(metric_result_path+".running", metric_result_path, metric_result)
+        DataIO.save_write_csv(metric_result_path+".running", metric_result_path, metric_result, False)
