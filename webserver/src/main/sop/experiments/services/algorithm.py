@@ -50,7 +50,9 @@ def convert_param_mapping_to_signature_dict(
 ) -> Dict[str, List[Dict[str, object]]]:
     dikt = dict()
     for name, param in mapping.items():
-        # we need to do this check, because the kwargs default parameter is a type,
-        # and we can't handle that better
-        dikt[name] = param.default if type(param.default) != type else None
+        # We don't want to handle args and kwargs
+        if name not in ("args", "kwargs"):
+            # we need to do this check, because the kwargs default parameter is a type,
+            # and we can't handle that better
+            dikt[name] = param.default if type(param.default) != type else None
     return dikt
