@@ -1,7 +1,9 @@
-from django.test import Client, TestCase
+from django.test import Client
+
+from tests.unittests.views.LoggedInTestCase import DjangoTestCase
 
 
-class UrlLoginRequiredTests(TestCase):
+class UrlLoginRequiredTests(DjangoTestCase):
     def setUp(self) -> None:
         self.client = Client()
 
