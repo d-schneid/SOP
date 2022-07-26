@@ -41,22 +41,17 @@ class DatasetUploadForm(forms.ModelForm[Dataset]):
 
 
 class ExperimentCreateForm(forms.ModelForm[Experiment]):
+    # Create algorithm_error field to display errors
+    algorithm_error = forms.CharField(required=False)
+
     class Meta:
         model = Experiment
-        fields = ("display_name", "dataset", "algorithms")
+        fields = ["display_name", "dataset", ]
         widgets = {
             "display_name": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "Experiment name"}
             ),
             "dataset": forms.Select(attrs={"class": "form-control"}),
-            "algorithms": forms.SelectMultiple(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Experiment name",
-                    "multiple": "mutliple",
-                    "size": "12",
-                }
-            ),
         }
 
 
