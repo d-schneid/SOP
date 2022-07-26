@@ -44,9 +44,8 @@ class IntegrationTest_MetricSubspaceOutlierAmount(unittest.TestCase):
         self.__clean_up_files()
 
     def __clean_up_files(self):
-        pass
-        #if os.path.isfile(self._metric_result_path1):
-            #os.remove(self._metric_result_path1)
+        if os.path.isfile(self._metric_result_path1):
+            os.remove(self._metric_result_path1)
 
 
 if __name__ == '__main__':

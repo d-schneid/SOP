@@ -42,10 +42,6 @@ class MetricSubspaceOutlierAmount(Metric):
                     outlier_data_points_divided_in_subspaces[identifier] \
                         .append(eem_helper.compute_outlier_data_points(path))
 
-        print("TEST ME PLS")
-        print(all_subspace_identifier)
-        print("The dict")
-        print(outlier_data_points_divided_in_subspaces)
         # compute metric
         outlier_data_points: list[int] = \
             eem_helper.compute_subspace_outlier_amount(outlier_data_points_divided_in_subspaces)
