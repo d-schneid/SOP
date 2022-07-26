@@ -31,5 +31,6 @@ class IntegrationTest_ExecutionElementMetricHelper(unittest.TestCase):
         if os.path.isdir(self._execution_element_directory_path1):
             shutil.rmtree(self._execution_element_directory_path1)
 
+
 if __name__ == '__main__':
     unittest.main()

@@ -129,7 +129,7 @@ class ExperimentCreateViewTests(LoggedInTestCase):
             # we need to pass in the primary keys since these are choice fields and datasets and algorithms are
             # passed via their primary key
             "dataset": self.dataset.pk,
-            "algorithms": [algo.pk for algo in self.algorithms],
+            "check-algo": [algo.pk for algo in self.algorithms],
         }
         return self.client.post(reverse("experiment_create"), data=data, follow=True)
 

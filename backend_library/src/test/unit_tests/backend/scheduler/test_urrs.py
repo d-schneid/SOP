@@ -1,8 +1,9 @@
 import time
 import unittest
+import multiprocessing
 from multiprocessing import Manager
+from multiprocessing.managers import SyncManager
 from typing import Optional
-from unittest import skip
 
 from backend.scheduler.Schedulable import Schedulable
 from backend.scheduler.Scheduler import Scheduler
@@ -22,8 +23,6 @@ class UnitTestUrrs(unittest.TestCase):
 
     def tearDown(self) -> None:
         Scheduler.get_instance().hard_shutdown()
-
-    to_be_changed = Manager().Value('b', False)
 
     def test_priority(self):
         Scheduler._instance = None
@@ -47,22 +46,57 @@ class UnitTestUrrs(unittest.TestCase):
         self.assertNotEqual(sched.next_sched().user_id, sched.next_sched().user_id)
 
     def test_exec(self):
-        Scheduler._instance = None
-        urss = UserRoundRobinScheduler()
-        urss.schedule(TestSched(-1, -1, 0))
-        time.sleep(2)
-        self.assertTrue(UnitTestUrrs.to_be_changed.value)
+        manager = Manager()
+        tbc = manager.Value('b', False)
 
+
+        Scheduler._instance = None
+        urrs = UserRoundRobinScheduler()
+        urrs.schedule(TestSched(-1, -1, 0, tbc))
+        time.sleep(1)
+        self.assertTrue(tbc.value)
+
+        tbc4 = manager.Value('b', False)
+        tbc5 = manager.Value('b', False)
+
+        urrs.schedule(TestSched(-1, 0, 0, tbc4, 1))
+        urrs.schedule(TestSched(-1, 1, 0, tbc5, 1))
+        urrs.abort_by_task(1)
+        time.sleep(2)
+        self.assertTrue(tbc4.value)
+        self.assertFalse(tbc5.value)
+
+        tbc6 = manager.Value('b', False)
+        tbc7 = manager.Value('b', False)
+        for i in range(multiprocessing.cpu_count()):
+            urrs.schedule(TestSched(0, -1, 0, tbc6, 1))
+            urrs.schedule(TestSched(1, -1, 0, tbc7, 1))
+        urrs.abort_by_user(1)
+        time.sleep(2)
+        self.assertTrue(tbc6.value)
+        self.assertFalse(tbc7.value)
+
+        tbc2 = manager.Value('b', False)
+        tbc3 = manager.Value('b', False)
+
+        urrs.schedule(TestSched(-1, -1, 0, tbc3, 1))
+        urrs.graceful_shutdown(lambda: tbc2.set(True))
+        time.sleep(2)
+        self.assertTrue(tbc2.value)
+        self.assertTrue(tbc3.value)
+        self.assertTrue(urrs.is_shutting_down())
 
 if __name__ == '__main__':
     unittest.main()
 
 
 class TestSched(Schedulable):
-    def __init__(self, uid, tid, prio):
+    def __init__(self, uid, tid, prio, tbc=None, sleep_dur=0):
         self.uid = uid
         self.tid = tid
         self.prio = prio
+        self.tbc = tbc
+        self.slp_dur = sleep_dur
 
     @property
     def user_id(self) -> int:
@@ -77,4 +111,5 @@ class TestSched(Schedulable):
         return self.prio
 
     def do_work(self) -> None:
-        UnitTestUrrs.to_be_changed.set(True)
+        time.sleep(self.slp_dur)
+        self.tbc.set(True)

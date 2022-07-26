@@ -6,7 +6,7 @@ import os
 import sys
 from collections.abc import Iterable
 from multiprocessing.shared_memory import SharedMemory
-from typing import List, Optional
+from typing import List
 
 import numpy as np
 
@@ -153,5 +153,5 @@ class ExecutionSubspace(Schedulable):
     def priority(self) -> int:
         return self._priority
 
-    def do_work(self) -> Optional[int]:
+    def do_work(self) -> None:
         self.__load_subspace_from_dataset()

@@ -53,7 +53,7 @@ class ExecutionElementMetricHelper:
         :return: A list containing all paths to the files that end with .csv in the inputted directories.
         """
         all_execution_element_results: list[str] = list([])
-        for algorithm_directory in algorithm_directory_paths:
+        for algorithm_directory in algorithm_directory_paths:#
             assert os.path.isdir(algorithm_directory)
 
             all_execution_element_results.extend(ExecutionElementMetricHelper
@@ -87,9 +87,7 @@ class ExecutionElementMetricHelper:
 
         for execution_element_result in data_points_outlier_in_subspace:
             for data_point in range(0, execution_element_result.shape[0]):
-                print("I'm here")
                 if execution_element_result[data_point]:
-                    print("INCREASE!!!")
                     data_points_outlier_count[data_point] += 1
 
         return data_points_outlier_count
@@ -114,15 +112,9 @@ class ExecutionElementMetricHelper:
         subspace_outlier_amount: list[int] = [0] * len(data_points_outlier_in_subspace)
 
         for subspace_index in range(0, len(data_points_outlier_in_subspace)):
-            print(subspace_index)
-            print(list(data_points_outlier_in_subspace.keys())[subspace_index])
-
-        for subspace_index in range(0, len(data_points_outlier_in_subspace)):
             subspace_key: str = list(data_points_outlier_in_subspace.keys())[subspace_index]  # get key to dict index
             for execution_element_result in data_points_outlier_in_subspace[subspace_key]:
                 # a execution_element_result is a 1D bool array (if datapoint is Outlier of not)
-                print("subspace result: " + str(execution_element_result))
-
                 for data_point in range(0, execution_element_result.size):
                     if execution_element_result[data_point]:
                         subspace_outlier_amount[subspace_index] += 1
@@ -135,9 +127,14 @@ class ExecutionElementMetricHelper:
         Converts the inserted path to the name of the file: in this case the Subspace Identifier. \n
         :param paths_to_convert: The paths that should be converted.
         :return: A list containing the subspace identifier for each inserted path.
+            (Removes duplicate subspace identifier)
         """
-        converted_paths: list[str] = list([])
-        for path in paths_to_convert:
-            converted_paths.append(Path(path).stem)
+        subspace_identifier_dict: dict = {}
 
-        return converted_paths
+        for path in paths_to_convert:
+            subspace_identifier: str = Path(path).stem
+
+            if (subspace_identifier_dict.get(subspace_identifier)) is None:
+                subspace_identifier_dict[subspace_identifier] = 1
+
+        return list(subspace_identifier_dict.keys())

@@ -1,14 +1,11 @@
-from abc import ABC
-
 import numpy as np
 
-from backend.metric.Metric import Metric
-from backend.task.execution.core.Execution import Execution
-from backend.metric.ExecutionElementMetricHelper import ExecutionElementMetricHelper as eem_helper
 from backend.DataIO import DataIO
+from backend.metric.ExecutionElementMetricHelper import ExecutionElementMetricHelper as eem_helper
+from backend.metric.Metric import Metric
 
 
-class MetricDataPointsAreOutliers(ABC, Metric):
+class MetricDataPointsAreOutliers(Metric):
 
     @staticmethod
     def compute_metric(metric_result_path: str, algorithm_directory_paths: list[str]) -> None:
@@ -35,4 +32,4 @@ class MetricDataPointsAreOutliers(ABC, Metric):
 
         # save metric
         DataIO.save_write_csv(metric_result_path + ".running", metric_result_path,
-                              np.asarray([data_points_outlier_in_subspace]), True)
+                              np.asarray([data_points_outlier_in_subspace]).transpose(), True)

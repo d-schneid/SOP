@@ -38,7 +38,7 @@ class SystemTest_Execution(unittest.TestCase):
     _subspace_size_max: int = 5
     _subspace_amount = 4
     _subspace_seed = 42
-    _data_dimensions_count: int = 10
+    _data_dimensions_count: int = 26
     _subspace_generation: rsg = rsg(usd(_subspace_size_min, _subspace_size_max),
                                     _data_dimensions_count, _subspace_amount, _subspace_seed)
 
@@ -132,7 +132,7 @@ class SystemTest_Execution(unittest.TestCase):
         # Create the result of Execution by hand
         _test_folder: str = self._result_path + "_test_folder"
         if os.path.exists(_test_folder):
-            os.remove(_test_folder)
+            os.rmdir(_test_folder)
         os.mkdir(_test_folder)
 
         TaskHelper.zip_dir(_test_folder, self._running_path, self._zipped_result_path)

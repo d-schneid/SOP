@@ -1,14 +1,19 @@
+import json
 import random
 from typing import Optional, Dict, Any
 
 from django.conf import settings
-from django.http import HttpRequest, HttpResponseRedirect, HttpResponse
+from django.db.models import QuerySet
+from django.http import HttpRequest, HttpResponseRedirect, HttpResponse, \
+    HttpResponseServerError
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
 
 from authentication.mixins import LoginRequiredMixin
+from backend.scheduler.DebugScheduler import DebugScheduler
 from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
 from backend.task.TaskState import TaskState
+from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 from backend.task.execution.core.Execution import Execution as BackendExecution
 from backend.task.execution.subspace.RandomizedSubspaceGeneration import (
@@ -17,54 +22,70 @@ from backend.task.execution.subspace.RandomizedSubspaceGeneration import (
 from backend.task.execution.subspace.UniformSubspaceDistribution import (
     UniformSubspaceDistribution,
 )
+from experiments.callback import ExecutionCallbacks
 from experiments.forms.create import ExecutionCreateForm
-from experiments.models import Execution, Experiment
+from experiments.models import Execution, Experiment, Algorithm
+from experiments.models.execution import get_result_path
 from experiments.services.execution import get_params_out_of_form
 from experiments.views.generic import PostOnlyDeleteView
-from experiments.callback import ExecutionCallbacks
 
 
-def schedule_backend(instance: Execution) -> None:
-    experiment = instance.experiment
+def schedule_backend(execution: Execution) -> Optional[Dict[str, list[str]]]:
+    experiment = execution.experiment
     dataset = experiment.dataset
-    algorithms = experiment.algorithms
-    user = instance.experiment.user
+    algorithms: QuerySet[Algorithm] = experiment.algorithms.all()
+    user = execution.experiment.user
 
     subspace_size_distribution = UniformSubspaceDistribution(
-        subspace_size_min=instance.subspaces_min,
-        subspace_size_max=instance.subspaces_max,
+        subspace_size_min=execution.subspaces_min,
+        subspace_size_max=execution.subspaces_max,
     )
+
+    has_enough_subspaces = subspace_size_distribution.has_enough_subspaces(
+        dataset_dimension_count=dataset.dimensions_total,
+        requested_subspace_count=execution.subspace_amount,
+    )
+    if not has_enough_subspaces:
+        return {
+            "subspace_amount": [
+                "Dataset does not have enough dimensions for requested subspace_amount"
+            ]
+        }
+
     subspace_generation_description = RandomizedSubspaceGeneration(
         size_distr=subspace_size_distribution,
-        subspace_amount=instance.subspace_amount,
-        seed=instance.subspace_generation_seed,
+        subspace_amount=execution.subspace_amount,
+        seed=execution.subspace_generation_seed,
         dataset_total_dimension_count=dataset.dimensions_total,
     )
 
     parameterized_algorithms = []
     for algorithm in algorithms.all():
-        # TODO: create hyper parameters and pass them into ParameterizedAlgorithms
         parameterized_algorithms.append(
             ParameterizedAlgorithm(
                 display_name=algorithm.display_name,
-                path=algorithm.path,
-                hyper_parameter=instance.algorithm_parameters[str(algorithm.pk)],
+                path=algorithm.path.path,
+                hyper_parameter=execution.algorithm_parameters[str(algorithm.pk)],
             )
         )
     backend_execution = BackendExecution(
         user_id=user.pk,
-        task_id=instance.pk,
+        task_id=execution.pk,
         task_progress_callback=ExecutionCallbacks.execution_callback,
-        dataset_path=str(settings.MEDIA_ROOT / str(dataset.path_cleaned)),
-        result_path=str(settings.MEDIA_ROOT / str(instance.result_path)),
+        dataset_path=str(settings.MEDIA_ROOT / dataset.path_cleaned.path),
+        result_path=get_result_path(execution),
         subspace_generation=subspace_generation_description,
         algorithms=parameterized_algorithms,
         metric_callback=ExecutionCallbacks.metric_callback,
+        datapoint_count=dataset.datapoints_total,
     )
     # TODO: DO NOT do this here. Move it to AppConfig or whatever
     if UserRoundRobinScheduler._instance is None:
         UserRoundRobinScheduler()
+    AlgorithmLoader.set_algorithm_root_dir(str(settings.MEDIA_ROOT / "algorithms"))
+
     backend_execution.schedule()
+    return None
 
 
 class ExecutionCreateView(
@@ -84,23 +105,31 @@ class ExecutionCreateView(
 
     def form_valid(self, form: ExecutionCreateForm) -> HttpResponse:
         # Get data from form
+        error = False
+
         experiment_id = self.kwargs["experiment_pk"]
         assert experiment_id > 0
         experiment: Experiment = Experiment.objects.get(pk=experiment_id)
         assert experiment is not None
+        form.instance.experiment = experiment
+
+        # Get subspaces_min out of form and do sanity checks
         subspaces_min = form.cleaned_data["subspaces_min"]
-        assert subspaces_min >= 0
+        if subspaces_min < 0:
+            form.errors.update(
+                {
+                    "subspaces_min": [
+                        "Subspaces Min has to be an Integer greater than or equal to 0"
+                    ]
+                }
+            )
+        else:
+            form.instance.subspaces_min = subspaces_min
+
+        # Get subspaces_max out of form and do sanity checks
         subspaces_max = form.cleaned_data["subspaces_max"]
-        assert subspaces_max >= 0
-        subspace_amount = form.cleaned_data["subspace_amount"]
-        assert subspace_amount > 0
-        dikt = get_params_out_of_form(self.request, experiment)
-        assert dikt is not None
-        form.instance.algorithm_parameters = dikt
-        # TODO: add seed field to create form
-        seed = form.cleaned_data.get("subspace_generation_seed")
-        seed = seed if seed is not None else random.randint(0, 10000000000)
-        if subspaces_min >= subspaces_max:
+        if subspaces_max < 0:
+            error = True
             form.errors.update(
                 {
                     "subspaces_max": [
@@ -108,39 +137,78 @@ class ExecutionCreateView(
                     ]
                 }
             )
-            return super(ExecutionCreateView, self).form_invalid(form)
+        if subspaces_max > experiment.dataset.dimensions_total:
+            error = True
+            form.errors.update(
+                {
+                    "subspaces_max": [
+                        f"Subspaces Max has to be smaller than or equal to the dataset dimension count: {experiment.dataset.dimensions_total}"
+                    ]
+                }
+            )
+        elif 0 <= subspaces_max <= experiment.dataset.dimensions_total:
+            form.instance.subspaces_max = subspaces_max
 
-        # save data in model
-        form.instance.subspaces_min = subspaces_min
-        form.instance.subspaces_max = subspaces_max
-        form.instance.subspace_amount = subspace_amount
-        form.instance.experiment = experiment
-        form.instance.subspace_generation_seed = seed
+        # Get subspace_amount out of form and do sanity checks
+        subspace_amount = form.cleaned_data["subspace_amount"]
+        if subspace_amount <= 0:
+            error = True
+            form.errors.update(
+                {"subspace_amount": ["Subspaces amount has to be a positive Integer"]}
+            )
+        else:
+            form.instance.subspace_amount = subspace_amount
+
+        # Generate algorithm_parameters out of form inputs
+        dikt = get_params_out_of_form(self.request, experiment)
+        assert dikt is not None
+        form.instance.algorithm_parameters = dikt
+
+        # Get subspace_generation_seed out of form and do sanity checks
+        seed: Optional[int] = form.cleaned_data.get("subspace_generation_seed")
+        # If the seed was not specified, it will be set to a random seed during model creation
+        if seed:
+            if seed < 0:
+                error = True
+                form.errors.update(
+                    {
+                        "subspace_generation_seed": [
+                            "Subspaces Max has to be greater than Subspaces Min"
+                        ]
+                    }
+                )
+            else:
+                form.instance.subspace_generation_seed = seed
+
+        # Sanity check that subspaces_min must be smaller than subspaces_max
+        if subspaces_min >= subspaces_max:
+            error = True
+            form.errors.update(
+                {
+                    "subspaces_max": [
+                        "Subspaces Max has to be greater than Subspaces Min"
+                    ]
+                }
+            )
+
+        if error:
+            return super(ExecutionCreateView, self).form_invalid(form)
 
         # we need to call super().form_valid before calling the backend, since we need
         # access to the primary key of this instance and the primary key will be set
         # on the save call in form_valid
-        response = super(ExecutionCreateView, self).form_valid(form)
+        success_response = super(ExecutionCreateView, self).form_valid(form)
         assert form.instance.pk is not None
         assert experiment.user.pk is not None
         assert experiment.pk is not None
         assert form.instance.algorithm_parameters is not None
-        # TODO: WARNING! This path will not be saved in the model, as the model isn't saved
-        # after this declaration. It is used though in the schedule_backend() function to
-        # tell the backend where to save the result. We have to set this again when we have
-        # a result in the filesystem to put a valid path into the model.
-        # Maybe move this path calculation into schedule_backend() to remove confusion about
-        # this being an attribute of the model, but not being accessible later
-        form.instance.result_path = (
-            settings.MEDIA_ROOT
-            / "experiments"
-            / ("user_" + str(experiment.user.pk))
-            / ("experiment_" + str(experiment.pk))
-            / ("execution_" + str(form.instance.pk))
-        )
-        # TODO:start scheduling as soon as DatasetCleaning on Dataset upload is implemented
-        # schedule_backend(form.instance)
-        return response
+
+        errors = schedule_backend(form.instance)
+        if errors:
+            form.errors.update(errors)
+            return super(ExecutionCreateView, self).form_invalid(form)
+
+        return success_response
 
 
 class ExecutionDuplicateView(ExecutionCreateView):
@@ -165,7 +233,8 @@ class ExecutionDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Execution]):
     success_url = reverse_lazy("experiment_overview")
 
 
-def download_execution_result(request: HttpRequest, pk: int) -> HttpResponse:
+def download_execution_result(request: HttpRequest, experiment_pk: int,
+                              pk: int) -> HttpResponse:
     if request.method == "GET":
         execution: Optional[Execution] = Execution.objects.filter(pk=pk).first()
         if execution is None:
@@ -180,3 +249,23 @@ def download_execution_result(request: HttpRequest, pk: int) -> HttpResponse:
     else:
         assert request.method in ("POST", "PUT")
         return HttpResponseRedirect(reverse_lazy("experiment_overview"))
+
+
+def get_execution_progress(request: HttpRequest) -> HttpResponse:
+    pk = 0
+    if "execution_pk" in request.GET:
+        pk = request.GET["execution_pk"]
+    elif "execution_pk" in request.META:
+        pk = request.META["execution_pk"]
+    if pk:
+        execution: Optional[Execution] = Execution.objects.filter(pk=pk).first()
+        data = {}
+        if execution is not None:
+            data["progress"] = execution.progress
+
+        return HttpResponse(json.dumps(data))
+
+    else:
+        return HttpResponseServerError(
+            "Server Error: You must provide execution_pk header or query param."
+        )
