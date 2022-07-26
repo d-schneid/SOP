@@ -8,7 +8,8 @@ from backend.scheduler.Scheduler import Scheduler
 class DjangoTestCase(TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
-        Scheduler._instance.hard_shutdown()
+        if Scheduler._instance is not None:
+            Scheduler._instance.hard_shutdown()
         super(DjangoTestCase, cls).tearDownClass()
 
 
