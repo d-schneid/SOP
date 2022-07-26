@@ -1,10 +1,11 @@
-from typing import Type
+from typing import Type, Optional, Sequence
 
 from django.contrib import admin
+from django.http import HttpRequest
 
 from experiments.admin.inlines import ExperimentInlineDataset
 from experiments.admin.abstract_model_admin import AbstractModelAdmin
-from experiments.forms.admin.dataset import AdminAddDatasetForm, AdminChangeDatasetForm
+from experiments.forms.admin.dataset import AdminAddDatasetForm
 from experiments.models import Dataset
 
 
@@ -24,11 +25,25 @@ class DatasetAdmin(AbstractModelAdmin):
     search_fields = ["display_name"]
     actions = ["delete_selected"]
 
+    def get_readonly_fields(self, request: HttpRequest, obj: Optional[Dataset] = None) -> Sequence[str]:
+        # for editing an existing experiment
+        if not (obj is None):
+            readonly_fields = ["dimensions_total",
+                               "datapoints_total",
+                               "is_cleaned",
+                               "user",
+                               "upload_date",
+                               "path_original",
+                               "path_cleaned"]
+            if not obj.is_cleaned:
+                readonly_fields.remove("path_cleaned")
+            return readonly_fields
+        # for adding a new experiment
+        else:
+            return []
+
     def get_admin_add_form(self) -> Type[AdminAddDatasetForm]:
         return AdminAddDatasetForm
-
-    def get_admin_change_form(self) -> Type[AdminChangeDatasetForm]:
-        return AdminChangeDatasetForm
 
     def get_model_name(self) -> str:
         return "dataset"
