@@ -1,6 +1,7 @@
 from typing import Optional, Dict, Any
 
 from django.conf import settings
+from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponseRedirect, HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
@@ -18,7 +19,7 @@ from backend.task.execution.subspace.UniformSubspaceDistribution import (
 )
 from experiments.callback import ExecutionCallbacks
 from experiments.forms.create import ExecutionCreateForm
-from experiments.models import Execution, Experiment
+from experiments.models import Execution, Experiment, Algorithm
 from experiments.models.execution import get_result_path
 from experiments.services.execution import get_params_out_of_form
 from experiments.views.generic import PostOnlyDeleteView
@@ -27,7 +28,7 @@ from experiments.views.generic import PostOnlyDeleteView
 def schedule_backend(execution: Execution) -> Optional[Dict[str, list[str]]]:
     experiment = execution.experiment
     dataset = experiment.dataset
-    algorithms = experiment.algorithms
+    algorithms: QuerySet[Algorithm] = experiment.algorithms.all()
     user = execution.experiment.user
 
     subspace_size_distribution = UniformSubspaceDistribution(
@@ -58,7 +59,7 @@ def schedule_backend(execution: Execution) -> Optional[Dict[str, list[str]]]:
         parameterized_algorithms.append(
             ParameterizedAlgorithm(
                 display_name=algorithm.display_name,
-                path=algorithm.path,
+                path=algorithm.path.path,
                 hyper_parameter=execution.algorithm_parameters[str(algorithm.pk)],
             )
         )
