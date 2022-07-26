@@ -212,6 +212,8 @@ class Execution(Task, Schedulable):
         Load the cleaned dataset into shared memory
         """
         data = DataIO.read_cleaned_csv(self._dataset_path)
+        assert data.shape[0] == self._datapoint_count
+        assert data.shape[1] == self._subspaces[0].get_dataset_dimension_count()
         size = data.size * data.itemsize
         shm = shared_memory.SharedMemory(self._shared_memory_name, True, size)
         shared_data = np.ndarray(data.shape, data.dtype, shm.buf)

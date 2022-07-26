@@ -38,7 +38,7 @@ class SystemTest_Execution(unittest.TestCase):
     _subspace_size_max: int = 5
     _subspace_amount = 4
     _subspace_seed = 42
-    _data_dimensions_count: int = 10
+    _data_dimensions_count: int = 26
     _subspace_generation: rsg = rsg(usd(_subspace_size_min, _subspace_size_max),
                                     _data_dimensions_count, _subspace_amount, _subspace_seed)
 
