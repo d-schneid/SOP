@@ -110,7 +110,6 @@ class DataIO:
         :param data: The dataset that should be written to the file.
         :param add_index_column: If True create an additional column at the start of the array with
                                  indexes for each row. If False don't change anything.
-        :param has_header: The header of the dataset that should be read.
         """
         DataIO.write_csv(running_path, data, add_index_column, "", has_header)
         shutil.move(running_path, final_path)
