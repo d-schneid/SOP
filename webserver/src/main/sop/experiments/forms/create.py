@@ -67,4 +67,10 @@ class ExecutionCreateForm(forms.ModelForm[Execution]):
             "subspaces_min",
             "subspaces_max",
             "subspace_amount",
+            "subspace_generation_seed",
         )
+        widgets = {
+            "subspace_generation_seed": forms.NumberInput(
+                attrs={"placeholder": "random"}
+            )
+        }

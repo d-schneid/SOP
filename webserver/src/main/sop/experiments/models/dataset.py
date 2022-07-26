@@ -1,6 +1,6 @@
 from __future__ import annotations
-import os.path
 
+import os.path
 
 from django.conf import settings
 from django.core.validators import FileExtensionValidator
@@ -23,8 +23,8 @@ class Dataset(models.Model):
     description = models.TextField(max_length=255, blank=True)
     upload_date = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    datapoints_total = models.IntegerField()
-    dimensions_total = models.IntegerField()
+    datapoints_total = models.IntegerField(null=True)
+    dimensions_total = models.IntegerField(null=True)
     path_original = models.FileField(
         upload_to=_get_dataset_upload_path,
         validators=(FileExtensionValidator(allowed_extensions=["csv"]),),
