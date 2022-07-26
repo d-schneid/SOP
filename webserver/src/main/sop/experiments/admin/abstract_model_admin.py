@@ -21,10 +21,6 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
         pass
 
     @abstractmethod
-    def get_admin_change_form(self):
-        pass
-
-    @abstractmethod
     def get_model_name(self):
         pass
 
@@ -41,16 +37,6 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
     def add_view(self, request, form_url="", extra_context=None):
         self.form = self.get_admin_add_form()
         return super().add_view(request, form_url, extra_context)
-
-    def change_view(
-            self,
-            request: HttpRequest,
-            object_id: str,
-            form_url="",
-            extra_context: Optional[dict[str, object]] = None,
-    ):
-        self.form = self.get_admin_change_form()
-        return super().change_view(request, object_id, form_url, extra_context)
 
     # adjust behavior of deletion of model
     def delete_view(

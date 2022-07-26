@@ -25,17 +25,24 @@ class AlgorithmAdmin(AbstractModelAdmin):
 
     def get_readonly_fields(self, request: HttpRequest, obj: Optional[Algorithm] = None) -> Sequence[str]:
         # for editing an existing experiment
-        if obj:
+        if not (obj is None):
             return ["user", "upload_date"]
         # for adding a new experiment
         else:
             return []
 
+    def change_view(
+            self,
+            request: HttpRequest,
+            object_id: str,
+            form_url="",
+            extra_context: Optional[dict[str, object]] = None,
+    ):
+        self.form = AdminChangeAlgorithmForm
+        return super().change_view(request, object_id, form_url, extra_context)
+
     def get_admin_add_form(self) -> Type[AdminAddAlgorithmForm]:
         return AdminAddAlgorithmForm
-
-    def get_admin_change_form(self) -> Type[AdminChangeAlgorithmForm]:
-        return AdminChangeAlgorithmForm
 
     def get_model_name(self) -> str:
         return "algorithm"
