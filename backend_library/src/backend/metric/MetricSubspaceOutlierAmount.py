@@ -1,9 +1,12 @@
+from pathlib import Path
+
 import numpy as np
 
 from backend.DataIO import DataIO
 from backend.metric.ExecutionElementMetricHelper import ExecutionElementMetricHelper as eem_helper
 from backend.metric.Metric import Metric
 from pandas import DataFrame as df
+
 
 class MetricSubspaceOutlierAmount(Metric):
 
@@ -29,13 +32,20 @@ class MetricSubspaceOutlierAmount(Metric):
         # Divide outlier_data_points by their subspace identifier
         for identifier in all_subspace_identifier:
             for path in execution_result_paths:
+                if Path(path).stem != identifier:
+                    continue
+
                 if (outlier_data_points_divided_in_subspaces.get(identifier)) is None:
                     outlier_data_points_divided_in_subspaces[identifier] \
                         = list([eem_helper.compute_outlier_data_points(path)])
                 else:
-                    outlier_data_points_divided_in_subspaces[identifier]\
+                    outlier_data_points_divided_in_subspaces[identifier] \
                         .append(eem_helper.compute_outlier_data_points(path))
 
+        print("TEST ME PLS")
+        print(all_subspace_identifier)
+        print("The dict")
+        print(outlier_data_points_divided_in_subspaces)
         # compute metric
         outlier_data_points: list[int] = \
             eem_helper.compute_subspace_outlier_amount(outlier_data_points_divided_in_subspaces)
@@ -44,4 +54,4 @@ class MetricSubspaceOutlierAmount(Metric):
         metric_result: np.ndarray = df([all_subspace_identifier, outlier_data_points]).to_numpy().transpose()
 
         # save metric result
-        DataIO.save_write_csv(metric_result_path+".running", metric_result_path, metric_result, False)
+        DataIO.save_write_csv(metric_result_path + ".running", metric_result_path, metric_result, False)

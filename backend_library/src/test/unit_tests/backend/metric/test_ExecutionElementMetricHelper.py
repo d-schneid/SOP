@@ -203,6 +203,11 @@ class UnitTest_ExecutionElementMetricHelper_ComputeOutlierDataPoints(unittest.Te
         _normalized_values.append(val / 10000.0)
     _execution_element_result_path3: str = os.path.join(os.getcwd(), "result_path3.csv")
 
+    # dataset 4
+    _execution_element_result_path4: str = os.path.join(os.getcwd(), "result_path4.csv")
+    _execution_element_result_dataset4: np.ndarray = \
+        np.asarray([[0, 1], [1, 1], [2, 1], [3, 1]])
+
     def setUp(self) -> None:
         self.__clean_existing_files()
 
@@ -215,6 +220,9 @@ class UnitTest_ExecutionElementMetricHelper_ComputeOutlierDataPoints(unittest.Te
 
         if os.path.isfile(self._execution_element_result_path3):
             os.remove(self._execution_element_result_path3)
+
+        if os.path.isfile(self._execution_element_result_path4):
+            os.remove(self._execution_element_result_path4)
 
     def test_compute_outlier_data_points(self):
         # invalid path
@@ -250,6 +258,12 @@ class UnitTest_ExecutionElementMetricHelper_ComputeOutlierDataPoints(unittest.Te
         np.testing.assert_array_equal(_expected_result3,
                                       ExecutionElementMetricHelper.
                                       compute_outlier_data_points(self._execution_element_result_path3))
+
+        # dataset 4: each value is one -> everything is an outlier
+        DataIO.write_csv(self._execution_element_result_path4, self._execution_element_result_dataset4, False)
+        np.testing.assert_array_equal(np.asarray([True, True, True, True]),
+                                      ExecutionElementMetricHelper.
+                                      compute_outlier_data_points(self._execution_element_result_path4))
 
         # clean up
         self.__clean_existing_files()
