@@ -39,7 +39,7 @@ class DataIO:
         try:
             df: pd.DataFrame = pd.read_csv(path, dtype=object, header=has_header)
         except (ParserError, EmptyDataError) as err:
-            raise DataIO.DataIoInputException("An error occurred while reading the given file", err)
+            raise DataIO.DataIoInputException("An error occurred while reading the given dataset", err)
 
         return DataIO.__save_convert_to_float(df.to_numpy())
 
@@ -123,10 +123,18 @@ class DataIO:
         shutil.move(running_path, final_path)
 
     class DataIoInputException(ValueError):
+        """
+        Represents an error which can occur when trying to read a dataset from a file.
+        """
+
         def __init__(self, message: str, exception: ValueError) -> None:
             super().__init__(message + "; reference error message: " + str(exception))
             self._exception: ValueError = exception
 
         @property
         def exception(self) -> ValueError:
+            """
+            The specific error which occurred while trying to read the dataset form a file.
+            :return: The specific error which occurred.
+            """
             return self._exception
