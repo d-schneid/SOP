@@ -17,7 +17,7 @@ from experiments.views.execution import (
     ExecutionCreateView,
     ExecutionDeleteView,
     ExecutionDuplicateView,
-    download_execution_result,
+    download_execution_result, get_execution_progress,
 )
 from experiments.views.experiment import (
     ExperimentOverview,
@@ -134,6 +134,9 @@ urlpatterns = [
         download_execution_result,
         name="execution_download_result",
     ),
+    path("execution_progress/",
+         get_execution_progress,
+         name="execution_progress"),
     # upload progress
     path("upload_progress/", upload_progress, name="upload-progress"),
 ]
