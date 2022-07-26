@@ -1,4 +1,9 @@
+import os.path
+import io
+
+import pandas
 import pandas as pd
+from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpResponse, HttpRequest
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
@@ -6,11 +11,39 @@ from django.views.generic import ListView, UpdateView, CreateView
 from pandas import DataFrame
 
 from authentication.mixins import LoginRequiredMixin
+from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
+from backend.task.cleaning import DatasetCleaning
+from experiments.callback import DatasetCallbacks
 from experiments.forms.create import DatasetUploadForm
 from experiments.forms.edit import DatasetEditForm
 from experiments.models import Dataset
 from experiments.models.managers import DatasetQuerySet
+from experiments.services.dataset import generate_path_dataset_cleaned, save_dataset
 from experiments.views.generic import PostOnlyDeleteView
+
+
+def schedule_backend(dataset: Dataset) -> None:
+
+    # set and save the missing datafield entry for the cleaned csv file
+    dataset.path_cleaned = generate_path_dataset_cleaned(dataset.path_original.name)
+    dataset.save()
+
+    # create DatasetCleaning object
+    dataset_cleaning: DatasetCleaning = DatasetCleaning(
+        user_id=dataset.user.pk,
+        task_id=dataset.pk,
+        task_progress_callback=DatasetCallbacks.cleaning_callback,
+        uncleaned_dataset_path=dataset.path_original.path,  # type: ignore
+        cleaned_dataset_path=dataset.path_cleaned.path,  # type: ignore
+        cleaning_steps=None  # can be changed later on
+    )
+
+    # TODO: DO NOT do this here. Move it to AppConfig or whatever
+    if UserRoundRobinScheduler._instance is None:
+        UserRoundRobinScheduler()
+
+    # start the cleaning
+    dataset_cleaning.schedule()
 
 
 class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadForm]):
@@ -20,18 +53,49 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
     success_url = reverse_lazy("dataset_overview")
 
     def form_valid(self, form):
+
+        # save the file temporarily to disk
+        temp_file_path: str = save_dataset(self.request.FILES["path_original"], self.request.user)
+
+        assert os.path.isfile(temp_file_path)
+
+        # check if the file is a csv file
+
+        # TODO: check if correct csv; if no return an error
+        #  and delete the file while returning an error
+        """
+        if not check_if_file_is_csv(temp_file_path):
+            form.add_error("path_original", "The given file is not a valid csv.-file.")
+            
+            os.remove(temp_file_path)
+            assert not os.path.isfile(temp_file_path)
+            
+            return super(DatasetUploadView, self).form_invalid()"""
+
+        # Else:
+        # add the model data to the form
+        csv_frame: pd.DataFrame = pandas.read_csv(temp_file_path)
+        form.instance.datapoints_total = csv_frame.shape[0]  # number of lines
+        form.instance.dimensions_total = csv_frame.shape[1]  # number of columns
+
+
+        # delete temp file
+        os.remove(temp_file_path)
+
         form.instance.user = self.request.user
-
-        csv_frame: DataFrame = pd.read_csv(
-            self.request.FILES["path_original"].temporary_file_path()
-        )
-        form.instance.datapoints_total = csv_frame.size
-        form.instance.dimensions_total = csv_frame.shape[1]
-
         form.instance.is_cleaned = False
-        # TODO: Start Dataset Cleaning
 
-        return super().form_valid(form)
+        # call the super().form_valid() before creating the DatasetCleaning, as the primary key is needed
+        # to create the DatasetCleaning
+        response = super(DatasetUploadView, self).form_valid(form)
+        assert form.instance.pk is not None
+
+        # start Dataset Cleaning
+        schedule_backend(form.instance)
+
+        assert not os.path.isfile(temp_file_path)
+
+        return response
 
 
 class DatasetOverview(LoginRequiredMixin, ListView[Dataset]):

@@ -1,5 +1,6 @@
 import os
 import shutil
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -8,25 +9,27 @@ from pandas.errors import ParserError, EmptyDataError
 
 class DataIO:
     @staticmethod
-    def read_cleaned_csv(path: str) -> np.ndarray:
+    def read_cleaned_csv(path: str, has_header: Optional[int] = None) -> np.ndarray:
         """
         Returns the cleaned dataset. \n
         Raises an ValueError exception if the dataset is not cleaned (cast into float32 did not succeed).
         :param path: The absolute path where to read the dataset from.
+        :param has_header: The header of the dataset that should be read.
         :return: The cleaned dataset (or an exception).
         """
         assert os.path.isfile(path)
 
-        loaded_dataset = DataIO.read_uncleaned_csv(path)
+        loaded_dataset = DataIO.read_uncleaned_csv(path, has_header)
         cleaned_dataset: np.ndarray = loaded_dataset.astype(np.float32)  # cast ndarray to float32
 
         return cleaned_dataset
 
     @staticmethod
-    def read_uncleaned_csv(path: str) -> np.ndarray:
+    def read_uncleaned_csv(path: str, has_header: Optional[int] = 0) -> np.ndarray:
         """
         Returns the uncleaned dataset. \n
-        :path: The absolute path where to read the dataset from.
+        :param path: The absolute path where to read the dataset from.
+        :param has_header: The header of the dataset that should be read.
         :return: The uncleaned dataset.
         """
         assert os.path.isfile(path)
@@ -34,10 +37,9 @@ class DataIO:
         # process errors that can occur when the given csv-file is not valid (in terms for pandas)
         df: pd.DataFrame
         try:
-            df = pd.read_csv(path, dtype=object)
+            df: pd.DataFrame = pd.read_csv(path, dtype=object, header=has_header)
         except (ParserError, EmptyDataError) as err:
             raise DataIO.DataIoInputException("An error occurred while reading the given file", err)
-
         return DataIO.__save_convert_to_float(df.to_numpy())
 
     @staticmethod
@@ -65,7 +67,8 @@ class DataIO:
         return to_convert
 
     @staticmethod
-    def write_csv(path: str, data: np.ndarray, add_index_column: bool = False, running_suffix: str = ".running"):
+    def write_csv(path: str, data: np.ndarray, add_index_column: bool = False, running_suffix: str = ".running",
+                  has_header: bool = False):
         """
         Writes the given 2D-dataset to a csv-file.
 
@@ -79,6 +82,7 @@ class DataIO:
         :param add_index_column: If True create an additional column at the start of the array with
         indexes for each row. If False don't change anything.
         :param running_suffix: Specifies the suffix to be added to the file during writing.
+        :param has_header: The header of the dataset that should be read.
         """
 
         temp_path: str = path + running_suffix
@@ -86,12 +90,13 @@ class DataIO:
         df = pd.DataFrame(data)
         assert len(df.shape) == 2
 
-        df.to_csv(temp_path, index=add_index_column)
+        df.to_csv(temp_path, index=add_index_column, header=has_header)
 
         os.rename(temp_path, path)  # is an atomic operation (POSIX requirement)
 
     @staticmethod
-    def save_write_csv(running_path: str, final_path: str, data: np.ndarray, add_index_column: bool = False):
+    def save_write_csv(running_path: str, final_path: str, data: np.ndarray, add_index_column: bool = False,
+                       has_header: bool = False):
         """
         Writes the given 2D-dataset to a csv-file.
         Unlike write_csv although, it does this in a way so that corrupted files, e.g. due to
@@ -111,8 +116,9 @@ class DataIO:
         :param data: The dataset that should be written to the file.
         :param add_index_column: If True create an additional column at the start of the array with
                                  indexes for each row. If False don't change anything.
+        :param has_header: The header of the dataset that should be read.
         """
-        DataIO.write_csv(running_path, data, add_index_column, "")
+        DataIO.write_csv(running_path, data, add_index_column, "", has_header)
         shutil.move(running_path, final_path)
 
 

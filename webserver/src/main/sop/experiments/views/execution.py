@@ -1,5 +1,5 @@
 import random
-from typing import Optional
+from typing import Optional, Dict, Any
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponseRedirect, HttpResponse
@@ -21,19 +21,10 @@ from experiments.forms.create import ExecutionCreateForm
 from experiments.models import Execution, Experiment
 from experiments.services.execution import get_params_out_of_form
 from experiments.views.generic import PostOnlyDeleteView
+from experiments.callback import ExecutionCallbacks
 
 
-def stub_callback(task_id: int, state: TaskState, progress: float):
-    print("CALLBACK!!!!")
-    print(f"{task_id = }, {state.name = }, {progress = }")
-
-
-def stub_metric_callback(execution: BackendExecution):
-    print("METRIC CALLBACK!!")
-    print(f"{execution.task_id = }, {execution.user_id = }, {execution.subspaces}")
-
-
-def schedule_backend(instance: Execution):
+def schedule_backend(instance: Execution) -> None:
     experiment = instance.experiment
     dataset = experiment.dataset
     algorithms = experiment.algorithms
@@ -63,12 +54,12 @@ def schedule_backend(instance: Execution):
     backend_execution = BackendExecution(
         user_id=user.pk,
         task_id=instance.pk,
-        task_progress_callback=stub_callback,
+        task_progress_callback=ExecutionCallbacks.execution_callback,
         dataset_path=str(settings.MEDIA_ROOT / str(dataset.path_cleaned)),
         result_path=str(settings.MEDIA_ROOT / str(instance.result_path)),
         subspace_generation=subspace_generation_description,
         algorithms=parameterized_algorithms,
-        metric_callback=stub_metric_callback,
+        metric_callback=ExecutionCallbacks.metric_callback,
     )
     # TODO: DO NOT do this here. Move it to AppConfig or whatever
     if UserRoundRobinScheduler._instance is None:
@@ -84,31 +75,30 @@ class ExecutionCreateView(
     form_class = ExecutionCreateForm
     success_url = reverse_lazy("experiment_overview")
 
-    def get_context_data(self, *, object_list=None, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         experiment_id = self.kwargs["experiment_pk"]
         experiment = Experiment.objects.get(pk=experiment_id)
         context.update({"experiment": experiment})
         return context
 
-    def form_valid(self, form):
+    def form_valid(self, form: ExecutionCreateForm) -> HttpResponse:
         # Get data from form
-        form.instance.user = self.request.user
-        experiment_id: int = self.kwargs["experiment_pk"]
+        experiment_id = self.kwargs["experiment_pk"]
         assert experiment_id > 0
         experiment: Experiment = Experiment.objects.get(pk=experiment_id)
         assert experiment is not None
-        subspaces_min: int = form.cleaned_data["subspaces_min"]
+        subspaces_min = form.cleaned_data["subspaces_min"]
         assert subspaces_min >= 0
-        subspaces_max: int = form.cleaned_data["subspaces_max"]
+        subspaces_max = form.cleaned_data["subspaces_max"]
         assert subspaces_max >= 0
-        subspace_amount: int = form.cleaned_data["subspace_amount"]
+        subspace_amount = form.cleaned_data["subspace_amount"]
         assert subspace_amount > 0
         dikt = get_params_out_of_form(self.request, experiment)
         assert dikt is not None
         form.instance.algorithm_parameters = dikt
         # TODO: add seed field to create form
-        seed: int = form.cleaned_data.get("subspace_generation_seed")
+        seed = form.cleaned_data.get("subspace_generation_seed")
         seed = seed if seed is not None else random.randint(0, 10000000000)
         if subspaces_min >= subspaces_max:
             form.errors.update(
@@ -154,7 +144,7 @@ class ExecutionCreateView(
 
 
 class ExecutionDuplicateView(ExecutionCreateView):
-    def get_initial(self):
+    def get_initial(self) -> Dict[str, int]:
         form = {}
         if self.request.method == "GET":
             og_execution_pk = self.kwargs["pk"]
@@ -164,7 +154,7 @@ class ExecutionDuplicateView(ExecutionCreateView):
             form["subspace_amount"] = original.subspace_amount
         return form
 
-    def get_context_data(self, *, object_list=None, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["original"] = Execution.objects.get(pk=self.kwargs["pk"])
         return context

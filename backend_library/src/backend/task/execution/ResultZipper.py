@@ -104,6 +104,3 @@ class ResultZipper(Schedulable):
             self._task_progress_callback(self._task_id, TaskState.FINISHED_WITH_ERROR, 1)
         else:
             self._task_progress_callback(self._task_id, TaskState.FINISHED, 1)
-
-
-
