@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import Type
+from typing import Type, Optional, Sequence
 
 from django.contrib import admin
+from django.http import HttpRequest
 
 from experiments.admin.inlines import ExperimentInlineAlgorithm
 from experiments.admin.abstract_model_admin import AbstractModelAdmin
@@ -21,6 +22,14 @@ class AlgorithmAdmin(AbstractModelAdmin):
     list_filter = ["upload_date", "group"]
     search_fields = ["display_name"]
     actions = ["delete_selected"]
+
+    def get_readonly_fields(self, request: HttpRequest, obj: Optional[Algorithm] = None) -> Sequence[str]:
+        # for editing an existing experiment
+        if obj:
+            return ["user", "upload_date"]
+        # for adding a new experiment
+        else:
+            return []
 
     def get_admin_add_form(self) -> Type[AdminAddAlgorithmForm]:
         return AdminAddAlgorithmForm
