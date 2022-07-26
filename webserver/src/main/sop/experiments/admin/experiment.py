@@ -4,12 +4,13 @@ from django.contrib import admin
 from django.http import HttpRequest
 
 from experiments.models.experiment import Experiment
+from experiments.forms.admin.experiment import AdminAddExperimentForm
 
 
 @admin.register(Experiment)
 class ExperimentAdmin(admin.ModelAdmin[Experiment]):
     list_display = ["display_name", "user", "creation_date"]
-    raw_id_fields = ["user"]
+    raw_id_fields = ["user", "algorithms"]
     list_filter = ["creation_date"]
     search_fields = ["display_name",
                      "user__username",
@@ -23,3 +24,7 @@ class ExperimentAdmin(admin.ModelAdmin[Experiment]):
         # for adding a new experiment
         else:
             return []
+
+    def add_view(self, request, form_url="", extra_context=None):
+        self.form = AdminAddExperimentForm
+        return super().add_view(request, form_url, extra_context)
