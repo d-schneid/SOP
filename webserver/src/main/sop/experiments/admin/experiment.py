@@ -20,7 +20,7 @@ class ExperimentAdmin(admin.ModelAdmin[Experiment]):
     def get_readonly_fields(self, request: HttpRequest, obj: Optional[Experiment] = None) -> Sequence[str]:
         # for editing an existing experiment
         if obj:
-            return ["user", "dataset", "algorithms"]
+            return ["user", "dataset", "algorithms", "creation_date"]
         # for adding a new experiment
         else:
             return []
