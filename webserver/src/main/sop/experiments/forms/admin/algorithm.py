@@ -43,9 +43,3 @@ class AdminAddAlgorithmForm(forms.ModelForm[Algorithm]):
             return cleaned_file
 
         return None
-
-
-class AdminChangeAlgorithmForm(forms.ModelForm[Algorithm]):
-    class Meta:
-        model = Algorithm
-        exclude = ["path", "signature", "user"]
