@@ -34,6 +34,15 @@ class UserRoundRobinScheduler(Scheduler):
             self.__make_worker_thread()
 
     @staticmethod
+    def get_instance() -> Scheduler:
+        """
+        Gets the current Scheduler instance or creates a UserRoundRobinScheduler.
+        """
+        if Scheduler._instance is None:
+            return UserRoundRobinScheduler()
+        return Scheduler._instance
+
+    @staticmethod
     def __start_by_fork():
         """Ensures that the process starting method is fork"""
         assert "fork" in multiprocessing.get_all_start_methods(), \

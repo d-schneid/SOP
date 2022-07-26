@@ -49,7 +49,6 @@ class UnitTestUrrs(unittest.TestCase):
         manager = Manager()
         tbc = manager.Value('b', False)
 
-
         Scheduler._instance = None
         urrs = UserRoundRobinScheduler()
         urrs.schedule(TestSched(-1, -1, 0, tbc))
@@ -59,32 +58,38 @@ class UnitTestUrrs(unittest.TestCase):
         tbc4 = manager.Value('b', False)
         tbc5 = manager.Value('b', False)
 
-        urrs.schedule(TestSched(-1, 0, 0, tbc4, 1))
-        urrs.schedule(TestSched(-1, 1, 0, tbc5, 1))
+        urrs.schedule(TestSched(-1, 0, 0, tbc4, 2))
+        urrs.schedule(TestSched(-1, 1, 0, tbc5, 2))
         urrs.abort_by_task(1)
-        time.sleep(2)
+        time.sleep(4)
         self.assertTrue(tbc4.value)
         self.assertFalse(tbc5.value)
 
         tbc6 = manager.Value('b', False)
         tbc7 = manager.Value('b', False)
         for i in range(multiprocessing.cpu_count()):
-            urrs.schedule(TestSched(0, -1, 0, tbc6, 1))
-            urrs.schedule(TestSched(1, -1, 0, tbc7, 1))
+            urrs.schedule(TestSched(0, -1, 0, tbc6, 2))
+            urrs.schedule(TestSched(1, -1, 0, tbc7, 2))
         urrs.abort_by_user(1)
-        time.sleep(2)
+        time.sleep(4)
         self.assertTrue(tbc6.value)
         self.assertFalse(tbc7.value)
 
         tbc2 = manager.Value('b', False)
         tbc3 = manager.Value('b', False)
 
-        urrs.schedule(TestSched(-1, -1, 0, tbc3, 1))
+        urrs.schedule(TestSched(-1, -1, 0, tbc3, 2))
         urrs.graceful_shutdown(lambda: tbc2.set(True))
-        time.sleep(2)
+        time.sleep(4)
         self.assertTrue(tbc2.value)
         self.assertTrue(tbc3.value)
         self.assertTrue(urrs.is_shutting_down())
+
+    def test_get_instance(self):
+        Scheduler._instance = None
+        urrs = UserRoundRobinScheduler.get_instance()
+        self.assertEqual(UserRoundRobinScheduler, urrs.__class__)
+        self.assertEqual(urrs, UserRoundRobinScheduler.get_instance())
 
 if __name__ == '__main__':
     unittest.main()
