@@ -3,7 +3,7 @@ import numpy as np
 from backend.DataIO import DataIO
 from backend.metric.ExecutionElementMetricHelper import ExecutionElementMetricHelper as eem_helper
 from backend.metric.Metric import Metric
-
+from pandas import DataFrame as df
 
 class MetricSubspaceOutlierAmount(Metric):
 
@@ -41,7 +41,7 @@ class MetricSubspaceOutlierAmount(Metric):
             eem_helper.compute_subspace_outlier_amount(outlier_data_points_divided_in_subspaces)
 
         # convert into result
-        metric_result: np.ndarray = np.hstack(([all_subspace_identifier], [outlier_data_points]))
+        metric_result: np.ndarray = df([all_subspace_identifier, outlier_data_points]).to_numpy().transpose()
 
         # save metric result
         DataIO.save_write_csv(metric_result_path+".running", metric_result_path, metric_result, False)

@@ -8,7 +8,6 @@ from backend.metric.MetricSubspaceOutlierAmount import MetricSubspaceOutlierAmou
 
 
 class IntegrationTest_MetricSubspaceOutlierAmount(unittest.TestCase):
-
     _algorithm_directory_paths: list[str] = list([
         "./test/integration_tests/backend/metric/executionResultForTesting_DO_NOT_DELETE/algorithmResult1",
         "./test/integration_tests/backend/metric/executionResultForTesting_DO_NOT_DELETE/algorithmResult2",
@@ -17,7 +16,7 @@ class IntegrationTest_MetricSubspaceOutlierAmount(unittest.TestCase):
     ])
 
     _metric_result_path1: str = \
-        "./test/integration_tests/backend/metric/integration_test_subspace_outlier_amount_metric_result1.csv"
+        "./test/integration_tests/backend/metric/internal_tests_subspace_outlier_amount_metric_result1.csv"
     _metric_result_to_compare1: str = \
         "./test/integration_tests/backend/metric/subspace_outlier_amount_metric_result1_to_compare.csv"
     _wrong_metric_path: str = "I don't end with .csv :("
@@ -34,7 +33,6 @@ class IntegrationTest_MetricSubspaceOutlierAmount(unittest.TestCase):
             DataIO.read_uncleaned_csv(self._metric_result_path1, has_header=None),
             DataIO.read_uncleaned_csv(self._metric_result_to_compare1, has_header=None)
         )
-        self.assertTrue(False)
         # clean up
         self.__clean_up_files()
 
@@ -46,9 +44,8 @@ class IntegrationTest_MetricSubspaceOutlierAmount(unittest.TestCase):
         self.__clean_up_files()
 
     def __clean_up_files(self):
-        pass
-        #if os.path.isfile(self._metric_result_path1):
-           #os.remove(self._metric_result_path1)
+        if os.path.isfile(self._metric_result_path1):
+            os.remove(self._metric_result_path1)
 
 
 if __name__ == '__main__':

@@ -32,4 +32,4 @@ class MetricDataPointsAreOutliers(Metric):
 
         # save metric
         DataIO.save_write_csv(metric_result_path + ".running", metric_result_path,
-                              np.asarray([data_points_outlier_in_subspace]), False)
+                              np.asarray([data_points_outlier_in_subspace]).transpose(), True)

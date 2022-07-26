@@ -16,7 +16,7 @@ class IntegrationTest_MetricDataPointsAreOutlier(unittest.TestCase):
     ])
 
     _metric_result_path1: str = \
-        "./test/integration_tests/backend/metric/integration_test_data_points_are_outlier_metric_result1.csv"
+        "./test/integration_tests/backend/metric/data_points_are_outlier_metric_result1.csv"
     _metric_result_to_compare1: str = \
         "./test/integration_tests/backend/metric/data_points_are_outlier_metric_result1_to_compare.csv"
 
@@ -48,8 +48,9 @@ class IntegrationTest_MetricDataPointsAreOutlier(unittest.TestCase):
         self.__clean_up_files()
 
     def __clean_up_files(self):
-        if os.path.isfile(self._metric_result_path1):
-            os.remove(self._metric_result_path1)
+        pass
+        #if os.path.isfile(self._metric_result_path1):
+            #os.remove(self._metric_result_path1)
 
 
 if __name__ == '__main__':
