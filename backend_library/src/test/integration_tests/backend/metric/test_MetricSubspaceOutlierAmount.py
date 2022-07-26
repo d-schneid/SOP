@@ -29,10 +29,20 @@ class IntegrationTest_MetricSubspaceOutlierAmount(unittest.TestCase):
     def test_compute_metric(self):
         # compute metric of execution example folder
         self._metric.compute_metric(self._metric_result_path1, self._algorithm_directory_paths)
-        np.testing.assert_array_equal(
-            DataIO.read_uncleaned_csv(self._metric_result_path1, has_header=None),
-            DataIO.read_uncleaned_csv(self._metric_result_to_compare1, has_header=None)
-        )
+        metric_result: np.ndarray = DataIO.read_uncleaned_csv(self._metric_result_path1, has_header=None)
+        metric_expected_result: np.ndarray = DataIO.read_uncleaned_csv(self._metric_result_to_compare1, has_header=None)
+
+        # The metric algorithm can return the rows in a different order
+        # so just check if the row is in the expected result
+        correct_rows: int = 0
+        for row_in_result in metric_result:
+            for row_in_expected_result in metric_expected_result:
+                if np.equal(row_in_result, row_in_expected_result).all():
+                    correct_rows += 1
+                    break
+
+        self.assertEqual(correct_rows, metric_result.shape[0])
+
         # clean up
         self.__clean_up_files()
 
