@@ -44,12 +44,6 @@ class ResultZipper(Schedulable):
         self._zip_path_final: str = zip_path_final
         self._is_debug = is_debug
 
-        # if there are files existing at the paths zip_path_running and zip_path_final, delete them
-        #  to ensure the correct operation of the following modules
-        for file in [self._zip_path_running, self._zip_path_final]:
-            if os.path.isfile(file):
-                os.remove(file)
-
     @property
     def user_id(self) -> int:
         """
@@ -95,6 +89,12 @@ class ResultZipper(Schedulable):
             return
 
         # Else, proceed with the normal operations
+
+        # if there are files existing at the paths zip_path_running and zip_path_final, delete them
+        #  to ensure the correct operation of the following modules
+        for file in [self._zip_path_running, self._zip_path_final]:
+            if os.path.isfile(file):
+                os.remove(file)
 
         TaskHelper.zip_dir(zip_path_running=self._zip_path_running, zip_path_final=self._zip_path_final,
                            dir_path=self._dir_path)
