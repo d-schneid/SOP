@@ -21,8 +21,6 @@ class MetricDataPointsAreOutliers(Metric):
         execution_result_path: list[str] = eem_helper. \
             get_execution_elements_result_paths(algorithm_directory_paths)
 
-        # TODO Test: Bis hierhin geht es
-
         # Fill outlier_data_points with all information about which datapoint is an outlier
         # (1 bool array for each ExecutionElement result)
         outlier_data_points: list[np.ndarray] = list([])
@@ -36,4 +34,4 @@ class MetricDataPointsAreOutliers(Metric):
 
         # save metric
         DataIO.save_write_csv(metric_result_path + ".running", metric_result_path,
-                              np.asarray([data_points_outlier_in_subspace]), True)
+                              np.asarray([data_points_outlier_in_subspace]), False)

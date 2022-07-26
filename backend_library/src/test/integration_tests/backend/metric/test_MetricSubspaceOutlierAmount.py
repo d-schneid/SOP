@@ -3,7 +3,7 @@ import unittest
 from backend.metric.MetricSubspaceOutlierAmount import MetricSubspaceOutlierAmount
 
 
-class IntegrationTest_MetricDataPointsAreOutlier(unittest.TestCase):
+class IntegrationTest_MetricSubspaceOutlierAmount(unittest.TestCase):
 
     _algorithm_directory_paths: list[str] = list([
         "./test/integration_tests/backend/metric/executionResultForTesting_DO_NOT_DELETE/algorithmResult1",
@@ -13,7 +13,7 @@ class IntegrationTest_MetricDataPointsAreOutlier(unittest.TestCase):
     ])
 
     _metric_result_path: str = \
-        "./test/integration_tests/backend/metric/integration_test_data_points_are_outlier_metric_result.csv"
+        "./test/integration_tests/backend/metric/integration_test_subspace_outlier_amount_metric_result1.csv"
     _wrong_metric_path: str = "I don't end with .csv :("
 
     def setUp(self) -> None:
