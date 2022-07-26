@@ -60,13 +60,16 @@ class UserRoundRobinScheduler(Scheduler):
     def __abort(self, selector: Callable[[Schedulable], bool]):
         """Aborts all Tasks matching the selector provided"""
         with self.__empty_queue:
-            for _, q in self.__user_queues.values():
-                for i in range(len(q)):
-                    if selector(q[i]):
+            for _, q in self.__user_queues.items():
+                i = 0
+                while i < len(q):
+                    if selector(q[i].schedulable):
                         # there is no way to delete nicely from python heapqs
                         q[i] = q[-1]
                         q.pop()
-            for k, v in self.__running:
+                    else:
+                        i = i + 1
+            for k, v in self.__running.items():
                 if selector(k):
                     self.__running[k] = (v[0], True)
                     v[0].terminate()
@@ -109,10 +112,11 @@ class UserRoundRobinScheduler(Scheduler):
     def __process_main(self, sched: Schedulable):
         """main method executed by worker processes,
          just runs a schedulable and dies with it's statuscode"""
+        # No coverage of this method is recorded as extra processes are not recorded,
+        # and an extra unittest of this method is not possible,
+        # as it would also exit the unittest process
         r = sched.do_work()
-        if r is None:
-            r = 0
-        sys.exit(r)
+        sys.exit(0 if r is None else r)
 
     def __thread_main(self) -> None:
         """main method executed by supervisor threads,
@@ -124,19 +128,19 @@ class UserRoundRobinScheduler(Scheduler):
                     self.__empty_queue.wait()
                     next_sched = self.__get_next_schedulable()
                     if self.__shutdown_ongoing:
-                        self.__handle_graceful_shutdown()
+                        self.__handle_shutdown()
                         return
                 p = Process(target=UserRoundRobinScheduler.__process_main,
                             args=(self, next_sched,))
                 self.__running[next_sched] = (p, False)
                 p.start()
             p.join()
-            if self.hard_shutdown():
-                if not self.__running[next_sched][1]:
-                    next_sched.run_later_on_main(p.exitcode)
-        self.__handle_graceful_shutdown()
+            if not self.__running[next_sched][1]:
+                next_sched.run_later_on_main(p.exitcode)
 
-    def __handle_graceful_shutdown(self) -> None:
+        self.__handle_shutdown()
+
+    def __handle_shutdown(self) -> None:
         """Handles a graceful shutdown when detected"""
         if self.__on_shutdown_completed is not None:
             with self.__empty_queue:
