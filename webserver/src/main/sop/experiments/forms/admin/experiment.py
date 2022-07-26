@@ -1,37 +1,38 @@
 from typing import Optional, Any
 
 from django import forms
-from django.conf import settings
 
 from experiments.models import Experiment, Dataset
 from experiments.models.managers import AlgorithmQuerySet
+
+from authentication.models import User
 
 
 class AdminAddExperimentForm(forms.ModelForm[Experiment]):
     class Meta:
         model = Experiment
-        fields = "__all__"
+        fields = ["display_name", "user", "dataset", "algorithms"]
 
     def clean(self) -> Optional[dict[str, Any]]:
-        cleaned_user: settings.AUTH_USER_MODEL = self.cleaned_data.get("user")
-        cleaned_dataset: Dataset = self.cleaned_data.get("dataset")
-        cleaned_algorithms: AlgorithmQuerySet = self.cleaned_data.get("algorithms")
+        cleaned_user: Optional[User] = self.cleaned_data.get("user")
+        cleaned_dataset: Optional[Dataset] = self.cleaned_data.get("dataset")
+        cleaned_algorithms: Optional[AlgorithmQuerySet] = self.cleaned_data.get("algorithms")
 
-        if cleaned_dataset.user:
+        if not (cleaned_dataset is None)\
+                and not (cleaned_dataset.user is None)\
+                and not (cleaned_user is None):
             if cleaned_dataset.user.id != cleaned_user.id:
                 self.add_error("dataset", "Selected user does not have access "
                                           "to this dataset.")
 
-        for algorithm in cleaned_algorithms:
-            if algorithm.user:
-                if algorithm.user.id != cleaned_user.id:
-                    self.add_error("algorithms", "Selected user does not have access "
-                                                 "to the selected algorithm "
-                                                 f"{algorithm.display_name}.")
-                    break
-
-        if self.has_error("dataset") or self.has_error("algorithms"):
-            return None
+        if not (cleaned_algorithms is None) and not (cleaned_user is None):
+            for algorithm in cleaned_algorithms:
+                if not (algorithm.user is None):
+                    if algorithm.user.id != cleaned_user.id:
+                        self.add_error("algorithms", "Selected user does not have access "
+                                                     "to the selected algorithm "
+                                                     f"{algorithm.display_name}.")
+                        break
 
         return self.cleaned_data
 
