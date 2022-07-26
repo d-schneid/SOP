@@ -1,11 +1,10 @@
 import os
 import shutil
 
+from django.conf import settings
 from django.urls import reverse
 
 from experiments.models import Dataset
-from django.conf import settings
-
 from tests.unittests.views.LoggedInTestCase import LoggedInTestCase
 
 
@@ -200,7 +199,9 @@ class DatasetEditViewTests(LoggedInTestCase):
 
 class DatasetDeleteViewTests(LoggedInTestCase):
     def test_dataset_delete_view_valid_delete(self):
-        dataset = Dataset.objects.create(datapoints_total=0, dimensions_total=0, user=self.user)
+        dataset = Dataset.objects.create(
+            datapoints_total=0, dimensions_total=0, user=self.user
+        )
         response = self.client.post(
             reverse("dataset_delete", args=(dataset.pk,)), follow=True
         )
@@ -210,9 +211,7 @@ class DatasetDeleteViewTests(LoggedInTestCase):
         self.assertTemplateUsed(response, "dataset_overview.html")
 
     def test_dataset_delete_view_invalid_pk(self):
-        response = self.client.post(
-            reverse("dataset_delete", args=(42,)), follow=True
-        )
+        response = self.client.post(reverse("dataset_delete", args=(42,)), follow=True)
         # we expect to be redirected to the dataset overview
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.redirect_chain)
