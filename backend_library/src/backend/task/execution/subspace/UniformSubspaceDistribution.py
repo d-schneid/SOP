@@ -43,5 +43,6 @@ class UniformSubspaceDistribution(SubspaceSizeDistribution, ABC):
             result[i] = number_of_subspaces_per_size + additional_subspaces
         return result
 
-    def to_json(self) -> str:
-        pass
+    def to_json(self) -> Dict[str, object]:
+        return {"subspace_size_min": self._subspace_size_min,
+                "subspace_size_max": self._subspace_size_max}

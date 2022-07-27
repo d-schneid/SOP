@@ -1,4 +1,4 @@
-import json
+from typing import Dict
 
 
 class ParameterizedAlgorithm(object):
@@ -19,15 +19,14 @@ class ParameterizedAlgorithm(object):
         self._display_name: str = display_name
         self._directory_name_in_execution: str = ""
 
-    def to_json(self) -> str:
+    def to_json(self) -> Dict[str, object]:
         """
         Converts the ParameterizedAlgorithm object into a JSON str. \n
         :return: The important information of the algorithm as JSON-str.
         """
-        to_json_dict = {'display_name': self._display_name, 'directory_name': self._directory_name_in_execution,
-                        'hyper_parameter': self._hyper_parameter}
-        json_str = json.dumps(to_json_dict, indent=4)
-        return json_str
+        return {'display_name': self._display_name,
+                'directory_name': self._directory_name_in_execution,
+                'hyper_parameter': self._hyper_parameter}
 
     @property
     def path(self) -> str:
