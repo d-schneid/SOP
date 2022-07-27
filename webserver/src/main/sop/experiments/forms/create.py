@@ -41,8 +41,6 @@ class DatasetUploadForm(forms.ModelForm[Dataset]):
 
 
 class ExperimentCreateForm(forms.ModelForm[Experiment]):
-    # Create algorithm_error field to display errors
-    algorithm_error = forms.CharField(required=False)
 
     class Meta:
         model = Experiment

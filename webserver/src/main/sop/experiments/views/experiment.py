@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List
 
+from django.contrib import messages
 from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView
@@ -50,8 +51,10 @@ class ExperimentCreateView(
 
         # get algorithms
         algos: List[Algorithm] = [Algorithm.objects.get(pk=key) for key in self.request.POST.getlist("check-algo")]
+
+        # If no algos are selected, display error
         if len(algos) == 0:
-            form.errors.update({"algorithm_error": "You have to select at least one algorithm"})
+            messages.error(self.request, f"Please select at least one algorithm!")
             return super().form_invalid(form)
 
         response: HttpResponse = super().form_valid(form)
