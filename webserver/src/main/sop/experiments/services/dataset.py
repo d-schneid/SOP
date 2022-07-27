@@ -1,17 +1,17 @@
+import os
 import uuid
 from typing import Final
+
+from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
 
 from authentication.models import User
-from sop import settings
-
-import os
 
 DATASET_ROOT_DIR: Final = settings.MEDIA_ROOT / "datasets"
 
 
 def save_dataset(file: UploadedFile, user: User) -> str:
-    temp_dir = os.path.join(DATASET_ROOT_DIR, "temp", "user_" + str(user.pk))
+    temp_dir = DATASET_ROOT_DIR / "temp" / f"user_{user.pk}"
     temp_file_path = os.path.join(temp_dir, str(uuid.uuid1()))
 
     assert not os.path.isfile(temp_file_path)

@@ -41,7 +41,9 @@ def delete_temp_algorithm(temp_file_path: Path) -> None:
 
     # remove parent dir if it has no files in it (ignore directories in it, since
     # __pycache__ could have been created)
-    if not any([os.path.isfile(file) for file in os.listdir(parent_folder)]):
+    if not any(
+        [os.path.isfile(parent_folder / file) for file in os.listdir(parent_folder)]
+    ):
         shutil.rmtree(parent_folder)
 
 
