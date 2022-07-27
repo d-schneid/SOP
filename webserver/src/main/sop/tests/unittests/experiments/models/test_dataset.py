@@ -20,18 +20,16 @@ class DatasetModelTests(django.test.TestCase):
 
     def test_is_deletable(self) -> None:
         experiment_objects_mock = MagicMock()
-        queryset_mock = MagicMock()
-        queryset_mock.exists.return_value = True
-        experiment_objects_mock.get_with_dataset.return_value = queryset_mock
+        experiment_objects_mock.get_with_dataset.return_value.exists.return_value = True
         dataset = Dataset()
         with patch.object(Experiment, "objects", experiment_objects_mock):
             self.assertFalse(dataset.is_deletable)
 
     def test_is_deletable_false(self) -> None:
         experiment_objects_mock = MagicMock()
-        queryset_mock = MagicMock()
-        queryset_mock.exists.return_value = False
-        experiment_objects_mock.get_with_dataset.return_value = queryset_mock
+        experiment_objects_mock.get_with_dataset.return_value.exists.return_value = (
+            False
+        )
         dataset = Dataset()
         with patch.object(Experiment, "objects", experiment_objects_mock):
             self.assertTrue(dataset.is_deletable)

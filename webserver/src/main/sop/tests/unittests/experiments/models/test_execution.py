@@ -84,7 +84,6 @@ class ExecutionModelTests(django.test.TestCase):
     def test_get_result_path(self) -> None:
         execution = MagicMock()
         execution.pk = 42
-        execution.experiment = MagicMock()
         execution.experiment.pk = 3
         execution.experiment.user.pk = 12
         path = get_result_path(execution)
@@ -102,7 +101,6 @@ class ExecutionModelTests(django.test.TestCase):
     def test_get_zip_result_path(self) -> None:
         execution = MagicMock()
         execution.pk = 42
-        execution.experiment = MagicMock()
         execution.experiment.pk = 3
         execution.experiment.user.pk = 12
         path = get_zip_result_path(execution)

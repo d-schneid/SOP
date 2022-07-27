@@ -9,7 +9,6 @@ from experiments.models.algorithm import get_algorithm_upload_path, Algorithm
 class AlgorithmModelTests(django.test.TestCase):
     def test__get_algorithm_upload_path(self) -> None:
         algorithm = MagicMock()
-        algorithm.user = MagicMock()
         algorithm.user.pk = 3
         filename = "algo.py"
         path = get_algorithm_upload_path(algorithm, filename)
