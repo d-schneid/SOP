@@ -81,7 +81,6 @@ def schedule_backend(execution: Execution) -> Optional[Dict[str, list[str]]]:
         subspace_generation=subspace_generation_description,
         algorithms=parameterized_algorithms,
         metric_callback=ExecutionCallbacks.metric_callback,
-        datapoint_count=dataset.datapoints_total,
     )
     # TODO: DO NOT do this here. Move it to AppConfig or whatever
     if DebugScheduler._instance is None:
