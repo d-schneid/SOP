@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from multiprocessing import Manager
 from typing import Callable, Optional
 
 from backend.scheduler.Schedulable import Schedulable
@@ -9,6 +10,12 @@ from abc import ABC, abstractmethod
 class Scheduler(ABC):
     """Abstract class for implementing scheduling"""
     _instance: Optional[Scheduler] = None
+    _manager: Manager = Manager()
+
+    @staticmethod
+    def get_manager() -> Manager:
+        """Retrieves the cached Manager"""
+        return Scheduler._manager
 
     def __init__(self):
         """Ensures that there is only one Scheduler at any point in time"""

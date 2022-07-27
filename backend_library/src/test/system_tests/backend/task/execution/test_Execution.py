@@ -79,8 +79,7 @@ class SystemTest_Execution(unittest.TestCase):
         self._ex = Execution(self._user_id, self._task_id,
                              self.__task_progress_callback, self._dataset_path,
                              self._result_path, self._subspace_generation,
-                             iter(self._algorithms),
-                             self.__metric_callback, 29221,
+                             iter(self._algorithms), self.__metric_callback,
                              self._final_zip_path,
                              zip_running_path=self._zipped_result_path)
 
