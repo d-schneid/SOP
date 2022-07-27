@@ -12,8 +12,8 @@ from experiments.models.managers import AlgorithmManager, AlgorithmQuerySet
 HyperparameterTypes = Optional[Union[str, int, float, List[Any], Dict[Any, Any]]]
 
 
-def _get_algorithm_upload_path(instance: Algorithm, filename: str) -> str:
-    user_id = instance.user.id if instance.user is not None else 0
+def get_algorithm_upload_path(instance: Algorithm, filename: str) -> str:
+    user_id = instance.user.pk if instance.user is not None else 0
     return f"algorithms/user_{user_id}/{filename}"
 
 
@@ -36,7 +36,7 @@ class Algorithm(models.Model):
     group = models.CharField(max_length=80, choices=AlgorithmGroup.choices)
     signature = models.JSONField()
     path = models.FileField(
-        upload_to=_get_algorithm_upload_path,
+        upload_to=get_algorithm_upload_path,
         validators=(FileExtensionValidator(allowed_extensions=["py"]),),
     )
     description = models.TextField(blank=True)
