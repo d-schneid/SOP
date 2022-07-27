@@ -1,18 +1,16 @@
 from __future__ import annotations
 
 import os
-
-from abc import ABC
+from multiprocessing.shared_memory import SharedMemory
+from typing import Callable
 
 import numpy as np
 
+from backend.DataIO import DataIO
+from backend.scheduler.Schedulable import Schedulable
 from backend.task.TaskHelper import TaskHelper
 from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
-from backend.scheduler.Schedulable import Schedulable
-from backend.DataIO import DataIO
-from typing import Callable
-from multiprocessing.shared_memory import SharedMemory
 from backend.task.execution.subspace.Subspace import Subspace
 
 
@@ -120,6 +118,7 @@ class ExecutionElement(Schedulable):
                             dtype=self._subspace_dtype, buffer=ss_shm.buf)
         algo = AlgorithmLoader.get_algorithm_object(self._algorithm.path,
                                                     self._algorithm.hyper_parameter)
+        algo.fit(ss_arr)
         results = algo.decision_function(ss_arr)
         ss_shm.close()
         return results

@@ -10,8 +10,7 @@ class ExecutionServiceTests(TestCase):
     def setUp(self) -> None:
         self.algo1 = MagicMock()
         self.algo1.pk = 4
-        self.algo1.get_signature_as_json = MagicMock()
-        self.algo1.get_signature_as_json.return_value = {
+        self.algo1.get_signature_as_dict.return_value = {
             "param1": "Cool String",
             "param2": 42,
             "param3": 3.14,
@@ -20,8 +19,7 @@ class ExecutionServiceTests(TestCase):
         }
         self.algo2 = MagicMock()
         self.algo2.pk = 8
-        self.algo2.get_signature_as_json = MagicMock()
-        self.algo2.get_signature_as_json.return_value = {
+        self.algo2.get_signature_as_dict.return_value = {
             "param1": "Another String",
             "param2": 69,
             "param3": 5.8,
@@ -29,8 +27,6 @@ class ExecutionServiceTests(TestCase):
             "param5": None,
         }
         self.experiment = MagicMock()
-        self.experiment.algorithms = MagicMock()
-        self.experiment.algorithms.all = MagicMock()
         self.experiment.algorithms.all.return_value = [self.algo1, self.algo2]
 
         self.request = MagicMock()

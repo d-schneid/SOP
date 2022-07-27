@@ -1,12 +1,15 @@
-import os.path
+from __future__ import annotations
 
+import os.path
+from typing import Optional
+
+from django.db.models.fields.files import FieldFile
 from django.http import HttpResponse, HttpRequest
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views.generic import ListView, UpdateView, CreateView
 
 from authentication.mixins import LoginRequiredMixin
-from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
 from backend.task.cleaning import DatasetCleaning
 from experiments.callback import DatasetCallbacks
 from experiments.forms.create import DatasetUploadForm
@@ -18,7 +21,6 @@ from experiments.views.generic import PostOnlyDeleteView
 
 
 def schedule_backend(dataset: Dataset) -> None:
-
     # set and save the missing datafield entry for the cleaned csv file
     cleaned_path = generate_path_dataset_cleaned(dataset.path_original.path)
 
@@ -32,10 +34,6 @@ def schedule_backend(dataset: Dataset) -> None:
         cleaning_steps=None,  # can be changed later on
     )
 
-    # TODO: DO NOT do this here. Move it to AppConfig or whatever
-    if UserRoundRobinScheduler._instance is None:
-        UserRoundRobinScheduler()
-
     # start the cleaning
     dataset_cleaning.schedule()
 
@@ -47,7 +45,6 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
     success_url = reverse_lazy("dataset_overview")
 
     def form_valid(self, form):
-
         # save the file temporarily to disk
         temp_file_path: str = save_dataset(
             self.request.FILES["path_original"], self.request.user
@@ -111,7 +108,7 @@ class DatasetDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Dataset]):
     template_name = "dataset_delete.html"
     success_url = reverse_lazy("dataset_overview")
 
-    def form_valid(self, form):
+    def form_valid(self, form) -> None:
         # processing before object is deleted
         # access object and its fields
         dataset: Dataset = self.get_object()
@@ -130,28 +127,33 @@ class DatasetEditView(LoginRequiredMixin, UpdateView[Dataset, DatasetEditForm]):
     success_url = reverse_lazy("dataset_overview")
 
 
-def get_download_response(file, download_name: str):
+def get_download_response(file: FieldFile, download_name: str) -> HttpResponse:
     response = HttpResponse(file.read())
     response["Content-Type"] = "text/plain"
     response["Content-Disposition"] = f"attachment; filename={download_name}"
     return response
 
 
-def download_uncleaned_dataset(request: HttpRequest, pk: int):
+def download_uncleaned_dataset(
+    request: HttpRequest, pk: int
+) -> Optional[HttpResponse | HttpResponseRedirect]:
     if request.method == "GET":
-        dataset: Dataset = Dataset.objects.filter(pk=pk).first()
+        dataset: Optional[Dataset] = Dataset.objects.filter(pk=pk).first()
         if dataset is None:
             return HttpResponseRedirect(reverse_lazy("dataset_overview"))
 
         with dataset.path_original as file:
             return get_download_response(file, f"{dataset.display_name}.csv")
+    return None
 
 
-def download_cleaned_dataset(request, pk: int):
+def download_cleaned_dataset(
+    request: HttpRequest, pk: int
+) -> Optional[HttpResponse | HttpResponseRedirect]:
     if request.method == "GET":
-        dataset: Dataset = Dataset.objects.filter(pk=pk).first()
-        if dataset is None:
+        dataset: Optional[Dataset] = Dataset.objects.filter(pk=pk).first()
+        if dataset is None or dataset.is_cleaned is False:
             return HttpResponseRedirect(reverse_lazy("dataset_overview"))
-
         with dataset.path_cleaned as file:
             return get_download_response(file, f"{dataset.display_name}_cleaned.csv")
+    return None

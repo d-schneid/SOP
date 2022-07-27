@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+from typing import Final
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
@@ -51,8 +53,7 @@ MIDDLEWARE = [
 
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.memcached.PyMemcacheCache",
-        "LOCATION": "127.0.0.1:11211",
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
     }
 }
 
@@ -134,6 +135,10 @@ STATIC_URL = "static/"
 
 MEDIA_URL = "media_test/"
 MEDIA_ROOT = BASE_DIR / "media_test"
+
+ALGORITHM_ROOT_DIR: Final = MEDIA_ROOT / "algorithms"
+DATASET_ROOT_DIR: Final = MEDIA_ROOT / "datasets"
+EXPERIMENT_ROOT_DIR: Final = MEDIA_ROOT / "experiments"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field

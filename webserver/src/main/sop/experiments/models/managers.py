@@ -87,4 +87,4 @@ class ExecutionQuerySet(models.QuerySet["Execution"]):
         return self.order_by("-creation_date")
 
     def get_by_user(self, request_user: User) -> ExecutionQuerySet:
-        return self.filter(user=request_user)
+        return self.filter(experiment__user=request_user)

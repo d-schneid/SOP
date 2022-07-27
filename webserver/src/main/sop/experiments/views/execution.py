@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 from typing import Optional, Dict, Any, List
 
@@ -13,9 +15,7 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView
 
 from authentication.mixins import LoginRequiredMixin
-from backend.scheduler.DebugScheduler import DebugScheduler
 from backend.task.TaskState import TaskState
-from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 from backend.task.execution.core.Execution import Execution as BackendExecution
 from backend.task.execution.subspace.RandomizedSubspaceGeneration import (
@@ -62,7 +62,7 @@ def schedule_backend(execution: Execution) -> Optional[Dict[str, list[str]]]:
     )
 
     parameterized_algorithms = []
-    for algorithm in algorithms.all():
+    for algorithm in algorithms:
         parameterized_algorithms.append(
             ParameterizedAlgorithm(
                 display_name=algorithm.display_name,
@@ -79,12 +79,7 @@ def schedule_backend(execution: Execution) -> Optional[Dict[str, list[str]]]:
         subspace_generation=subspace_generation_description,
         algorithms=parameterized_algorithms,
         metric_callback=ExecutionCallbacks.metric_callback,
-        datapoint_count=dataset.datapoints_total,
     )
-    # TODO: DO NOT do this here. Move it to AppConfig or whatever
-    if DebugScheduler._instance is None:
-        DebugScheduler()
-    AlgorithmLoader.set_algorithm_root_dir(str(settings.MEDIA_ROOT / "algorithms"))
 
     backend_execution.schedule()
     return None
@@ -254,7 +249,7 @@ class ExecutionDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Execution]):
 
 def download_execution_result(
     request: HttpRequest, experiment_pk: int, pk: int
-) -> HttpResponse:
+) -> Optional[HttpResponse | HttpResponseRedirect]:
     if request.method == "GET":
         execution: Optional[Execution] = Execution.objects.filter(pk=pk).first()
         if execution is None:
@@ -268,7 +263,7 @@ def download_execution_result(
         return response
     else:
         assert request.method in ("POST", "PUT")
-        return HttpResponseRedirect(reverse_lazy("experiment_overview"))
+        return None
 
 
 def get_execution_progress(request: HttpRequest) -> HttpResponse:

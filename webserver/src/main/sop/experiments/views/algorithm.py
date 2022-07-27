@@ -1,8 +1,6 @@
-import json
 from pathlib import Path
 from typing import Optional, Dict, Any
 
-from django.conf import settings
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.http.response import HttpResponse
 from django.urls import reverse_lazy
@@ -24,8 +22,6 @@ from experiments.services.algorithm import (
     convert_param_mapping_to_signature_dict,
 )
 from experiments.views.generic import PostOnlyDeleteView
-
-ALGORITHM_ROOT_DIR = settings.MEDIA_ROOT / "algorithms"
 
 
 class AlgorithmOverview(LoginRequiredMixin, ListView[Algorithm]):
@@ -60,12 +56,11 @@ class AlgorithmUploadView(
         file: InMemoryUploadedFile = self.request.FILES["path"]  # type: ignore
 
         temp_path: Path = save_temp_algorithm(self.request.user, file)
-        AlgorithmLoader.set_algorithm_root_dir(str(ALGORITHM_ROOT_DIR))
         error: Optional[str] = AlgorithmLoader.is_algorithm_valid(str(temp_path))
         if error is None:
             mapping = AlgorithmLoader.get_algorithm_parameters(str(temp_path))
             dikt = convert_param_mapping_to_signature_dict(mapping)
-            form.instance.signature = json.dumps(dikt)
+            form.instance.signature = dikt
         delete_temp_algorithm(temp_path)
 
         if error is not None:
