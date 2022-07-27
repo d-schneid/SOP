@@ -56,7 +56,7 @@ class Execution(models.Model):
         return state.is_running()
 
     @property
-    def progress_as_percent(self):
+    def progress_as_percent(self) -> float:
         return self.progress * 100
 
 
