@@ -13,6 +13,8 @@ import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+from typing import Final
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
@@ -139,6 +141,10 @@ STATIC_URL = "/static/"
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+ALGORITHM_ROOT_DIR: Final = MEDIA_ROOT / "algorithms"
+DATASET_ROOT_DIR: Final = MEDIA_ROOT / "datasets"
+EXPERIMENT_ROOT_DIR: Final = MEDIA_ROOT / "experiments"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field

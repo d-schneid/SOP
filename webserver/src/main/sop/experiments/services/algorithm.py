@@ -3,18 +3,16 @@ import shutil
 from inspect import Parameter
 from pathlib import Path
 from types import MappingProxyType
-from typing import Final, List, Dict
+from typing import List, Dict
 
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
 
 from authentication.models import User
 
-ALGORITHM_ROOT_DIR: Final = settings.MEDIA_ROOT / "algorithms"
-
 
 def save_temp_algorithm(user: User, file: UploadedFile) -> Path:
-    temp_dir = ALGORITHM_ROOT_DIR / "temp" / f"{user.id}"
+    temp_dir = settings.ALGORITHM_ROOT_DIR / "temp" / f"{user.id}"
     assert file.name is not None
     temp_file_path = temp_dir / file.name
 
@@ -31,7 +29,7 @@ def save_temp_algorithm(user: User, file: UploadedFile) -> Path:
 
 def delete_temp_algorithm(temp_file_path: Path) -> None:
     parent_folder = temp_file_path.parent
-    assert temp_file_path.parent.parent == ALGORITHM_ROOT_DIR / "temp"
+    assert temp_file_path.parent.parent == settings.ALGORITHM_ROOT_DIR / "temp"
 
     if not os.path.isdir(temp_file_path.parent):
         return
