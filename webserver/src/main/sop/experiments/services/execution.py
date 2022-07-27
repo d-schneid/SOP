@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict
+from typing import Dict, Tuple, List
 
 from django.http import HttpRequest
 
@@ -8,69 +8,37 @@ from experiments.models import Experiment
 from experiments.models.algorithm import HyperparameterTypes
 
 
-def string_cleanup(s: str, strict: bool = True) -> str:
-    s = s.strip()
-    if s.startswith('"') and s.endswith('"') or s.startswith("'") and s.endswith("'"):
-        return s[1:-1]
-
-    # If strict is not set, we allow strings that are not wrapped in quotes.
-    if not strict:
-        return s
-
-    raise TypeError(f"{s} is not of type string")
-
-
-def convert_string_to_matching_type(s: str) -> HyperparameterTypes:
-    # None variation
-    if s is None or s.strip() == "None":
-        return None
-    s = s.strip()
-    # int
-    if s.isdigit():
-        return int(s)
-    # float (one dot and without dot it's a digit, kinda hacky)
-    if s.replace(".", "", 1).isdigit():
-        return float(s)
-    # List of items
-    if s.startswith("[") and s.endswith("]"):
-        s = s[1:-1]
-        return [convert_string_to_matching_type(sub) for sub in s.split(",")]
-    # Dictionary
-    # TODO: maybe implement dictionary parsing
-    if s.startswith("{") and s.endswith("}"):
-        raise NotImplementedError("Parsing dictionaries is not supported")
-    # Everything else has to be a string
-    return string_cleanup(s)
-
-
 def get_params_out_of_form(
     request: HttpRequest, experiment: Experiment
-) -> Dict[str, Dict[str, HyperparameterTypes]]:
+) -> Tuple[bool, Dict[str, List[str]] | Dict[str, Dict[str, HyperparameterTypes]]]:
 
-    dikt: Dict[str, Dict[str, HyperparameterTypes]] = {}
+    dikt: Dict[str, Dict[str, HyperparameterTypes]] = dict()
+    errors: Dict[str, List[str]] = dict()
+
     for algo in experiment.algorithms.all():
-        algo_dict: Dict[str, HyperparameterTypes] = {}
-        for param_name, param_default in algo.get_signature_as_json().items():
+        algo_dict: Dict[str, HyperparameterTypes] = dict()
+
+        for param_name in algo.get_signature_as_json().keys():
             form_key = f"{algo.pk}_{param_name}"
-            form_value: HyperparameterTypes = request.POST[form_key]
+            form_value = request.POST[form_key]
 
-            # The type of the given value is not the expected type
-            if not isinstance(form_value, type(param_default)):
-                # The type of the default value is None, so we do our best in parsing the value ourselves
-                if param_default is None or type(param_default) is None:
-                    form_value = convert_string_to_matching_type(str(form_value))
+            assert isinstance(
+                form_value, str
+            ), "POST request arguments have to be strings"
 
-                # type is known, so we parse the value accordingly
-                else:
-                    form_value = type(param_default)(form_value)  # type: ignore
-
-            # The type is str and str was expected. Do some string cleanup to remove potential quotes
-            elif type(param_default) == str:
-                form_value = string_cleanup(str(form_value))
-
-            # Add this param to the algorithms specific dictionary
-            algo_dict.update({str(param_name): form_value})
+            try:
+                evaluated_value = eval(form_value)
+                # Add this param to the algorithms specific dictionary
+                algo_dict.update({str(param_name): evaluated_value})
+            except SyntaxError as e:
+                errors.update({form_key: [e.msg]})
+            except NameError:
+                errors.update({form_key: ["strings must be wrapped in quotes"]})
 
         # Add the algorithms specific dictionary to the global dictionary and go on to the next algorithm
         dikt.update({str(algo.pk): algo_dict})
-    return dikt
+
+    if errors:
+        return False, errors
+    else:
+        return True, dikt
