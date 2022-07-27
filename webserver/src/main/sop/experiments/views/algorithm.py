@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 from typing import Optional, Dict, Any
 
@@ -61,7 +60,7 @@ class AlgorithmUploadView(
         if error is None:
             mapping = AlgorithmLoader.get_algorithm_parameters(str(temp_path))
             dikt = convert_param_mapping_to_signature_dict(mapping)
-            form.instance.signature = json.dumps(dikt)
+            form.instance.signature = dikt
         delete_temp_algorithm(temp_path)
 
         if error is not None:
