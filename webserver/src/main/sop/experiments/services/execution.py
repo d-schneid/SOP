@@ -18,7 +18,7 @@ def get_params_out_of_form(
     for algo in experiment.algorithms.all():
         algo_dict: Dict[str, HyperparameterTypes] = dict()
 
-        for param_name in algo.get_signature_as_json().keys():
+        for param_name in algo.get_signature_as_dict().keys():
             form_key = f"{algo.pk}_{param_name}"
             form_value = request.POST[form_key]
 

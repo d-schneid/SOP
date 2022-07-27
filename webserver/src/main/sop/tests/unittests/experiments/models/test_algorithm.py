@@ -1,4 +1,3 @@
-import json
 from unittest.mock import MagicMock
 
 import django.test
@@ -31,6 +30,6 @@ class AlgorithmModelTests(django.test.TestCase):
             "param5": ["Hello", "World"],
             "param6": {"key": "value"},
         }
-        algorithm.signature = json.dumps(params)
-        dikt = algorithm.get_signature_as_json()
+        algorithm.signature = params
+        dikt = algorithm.get_signature_as_dict()
         self.assertDictEqual(dikt, params)

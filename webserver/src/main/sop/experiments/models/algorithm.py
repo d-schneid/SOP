@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from typing import List, Union, Optional, Dict, Any
 
 from django.conf import settings
@@ -47,8 +46,9 @@ class Algorithm(models.Model):
 
     objects = AlgorithmManager.from_queryset(AlgorithmQuerySet)()  # type: ignore
 
-    def get_signature_as_json(self) -> dict[str, HyperparameterTypes]:
-        return json.loads(self.signature)
+    def get_signature_as_dict(self) -> dict[str, HyperparameterTypes]:
+        assert isinstance(self.signature, dict)
+        return self.signature
 
     def __str__(self) -> str:
         return str(self.display_name)

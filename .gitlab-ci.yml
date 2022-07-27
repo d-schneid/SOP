@@ -95,6 +95,7 @@ django-tests:
   stage: test
   script:
     - source venv3.9/bin/activate
+    - pip3 install -r requirements_pyod_algorithms.txt
     - which python3.9
     - cd webserver/src/main/sop
     - pip3 install django_coverage_plugin

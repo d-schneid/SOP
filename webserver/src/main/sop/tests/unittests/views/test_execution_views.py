@@ -1,4 +1,3 @@
-import json
 from typing import Any, Dict
 from unittest.mock import patch, MagicMock
 
@@ -25,10 +24,10 @@ class ExecutionCreateViewTests(LoggedInTestCase):
         cls.exp = Experiment.objects.create(dataset=cls.dataset, user=cls.user)
         cls.algo1 = Algorithm.objects.create(
             display_name="Algo 1",
-            signature=json.dumps({"param1": 5, "param2": "Hello"}),
+            signature={"param1": 5, "param2": "Hello"},
         )
         cls.algo2 = Algorithm.objects.create(
-            display_name="Algo 2", signature=json.dumps({"param1": 4.8, "param2": None})
+            display_name="Algo 2", signature={"param1": 4.8, "param2": None}
         )
         cls.exp.algorithms.set([cls.algo1, cls.algo2])  # noqa
         cls.data = {
@@ -178,10 +177,10 @@ class ExecutionDuplicateViewTests(LoggedInTestCase):
         cls.exp = Experiment.objects.create(dataset=cls.dataset, user=cls.user)
         cls.algo1 = Algorithm.objects.create(
             display_name="Algo 1",
-            signature=json.dumps({"param1": 5, "param2": "Hello"}),
+            signature={"param1": 5, "param2": "Hello"},
         )
         cls.algo2 = Algorithm.objects.create(
-            display_name="Algo 2", signature=json.dumps({"param1": 4.8, "param2": None})
+            display_name="Algo 2", signature={"param1": 4.8, "param2": None}
         )
         cls.exp.algorithms.set([cls.algo1, cls.algo2])  # noqa
         cls.execution = Execution.objects.create(
