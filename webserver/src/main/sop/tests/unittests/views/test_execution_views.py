@@ -5,11 +5,10 @@ from unittest.mock import patch, MagicMock
 from django.http import HttpResponse
 from django.urls import reverse_lazy
 
-from experiments.models import Experiment, Dataset, Algorithm
+from backend.task.execution.core.Execution import Execution as BackendExecution
+from experiments.models import Experiment, Dataset, Algorithm, Execution
 from experiments.views.execution import schedule_backend
 from tests.unittests.views.generic_test_cases import LoggedInTestCase
-
-from backend.task.execution.core.Execution import Execution as BackendExecution
 
 
 class ExecutionCreateViewTests(LoggedInTestCase):
@@ -43,11 +42,24 @@ class ExecutionCreateViewTests(LoggedInTestCase):
             f"{cls.algo2.pk}_param2": "'was None'",
         }
 
+    def send_post(self) -> HttpResponse:
+        with patch(
+            "experiments.views.execution.schedule_backend", lambda execution: None
+        ):
+            response = self.client.post(
+                reverse_lazy("execution_create", args=(self.exp.pk,)),
+                data=self.data,
+                follow=True,
+            )
+            return response  # type: ignore
+
     def test_execution_create_view(self) -> None:
         response = self.send_post()
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.redirect_chain)
         self.assertTemplateUsed("experiment_overview")
+        execution = Execution.objects.first()
+        self.assertIsNotNone(execution)
 
     def test_execution_create_view_with_errors(self) -> None:
         self.data[f"{self.algo1.pk}_param1"] = "{'key': 'value"
@@ -61,17 +73,7 @@ class ExecutionCreateViewTests(LoggedInTestCase):
         self.assertContains(response, f"{self.algo1.display_name}.param2")
         self.assertContains(response, f"{self.algo2.display_name}.param1")
         self.assertContains(response, f"{self.algo2.display_name}.param2")
-
-    def send_post(self) -> HttpResponse:
-        with patch(
-            "experiments.views.execution.schedule_backend", lambda execution: None
-        ):
-            response = self.client.post(
-                reverse_lazy("execution_create", args=(self.exp.pk,)),
-                data=self.data,
-                follow=True,
-            )
-            return response  # type: ignore
+        self.assertIsNone(Execution.objects.first())
 
     def test_execution_create_view_subspace_errors(self) -> None:
         self.data["subspaces_min"] = -3
@@ -85,6 +87,7 @@ class ExecutionCreateViewTests(LoggedInTestCase):
         self.assertIsNotNone(errors.get("subspaces_min"))
         self.assertIsNotNone(errors.get("subspaces_max"))
         self.assertIsNotNone(errors.get("subspace_amount"))
+        self.assertIsNone(Execution.objects.first())
 
     def test_execution_create_view_subspace_errors2(self) -> None:
         self.data["subspaces_min"] = 4
@@ -95,6 +98,7 @@ class ExecutionCreateViewTests(LoggedInTestCase):
         errors = response.context["form"].errors  # type: ignore
         self.assertEqual(len(errors.keys()), 1)
         self.assertIsNotNone(errors.get("subspaces_max"))
+        self.assertIsNone(Execution.objects.first())
 
     def test_execution_create_view_subspace_errors3(self) -> None:
         self.data["subspaces_max"] = -2
@@ -106,6 +110,7 @@ class ExecutionCreateViewTests(LoggedInTestCase):
         self.assertEqual(len(errors.keys()), 2)
         self.assertIsNotNone(errors.get("subspaces_max"))
         self.assertIsNotNone(errors.get("subspace_generation_seed"))
+        self.assertIsNone(Execution.objects.first())
 
     def test_schedule_backend(self) -> None:
         algo1 = MagicMock()
@@ -125,7 +130,7 @@ class ExecutionCreateViewTests(LoggedInTestCase):
         execution.get_result_path.return_value = "another/cool/path"
         execution.algorithm_parameters = {
             f"{algo1.pk}": {"param1": 8, "param2": "World"},
-            f"{algo2.pk}": {"param1": 3.14, "param2": "was None'"},
+            f"{algo2.pk}": {"param1": 3.14, "param2": "was None"},
         }
 
         execution.experiment.dataset.dimensions_total = 20
@@ -156,3 +161,51 @@ class ExecutionCreateViewTests(LoggedInTestCase):
             assert errors is not None
             self.assertEqual(len(errors.keys()), 1)
             self.assertIsNotNone(errors.get("subspace_amount"))
+
+
+class ExecutionDuplicateViewTests(LoggedInTestCase):
+    dataset: Dataset
+    algo1: Algorithm
+    algo2: Algorithm
+    exp: Experiment
+    data: Dict[str, Any]
+    execution: Execution
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        super().setUpTestData()
+        cls.dataset = Dataset.objects.create(user=cls.user, dimensions_total=10000)
+        cls.exp = Experiment.objects.create(dataset=cls.dataset, user=cls.user)
+        cls.algo1 = Algorithm.objects.create(
+            display_name="Algo 1",
+            signature=json.dumps({"param1": 5, "param2": "Hello"}),
+        )
+        cls.algo2 = Algorithm.objects.create(
+            display_name="Algo 2", signature=json.dumps({"param1": 4.8, "param2": None})
+        )
+        cls.exp.algorithms.set([cls.algo1, cls.algo2])  # noqa
+        cls.execution = Execution.objects.create(
+            experiment=cls.exp,
+            subspace_amount=42,
+            subspaces_min=69,
+            subspaces_max=99,
+            algorithm_parameters={
+                f"{cls.algo1.pk}": {"param1": 12, "param2": "World"},
+                f"{cls.algo2.pk}": {"param1": 3.14, "param2": "was None"},
+            },
+        )
+
+    def test_experiment_duplicate_view_get(self) -> None:
+        response = self.client.get(
+            reverse_lazy(
+                "execution_duplicate",
+                args=(self.execution.experiment.pk, self.execution.pk),
+            )
+        )
+        self.assertContains(response, "42")
+        self.assertContains(response, "69")
+        self.assertContains(response, "99")
+        self.assertContains(response, "12")
+        self.assertContains(response, "&quot;World&quot;")
+        self.assertContains(response, "3.14")
+        self.assertContains(response, "&quot;was None&quot;")
