@@ -15,7 +15,7 @@ class DebugAlgorithm(BaseDetector):
         return self._algorithm_result
 
     def fit(self, X, y=None):
-        raise NotImplementedError
+        pass
 
     def fit_predict(self, X, y=None):
         raise NotImplementedError
