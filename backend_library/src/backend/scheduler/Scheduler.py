@@ -1,21 +1,24 @@
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from multiprocessing import Manager
+from abc import ABC, abstractmethod
 from typing import Callable, Optional
 
 from backend.scheduler.Schedulable import Schedulable
-from abc import ABC, abstractmethod
 
 
 class Scheduler(ABC):
     """Abstract class for implementing scheduling"""
     _instance: Optional[Scheduler] = None
+    default_scheduler: Callable[[], Scheduler] = None
     _manager: Manager = Manager()
 
     @staticmethod
     def get_manager() -> Manager:
         """Retrieves the cached Manager"""
         return Scheduler._manager
+    default_scheduler: Callable[[], Scheduler] = None
 
     def __init__(self):
         """Ensures that there is only one Scheduler at any point in time"""
@@ -26,9 +29,12 @@ class Scheduler(ABC):
 
     @staticmethod
     def get_instance() -> Scheduler:
-        """Gets the current scheduler
-        :raises AssertionError when none exists"""
-        assert Scheduler._instance is not None, "A scheduler is yet to be created"
+        """Gets the current scheduler, default_scheduler is created when none exists
+        :raises AssertionError when default_scheduler and _instance is None"""
+        if Scheduler._instance is None:
+            assert Scheduler.default_scheduler is not None, \
+                "A scheduler is yet to be created"
+            return Scheduler.default_scheduler()
         return Scheduler._instance
 
     @abstractmethod
