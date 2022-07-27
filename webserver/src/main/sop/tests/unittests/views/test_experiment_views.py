@@ -1,10 +1,11 @@
+import json
 import os
 import shutil
-from typing import Optional
+from typing import Optional, Dict, Any
 
 from django.conf import settings
 from django.http import HttpResponse
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 
 from experiments.models import Experiment, Dataset, Algorithm
 from tests.unittests.views.generic_test_cases import LoggedInTestCase
@@ -45,7 +46,7 @@ class ExperimentOverviewTests(LoggedInTestCase):
         response = self.client.get(reverse("experiment_overview"), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "experiment_overview.html")
-        self.assertListEqual(list(response.context[self.QUERYSET_NAME]), [])
+        self.assertListEqual(list(response.context[self.QUERYSET_NAME]), [])  # type: ignore
 
     def test_experiment_overview_one_experiment(self) -> None:
         experiment = self.create_experiment("test_experiment")
@@ -53,7 +54,7 @@ class ExperimentOverviewTests(LoggedInTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "experiment_overview.html")
         self.assertContains(response, "test_experiment")
-        self.assertListEqual(list(response.context[self.QUERYSET_NAME]), [experiment])
+        self.assertListEqual(list(response.context[self.QUERYSET_NAME]), [experiment])  # type: ignore
 
     def test_experiment_overview_multiple_experiments(self) -> None:
         experiment1 = self.create_experiment("name_b")
@@ -66,7 +67,7 @@ class ExperimentOverviewTests(LoggedInTestCase):
         self.assertContains(response, "name_b")
         self.assertContains(response, "name_c")
         self.assertListEqual(
-            list(response.context[self.QUERYSET_NAME]),
+            list(response.context[self.QUERYSET_NAME]),  # type: ignore
             [experiment2, experiment1, experiment3],
         )
 
@@ -82,7 +83,7 @@ class ExperimentOverviewTests(LoggedInTestCase):
         self.assertContains(response, "name_b")
         self.assertContains(response, "name_c")
         self.assertListEqual(
-            list(response.context[self.QUERYSET_NAME]),
+            list(response.context[self.QUERYSET_NAME]),  # type: ignore
             [experiment3, experiment2, experiment1],
         )
 
@@ -144,7 +145,7 @@ class ExperimentCreateViewTests(LoggedInTestCase):
         self.assertTemplateNotUsed(response, "experiment_create.html")
         self.assertTemplateUsed(response, "experiment_overview.html")
         # we expect to be redirected to experiment_overview
-        self.assertEqual("experiment_overview_sorted", response.resolver_match.url_name)
+        self.assertEqual("experiment_overview_sorted", response.resolver_match.url_name)  # type: ignore
         self.assertTrue(response.redirect_chain)
 
         experiment = Experiment.objects.get()
@@ -216,7 +217,7 @@ class ExperimentEditViewTests(LoggedInTestCase):
         # reload experiment from db
         if update_model:
             self.experiment = Experiment.objects.get(pk=experiment_pk)
-        return response
+        return response  # type: ignore
 
     def assertNoExperimentChange(self, response: HttpResponse) -> None:
         self.assertFalse(response.redirect_chain)
@@ -263,7 +264,7 @@ class ExperimentDeleteViewTests(LoggedInTestCase):
             reverse("experiment_delete", args=(experiment.pk,)), follow=True
         )
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.redirect_chain)
+        self.assertTrue(response.redirect_chain)  # type: ignore
         self.assertIsNone(Experiment.objects.first())
         self.assertTemplateUsed(response, "experiment_overview.html")
 
@@ -273,5 +274,48 @@ class ExperimentDeleteViewTests(LoggedInTestCase):
         )
         # we expect to be redirected to the experiment overview
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.redirect_chain)
+        self.assertTrue(response.redirect_chain)  # type: ignore
         self.assertTemplateUsed(response, "experiment_overview.html")
+
+
+class ExperimentDuplicateViewTests(LoggedInTestCase):
+    dataset: Dataset
+    algo1: Algorithm
+    algo2: Algorithm
+    exp: Experiment
+    data: Dict[str, Any]
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        super().setUpTestData()
+        cls.dataset = Dataset.objects.create(user=cls.user, dimensions_total=10)
+        cls.exp = Experiment.objects.create(
+            dataset=cls.dataset, user=cls.user, display_name="HUHU"
+        )
+        cls.algo1 = Algorithm.objects.create(
+            display_name="Algo 1",
+            signature=json.dumps({"param1": 5, "param2": "Hello"}),
+            group=Algorithm.AlgorithmGroup.COMBINATION,
+        )
+        cls.algo2 = Algorithm.objects.create(
+            display_name="Algo 2",
+            signature=json.dumps({"param1": 4.8, "param2": None}),
+            group=Algorithm.AlgorithmGroup.PROBABILISTIC,
+        )
+        cls.exp.algorithms.set([cls.algo1])  # noqa
+
+    def test_experiment_duplicate_view(self) -> None:
+        response = self.client.get(
+            reverse_lazy("experiment_duplicate", args=(self.exp.pk,)), follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.redirect_chain)  # type: ignore
+        self.assertTemplateUsed("experiment_create")
+
+        self.assertContains(response, "HUHU")
+
+        # Not really checks for if they are selected, but it still has to be there, so we might as well check it
+        self.assertContains(response, self.algo1.display_name)
+        self.assertContains(response, self.algo2.display_name)
+        self.assertContains(response, self.algo1.group)
+        self.assertContains(response, self.algo2.group)

@@ -57,7 +57,7 @@ class Migration(migrations.Migration):
             name="path_original",
             field=models.FileField(
                 default=0,
-                upload_to=experiments.models.dataset._get_dataset_upload_path,
+                upload_to=experiments.models.dataset.get_dataset_upload_path,
                 validators=[
                     django.core.validators.FileExtensionValidator(
                         allowed_extensions=["csv"]
