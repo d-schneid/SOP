@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Dict
 
 from backend.task.execution.subspace.Subspace import Subspace
 
@@ -15,10 +15,10 @@ class SubspaceGenerationDescription(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def to_json(self) -> str:
+    def to_json(self) -> Dict[str, object]:
         """
         Converts the important information of the SubspaceGenerationDescription into a JSON-string, so that the
         Subspace generation can be understood and reproduced. \n
         :return: the JSON-string
         """
-        return ""
+        pass

@@ -31,10 +31,10 @@ class SubspaceSizeDistribution(ABC):
         return {}
 
     @abstractmethod
-    def to_json(self) -> str:
+    def to_json(self) -> Dict[str, object]:
         """
         Converts the important information of the SubspaceSizeDistribution into a JSON-string, so that the
         SubspaceSizeDistribution can be understood and reproduced.
         :return:
         """
-        return ""
+        pass

@@ -6,7 +6,7 @@ import os
 from collections.abc import Iterable
 from multiprocessing import shared_memory
 from multiprocessing.managers import ValueProxy
-from typing import Callable
+from typing import Callable, Dict
 from typing import List
 
 import numpy as np
@@ -146,17 +146,12 @@ class Execution(Task, Schedulable):
 
         details_path: str = os.path.join(self._result_path, 'details.json')
 
-        # create dictionary that will be saved as a JSON-str
-        details_dict = {
-            'subspace_generation_information': self._subspace_generation.to_json()}
-        for algorithm in self._algorithms:
-            algorithm: ParameterizedAlgorithm = algorithm  # To get the type hint
-            details_dict[algorithm.directory_name_in_execution] = algorithm.to_json()
-
-        # save JSON-str
-        details_json_str: str = json.dumps(details_dict, indent=4)
         with open(details_path, 'w') as f:
-            json.dump(details_json_str, f)
+            json.dump(self.to_json(), f)
+
+    def to_json(self) -> Dict[str, object]:
+        return {'subspace_generation': self._subspace_generation.to_json(),
+                'algorithms': list(map(lambda x: x.to_json(), self._algorithms))}
 
     def __generate_execution_subspaces(self) -> None:
         """
