@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 from typing import Optional, Dict, Any
 
+from django.contrib import messages
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.http.response import HttpResponse
 from django.urls import reverse_lazy
@@ -66,7 +67,7 @@ class AlgorithmUploadView(
 
         if error is not None:
             # add the error to the form and display it as invalid
-            form.errors.update({"path": [error]})
+            messages.error(self.request, f"Algorithm invalid: {error}")
             return super(AlgorithmUploadView, self).form_invalid(form)
 
         elif error is None:

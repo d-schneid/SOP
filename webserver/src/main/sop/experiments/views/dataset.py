@@ -3,6 +3,7 @@ from __future__ import annotations
 import os.path
 from typing import Optional
 
+from django.contrib import messages
 from django.db.models.fields.files import FieldFile
 from django.http import HttpResponse, HttpRequest
 from django.http import HttpResponseRedirect
@@ -44,7 +45,23 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
     template_name = "dataset_upload.html"
     success_url = reverse_lazy("dataset_overview")
 
+    # Overwrite post to find error in dataset uploads
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+
+        # Check is form is invalid and set error messages
+        if not form.is_valid():
+            error_text = ' '.join(
+                [error_message for error in form.errors.values() for error_message in error])
+
+            messages.error(request, f"Invalid dataset: {error_text}")
+        return super().post(request, *args, **kwargs)
+
     def form_valid(self, form):
+
+        if e := form.errors.as_data().get("path_original"):
+            messages.error(self.request, f"Invalid dataset: {e}")
+
         # save the file temporarily to disk
         temp_file_path: str = save_dataset(
             self.request.FILES["path_original"], self.request.user
@@ -56,6 +73,7 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
 
         # TODO: check if correct csv; if no return an error
         #  and delete the file while returning an error
+        #  Felix: Maybe in FileField validator?
         """
         if not check_if_file_is_csv(temp_file_path):
             form.add_error("path_original", "The given file is not a valid csv.-file.")
@@ -135,7 +153,7 @@ def get_download_response(file: FieldFile, download_name: str) -> HttpResponse:
 
 
 def download_uncleaned_dataset(
-    request: HttpRequest, pk: int
+        request: HttpRequest, pk: int
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
     if request.method == "GET":
         dataset: Optional[Dataset] = Dataset.objects.filter(pk=pk).first()
@@ -148,7 +166,7 @@ def download_uncleaned_dataset(
 
 
 def download_cleaned_dataset(
-    request: HttpRequest, pk: int
+        request: HttpRequest, pk: int
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
     if request.method == "GET":
         dataset: Optional[Dataset] = Dataset.objects.filter(pk=pk).first()
