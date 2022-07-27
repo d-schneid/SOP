@@ -5,7 +5,7 @@ from django.conf import settings
 from django.urls import reverse
 
 from experiments.models import Algorithm
-from tests.unittests.views.LoggedInTestCase import LoggedInTestCase
+from tests.unittests.views.generic_test_cases import LoggedInTestCase
 
 
 class AlgorithmOverviewTests(LoggedInTestCase):
