@@ -10,7 +10,8 @@ class UnitTestDebugScheduler(unittest.TestCase):
 
     def test_work_is_done(self):
         Scheduler._instance = None
-        sched = DebugScheduler()
+        Scheduler.default_scheduler = DebugScheduler
+        sched = Scheduler.get_instance()
         sched.schedule(TestSched())
         self.assertTrue(UnitTestDebugScheduler.to_be_changed)  # add assertion here
 

@@ -1,6 +1,7 @@
 import multiprocessing
 import time
 import unittest
+from multiprocessing import Manager
 from typing import Optional
 
 from backend.scheduler.Schedulable import Schedulable
@@ -80,11 +81,6 @@ class UnitTestUrrs(unittest.TestCase):
         self.assertTrue(tbc3.wait(timeout))
         self.assertTrue(urrs.is_shutting_down())
 
-    def test_get_instance(self):
-        Scheduler._instance = None
-        urrs = UserRoundRobinScheduler.get_instance()
-        self.assertEqual(UserRoundRobinScheduler, urrs.__class__)
-        self.assertEqual(urrs, UserRoundRobinScheduler.get_instance())
 
 if __name__ == '__main__':
     unittest.main()
