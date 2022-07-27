@@ -33,11 +33,6 @@ class Dataset(models.Model):
     is_cleaned = models.BooleanField(default=False)
     objects = DatasetManager.from_queryset(DatasetQuerySet)()  # type: ignore
 
-    class Meta:
-        """
-        Contains meta-information about Dataset Model
-        """
-
     @property
     def is_deletable(self) -> bool:
         # Import this here to avoid circular import
