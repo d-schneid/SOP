@@ -17,7 +17,7 @@ def generate_random_seed() -> int:
 
 class Execution(models.Model):
     experiment = models.ForeignKey(to=Experiment, on_delete=models.CASCADE)
-    status = models.CharField(max_length=80, default="created")
+    status = models.CharField(max_length=80)
     progress = models.FloatField(default=0.0)
     creation_date = models.DateTimeField(auto_now_add=True)
     finished_date = models.DateTimeField(blank=True, null=True)
@@ -59,6 +59,7 @@ class Execution(models.Model):
     def progress_as_percent(self):
         return self.progress * 100
 
+
 def get_result_path(execution: Execution) -> str:
     return str(
         settings.MEDIA_ROOT
@@ -66,4 +67,14 @@ def get_result_path(execution: Execution) -> str:
         / ("user_" + str(execution.experiment.user.pk))
         / ("experiment_" + str(execution.experiment.pk))
         / ("execution_" + str(execution.pk))
+    )
+
+
+def get_zip_result_path(execution: Execution) -> str:
+    return str(
+        settings.MEDIA_ROOT
+        / "experiments"
+        / ("user_" + str(execution.experiment.user.pk))
+        / ("experiment_" + str(execution.experiment.pk))
+        / (("execution_" + str(execution.pk)) + ".zip")
     )

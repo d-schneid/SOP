@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Dict, Any
 
 from django.conf import settings
 from django.core.validators import FileExtensionValidator
@@ -9,7 +9,7 @@ from django.db import models
 
 from experiments.models.managers import AlgorithmManager, AlgorithmQuerySet
 
-HyperparameterTypes = Optional[Union[str, int, float, List[object]]]
+HyperparameterTypes = Optional[Union[str, int, float, List[Any], Dict[Any, Any]]]
 
 
 def _get_algorithm_upload_path(instance: Algorithm, filename: str) -> str:
