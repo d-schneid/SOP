@@ -10,7 +10,6 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView, UpdateView, CreateView
 
 from authentication.mixins import LoginRequiredMixin
-from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
 from backend.task.cleaning import DatasetCleaning
 from experiments.callback import DatasetCallbacks
 from experiments.forms.create import DatasetUploadForm
@@ -34,10 +33,6 @@ def schedule_backend(dataset: Dataset) -> None:
         cleaned_dataset_path=cleaned_path,
         cleaning_steps=None,  # can be changed later on
     )
-
-    # TODO: DO NOT do this here. Move it to AppConfig or whatever
-    if UserRoundRobinScheduler._instance is None:
-        UserRoundRobinScheduler()
 
     # start the cleaning
     dataset_cleaning.schedule()

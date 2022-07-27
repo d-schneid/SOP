@@ -15,9 +15,7 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView
 
 from authentication.mixins import LoginRequiredMixin
-from backend.scheduler.DebugScheduler import DebugScheduler
 from backend.task.TaskState import TaskState
-from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 from backend.task.execution.core.Execution import Execution as BackendExecution
 from backend.task.execution.subspace.RandomizedSubspaceGeneration import (
@@ -81,12 +79,7 @@ def schedule_backend(execution: Execution) -> Optional[Dict[str, list[str]]]:
         subspace_generation=subspace_generation_description,
         algorithms=parameterized_algorithms,
         metric_callback=ExecutionCallbacks.metric_callback,
-        datapoint_count=dataset.datapoints_total,
     )
-    # TODO: DO NOT do this here. Move it to AppConfig or whatever
-    if DebugScheduler._instance is None:
-        DebugScheduler()
-    AlgorithmLoader.set_algorithm_root_dir(str(settings.MEDIA_ROOT / "algorithms"))
 
     backend_execution.schedule()
     return None
