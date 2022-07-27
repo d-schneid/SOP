@@ -1,19 +1,21 @@
 import os
 import shutil
+from typing import Optional
 
 from django.conf import settings
+from django.http import HttpResponse
 from django.urls import reverse
 
 from experiments.models import Experiment, Dataset, Algorithm
-from tests.unittests.views.LoggedInTestCase import LoggedInTestCase
+from tests.unittests.views.generic_test_cases import LoggedInTestCase
 
 
 class ExperimentOverviewTests(LoggedInTestCase):
     def setUp(self) -> None:
-        self.QUERYSET_NAME = "models_list"
+        self.QUERYSET_NAME: str = "models_list"
         super().setUp()
 
-    def create_experiment(self, name):
+    def create_experiment(self, name: str) -> Experiment:
         dataset = Dataset.objects.create(
             display_name="Datset Name",
             description="Dataset Description",
@@ -39,21 +41,21 @@ class ExperimentOverviewTests(LoggedInTestCase):
         exp.algorithms.set([algo1, algo2])
         return exp
 
-    def test_experiment_overview_no_experiments(self):
+    def test_experiment_overview_no_experiments(self) -> None:
         response = self.client.get(reverse("experiment_overview"), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "experiment_overview.html")
-        self.assertQuerysetEqual(response.context[self.QUERYSET_NAME], [])
+        self.assertListEqual(list(response.context[self.QUERYSET_NAME]), [])
 
-    def test_experiment_overview_one_experiment(self):
+    def test_experiment_overview_one_experiment(self) -> None:
         experiment = self.create_experiment("test_experiment")
         response = self.client.get(reverse("experiment_overview"), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "experiment_overview.html")
         self.assertContains(response, "test_experiment")
-        self.assertQuerysetEqual(response.context[self.QUERYSET_NAME], [experiment])
+        self.assertListEqual(list(response.context[self.QUERYSET_NAME]), [experiment])
 
-    def test_experiment_overview_multiple_experiments(self):
+    def test_experiment_overview_multiple_experiments(self) -> None:
         experiment1 = self.create_experiment("name_b")
         experiment2 = self.create_experiment("name_a")
         experiment3 = self.create_experiment("name_c")
@@ -63,12 +65,12 @@ class ExperimentOverviewTests(LoggedInTestCase):
         self.assertContains(response, "name_a")
         self.assertContains(response, "name_b")
         self.assertContains(response, "name_c")
-        self.assertQuerysetEqual(
-            response.context[self.QUERYSET_NAME],
+        self.assertListEqual(
+            list(response.context[self.QUERYSET_NAME]),
             [experiment2, experiment1, experiment3],
         )
 
-    def test_experiment_overview_sort_by_upload_date(self):
+    def test_experiment_overview_sort_by_upload_date(self) -> None:
         experiment1 = self.create_experiment("name_c")
         experiment2 = self.create_experiment("name_a")
         experiment3 = self.create_experiment("name_b")
@@ -79,15 +81,15 @@ class ExperimentOverviewTests(LoggedInTestCase):
         self.assertContains(response, "name_a")
         self.assertContains(response, "name_b")
         self.assertContains(response, "name_c")
-        self.assertQuerysetEqual(
-            response.context[self.QUERYSET_NAME],
+        self.assertListEqual(
+            list(response.context[self.QUERYSET_NAME]),
             [experiment3, experiment2, experiment1],
         )
 
 
 class ExperimentCreateViewTests(LoggedInTestCase):
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         if os.path.exists(settings.MEDIA_ROOT):
             shutil.rmtree(settings.MEDIA_ROOT)
         super().setUpClass()
@@ -123,7 +125,7 @@ class ExperimentCreateViewTests(LoggedInTestCase):
             shutil.rmtree(settings.MEDIA_ROOT)
         super().tearDown()
 
-    def post_experiment_creation(self):
+    def post_experiment_creation(self) -> HttpResponse:
         data = {
             "display_name": self.name,
             # we need to pass in the primary keys since these are choice fields and datasets and algorithms are
@@ -131,9 +133,11 @@ class ExperimentCreateViewTests(LoggedInTestCase):
             "dataset": self.dataset.pk,
             "check-algo": [algo.pk for algo in self.algorithms],
         }
-        return self.client.post(reverse("experiment_create"), data=data, follow=True)
+        return self.client.post(  # type:ignore
+            reverse("experiment_create"), data=data, follow=True
+        )
 
-    def test_experiment_create_view_valid_creation(self):
+    def test_experiment_create_view_valid_creation(self) -> None:
         response = self.post_experiment_creation()
 
         self.assertEqual(response.status_code, 200)
@@ -149,7 +153,7 @@ class ExperimentCreateViewTests(LoggedInTestCase):
         self.assertEqual(self.dataset, experiment.dataset)
         self.assertEqual(self.algorithms, list(experiment.algorithms.all()))
 
-    def test_experiment_create_view_no_algorithms(self):
+    def test_experiment_create_view_no_algorithms(self) -> None:
         self.algorithms = []
         response = self.post_experiment_creation()
 
@@ -163,34 +167,6 @@ class ExperimentCreateViewTests(LoggedInTestCase):
 
 
 class ExperimentEditViewTests(LoggedInTestCase):
-    def post_experiment_edit(
-        self, experiment_pk=None, expected_status=200, update_model=True
-    ):
-        experiment_pk = (
-            experiment_pk if experiment_pk is not None else self.experiment.pk
-        )
-        data = {
-            "display_name": self.new_name,
-        }
-        response = self.client.post(
-            reverse("experiment_edit", args=(experiment_pk,)), follow=True, data=data
-        )
-        self.assertEqual(response.status_code, expected_status)
-        # reload experiment from db
-        if update_model:
-            self.experiment = Experiment.objects.get(pk=experiment_pk)
-        return response
-
-    def assertNoExperimentChange(self, response):
-        self.assertFalse(response.redirect_chain)
-        self.assertEqual(self.name, self.experiment.display_name)
-        self.assertEqual(self.user, self.experiment.user)
-
-    def assertExperimentChange(self, response):
-        self.assertTrue(response.redirect_chain)
-        self.assertEqual(self.new_name, self.experiment.display_name)
-        self.assertEqual(self.user, self.experiment.user)
-
     def setUp(self) -> None:
         self.name = "Original Name"
         self.new_name = "New Name"
@@ -221,20 +197,51 @@ class ExperimentEditViewTests(LoggedInTestCase):
         )
         self.experiment.algorithms.set(self.algorithms)
 
-    def test_experiment_edit_view_valid_edit(self):
+    def post_experiment_edit(
+        self,
+        experiment_pk: Optional[int] = None,
+        expected_status: int = 200,
+        update_model: bool = True,
+    ) -> HttpResponse:
+        experiment_pk = (
+            experiment_pk if experiment_pk is not None else self.experiment.pk
+        )
+        data = {
+            "display_name": self.new_name,
+        }
+        response = self.client.post(
+            reverse("experiment_edit", args=(experiment_pk,)), follow=True, data=data
+        )
+        self.assertEqual(response.status_code, expected_status)
+        # reload experiment from db
+        if update_model:
+            self.experiment = Experiment.objects.get(pk=experiment_pk)
+        return response
+
+    def assertNoExperimentChange(self, response: HttpResponse) -> None:
+        self.assertFalse(response.redirect_chain)
+        self.assertEqual(self.name, self.experiment.display_name)
+        self.assertEqual(self.user, self.experiment.user)
+
+    def assertExperimentChange(self, response: HttpResponse) -> None:
+        self.assertTrue(response.redirect_chain)
+        self.assertEqual(self.new_name, self.experiment.display_name)
+        self.assertEqual(self.user, self.experiment.user)
+
+    def test_experiment_edit_view_valid_edit(self) -> None:
         response = self.post_experiment_edit()
         self.assertTemplateNotUsed(response, "experiment_edit.html")
         self.assertTemplateUsed(response, "experiment_overview.html")
         self.assertExperimentChange(response)
 
-    def test_experiment_edit_view_edit_no_name(self):
+    def test_experiment_edit_view_edit_no_name(self) -> None:
         self.new_name = ""
         response = self.post_experiment_edit()
         self.assertTemplateUsed(response, "experiment_edit.html")
         self.assertTemplateNotUsed(response, "experiment_overview.html")
         self.assertNoExperimentChange(response)
 
-    def test_experiment_edit_view_edit_invalid_pk(self):
+    def test_experiment_edit_view_edit_invalid_pk(self) -> None:
         response = self.post_experiment_edit(
             experiment_pk=42, expected_status=404, update_model=False
         )
@@ -244,7 +251,7 @@ class ExperimentEditViewTests(LoggedInTestCase):
 
 
 class ExperimentDeleteViewTests(LoggedInTestCase):
-    def test_experiment_delete_view_valid_delete(self):
+    def test_experiment_delete_view_valid_delete(self) -> None:
         dataset = Dataset.objects.create(
             datapoints_total=0, dimensions_total=0, user=self.user
         )
@@ -260,7 +267,7 @@ class ExperimentDeleteViewTests(LoggedInTestCase):
         self.assertIsNone(Experiment.objects.first())
         self.assertTemplateUsed(response, "experiment_overview.html")
 
-    def test_experiment_delete_view_invalid_pk(self):
+    def test_experiment_delete_view_invalid_pk(self) -> None:
         response = self.client.post(
             reverse("experiment_delete", args=(42,)), follow=True
         )
