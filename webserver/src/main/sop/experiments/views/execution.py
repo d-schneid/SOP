@@ -64,7 +64,7 @@ def schedule_backend(execution: Execution) -> Optional[Dict[str, list[str]]]:
     )
 
     parameterized_algorithms = []
-    for algorithm in algorithms.all():
+    for algorithm in algorithms:
         parameterized_algorithms.append(
             ParameterizedAlgorithm(
                 display_name=algorithm.display_name,
