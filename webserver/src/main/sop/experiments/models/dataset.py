@@ -9,7 +9,7 @@ from django.db import models
 from experiments.models.managers import DatasetManager, DatasetQuerySet
 
 
-def _get_dataset_upload_path(instance: Dataset, filename: str) -> str:
+def get_dataset_upload_path(instance: Dataset, filename: str) -> str:
     user_id = instance.user.id
     return os.path.join("datasets", "user_" + str(user_id), filename)
 
@@ -26,7 +26,7 @@ class Dataset(models.Model):
     datapoints_total = models.IntegerField(null=True)
     dimensions_total = models.IntegerField(null=True)
     path_original = models.FileField(
-        upload_to=_get_dataset_upload_path,
+        upload_to=get_dataset_upload_path,
         validators=(FileExtensionValidator(allowed_extensions=["csv"]),),
     )
     path_cleaned = models.FileField(null=True)
@@ -47,7 +47,3 @@ class Dataset(models.Model):
 
     def __str__(self) -> str:
         return str(self.display_name) + " | " + str(self.user)
-
-
-def get_dataset_path(instance: Dataset, filename: str) -> str:
-    return f"datasets/user_{instance.user.pk}/{filename}"
