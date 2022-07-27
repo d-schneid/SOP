@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 from typing import Optional, Dict, Any, List
 
@@ -254,7 +256,7 @@ class ExecutionDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Execution]):
 
 def download_execution_result(
     request: HttpRequest, experiment_pk: int, pk: int
-) -> HttpResponse:
+) -> Optional[HttpResponse | HttpResponseRedirect]:
     if request.method == "GET":
         execution: Optional[Execution] = Execution.objects.filter(pk=pk).first()
         if execution is None:
@@ -268,7 +270,7 @@ def download_execution_result(
         return response
     else:
         assert request.method in ("POST", "PUT")
-        return HttpResponseRedirect(reverse_lazy("experiment_overview"))
+        return None
 
 
 def get_execution_progress(request: HttpRequest) -> HttpResponse:
