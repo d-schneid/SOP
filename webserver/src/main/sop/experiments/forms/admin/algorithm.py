@@ -1,9 +1,7 @@
-import json
 from pathlib import Path
-from typing import Optional, Final
+from typing import Optional
 
 from django import forms
-from django.conf import settings
 from django.core.files.uploadedfile import TemporaryUploadedFile
 
 from backend.task.execution.AlgorithmLoader import AlgorithmLoader
@@ -13,8 +11,6 @@ from experiments.services.algorithm import (
     delete_temp_algorithm,
     convert_param_mapping_to_signature_dict,
 )
-
-ALGORITHM_ROOT_DIR: Final = settings.MEDIA_ROOT / "algorithms"
 
 
 class AdminAddAlgorithmForm(forms.ModelForm[Algorithm]):
@@ -31,7 +27,7 @@ class AdminAddAlgorithmForm(forms.ModelForm[Algorithm]):
         if error is None:
             mapping = AlgorithmLoader.get_algorithm_parameters(str(temp_path))
             dikt = convert_param_mapping_to_signature_dict(mapping)
-            self.instance.signature = json.dumps(dikt)
+            self.instance.signature = dikt
         delete_temp_algorithm(temp_path)
 
         if error is not None:
