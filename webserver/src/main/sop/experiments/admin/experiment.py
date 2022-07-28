@@ -10,7 +10,7 @@ from experiments.forms.admin.experiment import AdminAddExperimentForm
 @admin.register(Experiment)
 class ExperimentAdmin(admin.ModelAdmin[Experiment]):
     list_display = ["display_name", "user", "creation_date"]
-    raw_id_fields = ["user", "algorithms"]
+    raw_id_fields = ["user", "algorithms", "dataset"]
     list_filter = ["creation_date"]
     search_fields = ["display_name",
                      "user__username",
