@@ -1,4 +1,4 @@
-from typing import Optional, Any
+from typing import Optional, Dict
 
 from django import forms
 
@@ -13,7 +13,7 @@ class AdminAddExperimentForm(forms.ModelForm[Experiment]):
         model = Experiment
         fields = ["display_name", "user", "dataset", "algorithms"]
 
-    def clean(self) -> Optional[dict[str, Any]]:
+    def clean(self) -> Optional[Dict[str, object]]:
         cleaned_user: Optional[User] = self.cleaned_data.get("user")
         cleaned_dataset: Optional[Dataset] = self.cleaned_data.get("dataset")
         cleaned_algorithms: Optional[AlgorithmQuerySet] = self.cleaned_data.get("algorithms")

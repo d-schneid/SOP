@@ -12,12 +12,18 @@ class ExperimentAdmin(admin.ModelAdmin[Execution]):
     list_filter = ["status", "creation_date"]
     search_fields = ["experiment__display_name"]
 
-    def get_readonly_fields(self, request: HttpRequest, obj: Optional[Execution] = None) -> Sequence[str]:
+    def get_readonly_fields(self,
+                            request: HttpRequest,
+                            obj: Optional[Execution] = None
+    ) -> Sequence[str]:
         # otherwise creation date will not be shown due to field type in execution model
         return ["creation_date"]
 
     def has_add_permission(self, request: HttpRequest) -> bool:
         return False
 
-    def has_change_permission(self, request: HttpRequest, obj: Optional[Execution] = None) -> bool:
+    def has_change_permission(self,
+                              request: HttpRequest,
+                              obj: Optional[Execution] = None
+    ) -> bool:
         return False
