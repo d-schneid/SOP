@@ -159,12 +159,12 @@ LOGOUT_REDIRECT_URL = "login"
 
 # Configure django messages to use bootstrap styling
 MESSAGE_TAGS = {
-        messages.DEBUG: 'alert-secondary',
-        messages.INFO: 'alert-info',
-        messages.SUCCESS: 'alert-success',
-        messages.WARNING: 'alert-warning',
-        messages.ERROR: 'alert-danger',
- }
+    messages.DEBUG: 'alert-secondary',
+    messages.INFO: 'alert-info',
+    messages.SUCCESS: 'alert-success success',
+    messages.WARNING: 'alert-warning warning',
+    messages.ERROR: 'alert-danger error',
+}
 
 # Needed for typing webserver
 import django_stubs_ext  # noqa: E402
