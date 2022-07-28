@@ -1,7 +1,7 @@
-from typing import Sequence, Optional
+from typing import Sequence, Optional, Dict
 
 from django.contrib import admin
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 
 from experiments.models.experiment import Experiment
 from experiments.forms.admin.experiment import AdminAddExperimentForm
@@ -17,7 +17,10 @@ class ExperimentAdmin(admin.ModelAdmin[Experiment]):
                      "algorithms__display_name",
                      "dataset__display_name"]
 
-    def get_readonly_fields(self, request: HttpRequest, obj: Optional[Experiment] = None) -> Sequence[str]:
+    def get_readonly_fields(self,
+                            request: HttpRequest,
+                            obj: Optional[Experiment] = None
+    ) -> Sequence[str]:
         # for editing an existing experiment
         if not (obj is None):
             return ["user", "dataset", "algorithms", "creation_date"]
@@ -25,6 +28,10 @@ class ExperimentAdmin(admin.ModelAdmin[Experiment]):
         else:
             return []
 
-    def add_view(self, request, form_url="", extra_context=None):
+    def add_view(self,
+                 request: HttpRequest,
+                 form_url: str = "",
+                 extra_context: Optional[Dict[str, object]] = None
+    ) -> HttpResponse:
         self.form = AdminAddExperimentForm
         return super().add_view(request, form_url, extra_context)

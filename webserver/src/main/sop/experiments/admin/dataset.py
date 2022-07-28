@@ -25,7 +25,10 @@ class DatasetAdmin(AbstractModelAdmin):
     search_fields = ["display_name"]
     actions = ["delete_selected"]
 
-    def get_readonly_fields(self, request: HttpRequest, obj: Optional[Dataset] = None) -> Sequence[str]:
+    def get_readonly_fields(self,
+                            request: HttpRequest,
+                            obj: Optional[Dataset] = None
+    ) -> Sequence[str]:
         # for editing an existing experiment
         if not (obj is None):
             readonly_fields = ["dimensions_total",
