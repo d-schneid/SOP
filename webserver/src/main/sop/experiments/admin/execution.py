@@ -7,7 +7,7 @@ from experiments.models.execution import Execution
 
 
 @admin.register(Execution)
-class ExperimentAdmin(admin.ModelAdmin[Execution]):
+class ExecutionAdmin(admin.ModelAdmin[Execution]):
     list_display = ["id", "experiment", "status", "creation_date"]
     list_filter = ["status", "creation_date"]
     search_fields = ["experiment__display_name"]
