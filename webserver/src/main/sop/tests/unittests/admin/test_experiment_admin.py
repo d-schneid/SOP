@@ -88,18 +88,36 @@ class AlgorithmAdminTests(AdminLoggedInTestCase):
             "experiments_experiment_changelist", response.resolver_match.url_name
         )
 
+    def test_admin_add_experiment_valid(self):
+        data = {
+            "display_name": "newExp",
+            "user": self.admin.pk,
+            "dataset": self.dataset.pk,
+            "algorithms": self.algo.pk
+        }
+        url = reverse("admin:experiments_experiment_add")
+        response = self.client.post(url, data, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "was added successfully")
+        self.assertContains(response, "newExp")
+        self.assertEqual(
+            "experiments_experiment_changelist", response.resolver_match.url_name
+        )
+
     def test_admin_add_experiment_invalid(self):
         # user does not have access to self.algo and self.dataset
         user = User.objects.create(username="user", password="passwd")
         data = {
             "display_name": "newExp",
-            "user": user,
-            "dataset": self.dataset,
-            "algorithms": [self.algo]
+            "user": user.pk,
+            "dataset": self.dataset.pk,
+            "algorithms": self.algo.pk
         }
         url = reverse("admin:experiments_experiment_add")
-        response = self.client.post(url, data)
+        response = self.client.post(url, data, follow=True)
+        self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Please correct the errors below")
+        self.assertContains(response, "Selected user")
         self.assertEqual(
             "experiments_experiment_add", response.resolver_match.url_name
         )
