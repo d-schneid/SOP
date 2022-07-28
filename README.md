@@ -33,8 +33,9 @@ a webserver like nginx to proxy http requests to the gunicorn process of the con
 
 The services are then configured via environment variables (see [Configuring Deployment](#configuring-deployment)).
 
-By default, this image uses sqlite as the database. It is strongly recommended to
-use an external database like MariaDB/MySQL or PostgreSQL.
+If you don't specify an external database, the app will use sqlite as the database. It is strongly discouraged from
+using sqlite, as sqlite does not pair well with parallel accesses, which is likely to cause problems with this program.
+Therefore, we recommend using a standard database like MariaDB/MySQL or PostgreSQL.
 
 To make the process of setting up the webserver, SOP and an external database easier,
 we recommend using `docker-compose`. To do this, clone the git repo and create a file `docker-compose.yaml`
@@ -60,8 +61,6 @@ services:
     depends_on:
       - sop_db
 ```
-
-TODO: BACKEND needs persistent storage??????
 
 #### Explanation:
 
@@ -120,6 +119,9 @@ existing content:
 If you want to provide a custom nginx config file (to make the site available from other hosts than localhost, for
 example)
 or use another image that is not `albinoboi/nginx-sop`, you will have to provide a config file.
+You can do this, for example, by mounting the config to `/etc/nginx/conf.d/sop.conf` or
+`/etc/nginx/http.d/sop.conf`
+
 (see [NGINX config documentation](https://nginx.org/en/docs/beginners_guide.html)).
 An example NGINX config `sop.conf` with the progressbar module enabled:
 
@@ -275,7 +277,6 @@ services:
       - "443:443"
     volumes:
       - ./static:/static
-      - ./sop.conf:/etc/nginx/conf.d/sop.conf
     depends_on:
       - sop_app
 
