@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-from backend.DataInfo import DataInfo
 
 
 class DatasetCleaningStepExceptionHandling:
@@ -20,7 +19,6 @@ class DatasetCleaningStepExceptionHandling:
                 raise ValueError(error_root + ": input array is empty. Needs at least one row, one column and an entry")
         except pd.errors.EmptyDataError:
             raise ValueError(error_root + ": input array is empty. Needs at least one row, one column and an entry")
-
 
     @staticmethod
     def check_non_none_column(dataset_to_check: np.ndarray, error_root: str) -> None:

@@ -89,8 +89,8 @@ class DataIO:
         os.rename(temp_path, path)  # is an atomic operation (POSIX requirement)
 
     @staticmethod
-    def save_write_csv(running_path: str, final_path: str, data: np.ndarray, add_index_column: bool = False,
-                       has_header: bool = False):
+    def save_write_csv(running_path: str, final_path: str, data: np.ndarray,
+                       add_index_column: bool = False, has_header: bool = False):
         """
         Writes the given 2D-dataset to a csv-file.
         Unlike write_csv although, it does this in a way so that corrupted files, e.g. due to

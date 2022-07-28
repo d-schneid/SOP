@@ -5,6 +5,7 @@ from typing import Optional
 
 import numpy as np
 
+from backend.AnnotatedDataset import AnnotatedDataset
 from backend.DataIO import DataIO
 from backend.task.Task import Task
 from backend.task.TaskHelper import TaskHelper
@@ -105,7 +106,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
         """
         self.__delete_old_error_file()
 
-        dataset_to_clean: np.ndarray = self.__load_uncleaned_dataset()
+        dataset_to_clean: AnnotatedDataset = self.__load_uncleaned_dataset()
 
         cleaning_pipeline_result: Optional[np.ndarray] = self.__run_cleaning_pipeline(dataset_to_clean)
 
@@ -139,7 +140,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
         if os.path.isfile(error_file_path):
             os.remove(error_file_path)
 
-    def __load_uncleaned_dataset(self) -> np.ndarray:
+    def __load_uncleaned_dataset(self) -> AnnotatedDataset:
         """ Loads the uncleaned dataset which will be cleaned. \n
         :return: The loaded uncleaned dataset.
         (Throws FileNotFoundError if there exists no file at the uncleaned_dataset_path)
@@ -147,13 +148,14 @@ class DatasetCleaning(Task, Schedulable, ABC):
         print(DataIO.read_uncleaned_csv(self._uncleaned_dataset_path))
         return DataIO.read_uncleaned_csv(self._uncleaned_dataset_path).astype(object)
 
-    def __run_cleaning_pipeline(self, csv_to_clean: np.ndarray) -> Optional[np.ndarray]:
+    def __run_cleaning_pipeline(self, csv_to_clean: AnnotatedDataset) -> Optional[
+        AnnotatedDataset]:
         """
         Runs each DatasetToClean of the cleaning_pipline on the uncleaned dataset sequentially. \n
         :param csv_to_clean: The dataset that should be cleaned.
         :return: None if the cleaning failed. Otherwise, returns the cleaned dataset.
         """
-        if self.__empty_cleaning_result_handler(csv_to_clean):  # csv is empty
+        if self.__empty_cleaning_result_handler(csv_to_clean.data):  # csv is empty
             return None
 
         finished_cleaning_steps: int = 0
@@ -167,7 +169,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
                 return None
 
             # Exception handling
-            if self.__empty_cleaning_result_handler(csv_to_clean):  # csv is empty
+            if self.__empty_cleaning_result_handler(csv_to_clean.data):  # csv is empty
                 return None
 
             # Progress handling
