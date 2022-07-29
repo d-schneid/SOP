@@ -79,8 +79,11 @@ class ExecutionSubspace(Schedulable):
         :return: None
         """
         for algorithm in algorithms:
-            result_path: str = os.path.join(self._result_path,
-                                            algorithm.directory_name_in_execution + ".csv")  # TODO: TEST THIS!
+            result_path: str = os.path.join(
+                os.path.join(self._result_path,
+                             algorithm.directory_name_in_execution),
+                self._subspace.get_subspace_identifier() + ".csv")  # TODO: TEST THIS!
+
             self._execution_elements.append(
                 ExecutionElement.ExecutionElement(self._user_id, self._task_id,
                                                   self._subspace, algorithm,
@@ -109,7 +112,7 @@ class ExecutionSubspace(Schedulable):
         buffer_size = self._subspace.get_size_of_subspace_buffer(ds_arr)
         ss_shm = SharedMemory(self._subspace_shared_memory_name, True, buffer_size)
         self._subspace.make_subspace_array(ds_arr, ss_shm)
-        return ss_shm   
+        return ss_shm
 
     def __execution_element_is_finished(self, error_occurred: bool) -> None:
         """
