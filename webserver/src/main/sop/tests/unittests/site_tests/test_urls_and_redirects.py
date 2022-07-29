@@ -1,5 +1,5 @@
 from experiments.models import Algorithm, Dataset, Experiment
-from tests.unittests.views.LoggedInTestCase import LoggedInTestCase
+from tests.unittests.views.generic_test_cases import LoggedInTestCase
 
 
 class LoggedInSiteTests(LoggedInTestCase):

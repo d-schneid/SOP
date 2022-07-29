@@ -1,6 +1,5 @@
 import itertools
 import math
-import string
 from abc import ABC
 from typing import Iterable, Dict, List, Set
 
@@ -30,12 +29,15 @@ class RandomizedSubspaceGeneration(SubspaceGenerationDescription, ABC):
         self.__ds_dim_count = dataset_total_dimension_count
         self.__size_distr: SubspaceSizeDistribution = size_distr
         self.__subspace_amount: int = subspace_amount
+        self.__seed: int = seed
         assert size_distr.has_enough_subspaces(subspace_amount,
                                                dataset_total_dimension_count), \
             "too many subspaces were requested"
 
-    def to_json(self) -> string:
-        pass
+    def to_json(self) -> Dict[str, object]:
+        return {"size_distr": self.__size_distr.to_json(), "seed": self.__seed,
+                "subspace_amount": self.__subspace_amount,
+                "dataset_dimension_count": self.__ds_dim_count}
 
     def generate(self) -> List[Subspace]:
         """

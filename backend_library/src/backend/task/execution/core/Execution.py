@@ -5,10 +5,8 @@ import multiprocessing
 import os
 from collections.abc import Iterable
 from multiprocessing import shared_memory
-from abc import ABC
-from multiprocessing.shared_memory import SharedMemory
-from typing import Callable
-from typing import Callable, Optional
+from multiprocessing.managers import ValueProxy
+from typing import Callable, Dict
 from typing import List
 
 import numpy as np
@@ -38,8 +36,8 @@ class Execution(Task, Schedulable):
                  dataset_path: str, result_path: str,
                  subspace_generation: SubspaceGenerationDescription,
                  algorithms: Iterable[ParameterizedAlgorithm],
-                 metric_callback: Callable[[Execution], None], datapoint_count: int,
-                 final_zip_path: str = "", priority: int = 0, zip_running_path: str = ""):
+                 metric_callback: Callable[[Execution], None], final_zip_path: str = "",
+                 priority: int = 0, zip_running_path: str = ""):
         """
         :param user_id: The ID of the user belonging to the Execution. Has to be at least -1.
         :param task_id: The ID of the task. Has to be at least -1.
@@ -61,7 +59,7 @@ class Execution(Task, Schedulable):
 
         Task.__init__(self, user_id, task_id, task_progress_callback)
         self._priority = priority
-        self._datapoint_count = datapoint_count
+        self._datapoint_count: ValueProxy = Scheduler.get_manager().Value('Q', 0)
 
         self._dataset_path: str = dataset_path
         self._result_path: str = result_path
@@ -148,17 +146,12 @@ class Execution(Task, Schedulable):
 
         details_path: str = os.path.join(self._result_path, 'details.json')
 
-        # create dictionary that will be saved as a JSON-str
-        details_dict = {
-            'subspace_generation_information': self._subspace_generation.to_json()}
-        for algorithm in self._algorithms:
-            algorithm: ParameterizedAlgorithm = algorithm  # To get the type hint
-            details_dict[algorithm.directory_name_in_execution] = algorithm.to_json()
-
-        # save JSON-str
-        details_json_str: str = json.dumps(details_dict, indent=4)
         with open(details_path, 'w') as f:
-            json.dump(details_json_str, f)
+            json.dump(self.to_json(), f)
+
+    def to_json(self) -> Dict[str, object]:
+        return {'subspace_generation': self._subspace_generation.to_json(),
+                'algorithms': list(map(lambda x: x.to_json(), self._algorithms))}
 
     def __generate_execution_subspaces(self) -> None:
         """
@@ -171,7 +164,8 @@ class Execution(Task, Schedulable):
                 ExecutionSubspace(self._user_id, self._task_id, self._algorithms,
                                   subspace, self._result_path, self._subspace_dtype,
                                   self.__on_execution_element_finished,
-                                  self._shared_memory_name, self._datapoint_count))
+                                  self._shared_memory_name,
+                                  self._datapoint_count.get()))
 
     # schedule
     def schedule(self) -> None:
@@ -215,7 +209,7 @@ class Execution(Task, Schedulable):
         Load the cleaned dataset into shared memory
         """
         data = DataIO.read_cleaned_csv(self._dataset_path)
-        assert data.shape[0] == self._datapoint_count
+        self._datapoint_count.set(data.shape[0])
         assert data.shape[1] == self._subspaces[0].get_dataset_dimension_count()
         size = data.size * data.itemsize
         shm = shared_memory.SharedMemory(self._shared_memory_name, True, size)

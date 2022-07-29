@@ -1,17 +1,17 @@
+import os
 import uuid
 from typing import Final
 
-from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
+from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
 
+from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
 from backend.task.cleaning import DatasetCleaning
 from experiments.callback import DatasetCallbacks
 from experiments.models import Dataset
-from sop import settings
-
-import os
 
 DATASET_ROOT_DIR: Final = settings.MEDIA_ROOT / "datasets"
+
 
 
 def save_dataset(file: UploadedFile) -> str:

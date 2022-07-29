@@ -1,3 +1,5 @@
+[![pipeline status](https://git.scc.kit.edu/ipd-boehm/ipd-pse-2022/subspace-outlier-profiling/team-2/implementierung/badges/main/pipeline.svg)](https://git.scc.kit.edu/ipd-boehm/ipd-pse-2022/subspace-outlier-profiling/team-2/implementierung/-/commits/main) [![coverage report](https://git.scc.kit.edu/ipd-boehm/ipd-pse-2022/subspace-outlier-profiling/team-2/implementierung/-/jobs/artifacts/main/raw/public/django-tests.svg?job=django-tests)](https://git.scc.kit.edu/ipd-boehm/ipd-pse-2022/subspace-outlier-profiling/team-2/implementierung/-/jobs/artifacts/main/raw/public/django-tests.svg?job=django-tests) [![coverage report](https://git.scc.kit.edu/ipd-boehm/ipd-pse-2022/subspace-outlier-profiling/team-2/implementierung/-/jobs/artifacts/main/raw/public/backend-tests.svg?job=backend-tests)](https://git.scc.kit.edu/ipd-boehm/ipd-pse-2022/subspace-outlier-profiling/team-2/implementierung/-/jobs/artifacts/main/raw/public/backend-tests.svg?job=backend-tests)
+
 # Subspace Outlier Profiler
 
 ## Introduction

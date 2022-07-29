@@ -6,21 +6,23 @@ from django.db.models import Model
 from experiments.models.experiment import Experiment
 
 
-class AbstractExperimentInlineMeta(ABCMeta, type(admin.StackedInline[Model, Experiment])):
+class AbstractExperimentInlineMeta(ABCMeta,
+                                   type(admin.StackedInline[Model, Experiment])):
     pass
 
 
-class AbstractExperimentInline(admin.StackedInline[Model, Experiment], metaclass=AbstractExperimentInlineMeta):
+class AbstractExperimentInline(admin.StackedInline[Model, Experiment],
+                               metaclass=AbstractExperimentInlineMeta):
     class Meta:
         abstract = True
 
-    def has_add_permission(self, request, obj):
+    def has_add_permission(self, request, obj) -> bool:
         return False
 
-    def has_change_permission(self, request, obj=None):
+    def has_change_permission(self, request, obj=None) -> bool:
         return False
 
-    def has_delete_permission(self, request, obj=None):
+    def has_delete_permission(self, request, obj=None) -> bool:
         return False
 
 

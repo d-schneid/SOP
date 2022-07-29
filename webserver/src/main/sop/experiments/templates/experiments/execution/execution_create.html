@@ -8,6 +8,11 @@
 {% block content %}
     <form method="post" enctype="multipart/form-data">{% csrf_token %}
         <div class="mt-3">{{ form.as_p }}</div>
+        <div id="algorithm_errors">
+            <p class="text-danger" style="white-space: pre-line">
+                {{ form.algorithm_errors }}
+            </p>
+        </div>
         {% for algorithm in experiment.algorithms.all %}
             <div class="card shadow mt-4 mb-4">
                 <div class="card-header bg-dark d-flex hand text-white">
@@ -18,23 +23,24 @@
                     <div class="card-body ml-3 mr-3 mt-3 mb-3" style="background-color: #2b2b2b">
                         <span style="color: #cc7832">def</span> <span style="color: #ffc66d">run</span><span
                             class="text-white">(</span><br>
-                        {% for param_name in algorithm.get_signature_as_json.keys %}
+                        {% for param_name in algorithm.get_signature_as_dict.keys %}
                             <div class="ml-5">
                                 <label class="text-white" style="color: #a9b7c6"
                                        for="{{ algorithm.pk }}_{{ param_name }}">{{ param_name }} = </label>
                                 <input type="text" id="{{ algorithm.pk }}_{{ param_name }}"
-                                       name="{{ algorithm.pk }}_{{ param_name }}" placeholder="{% default_value_of_param algorithm param_name %}"
+                                       name="{{ algorithm.pk }}_{{ param_name }}"
+                                       placeholder="{% default_value_of_param algorithm param_name %}"
                                        id="{{ algorithm.pk }}_{{ param_name }}" required
 
                                         {# When creating a new execution, we want to use the default value of the parameter. #}
                                         {% if request.resolver_match.url_name == "execution_create" %}
-                                            value="{% default_value_of_param algorithm param_name %}"
-                                        {# When duplicating an execution, we need to get the value of the original execution  #}
+                                       value="{% default_value_of_param algorithm param_name %}"
+                                            {# When duplicating an execution, we need to get the value of the original execution  #}
                                         {% elif request.resolver_match.url_name == "execution_duplicate" %}
-                                            value="{% get_parameter_value original algorithm param_name %}"
+                                       value="{% get_parameter_value original algorithm param_name %}"
                                         {% endif %}
-                                        style="background-color: #2b2b2b"
-                                        class="text-white">
+                                       style="background-color: #2b2b2b"
+                                       class="text-white">
                                 <span style="color:#cc7832;">,</span><br>
                             </div>
                         {% endfor %}

@@ -20,7 +20,10 @@ class AlgorithmAdmin(AbstractModelAdmin):
     search_fields = ["display_name", "user__username", "group", "description"]
     actions = ["delete_selected"]
 
-    def get_readonly_fields(self, request: HttpRequest, obj: Optional[Algorithm] = None) -> Sequence[str]:
+    def get_readonly_fields(self,
+                            request: HttpRequest,
+                            obj: Optional[Algorithm] = None
+    ) -> Sequence[str]:
         # for editing an existing experiment
         if not (obj is None):
             return ["path", "signature", "user", "upload_date"]

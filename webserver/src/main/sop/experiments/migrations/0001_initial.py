@@ -5,7 +5,7 @@ import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
 
-from experiments.models.algorithm import _get_algorithm_upload_path
+from experiments.models.algorithm import get_algorithm_upload_path
 
 
 class Migration(migrations.Migration):
@@ -46,7 +46,7 @@ class Migration(migrations.Migration):
                 (
                     "_path",
                     models.FileField(
-                        upload_to=_get_algorithm_upload_path,
+                        upload_to=get_algorithm_upload_path,
                         validators=[
                             django.core.validators.FileExtensionValidator(
                                 allowed_extensions=[".py"]

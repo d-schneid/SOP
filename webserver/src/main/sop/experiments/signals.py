@@ -4,6 +4,7 @@ from typing import Any
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
 
+from backend.scheduler.Scheduler import Scheduler
 from experiments.models import Algorithm, Dataset, Execution
 
 
@@ -46,3 +47,7 @@ def delete_result_file(
 ) -> None:
     if instance.result_path:
         _delete_file(instance.result_path.path)
+
+    if instance.is_running:
+        assert instance.pk is not None
+        Scheduler.get_instance().abort_by_task(task_id=instance.pk)

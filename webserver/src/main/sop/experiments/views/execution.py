@@ -1,19 +1,21 @@
+from __future__ import annotations
+
 import json
-import random
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 
 from django.conf import settings
 from django.db.models import QuerySet
-from django.http import HttpRequest, HttpResponseRedirect, HttpResponse, \
-    HttpResponseServerError
+from django.http import (
+    HttpRequest,
+    HttpResponseRedirect,
+    HttpResponse,
+    HttpResponseServerError,
+)
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
 
 from authentication.mixins import LoginRequiredMixin
-from backend.scheduler.DebugScheduler import DebugScheduler
-from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
 from backend.task.TaskState import TaskState
-from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 from backend.task.execution.core.Execution import Execution as BackendExecution
 from backend.task.execution.subspace.RandomizedSubspaceGeneration import (
@@ -60,7 +62,7 @@ def schedule_backend(execution: Execution) -> Optional[Dict[str, list[str]]]:
     )
 
     parameterized_algorithms = []
-    for algorithm in algorithms.all():
+    for algorithm in algorithms:
         parameterized_algorithms.append(
             ParameterizedAlgorithm(
                 display_name=algorithm.display_name,
@@ -77,15 +79,21 @@ def schedule_backend(execution: Execution) -> Optional[Dict[str, list[str]]]:
         subspace_generation=subspace_generation_description,
         algorithms=parameterized_algorithms,
         metric_callback=ExecutionCallbacks.metric_callback,
-        datapoint_count=dataset.datapoints_total,
     )
-    # TODO: DO NOT do this here. Move it to AppConfig or whatever
-    if UserRoundRobinScheduler._instance is None:
-        UserRoundRobinScheduler()
-    AlgorithmLoader.set_algorithm_root_dir(str(settings.MEDIA_ROOT / "algorithms"))
 
     backend_execution.schedule()
     return None
+
+
+def generate_hyperparameter_error_message(dikt: Dict[str, List[str]]) -> str:
+    msg = ""
+    for key, errors in dikt.items():
+        algo_pk, param_name = key.split("_", maxsplit=1)
+        algorithm = Algorithm.objects.get(pk=algo_pk)
+        msg += f"{algorithm.display_name}.{param_name}: "
+        msg += "\n".join(errors)
+        msg += "\n"
+    return msg
 
 
 class ExecutionCreateView(
@@ -160,9 +168,12 @@ class ExecutionCreateView(
             form.instance.subspace_amount = subspace_amount
 
         # Generate algorithm_parameters out of form inputs
-        dikt = get_params_out_of_form(self.request, experiment)
-        assert dikt is not None
-        form.instance.algorithm_parameters = dikt
+        success, dikt = get_params_out_of_form(self.request, experiment)
+        if success:
+            form.instance.algorithm_parameters = dikt
+        else:
+            error = True
+            form.algorithm_errors = generate_hyperparameter_error_message(dikt)  # type: ignore
 
         # Get subspace_generation_seed out of form and do sanity checks
         seed: Optional[int] = form.cleaned_data.get("subspace_generation_seed")
@@ -190,6 +201,9 @@ class ExecutionCreateView(
                     ]
                 }
             )
+
+        # set status of execution to running
+        form.instance.status = TaskState.RUNNING.name
 
         if error:
             return super(ExecutionCreateView, self).form_invalid(form)
@@ -233,8 +247,9 @@ class ExecutionDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Execution]):
     success_url = reverse_lazy("experiment_overview")
 
 
-def download_execution_result(request: HttpRequest, experiment_pk: int,
-                              pk: int) -> HttpResponse:
+def download_execution_result(
+    request: HttpRequest, experiment_pk: int, pk: int
+) -> Optional[HttpResponse | HttpResponseRedirect]:
     if request.method == "GET":
         execution: Optional[Execution] = Execution.objects.filter(pk=pk).first()
         if execution is None:
@@ -248,7 +263,7 @@ def download_execution_result(request: HttpRequest, experiment_pk: int,
         return response
     else:
         assert request.method in ("POST", "PUT")
-        return HttpResponseRedirect(reverse_lazy("experiment_overview"))
+        return None
 
 
 def get_execution_progress(request: HttpRequest) -> HttpResponse:
