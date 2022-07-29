@@ -14,34 +14,8 @@ from experiments.forms.create import DatasetUploadForm
 from experiments.forms.edit import DatasetEditForm
 from experiments.models import Dataset
 from experiments.models.managers import DatasetQuerySet
-from experiments.services.dataset import generate_path_dataset_cleaned, save_dataset
+from experiments.services.dataset import schedule_backend, save_dataset
 from experiments.views.generic import PostOnlyDeleteView
-
-
-def schedule_backend(dataset: Dataset) -> None:
-
-    # set and save the missing datafield entry for the cleaned csv file
-    # name is the path relative to the media root dir --> use name, not path
-    cleaned_path = generate_path_dataset_cleaned(dataset.path_original.name)
-    dataset.path_cleaned.name = cleaned_path
-    dataset.save()
-
-    # create DatasetCleaning object
-    dataset_cleaning: DatasetCleaning = DatasetCleaning(
-        user_id=dataset.user.pk,
-        task_id=dataset.pk,
-        task_progress_callback=DatasetCallbacks.cleaning_callback,
-        uncleaned_dataset_path=dataset.path_original.path,
-        cleaned_dataset_path=cleaned_path,
-        cleaning_steps=None,  # can be changed later on
-    )
-
-    # TODO: DO NOT do this here. Move it to AppConfig or whatever
-    if UserRoundRobinScheduler._instance is None:
-        UserRoundRobinScheduler()
-
-    # start the cleaning
-    dataset_cleaning.schedule()
 
 
 class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadForm]):
