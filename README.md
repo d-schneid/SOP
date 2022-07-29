@@ -38,7 +38,10 @@ using sqlite, as sqlite does not pair well with parallel accesses, which is like
 Therefore, we recommend using a standard database like MariaDB/MySQL or PostgreSQL.
 
 To make the process of setting up the webserver, SOP and an external database easier,
-we recommend using `docker-compose`. To do this, clone the git repo and create a file `docker-compose.yaml`
+we recommend using `docker compose` (preferably compose v2)
+(see [Installing Docker](https://docs.docker.com/engine/install/)
+and [Installing compose](https://docs.docker.com/compose/install/)).
+To do this, clone the git repo and create a file `docker-compose.yaml`
 in the parent directory of the git repo and continue reading.
 
 ### Setting up the SOP image:
@@ -46,7 +49,7 @@ in the parent directory of the git repo and continue reading.
 Add to your `docker-compose.yaml`:
 
 ```yaml
-version: '3.7'
+version: '3.8'
 services:
   sop_app:
     container_name: sop_app
@@ -119,8 +122,7 @@ existing content:
 If you want to provide a custom nginx config file (to make the site available from other hosts than localhost, for
 example)
 or use another image that is not `albinoboi/nginx-sop`, you will have to provide a config file.
-You can do this, for example, by mounting the config to `/etc/nginx/conf.d/sop.conf` or
-`/etc/nginx/http.d/sop.conf`
+You can do this for example, by mounting the config to `/etc/nginx/conf.d/sop.conf`.
 
 (see [NGINX config documentation](https://nginx.org/en/docs/beginners_guide.html)).
 An example NGINX config `sop.conf` with the progressbar module enabled:
@@ -172,6 +174,8 @@ server {
 
 + The upstream `server` name **must** be the same as the django docker container name.
 + If you are using our nginx image and not replacing the config file, your SOP container name **has** to be `sop_app`.
++ If you are using our image, but want to supply a custom nginx config, the file
+  must be mounted to `/etc/nginx/http.d/` instead of `/etc/nginx/conf.d/`.
 + for upload progressbars to work correctly under nginx, you have to include
   the [NGINX upload progress module](https://www.nginx.com/resources/wiki/modules/upload_progress/)
   this is because NGINX buffers the uploads before transferring them to django.
@@ -179,7 +183,7 @@ server {
 
 ---
 
-### Setting up the database image (optional):
+### Setting up the database image (recommended):
 
 The last step is to define a service for the database container.
 We will use `postgres` for this example, but feel free to use MariaDB/MySQL.
@@ -252,7 +256,7 @@ Now that oyu have defined the docker services and environment variables, you're 
 Your `docker-compose.yaml` should now look similar to this:
 
 ```yaml
-version: '3.7'
+version: '3.8'
 
 services:
   sop_app:
@@ -289,7 +293,7 @@ services:
       - ./db-data:/var/lib/postgresql/data
 ```
 
-Run `docker-compose up -d` and navigate to `http://127.0.0.1` or your custom domain to see
+Run `docker compose up -d` and navigate to `http://127.0.0.1` or your custom domain to see
 the app.
 
 ---
