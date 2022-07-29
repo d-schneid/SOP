@@ -79,6 +79,11 @@ services:
   use whatever you want).
 + If the system you are deploying on uses SELinux, you might need a [:Z](https://docs.docker.com/storage/bind-mounts/)
   tag at the end of you bind mount.
++ If you your compose version supports it, you can
+  use [resource limits](https://stackoverflow.com/questions/42345235/how-to-specify-memory-cpu-limit-in-docker-compose-version-3)
+  ,
+  as the app will use a lot of resources,
+  especially CPU cores, if you don't impose limits.
 
 ---
 
