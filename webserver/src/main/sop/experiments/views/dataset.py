@@ -21,7 +21,10 @@ from experiments.views.generic import PostOnlyDeleteView
 def schedule_backend(dataset: Dataset) -> None:
 
     # set and save the missing datafield entry for the cleaned csv file
-    cleaned_path = generate_path_dataset_cleaned(dataset.path_original.path)
+    # name is the path relative to the media root dir --> use name, not path
+    cleaned_path = generate_path_dataset_cleaned(dataset.path_original.name)
+    dataset.path_cleaned.name = cleaned_path
+    dataset.save()
 
     # create DatasetCleaning object
     dataset_cleaning: DatasetCleaning = DatasetCleaning(
@@ -50,9 +53,7 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
     def form_valid(self, form):
 
         # save the file temporarily to disk
-        temp_file_path: str = save_dataset(
-            self.request.FILES["path_original"], self.request.user
-        )
+        temp_file_path: str = save_dataset(self.request.FILES["path_original"])
 
         assert os.path.isfile(temp_file_path)
 
@@ -66,9 +67,7 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
             assert not os.path.isfile(temp_file_path)
             return super(DatasetUploadView, self).form_invalid()
 
-        # otherwise, add the necessary data to the model
-        form.instance.datapoints_total = DatasetHelper.number_datapoints(temp_file_path)
-        form.instance.dimensions_total = DatasetHelper.number_dimensions(temp_file_path)
+        # don't add the data on datapoints and dimensions to the model
 
         # delete temp file
         os.remove(temp_file_path)

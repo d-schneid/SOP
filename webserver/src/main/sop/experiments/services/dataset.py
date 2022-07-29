@@ -10,8 +10,8 @@ import os
 DATASET_ROOT_DIR: Final = settings.MEDIA_ROOT / "datasets"
 
 
-def save_dataset(file: UploadedFile, user: User) -> str:
-    temp_dir = os.path.join(DATASET_ROOT_DIR, "temp", "user_" + str(user.pk))
+def save_dataset(file: UploadedFile) -> str:
+    temp_dir = os.path.join(DATASET_ROOT_DIR, "temp")
     temp_file_path = os.path.join(temp_dir, str(uuid.uuid1()))
 
     assert not os.path.isfile(temp_file_path)
