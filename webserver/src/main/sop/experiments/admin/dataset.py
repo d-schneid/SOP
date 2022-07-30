@@ -31,7 +31,6 @@ class DatasetAdmin(AbstractModelAdmin):
     list_filter = ["upload_date", "is_cleaned"]
     search_fields = ["display_name"]
     actions = ["delete_selected"]
-    exclude = ["path_original", "path_cleaned"]
 
     def get_admin_add_form(self) -> Type[AdminAddDatasetForm]:
         return AdminAddDatasetForm
