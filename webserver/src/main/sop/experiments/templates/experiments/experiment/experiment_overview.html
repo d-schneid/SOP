@@ -162,12 +162,10 @@
 {% block javascript %}
     <script>
         $(document).ready(function () {
-            console.log("on ready function call")
             let containers = document.getElementsByClassName("execution-progress-div")
             for (let i = 0; i < containers.length; i++) {
                 let container = containers[i]
                 let id = container.id.replace("container-", "")
-                console.log("creating bar for container with id: " + id)
 
                 let $progress = $('<div id="execution-progress-' + id + '" class="execution-progress mt-3"></div>').appendTo(container).append('<div class="progress-container"><div class="progress-status"></div><div class="bg-white border border-dark"><div class="progress-bar hidden progress-bar-striped progress-bar-animated bg-dark" style="width: 0%" role="progressbar" aria-valuemin="0" aria-valuemax="100">0%</div></div></div>');
                 $progress.show();
@@ -190,6 +188,7 @@
                     var progress = parseFloat(data.progress);
                     $progress.find('.progress-bar').css("width", progress * 100 + "%");
                     $progress.find('.progress-bar').html(parseInt(progress * 100) + '%');
+                    document.getElementById("execution-status-" + data.execution_pk).innerText = data.status
                 } else {
                     $progress.find('.progress-bar').css("width", 100 + "%");
                     $progress.find('.progress-bar').html('refresh page to refresh execution state');
