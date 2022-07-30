@@ -48,9 +48,9 @@ def delete_dataset_file(
 def delete_result_file(
     sender: Execution, instance: Execution, *args: Any, **kwargs: Any
 ) -> None:
-    if instance.result_path:
-        _delete_file(instance.result_path.path)
-
-    if instance.is_running:
+    if not instance.is_finished:
         assert instance.pk is not None
         Scheduler.get_instance().abort_by_task(task_id=instance.pk)
+
+    if instance.result_path:
+        _delete_file(instance.result_path.path)
