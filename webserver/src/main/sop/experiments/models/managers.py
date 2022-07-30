@@ -79,7 +79,13 @@ class ExperimentQuerySet(models.QuerySet["Experiment"]):
 
 
 class ExecutionManager(models.Manager["Execution"]):
-    pass
+    @staticmethod
+    def mark_running_executions_as_crashed():
+        from experiments.models.execution import Execution, ExecutionStatus
+        for execution in Execution.objects.all():
+            if execution.is_running:
+                execution.status = ExecutionStatus.CRASHED.name
+                execution.save()
 
 
 class ExecutionQuerySet(models.QuerySet["Execution"]):

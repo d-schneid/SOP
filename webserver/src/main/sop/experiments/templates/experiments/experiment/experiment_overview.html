@@ -51,7 +51,7 @@
             <li class="list-group-item">
                 <div class="d-flex flex-column-reverse">
                     <div>
-                        {% if not execution.is_finished %}
+                        {% if execution.is_running %}
                             <div class="flex-grow-1 mr-3 execution-progress-div"
                                  id="container-{{ execution.pk }}"></div>
                         {% endif %}
@@ -62,7 +62,7 @@
                         <a class="flex-fill">{{ execution.progess }}</a>
                         <a class="flex-fill">{{ execution.creation_date }}</a>
 
-                        {% if execution.is_finished %}
+                        {% if execution.has_result %}
                             <a href="{% url 'execution_download_result' model.pk execution.pk %}"
                                class="btn btn-info mr-3" id="execution-download-{{ execution.pk }}"
                                style="display: {% if not execution.is_finished %}none{% endif %}">Download

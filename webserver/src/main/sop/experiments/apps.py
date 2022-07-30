@@ -12,6 +12,9 @@ class ExperimentsConfig(AppConfig):
 
     def ready(self) -> None:
         from experiments import signals  # noqa
+        from experiments.models.managers import ExecutionManager
 
         AlgorithmLoader.set_algorithm_root_dir(str(settings.ALGORITHM_ROOT_DIR))
         Scheduler.default_scheduler = UserRoundRobinScheduler
+
+        ExecutionManager.mark_running_executions_as_crashed()
