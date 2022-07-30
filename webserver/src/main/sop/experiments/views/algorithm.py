@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 from pathlib import Path
 from typing import Optional, Dict, Any
 
+from django.http import HttpRequest, HttpResponseRedirect
 from django.contrib import messages
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.http.response import HttpResponse
@@ -9,7 +12,6 @@ from django.views.generic import (
     CreateView,
     ListView,
     UpdateView,
-    DetailView,
 )
 
 from authentication.mixins import LoginRequiredMixin
@@ -23,6 +25,7 @@ from experiments.services.algorithm import (
     convert_param_mapping_to_signature_dict,
 )
 from experiments.views.generic import PostOnlyDeleteView
+from experiments.services.dataset import get_download_response
 
 
 class AlgorithmOverview(LoginRequiredMixin, ListView[Algorithm]):
@@ -86,7 +89,17 @@ class AlgorithmEditView(LoginRequiredMixin, UpdateView[Algorithm, AlgorithmEditF
     success_url = reverse_lazy("algorithm_overview")
 
 
-class AlgorithmDetailView(LoginRequiredMixin, DetailView[Algorithm]):
-    model = Algorithm
-    # TODO: template?
-    # template_name =
+def download_algorithm(
+        request: HttpRequest, pk: int
+) -> Optional[HttpResponse | HttpResponseRedirect]:
+    if request.method == "GET":
+        algorithm: Optional[Algorithm] = Algorithm.objects.filter(pk=pk).first()
+        if algorithm is None:
+            if "admin" not in request.path:
+                return HttpResponseRedirect(reverse_lazy("algorithm_overview"))
+            return HttpResponseRedirect(
+                reverse_lazy("admin:experiments_algorithm_changelist"))
+
+        with algorithm.path as file:
+            return get_download_response(file, f"{algorithm.display_name}.py")
+    return None
