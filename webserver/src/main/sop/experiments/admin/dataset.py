@@ -2,11 +2,17 @@ from typing import Type, Optional, Sequence
 
 from django.contrib import admin
 from django.http import HttpRequest
+from django.urls import reverse, re_path
+from django.utils.html import format_html
 
 from experiments.admin.inlines import ExperimentInlineDataset
 from experiments.admin.abstract_model_admin import AbstractModelAdmin
 from experiments.forms.admin.dataset import AdminAddDatasetForm
 from experiments.models import Dataset
+from experiments.views.dataset import (
+    download_uncleaned_dataset,
+    download_cleaned_dataset
+)
 
 
 @admin.register(Dataset)
@@ -25,6 +31,12 @@ class DatasetAdmin(AbstractModelAdmin):
     search_fields = ["display_name"]
     actions = ["delete_selected"]
 
+    def get_admin_add_form(self) -> Type[AdminAddDatasetForm]:
+        return AdminAddDatasetForm
+
+    def get_model_name(self) -> str:
+        return "dataset"
+
     def get_readonly_fields(self,
                             request: HttpRequest,
                             obj: Optional[Dataset] = None
@@ -36,17 +48,37 @@ class DatasetAdmin(AbstractModelAdmin):
                                "is_cleaned",
                                "user",
                                "upload_date",
-                               "path_original",
-                               "path_cleaned"]
+                               "download_uncleaned",
+                               "download_cleaned"]
             if not obj.is_cleaned:
-                readonly_fields.remove("path_cleaned")
+                readonly_fields.remove("download_cleaned")
             return readonly_fields
         # for adding a new experiment
         else:
             return []
 
-    def get_admin_add_form(self) -> Type[AdminAddDatasetForm]:
-        return AdminAddDatasetForm
+    def get_urls(self):
+        urls = super().get_urls()
+        urls += [
+            re_path(r'^dataset_download_uncleaned/(?P<pk>\d+)$',
+                    download_uncleaned_dataset,
+                    name='experiments_dataset_download_uncleaned'),
+            re_path(r'^dataset_download_cleaned/(?P<pk>\d+)$',
+                    download_cleaned_dataset,
+                    name='experiments_dataset_download_cleaned'),
+        ]
+        return urls
 
-    def get_model_name(self) -> str:
-        return "dataset"
+    def download_uncleaned(self, obj):
+        return format_html(
+            '<a href="{}">Download</a>',
+            reverse('admin:experiments_dataset_download_uncleaned', args=[obj.pk])
+        )
+    download_uncleaned.short_description = "Uncleaned dataset"
+
+    def download_cleaned(self, obj):
+        return format_html(
+            '<a href="{}">Download</a>',
+            reverse('admin:experiments_dataset_download_cleaned', args=[obj.pk])
+        )
+    download_cleaned.short_description = "Cleaned dataset"
