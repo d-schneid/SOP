@@ -23,6 +23,7 @@ class AlgorithmAdmin(AbstractModelAdmin):
     list_filter = ["upload_date", "group"]
     search_fields = ["display_name", "user__username", "group", "description"]
     actions = ["delete_selected"]
+    exclude = ["path"]
 
     def get_admin_add_form(self) -> Type[AdminAddAlgorithmForm]:
         return AdminAddAlgorithmForm
