@@ -1,8 +1,9 @@
-from typing import Type, Optional, Sequence
+from typing import Type, Optional, Sequence, List
 
 from django.contrib import admin
 from django.http import HttpRequest
 from django.urls import reverse, re_path
+from django.urls.resolvers import URLPattern
 from django.utils.html import format_html
 
 from experiments.admin.inlines import ExperimentInlineDataset
@@ -57,7 +58,7 @@ class DatasetAdmin(AbstractModelAdmin):
         else:
             return []
 
-    def get_urls(self):
+    def get_urls(self) -> List[URLPattern]:
         urls = super().get_urls()
         urls += [
             re_path(r'^dataset_download_uncleaned/(?P<pk>\d+)$',
@@ -69,16 +70,16 @@ class DatasetAdmin(AbstractModelAdmin):
         ]
         return urls
 
-    def download_uncleaned(self, obj):
+    def download_uncleaned(self, dataset: Dataset) -> str:
         return format_html(
             '<a href="{}">Download</a>',
-            reverse('admin:experiments_dataset_download_uncleaned', args=[obj.pk])
+            reverse('admin:experiments_dataset_download_uncleaned', args=[dataset.pk])
         )
     download_uncleaned.short_description = "Uncleaned dataset"
 
-    def download_cleaned(self, obj):
+    def download_cleaned(self, dataset: Dataset) -> str:
         return format_html(
             '<a href="{}">Download</a>',
-            reverse('admin:experiments_dataset_download_cleaned', args=[obj.pk])
+            reverse('admin:experiments_dataset_download_cleaned', args=[dataset.pk])
         )
     download_cleaned.short_description = "Cleaned dataset"

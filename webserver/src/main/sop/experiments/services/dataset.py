@@ -4,6 +4,8 @@ from typing import Final
 
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
+from django.db.models.fields.files import FieldFile
+from django.http import HttpResponse
 
 from authentication.models import User
 
@@ -30,3 +32,10 @@ def save_dataset(file: UploadedFile, user: User) -> str:
 def generate_path_dataset_cleaned(uncleaned_path: str) -> str:
     (root, ext) = os.path.splitext(uncleaned_path)
     return root + "_cleaned" + ext
+
+
+def get_download_response(file: FieldFile, download_name: str) -> HttpResponse:
+    response = HttpResponse(file.read())
+    response["Content-Type"] = "text/plain"
+    response["Content-Disposition"] = f"attachment; filename={download_name}"
+    return response

@@ -4,7 +4,6 @@ import os.path
 from typing import Optional
 
 from django.contrib import messages
-from django.db.models.fields.files import FieldFile
 from django.http import HttpResponse, HttpRequest
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
@@ -17,8 +16,12 @@ from experiments.forms.create import DatasetUploadForm
 from experiments.forms.edit import DatasetEditForm
 from experiments.models import Dataset
 from experiments.models.managers import DatasetQuerySet
-from experiments.services.dataset import generate_path_dataset_cleaned, save_dataset
 from experiments.views.generic import PostOnlyDeleteView
+from experiments.services.dataset import (
+    generate_path_dataset_cleaned,
+    save_dataset,
+    get_download_response,
+)
 
 
 def schedule_backend(dataset: Dataset) -> None:
@@ -142,13 +145,6 @@ class DatasetEditView(LoginRequiredMixin, UpdateView[Dataset, DatasetEditForm]):
     form_class = DatasetEditForm
     template_name = "dataset_edit.html"
     success_url = reverse_lazy("dataset_overview")
-
-
-def get_download_response(file: FieldFile, download_name: str) -> HttpResponse:
-    response = HttpResponse(file.read())
-    response["Content-Type"] = "text/plain"
-    response["Content-Disposition"] = f"attachment; filename={download_name}"
-    return response
 
 
 def download_uncleaned_dataset(
