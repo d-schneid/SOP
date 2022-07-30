@@ -277,6 +277,8 @@ def get_execution_progress(request: HttpRequest) -> HttpResponse:
         data = {}
         if execution is not None:
             data["progress"] = execution.progress
+            data["status"] = execution.status
+            data["execution_pk"] = execution.pk
 
         return HttpResponse(json.dumps(data))
 
