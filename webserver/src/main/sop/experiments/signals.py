@@ -9,11 +9,14 @@ from experiments.models import Algorithm, Dataset, Execution
 
 
 def _delete_file(path: str) -> None:
-    if os.path.isfile(path):
-        os.remove(path)
-    if not any(os.scandir(os.path.dirname(path))):
-        # Directory for user will be created again once user uploads a file
-        os.rmdir(os.path.dirname(path))
+    try:
+        if os.path.isfile(path):
+            os.remove(path)
+        if not any(os.scandir(os.path.dirname(path))):
+            # Directory for user will be created again once user uploads a file
+            os.rmdir(os.path.dirname(path))
+    except OSError as e:
+        print(f"Error: {e.strerror}")
 
 
 # Signal handlers delete all the respective files of a user
