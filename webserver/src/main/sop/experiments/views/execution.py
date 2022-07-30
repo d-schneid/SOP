@@ -27,7 +27,7 @@ from backend.task.execution.subspace.UniformSubspaceDistribution import (
 from experiments.callback import ExecutionCallbacks
 from experiments.forms.create import ExecutionCreateForm
 from experiments.models import Execution, Experiment, Algorithm
-from experiments.models.execution import get_result_path
+from experiments.models.execution import get_result_path, ExecutionStatus
 from experiments.services.execution import get_params_out_of_form
 from experiments.views.generic import PostOnlyDeleteView
 
@@ -287,3 +287,13 @@ def get_execution_progress(request: HttpRequest) -> HttpResponse:
         return HttpResponseServerError(
             "Server Error: You must provide execution_pk header or query param."
         )
+
+
+def restart_execution(request: HttpRequest, experiment_pk: int, pk: int) -> HttpResponse:
+    execution = Execution.objects.filter(pk=pk).first()
+    if execution is not None:
+        execution.status = ExecutionStatus.RUNNING.name
+        execution.progress = 0.0
+        execution.save()
+        schedule_backend(execution)
+    return HttpResponseRedirect(reverse_lazy("experiment_overview"))

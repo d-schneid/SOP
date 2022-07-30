@@ -68,6 +68,11 @@
                                style="display: {% if not execution.is_finished %}none{% endif %}">Download
                                 Result</a>
                         {% endif %}
+
+                        {% if execution.is_crashed %}
+                            <a href="{% url "execution_restart" model.pk execution.pk %}" class="btn btn-success mr-3">Restart</a>
+                        {% endif %}
+
                         <a href="{% url "execution_duplicate" model.pk execution.pk %}" class="btn btn-warning mr-3">Duplicate</a>
                         <button type="button"
                                 class="btn btn-danger mr-3"
