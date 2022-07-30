@@ -123,10 +123,9 @@ class DatasetOverview(LoginRequiredMixin, ListView[Dataset]):
 
 class DatasetDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Dataset]):
     model = Dataset
-    template_name = "dataset_delete.html"
     success_url = reverse_lazy("dataset_overview")
 
-    def form_valid(self, form) -> None:
+    def form_valid(self, form) -> HttpResponse:
         # processing before object is deleted
         # access object and its fields
         dataset: Dataset = self.get_object()
@@ -158,7 +157,10 @@ def download_uncleaned_dataset(
     if request.method == "GET":
         dataset: Optional[Dataset] = Dataset.objects.filter(pk=pk).first()
         if dataset is None:
-            return HttpResponseRedirect(reverse_lazy("dataset_overview"))
+            if "admin" not in request.path:
+                return HttpResponseRedirect(reverse_lazy("dataset_overview"))
+            return HttpResponseRedirect(
+                reverse_lazy("admin:experiments_dataset_changelist"))
 
         with dataset.path_original as file:
             return get_download_response(file, f"{dataset.display_name}.csv")
@@ -171,7 +173,11 @@ def download_cleaned_dataset(
     if request.method == "GET":
         dataset: Optional[Dataset] = Dataset.objects.filter(pk=pk).first()
         if dataset is None or dataset.is_cleaned is False:
-            return HttpResponseRedirect(reverse_lazy("dataset_overview"))
+            if "admin" not in request.path:
+                return HttpResponseRedirect(reverse_lazy("dataset_overview"))
+            return HttpResponseRedirect(
+                reverse_lazy("admin:experiments_dataset_changelist"))
+
         with dataset.path_cleaned as file:
             return get_download_response(file, f"{dataset.display_name}_cleaned.csv")
     return None
