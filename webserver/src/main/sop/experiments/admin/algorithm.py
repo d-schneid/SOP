@@ -10,7 +10,10 @@ from django.utils.html import format_html
 
 from experiments.admin.inlines import ExperimentInlineAlgorithm
 from experiments.admin.abstract_model_admin import AbstractModelAdmin
-from experiments.forms.admin.algorithm import AdminAddAlgorithmForm
+from experiments.forms.admin.algorithm import (
+    AdminAddAlgorithmForm,
+    AdminChangeAlgorithmForm
+)
 from experiments.models.algorithm import Algorithm
 from experiments.views.algorithm import download_algorithm
 
@@ -23,10 +26,12 @@ class AlgorithmAdmin(AbstractModelAdmin):
     list_filter = ["upload_date", "group"]
     search_fields = ["display_name", "user__username", "group", "description"]
     actions = ["delete_selected"]
-    exclude = ["path"]
 
     def get_admin_add_form(self) -> Type[AdminAddAlgorithmForm]:
         return AdminAddAlgorithmForm
+
+    def get_admin_change_form(self) -> Type[AdminChangeAlgorithmForm]:
+        return AdminChangeAlgorithmForm
 
     def get_model_name(self) -> str:
         return "algorithm"
@@ -36,11 +41,10 @@ class AlgorithmAdmin(AbstractModelAdmin):
                             obj: Optional[Algorithm] = None
     ) -> Sequence[str]:
         # for editing an existing experiment
-        if not (obj is None):
+        if not obj is None:
             return ["signature", "user", "upload_date", "download"]
         # for adding a new experiment
-        else:
-            return []
+        return []
 
     def get_urls(self) -> List[URLPattern]:
         urls = super().get_urls()

@@ -8,7 +8,7 @@ from django.utils.html import format_html
 
 from experiments.admin.inlines import ExperimentInlineDataset
 from experiments.admin.abstract_model_admin import AbstractModelAdmin
-from experiments.forms.admin.dataset import AdminAddDatasetForm
+from experiments.forms.admin.dataset import AdminAddDatasetForm, AdminChangeDatasetForm
 from experiments.models import Dataset
 from experiments.views.dataset import (
     download_uncleaned_dataset,
@@ -36,6 +36,9 @@ class DatasetAdmin(AbstractModelAdmin):
     def get_admin_add_form(self) -> Type[AdminAddDatasetForm]:
         return AdminAddDatasetForm
 
+    def get_admin_change_form(self) -> Type[AdminChangeDatasetForm]:
+        return AdminChangeDatasetForm
+
     def get_model_name(self) -> str:
         return "dataset"
 
@@ -44,7 +47,7 @@ class DatasetAdmin(AbstractModelAdmin):
                             obj: Optional[Dataset] = None
     ) -> Sequence[str]:
         # for editing an existing experiment
-        if not (obj is None):
+        if not obj is None:
             readonly_fields = ["dimensions_total",
                                "datapoints_total",
                                "is_cleaned",
@@ -56,8 +59,7 @@ class DatasetAdmin(AbstractModelAdmin):
                 readonly_fields.remove("download_cleaned")
             return readonly_fields
         # for adding a new experiment
-        else:
-            return []
+        return []
 
     def get_urls(self) -> List[URLPattern]:
         urls = super().get_urls()
