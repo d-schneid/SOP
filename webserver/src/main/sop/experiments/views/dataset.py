@@ -11,7 +11,7 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView, UpdateView, CreateView
 
 from authentication.mixins import LoginRequiredMixin
-from backend.DatasetHelper import DatasetHelper
+from backend.DatasetInfo import DatasetInfo
 from experiments.forms.create import DatasetUploadForm
 from experiments.forms.edit import DatasetEditForm
 from experiments.models import Dataset
@@ -49,7 +49,7 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
         assert os.path.isfile(temp_file_path)
 
         # check if the file is a csv file
-        if not DatasetHelper.is_dataset_valid(temp_file_path):
+        if not DatasetInfo.is_dataset_valid(temp_file_path):
             # delete temp file
             os.remove(temp_file_path)
 

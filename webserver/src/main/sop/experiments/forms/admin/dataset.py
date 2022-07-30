@@ -1,10 +1,11 @@
 import os
 from typing import Optional, Any, Dict
+
+from backend.DatasetInfo import DatasetInfo
 from django import forms
 from django.core.files.uploadedfile import TemporaryUploadedFile
 from experiments.models import Dataset
 from experiments.services.dataset import save_dataset, generate_path_dataset_cleaned
-from backend.DatasetHelper import DatasetHelper
 
 
 class AdminAddDatasetForm(forms.ModelForm[Dataset]):
@@ -23,7 +24,7 @@ class AdminAddDatasetForm(forms.ModelForm[Dataset]):
         temp_file: str = save_dataset(dataset)
 
         # check the dataset
-        if not DatasetHelper.is_dataset_valid(temp_file):
+        if not DatasetInfo.is_dataset_valid(temp_file):
             self.add_error("path_original", "The dataset is not a valid csv-file.")
             return None
 

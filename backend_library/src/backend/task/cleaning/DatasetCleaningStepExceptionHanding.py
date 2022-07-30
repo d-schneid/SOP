@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from backend.DataInfo import DataInfo
+from backend.DatasetInfo import DatasetInfo
 
 
 class DatasetCleaningStepExceptionHandling:
