@@ -38,7 +38,7 @@ class DatasetServicesTests(django.test.TestCase):
         self.assertTrue(os.path.exists(temp_path))
         self.assertEqual(
             Path(temp_path).parent,
-            settings.MEDIA_ROOT / "datasets" / "temp" / f"user_{self.user.pk}",
+            settings.MEDIA_ROOT / "datasets" / "temp",
         )
         with open(temp_path, "r") as f:
             self.assertEqual(len([line for line in f]), 3)

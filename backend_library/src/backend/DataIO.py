@@ -79,12 +79,17 @@ class DataIO:
 
         :param path: The absolute path to the location of the csv-file to be created and written to.
                      If this file is already existing, it is overridden.
+                     If the directory the file should be located in is not existing, it is created.
         :param data: The dataset that should be written to the file.
         :param add_index_column: If True create an additional column at the start of the array with
         indexes for each row. If False don't change anything.
         :param running_suffix: Specifies the suffix to be added to the file during writing.
         :param has_header: The header of the dataset that should be read.
         """
+
+        # if the directory of the path is not existing, create it
+        if not os.path.isdir(os.path.dirname(path)):
+            os.makedirs(os.path.dirname(path))
 
         temp_path: str = path + running_suffix
 
