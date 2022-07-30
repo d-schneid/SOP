@@ -68,18 +68,14 @@ class ExperimentCreateView(
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
+        context["form"].fields["dataset"].queryset = Dataset.objects.\
+            get_by_user(self.request.user).\
+            filter(is_cleaned=True)
         context.update({
             "algorithm_groups": Algorithm.AlgorithmGroup,
             "algorithms": Algorithm.objects.get_by_user_and_public(self.request.user),
         })
         return context
-
-    def get_form(self, *args: Any, **kwargs: Any) -> ExperimentCreateForm:
-        form = super().get_form(*args, **kwargs)
-        form.fields["dataset"].queryset = Dataset.objects.\
-            get_by_user(self.request.user).\
-            filter(is_cleaned=True)
-        return form
 
 
 class ExperimentDuplicateView(ExperimentCreateView):
@@ -107,5 +103,4 @@ class ExperimentEditView(
 
 class ExperimentDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Experiment]):
     model = Experiment
-    template_name = "experiment_delete.html"
     success_url = reverse_lazy("experiment_overview")
