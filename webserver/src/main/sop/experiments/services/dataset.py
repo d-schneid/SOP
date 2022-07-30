@@ -39,8 +39,7 @@ def schedule_backend(dataset: Dataset) -> None:
 
     # set and save the missing datafield entry for the cleaned csv file
     # name is the path relative to the media root dir --> use name, not path
-    cleaned_path = generate_path_dataset_cleaned(dataset.path_original.name)
-    dataset.path_cleaned.name = cleaned_path
+    dataset.path_cleaned.name = generate_path_dataset_cleaned(dataset.path_original.name)
     dataset.save()
 
     # create DatasetCleaning object
@@ -49,7 +48,7 @@ def schedule_backend(dataset: Dataset) -> None:
         task_id=dataset.pk,
         task_progress_callback=DatasetCallbacks.cleaning_callback,
         uncleaned_dataset_path=dataset.path_original.path,
-        cleaned_dataset_path=cleaned_path,
+        cleaned_dataset_path=dataset.path_cleaned.path,
         cleaning_steps=None,  # can be changed later on
     )
 
