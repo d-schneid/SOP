@@ -24,6 +24,10 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
         pass
 
     @abstractmethod
+    def get_admin_change_form(self) -> Type[ModelForm[Model]]:
+        pass
+
+    @abstractmethod
     def get_model_name(self) -> str:
         pass
 
@@ -47,6 +51,15 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
     ) -> HttpResponse:
         self.form = self.get_admin_add_form()
         return super().add_view(request, form_url, extra_context)
+
+    def change_view(self,
+                    request: HttpRequest,
+                    object_id: str,
+                    form_url: str = "",
+                    extra_context: Optional[Dict[str, object]] = None
+    ) -> HttpResponse:
+        self.form = self.get_admin_change_form()
+        return super().change_view(request, object_id, form_url, extra_context)
 
     # adjust behavior of deletion of model
     def delete_view(
