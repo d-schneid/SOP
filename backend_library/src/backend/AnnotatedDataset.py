@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class AnnotatedDataset:
+class AnnotatedDataset():
     data: np.ndarray
     headers: np.ndarray
     row_mapping: np.ndarray
