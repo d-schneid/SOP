@@ -4,6 +4,7 @@ import json
 from typing import Optional, Dict, Any, List
 
 from django.conf import settings
+from django.contrib import messages
 from django.db.models import QuerySet
 from django.http import (
     HttpRequest,
@@ -124,6 +125,7 @@ class ExecutionCreateView(
         # Get subspaces_min out of form and do sanity checks
         subspaces_min = form.cleaned_data["subspaces_min"]
         if subspaces_min < 0:
+            messages.error(self.request, f"Subspaces Min has to be an Integer greater than or equal to 0.")
             form.errors.update(
                 {
                     "subspaces_min": [
@@ -137,6 +139,7 @@ class ExecutionCreateView(
         # Get subspaces_max out of form and do sanity checks
         subspaces_max = form.cleaned_data["subspaces_max"]
         if subspaces_max < 0:
+            messages.error(self.request, f"Subspaces Max has to be an Integer greater than or equal to 0.")
             error = True
             form.errors.update(
                 {
@@ -146,6 +149,8 @@ class ExecutionCreateView(
                 }
             )
         if subspaces_max > experiment.dataset.dimensions_total:
+            messages.error(self.request,
+                           f"Subspaces Max has to be smaller than or equal to the dataset dimension count: {experiment.dataset.dimensions_total}.")
             error = True
             form.errors.update(
                 {
@@ -160,6 +165,7 @@ class ExecutionCreateView(
         # Get subspace_amount out of form and do sanity checks
         subspace_amount = form.cleaned_data["subspace_amount"]
         if subspace_amount <= 0:
+            messages.error(self.request, f"Subspace amount has to be a positive Integer.")
             error = True
             form.errors.update(
                 {"subspace_amount": ["Subspaces amount has to be a positive Integer"]}
@@ -174,12 +180,14 @@ class ExecutionCreateView(
         else:
             error = True
             form.algorithm_errors = generate_hyperparameter_error_message(dikt)  # type: ignore
+            messages.error(self.request, generate_hyperparameter_error_message(dikt))
 
         # Get subspace_generation_seed out of form and do sanity checks
         seed: Optional[int] = form.cleaned_data.get("subspace_generation_seed")
         # If the seed was not specified, it will be set to a random seed during model creation
         if seed:
             if seed < 0:
+                messages.error(self.request, f"Seed has to be greater than 0. (is: {seed}).")
                 error = True
                 form.errors.update(
                     {
@@ -193,6 +201,8 @@ class ExecutionCreateView(
 
         # Sanity check that subspaces_min must be smaller than subspaces_max
         if subspaces_min >= subspaces_max:
+            messages.error(self.request,
+                           f"Subspaces Max has to be greater than Subspace Min.")
             error = True
             form.errors.update(
                 {
@@ -248,7 +258,7 @@ class ExecutionDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Execution]):
 
 
 def download_execution_result(
-    request: HttpRequest, experiment_pk: int, pk: int
+        request: HttpRequest, experiment_pk: int, pk: int
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
     if request.method == "GET":
         execution: Optional[Execution] = Execution.objects.filter(pk=pk).first()
