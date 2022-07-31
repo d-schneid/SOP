@@ -9,10 +9,13 @@ class Metric(ABC):
 
     @staticmethod
     @abstractmethod
-    def compute_metric(metric_result_path: str, algorithm_directory_paths: list[str]) -> None:
+    def compute_metric(metric_result_path: str,
+                       algorithm_directory_paths: list[str]) -> None:
         """
-        :param metric_result_path: The path where the metric will store its results to. Has to and with .csv
-        :param algorithm_directory_paths: A list which contains all the paths to the folder of the selected algorithms.
+        :param metric_result_path: The path where the metric will store its results to.
+        Has to and with .csv
+        :param algorithm_directory_paths: A list which contains all the paths
+        to the folder of the selected algorithms.
         (Use the build in property algorithm_directory_paths in Execution)
         :return: None
         """

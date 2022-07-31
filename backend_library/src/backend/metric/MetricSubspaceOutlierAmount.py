@@ -3,7 +3,8 @@ from pathlib import Path
 import numpy as np
 
 from backend.DataIO import DataIO
-from backend.metric.ExecutionElementMetricHelper import ExecutionElementMetricHelper as eem_helper
+from backend.metric.ExecutionElementMetricHelper import \
+    ExecutionElementMetricHelper as eem_helper
 from backend.metric.Metric import Metric
 from pandas import DataFrame as df
 
@@ -11,10 +12,13 @@ from pandas import DataFrame as df
 class MetricSubspaceOutlierAmount(Metric):
 
     @staticmethod
-    def compute_metric(metric_result_path: str, algorithm_directory_paths: list[str]) -> None:
+    def compute_metric(metric_result_path: str,
+                       algorithm_directory_paths: list[str]) -> None:
         """
-        :param metric_result_path: The path where the metric will store its results to. Has to end with .csv
-        :param algorithm_directory_paths: A list which contains all the paths to the folder of the selected algorithms.
+        :param metric_result_path: The path where the metric will store its results to.
+        Has to end with .csv
+        :param algorithm_directory_paths: A list which contains all the paths
+        to the folder of the selected algorithms.
         (Use the build in property algorithm_directory_paths in Execution)
         :return: None
         """
@@ -44,10 +48,13 @@ class MetricSubspaceOutlierAmount(Metric):
 
         # compute metric
         outlier_data_points: list[int] = \
-            eem_helper.compute_subspace_outlier_amount(outlier_data_points_divided_in_subspaces)
+            eem_helper.compute_subspace_outlier_amount \
+                (outlier_data_points_divided_in_subspaces)
 
         # convert into result
-        metric_result: np.ndarray = df([all_subspace_identifier, outlier_data_points]).to_numpy().transpose()
+        metric_result: np.ndarray = df(
+            [all_subspace_identifier, outlier_data_points]).to_numpy().transpose()
 
         # save metric result
-        DataIO.save_write_csv(metric_result_path + ".running", metric_result_path, metric_result, False)
+        DataIO.save_write_csv(metric_result_path + ".running", metric_result_path,
+                              metric_result, False)
