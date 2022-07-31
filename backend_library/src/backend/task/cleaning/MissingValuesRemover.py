@@ -6,7 +6,8 @@ from backend.task.cleaning.DatasetCleaningStep import DatasetCleaningStep
 
 class MissingValuesRemover(DatasetCleaningStep, ABC):
     """
-    Divides DatasetCleaningStep into the logical part that focuses on deleting rows with to many missing values.
+    Divides DatasetCleaningStep into the logical part that focuses on deleting rows
+    with to many missing values.
     """
 
     @abstractmethod

@@ -36,7 +36,6 @@ class MinMaxScaler(FeatureScaler, ABC):
             return dataset_to_clean
 
         # edge case handling: one row only
-        # TODO adjust
         else:
             dataset_to_clean.data = np.ones((1, dataset_to_clean.data.shape[0]))
             return dataset_to_clean
