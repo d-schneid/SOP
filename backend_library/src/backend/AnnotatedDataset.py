@@ -11,7 +11,11 @@ class AnnotatedDataset():
         self.headers = headers
         self.row_mapping = row_mapping
 
-    def to_single_array(self):
+    def __init__(self, single_array_with_annotations):
+        # TODO Tobias
+        pass
+
+    def to_single_array(self) -> np.ndarray:
         headers = np.expand_dims(self.headers, 0).astype(object)
         headers_wb = np.concatenate((np.array([[""]]).astype(object), headers), 1)
         rows = np.expand_dims(self.row_mapping.astype(object), 1)
