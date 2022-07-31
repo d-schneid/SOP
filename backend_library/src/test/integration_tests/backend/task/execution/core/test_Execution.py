@@ -66,7 +66,7 @@ class IntegrationTestExecutionResultZipping(unittest.TestCase):
         self._ex = ex(self._user_id, self._task_id, self.__task_progress_callback,
                       self._dataset_path,
                       self._result_path, self._subspace_generation,
-                      iter(self._algorithms), self.__metric_callback)
+                      iter(self._algorithms), self.__metric_callback, 29222)
 
     def tearDown(self) -> None:
         self.__clear_old_execution_file_structure()

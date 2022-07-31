@@ -22,6 +22,7 @@ class UnitTestExecutionSubspace(unittest.TestCase):
     _datapoint_count: int = 1
 
     _subspace: Subspace = Subspace(np.asarray([True, False, True, True, True]))
+    _ds: np.ndarray = np.ndarray((1, 5), dtype=np.dtype('f4'))
 
     # parameterized algorithms
     _hyper_parameter: dict = {"seed": 0}
@@ -70,11 +71,9 @@ class UnitTestExecutionSubspace(unittest.TestCase):
             self._algorithms,
             self._subspace,
             self._result_path,
-            self._subspace_dtype,
+            self._ds,
             self.__on_execution_element_finished1,
-            self._ds_shm_name,
-            self._datapoint_count,
-            self._priority
+            self._ds_shm_name
         )
         self._es.run_later_on_main(0)
 
@@ -98,10 +97,9 @@ class UnitTestExecutionSubspace(unittest.TestCase):
                 self._algorithms,
                 self._subspace,
                 self._result_path,
-                self._subspace_dtype,
+                self._ds,
                 self.__on_execution_element_finished,
-                self._ds_shm_name,
-                self._datapoint_count
+                self._ds_shm_name
             )
 
         with self.assertRaises(AssertionError) as context:
@@ -111,10 +109,9 @@ class UnitTestExecutionSubspace(unittest.TestCase):
                 self._algorithms,
                 self._subspace,
                 self._result_path,
-                self._subspace_dtype,
+                self._ds,
                 self.__on_execution_element_finished,
-                "",
-                self._datapoint_count
+                ""
             )
 
     def test_getter(self):
@@ -170,11 +167,10 @@ class UnitTestExecutionSubspace(unittest.TestCase):
                     self._algorithms,
                     self._subspace,
                     self._result_path,
-                    self._subspace_dtype,
+                    self._ds,
                     self.__on_execution_element_finished1,
                     self._ds_shm_name,
-                    wrong_priority,
-                    self._datapoint_count
+                    wrong_priority
                 )
 
 
