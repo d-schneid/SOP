@@ -24,3 +24,6 @@ class Schedulable(ABC):
 
     def run_later_on_main(self, statuscode: int) -> None:
         return None
+
+    def run_before_on_main(self) -> None:
+        return None

@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+import csv
 import json
 import multiprocessing
 import os
 from collections.abc import Iterable
 from multiprocessing import shared_memory
-from multiprocessing.managers import ValueProxy
-from typing import Callable, Dict
+from multiprocessing.shared_memory import SharedMemory
+from typing import Callable, Optional
+from typing import Dict
 from typing import List
 
 import numpy as np
@@ -36,8 +38,10 @@ class Execution(Task, Schedulable):
                  dataset_path: str, result_path: str,
                  subspace_generation: SubspaceGenerationDescription,
                  algorithms: Iterable[ParameterizedAlgorithm],
-                 metric_callback: Callable[[Execution], None], final_zip_path: str = "",
-                 priority: int = 0, zip_running_path: str = ""):
+                 metric_callback: Callable[[Execution], None],
+                 datapoint_count: Optional[int],
+                 final_zip_path: str = "", priority: int = 0,
+                 zip_running_path: str = ""):
         """
         :param user_id: The ID of the user belonging to the Execution. Has to be at least -1.
         :param task_id: The ID of the task. Has to be at least -1.
@@ -59,7 +63,7 @@ class Execution(Task, Schedulable):
 
         Task.__init__(self, user_id, task_id, task_progress_callback)
         self._priority = priority
-        self._datapoint_count: ValueProxy = Scheduler.get_manager().Value('Q', 0)
+        self._datapoint_count: Optional[int] = datapoint_count
 
         self._dataset_path: str = dataset_path
         self._result_path: str = result_path
@@ -96,8 +100,9 @@ class Execution(Task, Schedulable):
         self._execution_subspaces: List[ExecutionSubspace] = list()
 
         # shared memory
-        self._shared_memory_name: str = TaskHelper.shm_name_generator()
-        self._subspace_dtype = np.dtype('f4')
+        self._shared_memory_name: Optional[str] = None
+        self._shared_memory_on_main: Optional[SharedMemory] = None
+        self._dataset_on_main: Optional[np.ndarray] = None
 
     def __fill_algorithms_directory_name(self) -> None:
         """
@@ -162,10 +167,9 @@ class Execution(Task, Schedulable):
             self._execution_subspaces.append(
                 ExecutionSubspace.
                 ExecutionSubspace(self._user_id, self._task_id, self._algorithms,
-                                  subspace, self._result_path, self._subspace_dtype,
+                                  subspace, self._result_path, self._dataset_on_main,
                                   self.__on_execution_element_finished,
-                                  self._shared_memory_name,
-                                  self._datapoint_count.get()))
+                                  self._shared_memory_name))
 
     # schedule
     def schedule(self) -> None:
@@ -204,15 +208,28 @@ class Execution(Task, Schedulable):
         # Note: The 100% progress is only reached after zipping
         return progress
 
+    def run_before_on_main(self) -> None:
+        if self._datapoint_count is None:
+            reader = csv.reader(self._dataset_path)
+            self._datapoint_count = sum(1 for _ in reader)
+        ds_dim_count = self._subspaces[0].get_dataset_dimension_count()
+        entry_count = self._datapoint_count * ds_dim_count
+        dtype = np.dtype('f4')
+        size = entry_count * dtype.itemsize
+        self._shared_memory_on_main = SharedMemory(None, True, size)
+        self._shared_memory_name = self._shared_memory_on_main.name
+        self._dataset_on_main = np.ndarray((self._datapoint_count, ds_dim_count),
+                                           buffer=self._shared_memory_on_main.buf,
+                                           dtype=dtype)
+
     def __load_dataset(self) -> None:
         """
         Load the cleaned dataset into shared memory
         """
         data = DataIO.read_cleaned_csv(self._dataset_path)
-        self._datapoint_count.set(data.shape[0])
+        assert data.shape[0] == self._datapoint_count
         assert data.shape[1] == self._subspaces[0].get_dataset_dimension_count()
-        size = data.size * data.itemsize
-        shm = shared_memory.SharedMemory(self._shared_memory_name, True, size)
+        shm = shared_memory.SharedMemory(self._shared_memory_name, False)
         shared_data = np.ndarray(data.shape, data.dtype, shm.buf)
         shared_data[:] = data[:]
         shm.close()
@@ -254,9 +271,8 @@ class Execution(Task, Schedulable):
         """
         assert self._shared_memory_name is not None, \
             "If there is no shared memory currently loaded it can not be unloaded"
-        shm = shared_memory.SharedMemory(self._shared_memory_name)
-        shm.unlink()
-        shm.close()
+        self._shared_memory_on_main.unlink()
+        self._shared_memory_on_main.close()
         self._shared_memory_name = None
 
     def __schedule_result_zipping(self) -> None:
