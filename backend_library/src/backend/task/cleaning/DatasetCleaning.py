@@ -28,9 +28,11 @@ class DatasetCleaning(Task, Schedulable, ABC):
     stores the cleaned dataset separately in cleaned_dataset_path.
     """
 
-    def __init__(self, user_id: int, task_id: int, task_progress_callback: Callable[[int, TaskState, float], None],
+    def __init__(self, user_id: int, task_id: int,
+                 task_progress_callback: Callable[[int, TaskState, float], None],
                  uncleaned_dataset_path: str, cleaned_dataset_path: str,
-                 cleaning_steps: Iterable[DatasetCleaningStep] = None, priority: int = 100,
+                 cleaning_steps: Iterable[DatasetCleaningStep] = None,
+                 priority: int = 100,
                  running_dataset_cleaning_path: str = ""):
         """
         :param user_id: The ID of the user belonging to the DatasetCleaning. Has to be at least -1.
@@ -48,12 +50,15 @@ class DatasetCleaning(Task, Schedulable, ABC):
         """
         Task.__init__(self, user_id, task_id, task_progress_callback)
         if cleaning_steps is None:
-            cleaning_steps = [CategoricalColumnRemover(), none_roc_remover(1), none_roc_remover(0),
-                              ImputationMode(), MinMaxScaler()]  # Default Cleaning-Pipeline
+            cleaning_steps = [CategoricalColumnRemover(), none_roc_remover(1),
+                              none_roc_remover(0),
+                              ImputationMode(),
+                              MinMaxScaler()]  # Default Cleaning-Pipeline
         self._uncleaned_dataset_path: str = uncleaned_dataset_path
         self._cleaned_dataset_path: str = cleaned_dataset_path
         self._cleaning_steps: Iterable[DatasetCleaningStep] = cleaning_steps
-        self._cleaning_steps_count: int = TaskHelper.iterable_length(self._cleaning_steps)
+        self._cleaning_steps_count: int = TaskHelper.iterable_length(
+            self._cleaning_steps)
         self._priority = priority
         if running_dataset_cleaning_path == "":
             self._running_dataset_cleaning_path = uncleaned_dataset_path + ".running"
@@ -108,24 +113,30 @@ class DatasetCleaning(Task, Schedulable, ABC):
 
         dataset_to_clean: AnnotatedDataset = self.__load_uncleaned_dataset()
 
-        cleaning_pipeline_result: Optional[np.ndarray] = self.__run_cleaning_pipeline(dataset_to_clean)
+        cleaning_pipeline_result: Optional[
+            AnnotatedDataset] = self.__run_cleaning_pipeline(dataset_to_clean)
 
         if cleaning_pipeline_result is None:  # cleaning failed
-            self._task_progress_callback(self._task_id, TaskState.FINISHED_WITH_ERROR, 1.0)
+            self._task_progress_callback(self._task_id, TaskState.FINISHED_WITH_ERROR,
+                                         1.0)
             return
 
         # Casting will throw an exception if the cleaned dataset cannot be converted to only float32 values
         try:
-            cleaned_dataset: np.ndarray = cleaning_pipeline_result.astype(
+            cleaning_pipeline_result.data = cleaning_pipeline_result.data.astype(
                 np.float32, copy=False)  # cast ndarray to float32
         except ValueError as e:
             TaskHelper.save_error_csv(self._cleaned_dataset_path,
-                                      TaskErrorMessages().cast_to_float32_error + str(e))
-            self._task_progress_callback(self._task_id, TaskState.FINISHED_WITH_ERROR, 1.0)
+                                      TaskErrorMessages().cast_to_float32_error + str(
+                                          e))
+            self._task_progress_callback(self._task_id, TaskState.FINISHED_WITH_ERROR,
+                                         1.0)
             return
 
         # store cleaned dataset in path
-        DataIO.save_write_csv(self._running_dataset_cleaning_path, self._cleaned_dataset_path, cleaned_dataset)
+        data = cleaning_pipeline_result.to_single_array()
+        DataIO.save_write_csv(self._running_dataset_cleaning_path,
+                              self._cleaned_dataset_path, data, add_index_column=False)
 
         # report webserver the task progress
         self._task_progress_callback(self._task_id, TaskState.FINISHED, 1.0)
@@ -136,7 +147,8 @@ class DatasetCleaning(Task, Schedulable, ABC):
         If there exists an old error file belonging to this DatasetCleaning, it will be deleted. \n
         :return: None
         """
-        error_file_path: str = TaskHelper.convert_to_error_csv_path(self._cleaned_dataset_path)
+        error_file_path: str = TaskHelper.convert_to_error_csv_path(
+            self._cleaned_dataset_path)
         if os.path.isfile(error_file_path):
             os.remove(error_file_path)
 
@@ -174,8 +186,9 @@ class DatasetCleaning(Task, Schedulable, ABC):
 
             # Progress handling
             finished_cleaning_steps += 1
-            progress: float = min(float(finished_cleaning_steps) / float(self._cleaning_steps_count),
-                                  0.99)  # compute and clamp progress
+            progress: float = min(
+                float(finished_cleaning_steps) / float(self._cleaning_steps_count),
+                0.99)  # compute and clamp progress
             self._task_progress_callback(self._task_id, TaskState.RUNNING, progress)
 
         return csv_to_clean
