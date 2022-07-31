@@ -6,7 +6,8 @@ from backend.task.cleaning.DatasetCleaningStep import DatasetCleaningStep
 
 class Imputation(DatasetCleaningStep, ABC):
     """
-    Divides DatasetCleaningStep into the logical part that focuses on replacing missing values.
+    Divides DatasetCleaningStep into the logical part that focuses
+    on replacing missing values.
     """
 
     @abstractmethod
