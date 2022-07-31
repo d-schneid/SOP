@@ -28,7 +28,8 @@ from backend.task.execution.subspace.SubspaceGenerationDescription import \
 class Execution(Task, Schedulable):
     """
         A task that is provided by the BackendLibrary.
-        When scheduled by the Scheduler it executes an execution with the selected cleaned dataset and algorithms.
+        When scheduled by the Scheduler it executes an execution with the
+        selected cleaned dataset and algorithms.
     """
 
     def __init__(self, user_id: int, task_id: int,
@@ -39,19 +40,27 @@ class Execution(Task, Schedulable):
                  metric_callback: Callable[[Execution], None], final_zip_path: str = "",
                  priority: int = 0, zip_running_path: str = ""):
         """
-        :param user_id: The ID of the user belonging to the Execution. Has to be at least -1.
+        :param user_id: The ID of the user belonging to the Execution.
+        Has to be at least -1.
         :param task_id: The ID of the task. Has to be at least -1.
-        :param task_progress_callback: The Execution uses this callback to return its progress.
-        :param dataset_path: The absolute path to the cleaned dataset which will be used for cleaning.
+        :param task_progress_callback: The Execution uses this
+        callback to return its progress.
+        :param dataset_path: The absolute path to the
+        cleaned dataset which will be used for cleaning.
         (path ends with .csv)
-        :param result_path: The absolute path where the Execution will store its results.
+        :param result_path: The absolute path where the Execution
+        will store its results.
         (Ends with the directory name of this specific Execution. f.e. execution1)
-        :param final_zip_path: The absolute path where the Execution will store its zipped results.
+        :param final_zip_path: The absolute path where the Execution
+        will store its zipped results.
         :param zip_running_path: The absolute path where the Execution will store its
             unfinished zipped results while doing the zipping.
-        :param subspace_generation: Contains all parameters for the subspace generation and will generate the subspaces.
-        :param algorithms: Contains all algorithms that should be processed on the subspaces.
-        :param metric_callback: Called after the Execution-computation is complete. Carries out the metricizes.
+        :param subspace_generation: Contains all parameters for the subspace generation
+        and will generate the subspaces.
+        :param algorithms: Contains all algorithms
+        that should be processed on the subspaces.
+        :param metric_callback: Called after the Execution-computation is complete.
+        Carries out the metricizes.
         """
         assert dataset_path.endswith(".csv")
         assert priority >= 0
@@ -101,9 +110,12 @@ class Execution(Task, Schedulable):
 
     def __fill_algorithms_directory_name(self) -> None:
         """
-        Fills all algorithms with their corresponding directory name in the Execution result folder.  \n
-        This is done to allow having multiple algorithms of the same kind in the same Execution.
-        Without setting their name individually, algorithms with the same display_name would write their results
+        Fills all algorithms with their corresponding
+        directory name in the Execution result folder.  \n
+        This is done to allow having multiple algorithms
+        of the same kind in the same Execution.
+        Without setting their name individually,
+        algorithms with the same display_name would write their results
         into the same folder, overwriting the results of the other. \n
         :return: None
         """
@@ -118,8 +130,7 @@ class Execution(Task, Schedulable):
                 algorithm_display_name_dict[algorithm.display_name] = 1
             else:
                 algorithm.directory_name_in_execution = display_name + " (" \
-                                                        + str(
-                    algorithm_display_name_dict[display_name]) + ")"
+                                + str(algorithm_display_name_dict[display_name]) + ")"
                 algorithm_display_name_dict[algorithm.display_name] += 1
 
     # Generates all missing folders of the file system structure of this execution
@@ -132,14 +143,16 @@ class Execution(Task, Schedulable):
         if not os.path.isdir(self._result_path):
             TaskHelper.create_directory(self._result_path)
             for algorithm in self._algorithms:
-                algorithm_directory_path: str = os.path.join(self._result_path,
-                                                             algorithm.directory_name_in_execution)
+                algorithm_directory_path: str = \
+                    os.path.join(self._result_path,
+                                 algorithm.directory_name_in_execution)
                 TaskHelper.create_directory(algorithm_directory_path)
 
     def __generate_execution_details_in_filesystem(self) -> None:
         """
         Create and store the details.JSON file of the Execution. \n
-        It includes information so that the Execution results could be understood and reconstructed.  \n
+        It includes information so that the Execution
+        results could be understood and reconstructed.  \n
         :return: None
         """
         assert os.path.isdir(self._result_path)
@@ -181,22 +194,25 @@ class Execution(Task, Schedulable):
 
     def __does_zip_exists(self) -> bool:
         """
-        The ZIP-file for the result only exists for finished Executions. So it can be extracted if the Execution
-        is finished by checking for the finished ZIP-file. \n
-        :return: True if the ZIP-file of the Execution-result exists. Otherwise, return False.
+        The ZIP-file for the result only exists for finished Executions.
+        So it can be extracted if the Execution is finished by checking
+        for the finished ZIP-file. \n
+        :return: True if the ZIP-file of the Execution-result exists.
+        Otherwise, return False.
         """
         return os.path.exists(self._final_zip_path)
 
     def __compute_progress(self) -> float:
         """
-        Note: returning float==1 doesn't necessary mean that the Execution is finished. Use TaskState for checking
-        if a Task is finished. \n
+        Note: returning float==1 doesn't necessary mean that the Execution is finished.
+        Use TaskState for checking if a Task is finished. \n
         :return: A float in [0,1] which indicates the progress of the Execution.
         """
         execution_element_progress: float = float(
             self._finished_execution_element_count) \
                                             / float(self._total_execution_element_count)
-        execution_element_progress *= 0.98  # So all progress is shown (so that the clamping doesn't remove information)
+        # So all progress is shown (so that the clamping doesn't remove information):
+        execution_element_progress *= 0.98
         progress: float = max(0., min(execution_element_progress,
                                       0.98))  # clamp the progress to be more accurate
         if self._metric_finished:
@@ -219,9 +235,10 @@ class Execution(Task, Schedulable):
 
     def __on_execution_element_finished(self, error: bool) -> None:
         """
-        The Execution gets notified by the corresponding ExecutionSubspace when an ExecutionElement finished
-        by calling this method. \n
-        :param error: True if the ExecutionElement finished with an error. Is otherwise False.
+        The Execution gets notified by the corresponding ExecutionSubspace
+        when an ExecutionElement finished by calling this method. \n
+        :param error: True if the ExecutionElement finished with an error.
+        Is otherwise False.
         :return: None
         """
         if not self._has_failed_element and error:
@@ -305,11 +322,13 @@ class Execution(Task, Schedulable):
     @property
     def algorithm_directory_paths(self) -> List[str]:
         """
-        :return: A list which contains all the paths to the folder of the selected algorithms (in this Execution). \n
+        :return: A list which contains all the paths to the folder
+        of the selected algorithms (in this Execution). \n
         """
         directory_names: list[str] = list([])
         for algorithm in self._algorithms:
-            directory_names.append(os.path.join(self._result_path, algorithm.directory_name_in_execution))
+            directory_names.append(os.path.join(self._result_path,
+                                                algorithm.directory_name_in_execution))
         return directory_names
 
     @property
@@ -321,8 +340,9 @@ class Execution(Task, Schedulable):
 
     @property
     def subspace_identifier(self) -> list[str]:
-        """ TODO TEST THIS!
-        :return: A list which contains all the subspace identifier of the selected subspaces (in this Execution). \n
+        """
+        :return: A list which contains all the subspace identifier
+        of the selected subspaces (in this Execution). \n
         """
         subspace_identifier: list[str] = list([])
         for subspace in self._subspaces:
@@ -332,9 +352,15 @@ class Execution(Task, Schedulable):
     @property
     def zip_result_path(self) -> str:
         """
-        :return: The absolute path where the ZIP-file of the result of this Execution can be found.
+        :return: The absolute path where the ZIP-file
+        of the result of this Execution can be found.
         """
         return self._final_zip_path
 
-
-
+    @property
+    def dataset_indices(self) -> list[int]:
+        """
+        :return: The indices of the data points
+        of the cleaned dataset used in this execution
+        """
+        return list(DataIO.read_annotated(self._dataset_path, True).row_mapping)
