@@ -273,6 +273,27 @@ class Execution(Task, Schedulable):
         scheduler: Scheduler = Scheduler.get_instance()
         scheduler.schedule(result_zipper)
 
+    def run_later_on_main(self, statuscode: int):
+        self.__generate_execution_subspaces()
+        for ess in self._execution_subspaces:
+            Scheduler.get_instance().schedule(ess)
+
+    # Schedulable
+    def do_work(self) -> None:
+        self.__load_dataset()
+
+    @property
+    def user_id(self) -> int:
+        return self._user_id
+
+    @property
+    def task_id(self) -> int:
+        return self._task_id
+
+    @property
+    def priority(self) -> int:
+        return self._priority
+
     # getter for metric
     @property
     def algorithms(self) -> Iterable[ParameterizedAlgorithm]:
@@ -315,22 +336,5 @@ class Execution(Task, Schedulable):
         """
         return self._final_zip_path
 
-    def run_later_on_main(self, statuscode: int):
-        self.__generate_execution_subspaces()
-        for ess in self._execution_subspaces:
-            Scheduler.get_instance().schedule(ess)
 
-    @property
-    def user_id(self) -> int:
-        return self._user_id
 
-    @property
-    def task_id(self) -> int:
-        return self._task_id
-
-    @property
-    def priority(self) -> int:
-        return self._priority
-
-    def do_work(self) -> None:
-        self.__load_dataset()
