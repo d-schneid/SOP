@@ -11,8 +11,8 @@ from backend.AnnotatedDataset import AnnotatedDataset
 
 class DataIO:
     @staticmethod
-    def read_with_annotated(path: str, is_cleaned: bool, has_header: bool = True,
-                            has_row_numbers: bool = True) -> AnnotatedDataset:
+    def read_annotated(path: str, is_cleaned: bool, has_header: bool = True,
+                       has_row_numbers: bool = True) -> AnnotatedDataset:
         base = DataIO.read_uncleaned_csv(path, None)
         no_head = numpy.delete(base, 0, 0) if has_header else base
         data: np.ndarray = numpy.delete(no_head, 0, 1) if has_row_numbers else no_head
