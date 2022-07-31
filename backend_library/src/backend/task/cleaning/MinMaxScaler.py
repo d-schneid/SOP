@@ -12,7 +12,8 @@ from backend.task.cleaning.DatasetCleaningStepExceptionHanding \
 
 class MinMaxScaler(FeatureScaler, ABC):
     """
-    A cleaning_step for the dataset cleaning that uses MinMaxScaling to normalise the dataset.
+    A cleaning_step for the dataset cleaning that uses
+    MinMaxScaling to normalise the dataset.
     """
 
     def do_cleaning(self, dataset_to_clean: AnnotatedDataset) -> AnnotatedDataset:
@@ -28,8 +29,8 @@ class MinMaxScaler(FeatureScaler, ABC):
         # normal case (more than one row)
         if len(dataset_to_clean.data.shape) > 1:
             scaler: mms = mms()
-            scaler.fit(dataset_to_clean)
-            transformed_dataset: np.ndarray = scaler.transform(dataset_to_clean)
+            scaler.fit(dataset_to_clean.data)
+            transformed_dataset: np.ndarray = scaler.transform(dataset_to_clean.data)
             df = pd.DataFrame(transformed_dataset)
             dataset_to_clean.data = df.to_numpy()
             return dataset_to_clean
@@ -37,5 +38,5 @@ class MinMaxScaler(FeatureScaler, ABC):
         # edge case handling: one row only
         # TODO adjust
         else:
-            return np.ones((1, dataset_to_clean.shape[0]))
-
+            dataset_to_clean.data = np.ones((1, dataset_to_clean.data.shape[0]))
+            return dataset_to_clean
