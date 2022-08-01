@@ -2,7 +2,6 @@ import os
 import shutil
 from typing import Optional
 
-import numpy
 import numpy as np
 import pandas as pd
 
@@ -14,27 +13,10 @@ class DataIO:
     def read_annotated(path: str, is_cleaned: bool, has_header: bool = True,
                        has_row_numbers: bool = True) -> AnnotatedDataset:
         base = DataIO.read_uncleaned_csv(path, None)
-        no_head = numpy.delete(base, 0, 0) if has_header else base
-        data: np.ndarray = numpy.delete(no_head, 0, 1) if has_row_numbers else no_head
-        if has_header:
-            if has_row_numbers:
-                headers = np.delete(base[0], 0)
-                rows = np.delete(base[:, 0], 0)
-            else:
-                headers = base[0]
-                rows = np.arange(0, data.shape[0], 1)
-        else:
-            if has_row_numbers:
-                headers = np.arange(0, data.shape[1], 1).astype(np.dtype('<U5'))
-                rows = base[:, 0]
-            else:
-                headers = np.arange(0, data.shape[1], 1).astype(np.dtype('<U5'))
-                rows = np.arange(0, data.shape[0], 1)
-        casted_data = data.astype(np.float32) if is_cleaned else data
-        anno_ds = AnnotatedDataset()
-        anno_ds.data = casted_data
-        anno_ds.headers = headers
-        anno_ds.row_mapping = rows
+        anno_ds = AnnotatedDataset(base, None, None,
+                                   not has_header, not has_row_numbers)
+        if is_cleaned:
+            anno_ds.data = anno_ds.data.astype(np.float32)
         return anno_ds
 
     @staticmethod
