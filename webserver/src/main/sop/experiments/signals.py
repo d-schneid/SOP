@@ -9,11 +9,14 @@ from experiments.models import Algorithm, Dataset, Execution
 
 
 def _delete_file(path: str) -> None:
-    if os.path.isfile(path):
-        os.remove(path)
-    if not any(os.scandir(os.path.dirname(path))):
-        # Directory for user will be created again once user uploads a file
-        os.rmdir(os.path.dirname(path))
+    try:
+        if os.path.isfile(path):
+            os.remove(path)
+        if not any(os.scandir(os.path.dirname(path))):
+            # Directory for user will be created again once user uploads a file
+            os.rmdir(os.path.dirname(path))
+    except OSError as e:
+        print(f"Error: {e.strerror}")
 
 
 # Signal handlers delete all the respective files of a user
@@ -45,9 +48,8 @@ def delete_dataset_file(
 def delete_result_file(
     sender: Execution, instance: Execution, *args: Any, **kwargs: Any
 ) -> None:
+    if not instance.is_finished and instance.pk is not None:
+        Scheduler.get_instance().abort_by_task(task_id=instance.pk)
+
     if instance.result_path:
         _delete_file(instance.result_path.path)
-
-    if instance.is_running:
-        assert instance.pk is not None
-        Scheduler.get_instance().abort_by_task(task_id=instance.pk)

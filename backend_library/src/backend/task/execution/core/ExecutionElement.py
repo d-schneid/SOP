@@ -118,7 +118,7 @@ class ExecutionElement(Schedulable):
                             dtype=self._subspace_dtype, buffer=ss_shm.buf)
         algo = AlgorithmLoader.get_algorithm_object(self._algorithm.path,
                                                     self._algorithm.hyper_parameter)
-        algo.fit(ss_arr)
+        algo.fit(ss_arr, None)
         results = algo.decision_function(ss_arr)
         ss_shm.close()
         return results

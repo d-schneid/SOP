@@ -5,18 +5,17 @@ from unittest.mock import Mock
 
 import numpy as np
 
-from backend.scheduler.DebugScheduler import DebugScheduler
+from backend.DataIO import DataIO
 from backend.scheduler.Scheduler import Scheduler
-from backend.task.execution.core.Execution import Execution as ex
-from backend.task.TaskState import TaskState
 from backend.task.TaskHelper import TaskHelper
+from backend.task.TaskState import TaskState
+from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
+from backend.task.execution.core.Execution import Execution as ex
 from backend.task.execution.subspace.RandomizedSubspaceGeneration import \
     RandomizedSubspaceGeneration as rsg
+from backend.task.execution.subspace.Subspace import Subspace
 from backend.task.execution.subspace.UniformSubspaceDistribution import \
     UniformSubspaceDistribution as usd
-from backend.task.execution.subspace.Subspace import Subspace
-from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
-from backend.DataIO import DataIO
 
 
 class UnitTestExecution(unittest.TestCase):
@@ -70,10 +69,9 @@ class UnitTestExecution(unittest.TestCase):
         self.__clear_old_execution_file_structure()
 
         # create Execution
-        self._ex = ex(self._user_id, self._task_id, self.__task_progress_callback,
-                      self._dataset_path, self._result_path, self._subspace_generation,
-                      iter(self._algorithms), self.__metric_callback,
-                      self._final_zip_path, self._priority)
+        self._ex = ex(self._user_id, self._task_id, self.__task_progress_callback, self._dataset_path,
+                      self._result_path, self._subspace_generation, iter(self._algorithms), self.__metric_callback,
+                      self._datapoint_count, self._final_zip_path, self._priority)
 
     def tearDown(self) -> None:
         self._ex = None
@@ -203,6 +201,7 @@ class UnitTestExecution(unittest.TestCase):
 
     def test_schedule_already_finished(self):
         Scheduler._instance = None
+        Scheduler.default_scheduler = None
 
         # Finished file doesn't exist -> schedule this object -> raise TypeError because no scheduler exists
         with self.assertRaises(AssertionError) as context:
@@ -220,11 +219,9 @@ class UnitTestExecution(unittest.TestCase):
         self._wrong_priority: list[int] = list([-1, -12313, 12431, 5])
         for wrong_priority in self._wrong_priority:
             with self.assertRaises(AssertionError) as context:
-                ex(self._user_id, self._task_id, self.__task_progress_callback,
-                   self._dataset_path,
-                   self._result_path, self._subspace_generation, iter(self._algorithms),
-                   self.__metric_callback,
-                   self._final_zip_path, wrong_priority)
+                ex(self._user_id, self._task_id, self.__task_progress_callback, self._dataset_path,
+                   self._result_path, self._subspace_generation, iter(self._algorithms), self.__metric_callback,
+                   self._datapoint_count, self._final_zip_path, wrong_priority)
 
 
 if __name__ == '__main__':

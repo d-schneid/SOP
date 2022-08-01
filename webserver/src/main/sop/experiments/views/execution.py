@@ -76,6 +76,7 @@ def schedule_backend(execution: Execution) -> Optional[Dict[str, list[str]]]:
         task_progress_callback=ExecutionCallbacks.execution_callback,
         dataset_path=str(settings.MEDIA_ROOT / dataset.path_cleaned.path),
         result_path=get_result_path(execution),
+        datapoint_count=dataset.datapoints_total,
         subspace_generation=subspace_generation_description,
         algorithms=parameterized_algorithms,
         metric_callback=ExecutionCallbacks.metric_callback,
@@ -277,6 +278,8 @@ def get_execution_progress(request: HttpRequest) -> HttpResponse:
         data = {}
         if execution is not None:
             data["progress"] = execution.progress
+            data["status"] = execution.status
+            data["execution_pk"] = execution.pk
 
         return HttpResponse(json.dumps(data))
 

@@ -4,6 +4,8 @@ from typing import Final
 
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
+from django.db.models.fields.files import FieldFile
+from django.http import HttpResponse
 
 from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
 from backend.task.cleaning import DatasetCleaning
@@ -58,3 +60,11 @@ def schedule_backend(dataset: Dataset) -> None:
 
     # start the cleaning
     dataset_cleaning.schedule()
+
+
+def get_download_response(file: FieldFile, download_name: str) -> HttpResponse:
+    response = HttpResponse(file.read())
+    response["Content-Type"] = "text/plain"
+    response["Content-Disposition"] = f"attachment; filename={download_name}"
+    return response
+
