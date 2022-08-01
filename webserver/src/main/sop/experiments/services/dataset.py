@@ -7,13 +7,16 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db.models.fields.files import FieldFile
 from django.http import HttpResponse
 
-from authentication.models import User
+from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
+from backend.task.cleaning import DatasetCleaning
+from experiments.callback import DatasetCallbacks
+from experiments.models import Dataset
 
 DATASET_ROOT_DIR: Final = settings.MEDIA_ROOT / "datasets"
 
 
-def save_dataset(file: UploadedFile, user: User) -> str:
-    temp_dir = DATASET_ROOT_DIR / "temp" / f"user_{user.pk}"
+def save_dataset(file: UploadedFile) -> str:
+    temp_dir = os.path.join(DATASET_ROOT_DIR, "temp")
     temp_file_path = os.path.join(temp_dir, str(uuid.uuid1()))
 
     assert not os.path.isfile(temp_file_path)
@@ -34,8 +37,34 @@ def generate_path_dataset_cleaned(uncleaned_path: str) -> str:
     return root + "_cleaned" + ext
 
 
+def schedule_backend(dataset: Dataset) -> None:
+
+    # set and save the missing datafield entry for the cleaned csv file
+    # name is the path relative to the media root dir --> use name, not path
+    dataset.path_cleaned.name = generate_path_dataset_cleaned(dataset.path_original.name)
+    dataset.save()
+
+    # create DatasetCleaning object
+    dataset_cleaning: DatasetCleaning = DatasetCleaning(
+        user_id=dataset.user.pk,
+        task_id=dataset.pk,
+        task_progress_callback=DatasetCallbacks.cleaning_callback,
+        uncleaned_dataset_path=dataset.path_original.path,
+        cleaned_dataset_path=dataset.path_cleaned.path,
+        cleaning_steps=None,  # can be changed later on
+    )
+
+    # TODO: DO NOT do this here. Move it to AppConfig or whatever
+    if UserRoundRobinScheduler._instance is None:
+        UserRoundRobinScheduler()
+
+    # start the cleaning
+    dataset_cleaning.schedule()
+
+
 def get_download_response(file: FieldFile, download_name: str) -> HttpResponse:
     response = HttpResponse(file.read())
     response["Content-Type"] = "text/plain"
     response["Content-Disposition"] = f"attachment; filename={download_name}"
     return response
+

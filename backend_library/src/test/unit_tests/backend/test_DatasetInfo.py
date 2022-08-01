@@ -1,15 +1,13 @@
 import os
 import unittest
 
-import numpy as np
 import pandas as pd
 
-from backend.DataInfo import DataInfo
-
+from backend.DatasetInfo import DatasetInfo
 from test.DatasetsForTesting import Datasets as ds
 
 
-class UnitTestDataInfo(unittest.TestCase):
+class UnitTestDatasetInfo(unittest.TestCase):
     _dir_name: str = os.getcwd()
     _uncleaned_dataset_path1: str = os.path.join(_dir_name, "uncleaned_dataset1.csv.error")
     _uncleaned_dataset_path2: str = os.path.join(_dir_name, "uncleaned_dataset2.csv")
@@ -36,16 +34,16 @@ class UnitTestDataInfo(unittest.TestCase):
             os.remove(self._uncleaned_dataset_path3)
 
     def test_get_dataset_dimension(self):
-        self.assertEqual(DataInfo.get_dataset_dimension(self._uncleaned_dataset_path1), 3)
-        self.assertEqual(DataInfo.get_dataset_dimension(self._uncleaned_dataset_path2), 0)
-        self.assertEqual(DataInfo.get_dataset_dimension(self._uncleaned_dataset_path3), 5)
+        self.assertEqual(DatasetInfo.get_dataset_dimension(self._uncleaned_dataset_path1), 3)
+        self.assertEqual(DatasetInfo.get_dataset_dimension(self._uncleaned_dataset_path2), 0)
+        self.assertEqual(DatasetInfo.get_dataset_dimension(self._uncleaned_dataset_path3), 5)
 
         self.__clean_created_files_and_directories()
 
     def test_get_dataset_datapoint_amount(self):
-        self.assertEqual(DataInfo.get_dataset_datapoint_amount(self._uncleaned_dataset_path1), 2)
-        self.assertEqual(DataInfo.get_dataset_datapoint_amount(self._uncleaned_dataset_path2), 0)
-        self.assertEqual(DataInfo.get_dataset_datapoint_amount(self._uncleaned_dataset_path3), 5)
+        self.assertEqual(DatasetInfo.get_dataset_datapoint_amount(self._uncleaned_dataset_path1), 2)
+        self.assertEqual(DatasetInfo.get_dataset_datapoint_amount(self._uncleaned_dataset_path2), 0)
+        self.assertEqual(DatasetInfo.get_dataset_datapoint_amount(self._uncleaned_dataset_path3), 5)
 
         self.__clean_created_files_and_directories()
 

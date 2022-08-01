@@ -1,4 +1,8 @@
+
+from typing import Type, Optional, Sequence, Any
+
 from typing import Type, Optional, Sequence, List
+
 
 from django.contrib import admin
 from django.http import HttpRequest
@@ -10,10 +14,14 @@ from experiments.admin.inlines import ExperimentInlineDataset
 from experiments.admin.abstract_model_admin import AbstractModelAdmin
 from experiments.forms.admin.dataset import AdminAddDatasetForm, AdminChangeDatasetForm
 from experiments.models import Dataset
+
+from experiments.services.dataset import schedule_backend
+
 from experiments.views.dataset import (
     download_uncleaned_dataset,
     download_cleaned_dataset
 )
+
 
 
 @admin.register(Dataset)
@@ -72,6 +80,39 @@ class DatasetAdmin(AbstractModelAdmin):
         ]
         return urls
 
+
+    def get_model_name(self) -> str:
+        return "dataset"
+
+    def save_model(
+            self,
+            request: Any,
+            obj: Dataset,
+            form: Any,
+            change: Any
+    ) -> None:
+
+        # start the dataset cleaning, if it is adding the model (not if it is changing the model)
+
+        if change is not None and change is True:
+
+            # if it is only changing the model, just save it without starting the dataset cleaning
+            # (as it is not possible to change the dataset in the admin view)
+            super().save_model(request, obj, form, change)
+
+        else:
+            # else start the DatasetCleaning and reset possible (wrong) values entered
+            obj.is_cleaned = False
+            obj.datapoints_total = None
+            obj.dimensions_total = None
+            obj.path_cleaned = None
+
+            # save the model, so that the data is also saved
+            super().save_model(request, obj, form, change)
+
+            # now, start the cleaning
+            schedule_backend(obj)
+
     def download_uncleaned(self, dataset: Dataset) -> str:
         return format_html(
             '<a href="{}">Download</a>',
@@ -85,3 +126,4 @@ class DatasetAdmin(AbstractModelAdmin):
             reverse('admin:experiments_dataset_download_cleaned', args=[dataset.pk])
         )
     download_cleaned.short_description = "Cleaned dataset"
+

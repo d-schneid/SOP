@@ -10,36 +10,21 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView, UpdateView, CreateView
 
 from authentication.mixins import LoginRequiredMixin
-from backend.task.cleaning import DatasetCleaning
-from experiments.callback import DatasetCallbacks
+from backend.DatasetInfo import DatasetInfo
 from experiments.forms.create import DatasetUploadForm
 from experiments.forms.edit import DatasetEditForm
 from experiments.models import Dataset
 from experiments.models.managers import DatasetQuerySet
+
+from experiments.services.dataset import schedule_backend, save_dataset
+
+
 from experiments.views.generic import PostOnlyDeleteView
 from experiments.services.dataset import (
     generate_path_dataset_cleaned,
     save_dataset,
     get_download_response,
 )
-
-
-def schedule_backend(dataset: Dataset) -> None:
-    # set and save the missing datafield entry for the cleaned csv file
-    cleaned_path = generate_path_dataset_cleaned(dataset.path_original.path)
-
-    # create DatasetCleaning object
-    dataset_cleaning: DatasetCleaning = DatasetCleaning(
-        user_id=dataset.user.pk,
-        task_id=dataset.pk,
-        task_progress_callback=DatasetCallbacks.cleaning_callback,
-        uncleaned_dataset_path=dataset.path_original.path,
-        cleaned_dataset_path=cleaned_path,
-        cleaning_steps=None,  # can be changed later on
-    )
-
-    # start the cleaning
-    dataset_cleaning.schedule()
 
 
 class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadForm]):
@@ -66,25 +51,22 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
             messages.error(self.request, f"Invalid dataset: {e}")
 
         # save the file temporarily to disk
-        temp_file_path: str = save_dataset(
-            self.request.FILES["path_original"], self.request.user
-        )
+        temp_file_path: str = save_dataset(self.request.FILES["path_original"])
 
         assert os.path.isfile(temp_file_path)
 
         # check if the file is a csv file
-
-        # TODO: check if correct csv; if no return an error
-        #  and delete the file while returning an error
-        #  Felix: Maybe in FileField validator?
-        """
-        if not check_if_file_is_csv(temp_file_path):
-            form.add_error("path_original", "The given file is not a valid csv.-file.")
-            
+        if not DatasetInfo.is_dataset_valid(temp_file_path):
+            # delete temp file
             os.remove(temp_file_path)
+
+            # TODO: Maybe an error in FileField validator?
+            # return an error
+            form.add_error("path_original", "The given file is not a valid csv.-file.")
             assert not os.path.isfile(temp_file_path)
-            
-            return super(DatasetUploadView, self).form_invalid()"""
+            return super(DatasetUploadView, self).form_invalid(form)
+
+        # don't add the data on datapoints and dimensions to the model
 
         # delete temp file
         os.remove(temp_file_path)

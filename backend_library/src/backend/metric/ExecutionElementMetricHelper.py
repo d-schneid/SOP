@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from backend.DataIO import DataIO
-from backend.DataInfo import DataInfo
+from backend.DatasetInfo import DatasetInfo
 from backend.task.execution.core.Execution import Execution
 
 
@@ -26,7 +26,7 @@ class ExecutionElementMetricHelper:
         assert os.path.isfile(execution_element_result_path)
 
         # The ExecutionElement result has to be in the right format: (first column indices, second outlier score)
-        assert DataInfo.get_dataset_dimension(execution_element_result_path) == 2
+        assert DatasetInfo.get_dataset_dimension(execution_element_result_path) == 2
 
         # Read ExecutionElement Result
         execution_element_result_df: pd.DataFrame = \

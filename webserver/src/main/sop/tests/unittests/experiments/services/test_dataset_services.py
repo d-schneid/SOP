@@ -34,11 +34,11 @@ class DatasetServicesTests(django.test.TestCase):
         self.file.chunks.return_value = [bytes(line, "utf-8") for line in self.content]
 
     def test_save_dataset(self) -> None:
-        temp_path = save_dataset(self.file, self.user)
+        temp_path = save_dataset(self.file)
         self.assertTrue(os.path.exists(temp_path))
         self.assertEqual(
             Path(temp_path).parent,
-            settings.MEDIA_ROOT / "datasets" / "temp" / f"user_{self.user.pk}",
+            settings.MEDIA_ROOT / "datasets" / "temp",
         )
         with open(temp_path, "r") as f:
             self.assertEqual(len([line for line in f]), 3)
