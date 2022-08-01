@@ -35,7 +35,7 @@ class UnitTestDataIO(unittest.TestCase):
         with open(test_file_path, "w") as file:
             file.write("a,b,c,d,e\n1,2,3,4,5\n6,7,8,9,10")
 
-        dataset: np.ndarray = DataIO.DataIO.read_cleaned_csv(test_file_path, has_header=0)
+        dataset: np.ndarray = DataIO.read_cleaned_csv(test_file_path, has_header=0)
 
         # validate the values
         values: List[List[int]] = [[1,2,3,4,5], [6,7,8,9,10]]
@@ -71,7 +71,7 @@ class UnitTestDataIO(unittest.TestCase):
         array: np.array =  np.array([[1,2,3,4,5], [6,7,8,9,10]])
         nd_array: np.ndarray = np.ndarray(shape=(2,5), dtype=int, buffer=array)
 
-        DataIO.DataIO.write_csv(test_file_path, nd_array, has_header=True)
+        DataIO.write_csv(test_file_path, nd_array, has_header=True)
         # TODO: Check, ob erste Zeile als Header oder Datenpunkte geschrieben werden
 
         # check the written data
