@@ -27,7 +27,7 @@ class AlgorithmAdminTests(AdminLoggedInTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.dataset = Dataset.objects.create(
-            datapoints_total=1, dimensions_total=1, user=self.admin
+            datapoints_total=1, dimensions_total=1, user=self.admin, is_cleaned=True
         )
         self.algo = Algorithm.objects.create(display_name="Test Algo", signature="", user=self.admin)
         self.exp = Experiment.objects.create(display_name="Test Exp", dataset=self.dataset, user=self.admin)
