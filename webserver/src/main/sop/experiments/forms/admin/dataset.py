@@ -47,4 +47,3 @@ class AdminChangeDatasetForm(forms.ModelForm[Dataset]):
     class Meta:
         model = Dataset
         exclude = ["path_original", "path_cleaned"]
-
