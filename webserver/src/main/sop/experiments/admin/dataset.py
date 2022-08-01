@@ -80,10 +80,6 @@ class DatasetAdmin(AbstractModelAdmin):
         ]
         return urls
 
-
-    def get_model_name(self) -> str:
-        return "dataset"
-
     def save_model(
             self,
             request: Any,
