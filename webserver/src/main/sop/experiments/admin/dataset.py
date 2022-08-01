@@ -55,11 +55,28 @@ class DatasetAdmin(AbstractModelAdmin):
     def save_model(
             self,
             request: Any,
-            obj, # TODO: _ModelT --> woher kommt das??
+            obj: Dataset,
             form: Any,
             change: Any
     ) -> None:
-        super().save_model(request, obj, form, change)
 
-        # start the dataset cleaning
-        schedule_backend(obj)
+        # start the dataset cleaning, if it is adding the model (not if it is changing the model)
+
+        if change is not None and change is True:
+
+            # if it is only changing the model, just save it without starting the dataset cleaning
+            # (as it is not possible to change the dataset in the admin view)
+            super().save_model(request, obj, form, change)
+
+        else:
+            # else start the DatasetCleaning and reset possible (wrong) values entered
+            obj.is_cleaned = False
+            obj.datapoints_total = None
+            obj.dimensions_total = None
+            obj.path_cleaned = None
+
+            # save the model, so that the data is also saved
+            super().save_model(request, obj, form, change)
+
+            # now, start the cleaning
+            schedule_backend(obj)
