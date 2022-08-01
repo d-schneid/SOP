@@ -18,6 +18,10 @@ class AdminAddDatasetForm(forms.ModelForm[Dataset]):
 
     def clean(self) -> Optional[Dict[str, Any]]:
         dataset: Optional[TemporaryUploadedFile] = self.cleaned_data.get("path_original")
+
+        if dataset is None:
+            return self.cleaned_data
+
         dataset_path: str = dataset.name
 
         # save dataset temporarily
