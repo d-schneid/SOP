@@ -104,7 +104,7 @@ class AlgorithmAdminTests(AdminLoggedInTestCase):
             "experiments_experiment_changelist", response.resolver_match.url_name
         )
 
-    def test_admin_add_experiment_invalid(self):
+    def test_admin_add_experiment_invalid_user(self):
         # user does not have access to self.algo and self.dataset
         user = User.objects.create(username="user", password="passwd")
         data = {
@@ -118,6 +118,26 @@ class AlgorithmAdminTests(AdminLoggedInTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Please correct the errors below")
         self.assertContains(response, "Selected user")
+        self.assertEqual(
+            "experiments_experiment_add", response.resolver_match.url_name
+        )
+
+    def test_admin_add_experiment_invalid_dataset(self):
+        # dataset is not cleaned and, therefore, cannot be used
+        uncleaned_dataset = Dataset.objects.create(
+            datapoints_total=1, dimensions_total=1, user=self.admin, is_cleaned=False
+        )
+        data = {
+            "display_name": "newExp",
+            "user": self.admin.pk,
+            "dataset": uncleaned_dataset.pk,
+            "algorithms": self.algo.pk
+        }
+        url = reverse("admin:experiments_experiment_add")
+        response = self.client.post(url, data, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Please correct the error below")
+        self.assertContains(response, "Selected dataset is not cleaned")
         self.assertEqual(
             "experiments_experiment_add", response.resolver_match.url_name
         )
