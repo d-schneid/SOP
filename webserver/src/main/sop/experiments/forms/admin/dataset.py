@@ -37,3 +37,10 @@ class AdminAddDatasetForm(forms.ModelForm[Dataset]):
         os.remove(temp_file)
 
         return self.cleaned_data
+
+
+class AdminChangeDatasetForm(forms.ModelForm[Dataset]):
+    class Meta:
+        model = Dataset
+        exclude = ["path_original", "path_cleaned"]
+
