@@ -6,7 +6,7 @@ from experiments.models.managers import ExecutionManager
 
 
 class Command(BaseCommand):
-    help = "Marks all executions that are marked as running"
+    help = "Marks all running executions as crashed"
 
     def handle(self, *args: Any, **options: Any) -> Optional[str]:
         self.stdout.write("Marking running executions as crashed...", ending="")
