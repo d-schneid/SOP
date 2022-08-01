@@ -1,8 +1,4 @@
-
-from typing import Type, Optional, Sequence, Any
-
-from typing import Type, Optional, Sequence, List
-
+from typing import Type, Optional, Sequence, List, Any
 
 from django.contrib import admin
 from django.http import HttpRequest
@@ -14,14 +10,11 @@ from experiments.admin.inlines import ExperimentInlineDataset
 from experiments.admin.abstract_model_admin import AbstractModelAdmin
 from experiments.forms.admin.dataset import AdminAddDatasetForm, AdminChangeDatasetForm
 from experiments.models import Dataset
-
 from experiments.services.dataset import schedule_backend
-
 from experiments.views.dataset import (
     download_uncleaned_dataset,
     download_cleaned_dataset
 )
-
 
 
 @admin.register(Dataset)
@@ -122,4 +115,3 @@ class DatasetAdmin(AbstractModelAdmin):
             reverse('admin:experiments_dataset_download_cleaned', args=[dataset.pk])
         )
     download_cleaned.short_description = "Cleaned dataset"
-
