@@ -67,17 +67,9 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
         form.instance.user = self.request.user
         form.instance.is_cleaned = False
 
-        # call the super().form_valid() before creating the DatasetCleaning, as the primary key is needed
-        # to create the DatasetCleaning
-        response = super(DatasetUploadView, self).form_valid(form)
-        assert form.instance.pk is not None
-
-        # start Dataset Cleaning
-        schedule_backend(form.instance)
-
         assert not os.path.isfile(temp_file_path)
 
-        return response
+        return super(DatasetUploadView, self).form_valid(form)
 
 
 class DatasetOverview(LoginRequiredMixin, ListView[Dataset]):

@@ -1,4 +1,4 @@
-from typing import Type, Optional, Sequence
+from typing import Type, Optional, Sequence, Any
 
 from django.contrib import admin
 from django.http import HttpRequest
@@ -7,6 +7,7 @@ from experiments.admin.inlines import ExperimentInlineDataset
 from experiments.admin.abstract_model_admin import AbstractModelAdmin
 from experiments.forms.admin.dataset import AdminAddDatasetForm
 from experiments.models import Dataset
+from experiments.services.dataset import schedule_backend
 
 
 @admin.register(Dataset)
@@ -50,3 +51,15 @@ class DatasetAdmin(AbstractModelAdmin):
 
     def get_model_name(self) -> str:
         return "dataset"
+
+    def save_model(
+            self,
+            request: Any,
+            obj, # TODO: _ModelT --> woher kommt das??
+            form: Any,
+            change: Any
+    ) -> None:
+        super().save_model(request, obj, form, change)
+
+        # start the dataset cleaning
+        schedule_backend(obj)

@@ -33,7 +33,7 @@ class AdminAddDatasetForm(forms.ModelForm[Dataset]):
                                   "path_cleaned__name": generate_path_dataset_cleaned(dataset_path)})
         # TODO: testen
 
-        # delete algorith
+        # delete dataset
         os.remove(temp_file)
 
         return self.cleaned_data
