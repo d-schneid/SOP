@@ -125,18 +125,26 @@ class ExecutionCreateView(
         # Get subspaces_min out of form and do sanity checks
         subspaces_min = form.cleaned_data["subspaces_min"]
         if subspaces_min < 0:
-            messages.error(self.request, f"Subspaces Min has to be an Integer greater than or equal to 0.")
+            messages.error(
+                self.request,
+                f"Subspaces Min has to be an Integer greater than or equal to 0.",
+            )
         else:
             form.instance.subspaces_min = subspaces_min
 
         # Get subspaces_max out of form and do sanity checks
         subspaces_max = form.cleaned_data["subspaces_max"]
         if subspaces_max < 0:
-            messages.error(self.request, f"Subspaces Max has to be an Integer greater than or equal to 0.")
+            messages.error(
+                self.request,
+                f"Subspaces Max has to be an Integer greater than or equal to 0.",
+            )
             error = True
         if subspaces_max > experiment.dataset.dimensions_total:
-            messages.error(self.request,
-                           f"Subspaces Max has to be smaller than or equal to the dataset dimension count: {experiment.dataset.dimensions_total}.")
+            messages.error(
+                self.request,
+                f"Subspaces Max has to be smaller than or equal to the dataset dimension count: {experiment.dataset.dimensions_total}.",
+            )
             error = True
         elif 0 <= subspaces_max <= experiment.dataset.dimensions_total:
             form.instance.subspaces_max = subspaces_max
@@ -144,7 +152,9 @@ class ExecutionCreateView(
         # Get subspace_amount out of form and do sanity checks
         subspace_amount = form.cleaned_data["subspace_amount"]
         if subspace_amount <= 0:
-            messages.error(self.request, f"Subspace amount has to be a positive Integer.")
+            messages.error(
+                self.request, f"Subspace amount has to be a positive Integer."
+            )
             error = True
         else:
             form.instance.subspace_amount = subspace_amount
@@ -162,30 +172,19 @@ class ExecutionCreateView(
         # If the seed was not specified, it will be set to a random seed during model creation
         if seed:
             if seed < 0:
-                messages.error(self.request, f"Seed has to be greater than 0. (is: {seed}).")
-                error = True
-                form.errors.update(
-                    {
-                        "subspace_generation_seed": [
-                            "Subspaces Max has to be greater than Subspaces Min"
-                        ]
-                    }
+                messages.error(
+                    self.request, f"Seed has to be greater than 0. (is: {seed})."
                 )
+                error = True
             else:
                 form.instance.subspace_generation_seed = seed
 
         # Sanity check that subspaces_min must be smaller than subspaces_max
         if subspaces_min >= subspaces_max:
-            messages.error(self.request,
-                           f"Subspaces Max has to be greater than Subspace Min.")
-            error = True
-            form.errors.update(
-                {
-                    "subspaces_max": [
-                        "Subspaces Max has to be greater than Subspaces Min"
-                    ]
-                }
+            messages.error(
+                self.request, f"Subspaces Max has to be greater than Subspace Min."
             )
+            error = True
 
         # set status of execution to running
         form.instance.status = TaskState.RUNNING.name
