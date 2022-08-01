@@ -82,9 +82,8 @@ class ExecutionCreateViewTests(LoggedInTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.redirect_chain)
         errors = response.context["form"].errors  # type: ignore
-        self.assertEqual(len(errors.keys()), 3)
+        self.assertEqual(len(errors.keys()), 2)
         self.assertIsNotNone(errors.get("subspaces_min"))
-        self.assertIsNotNone(errors.get("subspaces_max"))
         self.assertIsNotNone(errors.get("subspace_amount"))
         self.assertIsNone(Execution.objects.first())
 
