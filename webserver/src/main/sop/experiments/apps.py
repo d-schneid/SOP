@@ -16,5 +16,3 @@ class ExperimentsConfig(AppConfig):
 
         AlgorithmLoader.set_algorithm_root_dir(str(settings.ALGORITHM_ROOT_DIR))
         Scheduler.default_scheduler = UserRoundRobinScheduler
-
-        ExecutionManager.mark_running_executions_as_crashed()
