@@ -24,7 +24,7 @@ class Execution(models.Model):
     subspace_amount = models.PositiveIntegerField()
     subspaces_min = models.PositiveIntegerField()
     subspaces_max = models.PositiveIntegerField()
-    subspace_generation_seed = models.BigIntegerField(blank=True)
+    subspace_generation_seed = models.PositiveBigIntegerField(blank=True)
     algorithm_parameters = models.JSONField()
     result_path = models.FileField()
     objects: ExecutionManager = ExecutionManager.from_queryset(ExecutionQuerySet)()  # type: ignore
