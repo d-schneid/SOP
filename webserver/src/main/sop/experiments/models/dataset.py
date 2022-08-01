@@ -23,8 +23,8 @@ class Dataset(models.Model):
     description = models.TextField(max_length=255, blank=True)
     upload_date = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    datapoints_total = models.IntegerField(null=True)
-    dimensions_total = models.IntegerField(null=True)
+    datapoints_total = models.PositiveBigIntegerField(null=True)
+    dimensions_total = models.PositiveIntegerField(null=True)
     path_original = models.FileField(
         upload_to=get_dataset_upload_path,
         validators=(FileExtensionValidator(allowed_extensions=["csv"]),),
