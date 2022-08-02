@@ -167,13 +167,7 @@ deploy-app:
     - deployment
   before_script:
     - apt -y update
-    - apt -y install curl
-    - echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/ buster main' | tee /etc/apt/sources.list.d/cloudflare-main.list
-    - curl https://pkg.cloudflare.com/cloudflare-main.gpg -o /usr/share/keyrings/cloudflare-main.gpg
-    - apt -y update
-    - apt -y install cloudflared openssh-client gettext
-    - mkdir ~/.ssh && touch ~/.ssh/config
-    - envsubst < $SSH_CONF > ~/.ssh/config
+    - apt -y install openssh-client
 
   script:
     - chmod og= $ID_RSA
