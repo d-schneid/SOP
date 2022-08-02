@@ -35,38 +35,12 @@ class RowOrColumnMissingValuesRemover(MissingValuesRemover, ABC):
         :return: The cleaned dataset.
         """
         # exception logic
+        assert len(dataset_to_clean.data.shape) == 2
         eh.check_non_empty_array(dataset_to_clean.data, "ThresholdMissingValuesRemover")
 
         # ThresholdMissingValuesRemover logic
-        # normal case (more than one row)
-        if len(dataset_to_clean.data.shape) > 1:
-            df: pd.DataFrame = pd.DataFrame(dataset_to_clean.to_single_array())
+        df: pd.DataFrame = pd.DataFrame(dataset_to_clean.to_single_array())
 
-            df.dropna(axis=self._axis, how='any', tresh=1, inplace=True)
+        df = df.dropna(axis=self._axis, how='any', thresh=2)
 
-            return AnnotatedDataset(df.to_numpy())
-
-        # edge case handling: one row only
-        else:
-            if self._axis == 1:  # remove column (one entry)
-                columns_to_drop = []
-                for idx in range(0, dataset_to_clean.data.shape[0]):
-                    if str(type(dataset_to_clean.data[idx])) \
-                            == '<class \'NoneType\'>':  # check if None-value
-                        columns_to_drop.append(idx)
-
-                # remove the None-columns (in the headers AND data):
-                dataset_to_clean.headers = \
-                    np.asarray(np.delete(dataset_to_clean.headers,
-                                         columns_to_drop, axis=0))
-                dataset_to_clean.data = \
-                    np.asarray(np.delete(dataset_to_clean.data,
-                                         columns_to_drop, axis=0))
-                return dataset_to_clean
-            else:  # remove row
-                for idx in range(0, dataset_to_clean.data.shape[0]):
-                    if str(type(dataset_to_clean.data[idx])) \
-                            != '<class \'NoneType\'>':  # check if not None-value
-                        return dataset_to_clean  # no none row -> don't do anything
-                    dataset_to_clean.data = np.zeros((0, 0))  # empty dataset
-                    return dataset_to_clean
+        return AnnotatedDataset(df.to_numpy())
