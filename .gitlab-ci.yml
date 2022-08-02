@@ -120,7 +120,7 @@ backend-tests:
   script:
     - which python3.9
     - cd backend_library/src
-    - python3.9 -m coverage run --source=backend/ --omit="*/__init__.py" -m unittest discover -p "*.py" -s test/ -t .
+    - python3.9 -m coverage run --source=backend/ --omit="*/__init__.py" --omit="backend/scheduler/DebugScheduler.py" --omit="backend/scheduler/ThreadedScheduler.py" -m unittest discover -p "*.py" -s test/ -t .
     - python3.9 -m coverage report --precision=2
     - 'wget -O ../../public/backend-tests.svg https://img.shields.io/badge/backend\ coverage-$(python3.9 -m coverage report --rcfile=.coveragerc --precision=2 | grep -E "^TOTAL.+?([0-9]+.[0-9]+%)$" | grep -Eo "[0-9]+.[0-9]+%$")-informational'
   artifacts:
