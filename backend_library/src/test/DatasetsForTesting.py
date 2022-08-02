@@ -44,7 +44,7 @@ class Datasets:
 
     @property
     def dataset6(self) -> np.ndarray:
-        return np.array([-1, 1234, 12, 53, 6])
+        return np.array([[-1, 1234, 12, 53, 6]])
 
     @property
     def dataset7(self) -> np.ndarray:

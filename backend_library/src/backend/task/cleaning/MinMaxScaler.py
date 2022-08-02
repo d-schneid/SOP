@@ -23,19 +23,15 @@ class MinMaxScaler(FeatureScaler, ABC):
         :return: The cleaned dataset.
         """
         # exception handling
+        assert len(dataset_to_clean.data.shape) == 2
         eh.check_non_none_column(dataset_to_clean.data, "MinMaxScaler")
 
         # MinMaxScaling logic
-        # normal case (more than one row)
-        if len(dataset_to_clean.data.shape) > 1:
-            scaler: mms = mms()
-            scaler.fit(dataset_to_clean.data)
-            transformed_dataset: np.ndarray = scaler.transform(dataset_to_clean.data)
-            df = pd.DataFrame(transformed_dataset)
-            dataset_to_clean.data = df.to_numpy()
-            return dataset_to_clean
+        scaler: mms = mms()
+        scaler.fit(dataset_to_clean.data)
 
-        # edge case handling: one row only
-        else:
-            dataset_to_clean.data = np.ones((1, dataset_to_clean.data.shape[0]))
-            return dataset_to_clean
+        transformed_dataset: np.ndarray = scaler.transform(dataset_to_clean.data)
+        df = pd.DataFrame(transformed_dataset)
+
+        dataset_to_clean.data = df.to_numpy()
+        return dataset_to_clean
