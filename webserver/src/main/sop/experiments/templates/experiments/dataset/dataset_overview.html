@@ -23,13 +23,7 @@
             {{ model.display_name }}
         </a>
     </h5>
-    {% if model.path_cleaned.name|slice:"-5:" == "error" %}
-        <a class="text-white ml-auto">ERROR</a>
-    {% elif model.is_cleaned %}
-        <a class="text-white ml-auto">cleaned</a>
-    {% else %}
-        <a class="text-white ml-auto">cleaning in progress</a>
-    {% endif %}
+    <a class="text-white ml-auto dataset-status" id="dataset-status-{{ model.pk }}">STATUS</a>
 {% endblock %}
 
 
@@ -62,4 +56,32 @@
         {% csrf_token %}
         <button type="submit" class="btn btn-danger ml-auto mr-3">Yes</button>
     </form>
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        $(document).ready(function () {
+            let statuses = document.getElementsByClassName("dataset-status")
+            for (let i = 0; i < statuses.length; i++) {
+                let status = statuses[i]
+                let id = status.id.replace("dataset-status-", "")
+                console.log(id)
+
+                fetch(id)
+            }
+        });
+
+        function fetch(id) {
+            progress_url = "/dataset-status/"
+            $.getJSON(progress_url, {'dataset_pk': Number(id)}, function (data, status) {
+                status = document.getElementById("dataset-status-" + id)
+                if (data.is_cleaned) {
+                    status.innerText = "CLEANED";
+                } else {
+                    status.innerText = "CLEANING IN PROGRESS";
+                    setTimeout('fetch('+id+')', 2000)
+                }
+            });
+        }
+    </script>
 {% endblock %}
