@@ -115,8 +115,3 @@ class TaskHelper:
         assert os.path.isdir(dir_path)
 
         shutil.rmtree(dir_path)
-
-    @staticmethod
-    def shm_name_generator():
-        letters = string.ascii_lowercase
-        return ''.join(random.choice(letters) for i in range(40))
