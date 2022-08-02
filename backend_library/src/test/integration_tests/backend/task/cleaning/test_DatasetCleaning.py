@@ -98,7 +98,8 @@ class IntegrationTestDatasetCleaningNoUncleanedDataset(unittest.TestCase):
     def test_load_uncleaned_dataset(self):
         # No uncleaned Dataset -> throw exception
         with self.assertRaises(AssertionError) as context:
-            self._dc_missing_uncleaned_dataset._DatasetCleaning__load_uncleaned_dataset()
+            self._dc_missing_uncleaned_dataset.\
+                _DatasetCleaning__load_uncleaned_dataset()
 
     def task_progress_callback(self, _task_id: int, task_state: TaskState,
                                progress: float) -> None:
@@ -163,7 +164,7 @@ class IntegrationTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
                                        (self._uncleaned_dataset1)).to_single_array())
 
     def test_run_cleaning_pipeline2(self):
-        cleaned_dataset2: np.ndarray = np.asarray(
+        cleaned_dataset2_data: np.ndarray = np.asarray(
             [[0.00000000e+00, 1.00000000e+00, 0.00000000e+00, 1.00000000e+00,
               0.00000000e+00, 1.00000000e+00, 1.00000000e+00],
              [1.00000000e+00, 5.00405186e-01, 1.00000000e+00, 0.00000000e+00,
@@ -172,11 +173,27 @@ class IntegrationTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
               1.00000000e+00, 0.00000000e+00, 9.87870182e-01],
              [6.07124844e-05, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
               1.00000000e+00, 0.00000000e+00, 9.87870182e-01]])
-        np.testing.assert_array_almost_equal(cleaned_dataset2,
+        np.testing.assert_array_almost_equal(cleaned_dataset2_data,
                                              self._dc
                                              ._DatasetCleaning__run_cleaning_pipeline
-                                                 (self._ds.data_to_annotated(
-                                                 self._uncleaned_dataset2)).data)
+                                             (self._ds.data_to_annotated
+                                              (self._uncleaned_dataset2)).data)
+
+        cleaned_dataset2_header: np.ndarray = np.asarray(
+            ['0', '1', '2', '3', '4', '7', '8'])
+        np.testing.assert_array_equal(cleaned_dataset2_header,
+                                      self._dc
+                                      ._DatasetCleaning__run_cleaning_pipeline
+                                      (self._ds.data_to_annotated
+                                       (self._uncleaned_dataset2)).headers)
+
+        cleaned_dataset2_row_mapping: np.ndarray = np.asarray(
+            [0, 1, 2, 4])
+        np.testing.assert_array_equal(cleaned_dataset2_row_mapping,
+                                      self._dc
+                                      ._DatasetCleaning__run_cleaning_pipeline
+                                      (self._ds.data_to_annotated
+                                       (self._uncleaned_dataset2)).row_mapping)
 
 
 if __name__ == '__main__':
