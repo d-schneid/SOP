@@ -80,9 +80,11 @@ class UnitTestExecution(unittest.TestCase):
         self.assertEqual(self._algorithms, list(self._ex.algorithms))
         self.assertEqual(list(self._ex._subspaces), list(self._ex.subspaces))
         self.assertEqual(self._final_zip_path, self._ex.zip_result_path)
+        self.assertEqual(self._result_path, self._ex.result_path)
         self.assertEqual(self._priority, self._ex.priority)
         self.assertEqual(self._user_id, self._ex.user_id)
         self.assertEqual(self._task_id, self._ex.task_id)
+
 
         directory_names: list[str] = list()
         for algorithm in self._algorithms:
