@@ -22,23 +22,33 @@ class AdminAddDatasetForm(forms.ModelForm[Dataset]):
         if dataset is None:
             return self.cleaned_data
 
-        dataset_path: str = dataset.name
-
         # save dataset temporarily
-        temp_file: str = save_dataset(dataset)
+        temp_file_path: str = save_dataset(dataset)
+        assert os.path.isfile(temp_file_path)
 
-        # check the dataset
-        if not DatasetInfo.is_dataset_valid(temp_file):
-            self.add_error("path_original", "The dataset is not a valid csv-file.")
+        try:
+            dataset_valid = DatasetInfo.is_dataset_valid(temp_file_path)
+        except UnicodeError as e:
+            os.remove(temp_file_path)
+            self.add_error("path_original", "Unicode error in selected dataset: " + e.reason)
+            assert not os.path.isfile(temp_file_path)
             return None
 
+        # check the dataset
+        if not dataset_valid:
+            os.remove(temp_file_path)
+            self.add_error("path_original", "Selected dataset is not a valid csv-file.")
+            assert not os.path.isfile(temp_file_path)
+            return None
+
+        dataset_path: str = dataset.name
         # and add data to the input (no datapoints / dimensions)
         self.cleaned_data.update({"is_cleaned": False,
                                   "path_cleaned__name": generate_path_dataset_cleaned(dataset_path)})
         # TODO: testen
 
-        # delete dataset
-        os.remove(temp_file)
+        os.remove(temp_file_path)
+        assert not os.path.isfile(temp_file_path)
 
         return self.cleaned_data
 
