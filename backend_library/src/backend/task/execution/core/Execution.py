@@ -331,6 +331,13 @@ class Execution(Task, Schedulable):
         """
         return self._final_zip_path
 
+    @property
+    def result_path(self) -> str:
+        """
+        :return: The absolute path where the ZIP-file of the result of this Execution can be found.
+        """
+        return self._result_path
+
     def run_later_on_main(self, statuscode: int):
         self.__generate_execution_subspaces()
         for ess in self._execution_subspaces:
