@@ -25,8 +25,10 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
     _dir_name: str = os.getcwd()
 
     # dataset 1
-    _uncleaned_dataset_path1: str = os.path.join(_dir_name, "system_test_uncleaned_dataset1.csv.error")
-    _cleaned_dataset_path1: str = os.path.join(_dir_name, "system_test_cleaned_dataset1.csv")
+    _uncleaned_dataset_path1: str = os.path.join(_dir_name,
+                                    "system_test_uncleaned_dataset1.csv.error")
+    _cleaned_dataset_path1: str = os.path.join(_dir_name,
+                                               "system_test_cleaned_dataset1.csv")
 
     _uncleaned_dataset1: np.ndarray = ds().system_test1
     _cleaned_dataset1: np.ndarray = np.asarray([[0., 0.]])
@@ -126,7 +128,8 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
         # cleaning
         self._dc1.schedule()
         np.testing.assert_array_almost_equal(self._cleaned_dataset1,
-                                             DataIO.read_cleaned_csv(self._cleaned_dataset_path1))
+                                             DataIO.read_cleaned_csv(
+                                                 self._cleaned_dataset_path1))
 
         # progress finished
         self.assertTrue(self._run_cleaning)

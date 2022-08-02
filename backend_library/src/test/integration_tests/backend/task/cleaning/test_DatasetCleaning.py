@@ -113,7 +113,10 @@ class IntegrationTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
     _cleaned_dataset_path: str = os.path.join(_dir_name, "cleaned_dataset1.csv")
 
     _uncleaned_dataset1: np.ndarray = ds().cat_dataset3
-    _cleaned_dataset1: np.ndarray = np.asarray([[0., 0.]])
+    _cleaned_dataset1_data: np.ndarray = np.asarray([[0., 0.]])
+    _cleaned_dataset1: np.ndarray = \
+        np.asarray([['', '0', '1'],
+                    [0, 0., 0.]], object)
 
     # dataset 2
     _uncleaned_dataset2: np.ndarray = ds().big_dataset1
@@ -150,10 +153,14 @@ class IntegrationTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
             os.remove(self._uncleaned_dataset_path)
 
     def test_run_cleaning_pipeline1(self):
-        np.testing.assert_array_equal(self._cleaned_dataset1,
+        np.testing.assert_array_equal(self._cleaned_dataset1_data,
                                       self._dc._DatasetCleaning__run_cleaning_pipeline
                                       (self._ds.data_to_annotated
                                        (self._uncleaned_dataset1)).data)
+        np.testing.assert_array_equal(self._cleaned_dataset1,
+                                      self._dc._DatasetCleaning__run_cleaning_pipeline
+                                      (self._ds.data_to_annotated
+                                       (self._uncleaned_dataset1)).to_single_array())
 
     def test_run_cleaning_pipeline2(self):
         cleaned_dataset2: np.ndarray = np.asarray(
