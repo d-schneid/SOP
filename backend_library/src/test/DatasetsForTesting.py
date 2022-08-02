@@ -28,7 +28,8 @@ class Datasets:
 
     @property
     def dataset2(self) -> np.ndarray:
-        return np.array([[None, None, None, None, None], [0., 1., 0., 0., 4.], [0., 0., 1., 0., 2.]])
+        return np.array([[None, None, None, None, None], [0., 1., 0., 0., 4.],
+                         [0., 0., 1., 0., 2.]])
 
     @property
     def dataset3(self) -> np.ndarray:
@@ -36,7 +37,8 @@ class Datasets:
 
     @property
     def dataset4(self) -> np.ndarray:
-        return np.array([[-213., 0., 541., 1., 0., 0., 4., 341.], [0., 0., 1., 0., 2., 1491., 213., 432.]])
+        return np.array([[-213., 0., 541., 1., 0., 0., 4., 341.],
+                         [0., 0., 1., 0., 2., 1491., 213., 432.]])
 
     @property
     def dataset5(self) -> np.ndarray:
@@ -63,17 +65,14 @@ class Datasets:
         return np.asarray([[1, 412, "I am an evil String", None]], object)
 
     @property
-    def cat_dataset4(self) -> np.ndarray:
-        return np.asarray([1, 412, "I am an evil String", None], object)  # 1 dim array
-
-    @property
     def mixed_dataset1(self) -> np.ndarray:
         return np.asarray([[1, 412, "I am an evil String", None]], object)
 
     @property
     def big_dataset1(self) -> np.ndarray:
         return np.array([[-1, 1234, 12, 53, 6, 124, None, 151245124, 1541],
-                         [214123, 1, 21, None, 1241, "Eve the evil String", None, 213, -124512],
+                         [214123, 1, 21, None, 1241, "Eve the evil String",
+                          None, 213, -124512],
                          [12, -1234, None, 1, 15215, 4, None, 12, 12],
                          [None, None, None, None, None, None, None, None, None],
                          [12, -1234, None, 1, 15215, 4, None, 12, 12]])
@@ -86,7 +85,8 @@ class Datasets:
     def system_test2(self) -> np.ndarray:
         return np.array([[0, 1, 2, 3, 4, 5, 6, 7, 8],
                          [-1, 1234, 12, 53, 6, 124, None, 151245124, 1541],
-                         [214123, 1, 21, None, 1241, "Eve the evil String", None, 213, -124512],
+                         [214123, 1, 21, None, 1241, "Eve the evil String",
+                          None, 213, -124512],
                          [12, -1234, None, 1, 15215, 4, None, 12, 12],
                          [None, None, None, None, None, None, None, None, None],
                          [12, -1234, None, 1, 15215, 4, None, 12, 12]])

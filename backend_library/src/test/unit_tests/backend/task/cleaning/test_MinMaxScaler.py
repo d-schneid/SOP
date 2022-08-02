@@ -34,7 +34,6 @@ class UnitTestMinMaxScaler(unittest.TestCase):
                                       do_cleaning(self._ds.data_to_annotated
                                                   (self._ds.dataset6)).data)
 
-
     def test_wrong_input_datatype(self):
         # 1D dataset not allowed -> Assertion
         with self.assertRaises(AssertionError) as context:
