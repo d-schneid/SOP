@@ -4,6 +4,9 @@ import numpy as np
 
 
 class AnnotatedDataset:
+    """
+    Represents a dataset with headers and row numbers
+    """
     data: np.ndarray
     headers: np.ndarray
     row_mapping: np.ndarray
@@ -11,6 +14,18 @@ class AnnotatedDataset:
     def __init__(self, main_array: np.ndarray, headers: Optional[np.ndarray] = None,
                  row_numbers: Optional[np.ndarray] = None,
                  generate_headers: bool = False, generate_row_numbers: bool = False):
+        """
+        Creates a new AnnotatedDataset
+        :param main_array: the main array, containing the data amongst others
+        :param headers: headers to use for the data,
+         for behaviour with None see generate_headers
+        :param row_numbers: row_numbers to use for the data,
+         for behaviour with None see generate_row_numbers
+        :param generate_headers: True to generate headers (numbered 1 to n),
+         False to read them from the dataset, ignored if headers is not None
+        :param generate_row_numbers: True to generate row_numbers (numbered 1 to n),
+         False to read them from the dataset, ignored if row_numbers is not None
+        """
         has_row_numbers = row_numbers is None and not generate_row_numbers
         has_header = headers is None and not generate_headers
         no_head = np.delete(main_array, 0, 0) if has_header else main_array
@@ -26,6 +41,7 @@ class AnnotatedDataset:
             self.row_mapping = np.delete(self.row_mapping, 0)
 
     def to_single_array(self) -> np.ndarray:
+        """Merges the data from this into a single object array, may be used for output"""
         headers = np.expand_dims(self.headers, 0).astype(object)
         headers_wb = np.concatenate((np.array([[""]]).astype(object), headers), 1)
         rows = np.expand_dims(self.row_mapping.astype(object), 1)
