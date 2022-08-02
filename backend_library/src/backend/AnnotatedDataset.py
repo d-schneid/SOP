@@ -44,7 +44,6 @@ class AnnotatedDataset:
         print(self.headers)
         print(self.row_mapping)
 
-
     def to_single_array(self) -> np.ndarray:
         """Merges the data from this into a single object array, may be used for output"""
         headers = np.expand_dims(self.headers, 0).astype(object)
