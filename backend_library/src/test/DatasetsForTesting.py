@@ -1,15 +1,14 @@
 import numpy as np
 import pandas as pd
 
+from backend.AnnotatedDataset import AnnotatedDataset
+
 
 class Datasets:
 
     @property
     def empty_dataset(self) -> np.ndarray:
         # create a numpy array that is empty
-
-        #_df_empty: pd.DataFrame = pd.DataFrame({'empty': []})
-        #return _df_empty.to_numpy()
         return np.zeros((0, 0))
 
     @property
@@ -91,3 +90,21 @@ class Datasets:
                          [12, -1234, None, 1, 15215, 4, None, 12, 12],
                          [None, None, None, None, None, None, None, None, None],
                          [12, -1234, None, 1, 15215, 4, None, 12, 12]])
+
+    @property
+    def one_dim_data_annotated(self) -> AnnotatedDataset:
+        one_dim_data_annotated: AnnotatedDataset = \
+            self.data_to_annotated(np.zeros((1, 1)))
+        one_dim_data_annotated.data = np.zeros(1)
+        return one_dim_data_annotated
+
+    @property
+    def empty_annotated_dataset(self) -> AnnotatedDataset:
+        empty_annotated_dataset: AnnotatedDataset = \
+            self.data_to_annotated(np.zeros((1, 1)))
+        empty_annotated_dataset.data = self.empty_dataset
+        return empty_annotated_dataset
+
+    @staticmethod
+    def data_to_annotated(data: np.ndarray):
+        return AnnotatedDataset(data, generate_headers=True, generate_row_numbers=True)

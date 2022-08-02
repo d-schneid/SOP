@@ -10,7 +10,7 @@ class AnnotatedDataset:
 
     def __init__(self, main_array: np.ndarray, headers: Optional[np.ndarray] = None,
                  row_numbers: Optional[np.ndarray] = None,
-                 generate_headers: bool = False, generate_row_numbers: bool = True):
+                 generate_headers: bool = False, generate_row_numbers: bool = False):
         has_row_numbers = row_numbers is None and not generate_row_numbers
         has_header = headers is None and not generate_headers
         no_head = np.delete(main_array, 0, 0) if has_header else main_array
@@ -24,6 +24,10 @@ class AnnotatedDataset:
         if has_row_numbers and has_header:
             self.headers = np.delete(self.headers, 0)
             self.row_mapping = np.delete(self.row_mapping, 0)
+        print("created dataset")
+        print(self.data)
+        print(self.headers)
+        print(self.row_mapping)
 
     def to_single_array(self) -> np.ndarray:
         headers = np.expand_dims(self.headers, 0).astype(object)

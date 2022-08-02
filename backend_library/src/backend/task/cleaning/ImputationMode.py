@@ -25,22 +25,16 @@ class ImputationMode(Imputation, ABC):
         """
 
         # exception handling
+        assert len(dataset_to_clean.data.shape) == 2
         eh.check_non_none_column(dataset_to_clean.data, "ImputationMode")
 
         # Mode logic
-        # normal case (more than one row)
-        if len(dataset_to_clean.data.shape) > 1:
-            # Replace None with np.nan
-            dataset_to_clean.data = pd.DataFrame(dataset_to_clean.data).fillna(
-                value=np.nan).to_numpy()
-            # Use SimpleImputer to replace np.nan with None
-            imputer_mode: SimpleImputer = SimpleImputer(missing_values=np.nan,
-                                                        strategy='most_frequent')
-            imputer_mode.fit(dataset_to_clean.data)
-            AnnotatedDataset.data = imputer_mode.transform(dataset_to_clean.data)
-            return dataset_to_clean
-
-        # edge case handling: one row only
-        else:
-            return dataset_to_clean
-
+        # Replace None with np.nan
+        dataset_to_clean.data = pd.DataFrame(dataset_to_clean.data).fillna(
+            value=np.nan).to_numpy()
+        # Use SimpleImputer to replace np.nan with None
+        imputer_mode: SimpleImputer = SimpleImputer(missing_values=np.nan,
+                                                    strategy='most_frequent')
+        imputer_mode.fit(dataset_to_clean.data)
+        dataset_to_clean.data = imputer_mode.transform(dataset_to_clean.data)
+        return dataset_to_clean
