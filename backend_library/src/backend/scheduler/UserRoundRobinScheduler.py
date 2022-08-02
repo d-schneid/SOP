@@ -2,8 +2,6 @@ import heapq
 import itertools
 import math
 import multiprocessing
-import os
-import signal
 import sys
 import threading
 from collections import OrderedDict
@@ -73,7 +71,11 @@ class UserRoundRobinScheduler(Scheduler):
                         i = i + 1
             for k, v in self.__running.items():
                 if selector(k) and not v[1]:
-                    v[0].terminate()
+                    try:
+                        v[0].terminate()
+                    except AttributeError:
+                        # Has just stopped, ignore
+                        pass
 
     def hard_shutdown(self) -> None:
         self.__on_shutdown_completed = None
@@ -82,7 +84,11 @@ class UserRoundRobinScheduler(Scheduler):
             for k, v in self.__running.items():
                 if not v[1]:
                     self.__running[k] = (v[0], True)
-                    v[0].terminate()
+                    try:
+                        v[0].terminate()
+                    except AttributeError:
+                        # Has just stopped, ignore
+                        pass
             self.__empty_queue.notify_all()
 
     def graceful_shutdown(self,
