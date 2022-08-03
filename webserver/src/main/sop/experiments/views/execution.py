@@ -34,6 +34,14 @@ from experiments.views.generic import PostOnlyDeleteView
 
 
 def schedule_backend(execution: Execution) -> Optional[Dict[str, list[str]]]:
+    """
+    Schedules a backend task that will start the calculations of the given execution.
+    @param execution: The execution for which the calculation should be started.
+    @return: If the scheduling is successful and all parameters of the given execution
+    are valid, it will return None. If errors occur, it will return a dictionary that
+    contains the names of the execution model fields that resulted in the error as keys
+    and an error message as the value.
+    """
     experiment = execution.experiment
     dataset = experiment.dataset
     algorithms: QuerySet[Algorithm] = experiment.algorithms.all()
@@ -88,6 +96,12 @@ def schedule_backend(execution: Execution) -> Optional[Dict[str, list[str]]]:
 
 
 def generate_hyperparameter_error_message(dikt: Dict[str, List[str]]) -> str:
+    """
+    Create an error message string out of a given errors dictionary. This method will
+    most likely be removed when errors are displayed by django messages.
+    @param dikt: The errors dictionary in the form {'field_name' : 'error_message'}
+    @return: The error message string.
+    """
     msg = ""
     for key, errors in dikt.items():
         algo_pk, param_name = key.split("_", maxsplit=1)
@@ -101,6 +115,12 @@ def generate_hyperparameter_error_message(dikt: Dict[str, List[str]]) -> str:
 class ExecutionCreateView(
     LoginRequiredMixin, CreateView[Execution, ExecutionCreateForm]
 ):
+    """
+    A view to create an execution for a experiment. It uses the ExecutionCreateForm for
+    displaying widgets for the fields a user has to enter and dynamically get fields
+    for hyperparameters of all algorithms in the experiment out of the form.
+    When the form is valid a backend task for the calculation will be scheduled.
+    """
     model = Execution
     template_name = "execution_create.html"
     form_class = ExecutionCreateForm
@@ -211,6 +231,12 @@ class ExecutionCreateView(
 
 
 class ExecutionDuplicateView(ExecutionCreateView):
+    """
+    A view to duplicate an execution. This will act just like the ExecutionCreateView
+    except that it adds default values for the subspace information to the form and the
+    original execution to the context, so that the template can enter default values for
+    the hyperparameters.
+    """
     def get_initial(self) -> Dict[str, int]:
         form = {}
         if self.request.method == "GET":
@@ -228,6 +254,10 @@ class ExecutionDuplicateView(ExecutionCreateView):
 
 
 class ExecutionDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Execution]):
+    """
+    A view to delete an execution model. It inherits form PostOnlyDeleteView, so it is
+    only accessible via POST requests.
+    """
     model = Execution
     success_url = reverse_lazy("experiment_overview")
 
@@ -235,6 +265,20 @@ class ExecutionDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Execution]):
 def download_execution_result(
         request: HttpRequest, experiment_pk: int, pk: int
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
+    """
+    A function view that will download an execution result. This view asserts that the
+    execution has results located at the path in the result_path attribute of the
+    execution. Accessing this view with an unfinished execution will result in
+    unexpected behaviour.
+
+    @param request: The HTTPRequest, this will be given by django.
+    @param experiment_pk: The primary key of the experiment of the execution.
+    @param pk: The primary key of the execution itself.
+    @return: If the request is valid and the given primary keys are valid, this returns
+    a HTTPResponse with the result download. If the given primary keys are invalid, this
+    return a redirect to the experiment overview. If this view is accessed with a POST
+    request, it will return None.
+    """
     if request.method == "GET":
         execution: Optional[Execution] = Execution.objects.filter(pk=pk).first()
         if execution is None:
@@ -252,6 +296,24 @@ def download_execution_result(
 
 
 def get_execution_progress(request: HttpRequest) -> HttpResponse:
+    """
+    A function view that will return a HTTPResponse with json data containing the
+    progress and status of an execution. The primary key of the wanted execution can
+    be given via the 'execution_pk' argument in the url or in the META of the request.
+
+    @param request: The HTTPRequest, this will be given by django.
+    @return: If no primary key is given, this will return a ServerError with an error
+    message.
+    If a primary key is given and it is invalid, it will return empty json
+    data.
+    If a primary key is given and it is valid, it will return the progress and
+    status of the execution in this form:
+    {
+       'execution_pk': pk_int,
+       'progress': progress_float,
+       'status': status_string
+    }
+    """
     pk = 0
     if "execution_pk" in request.GET:
         pk = request.GET["execution_pk"]
@@ -274,6 +336,15 @@ def get_execution_progress(request: HttpRequest) -> HttpResponse:
 
 
 def restart_execution(request: HttpRequest, experiment_pk: int, pk: int) -> HttpResponse:
+    """
+    A view that can be accessed in any way (GET or POST). When accessed, it will restart
+    the execution specified by the given primary key.
+
+    @param request: The HttpRequest, this will be given by django.
+    @param experiment_pk: The primary key of the experiment of the execution.
+    @param pk: The primary key of the execution itself.
+    @return: A redirect to the experiment overview.
+    """
     execution = Execution.objects.filter(pk=pk).first()
     if execution is not None:
         execution.status = ExecutionStatus.RUNNING.name
