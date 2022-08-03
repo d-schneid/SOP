@@ -7,7 +7,7 @@ from django.urls.resolvers import URLPattern
 from django.utils.html import format_html
 
 from experiments.models.execution import Execution
-from experiments.views.execution import download_execution_result
+from experiments.views.execution import download_execution_result_admin
 
 
 @admin.register(Execution)
@@ -43,7 +43,7 @@ class ExecutionAdmin(admin.ModelAdmin[Execution]):
         urls = super().get_urls()
         urls += [
             re_path(r'^execution_result_download/(?P<pk>\d+)$',
-                    download_execution_result,
+                    download_execution_result_admin,
                     name='experiments_execution_result_download'),
         ]
         return urls
