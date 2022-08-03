@@ -4,7 +4,7 @@ from django.urls import reverse
 from tests.unittests.views.generic_test_cases import AdminLoggedInTestCase
 
 from experiments.admin.execution import ExecutionAdmin
-from experiments.models.execution import Execution
+from experiments.models.execution import Execution, ExecutionStatus
 from experiments.models.experiment import Experiment
 from experiments.models.dataset import Dataset
 from experiments.models.algorithm import Algorithm
@@ -33,10 +33,11 @@ class ExecutionAdminTests(AdminLoggedInTestCase):
                                              dataset=cls.dataset, user=cls.user)
         cls.exp.algorithms.add(cls.algo)
         cls.exec = Execution.objects.create(experiment=cls.exp,
-                                                 subspace_amount=5,
-                                                 subspaces_max=3,
-                                                 subspaces_min=1,
-                                                 algorithm_parameters="")
+                                            subspace_amount=5,
+                                            subspaces_max=3,
+                                            subspaces_min=1,
+                                            algorithm_parameters="",
+                                            status=ExecutionStatus.RUNNING.name)
 
     def setUp(self):
         super().setUp()
