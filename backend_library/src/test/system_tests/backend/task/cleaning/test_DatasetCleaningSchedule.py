@@ -248,10 +248,10 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
         self.assertTrue(os.path.isfile(self._cleaned_dataset_path3))
 
         cleaning_result3: AnnotatedDataset = \
-            DataIO.read_annotated(self._cleaned_dataset_path_to_compare_result3, True)
+            DataIO.read_annotated(self._cleaned_dataset_path_to_compare_result3, True, True, False)
 
         cleaned_dataset3: np.ndarray = DataIO.read_cleaned_csv(
-            self._cleaned_dataset_path3)
+            self._cleaned_dataset_path3, 0)
         np.testing.assert_array_almost_equal(cleaned_dataset3,
                                              cleaning_result3.data)
 
