@@ -5,6 +5,7 @@ from unittest import skip
 import numpy as np
 import pandas as pd
 
+from backend.AnnotatedDataset import AnnotatedDataset
 from backend.task.TaskState import TaskState
 from test.DatasetsForTesting import Datasets as ds
 from backend.task.cleaning.DatasetCleaning import DatasetCleaning
@@ -26,7 +27,7 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
 
     # dataset 1
     _uncleaned_dataset_path1: str = os.path.join(_dir_name,
-                                    "system_test_uncleaned_dataset1.csv.error")
+                                                 "system_test_uncleaned_dataset1.csv.error")
     _cleaned_dataset_path1: str = os.path.join(_dir_name,
                                                "system_test_cleaned_dataset1.csv")
 
@@ -38,8 +39,10 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
     _latest_progress: float = 0.
 
     # dataset 2
-    _uncleaned_dataset_path2: str = os.path.join(_dir_name, "system_test_uncleaned_dataset2.csv")
-    _cleaned_dataset_path2: str = os.path.join(_dir_name, "system_test_cleaned_dataset2.csv")
+    _uncleaned_dataset_path2: str = os.path.join(_dir_name,
+                                                 "system_test_uncleaned_dataset2.csv")
+    _cleaned_dataset_path2: str = os.path.join(_dir_name,
+                                               "system_test_cleaned_dataset2.csv")
 
     _uncleaned_dataset2: np.ndarray = ds().system_test2
 
@@ -50,7 +53,8 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
 
     _dataIO = DataIO()
 
-    def task_progress_callback(self, _task_id: int, task_state: TaskState, progress: float) -> None:
+    def task_progress_callback(self, _task_id: int, task_state: TaskState,
+                               progress: float) -> None:
         if task_state.is_running():
             self._run_cleaning = True
 
@@ -72,26 +76,36 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
         # DatasetCleaning creation
         self.__clean_created_files_and_directories()
 
-        self._dataIO.write_csv(self._uncleaned_dataset_path1, self._uncleaned_dataset1, False)
-        self._dataIO.write_csv(self._uncleaned_dataset_path2, self._uncleaned_dataset2, False)
+        self._dataIO.write_csv(self._uncleaned_dataset_path1, self._uncleaned_dataset1,
+                               False)
+        self._dataIO.write_csv(self._uncleaned_dataset_path2, self._uncleaned_dataset2,
+                               False)
 
         self._dc1: DatasetCleaning = DatasetCleaning(self._user_id, self._task_id,
-                                                     self.task_progress_callback, self._uncleaned_dataset_path1,
-                                                     self._cleaned_dataset_path1, None, self._priority)
+                                                     self.task_progress_callback,
+                                                     self._uncleaned_dataset_path1,
+                                                     self._cleaned_dataset_path1, None,
+                                                     self._priority)
 
         self._dc2: DatasetCleaning = DatasetCleaning(self._user_id, self._task_id,
-                                                     self.task_progress_callback, self._uncleaned_dataset_path2,
-                                                     self._cleaned_dataset_path2, None, self._priority)
+                                                     self.task_progress_callback,
+                                                     self._uncleaned_dataset_path2,
+                                                     self._cleaned_dataset_path2, None,
+                                                     self._priority)
 
         self._dc3: DatasetCleaning = DatasetCleaning(self._user_id, self._task_id,
-                                                     self.task_progress_callback, self._uncleaned_dataset_path3,
-                                                     self._cleaned_dataset_path3, None, self._priority)
+                                                     self.task_progress_callback,
+                                                     self._uncleaned_dataset_path3,
+                                                     self._cleaned_dataset_path3, None,
+                                                     self._priority)
 
-        self._dc3_already_finished: DatasetCleaning = DatasetCleaning(self._user_id, self._task_id,
+        self._dc3_already_finished: DatasetCleaning = DatasetCleaning(self._user_id,
+                                                                      self._task_id,
                                                                       self.task_progress_callback,
                                                                       self._uncleaned_dataset_path3,
                                                                       self._cleaned_dataset_path_to_compare_result3,
-                                                                      None, self._priority)
+                                                                      None,
+                                                                      self._priority)
 
     def tearDown(self) -> None:
         self.__clean_created_files_and_directories()
@@ -125,11 +139,33 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
         self.assertFalse(self._finished_cleaning)
         self.assertEqual(0, self._latest_progress)
 
+        print("Start")
+
         # cleaning
         self._dc1.schedule()
-        np.testing.assert_array_almost_equal(self._cleaned_dataset1,
-                                             DataIO.read_cleaned_csv(
-                                                 self._cleaned_dataset_path1))
+        cleaning_result1: AnnotatedDataset = \
+            DataIO.read_annotated(self._cleaned_dataset_path1, True)
+
+        cleaned_dataset1_data: np.ndarray = \
+            np.asarray([[0.0, 0.0]], object)
+        np.testing.assert_array_equal(cleaned_dataset1_data,
+                                      cleaning_result1.data)
+
+        cleaned_dataset1_headers: np.ndarray = \
+            np.asarray(['0', '1'], object)
+        np.testing.assert_array_equal(cleaned_dataset1_headers,
+                                      cleaning_result1.headers)
+
+        cleaned_dataset1_row_mapping: np.ndarray = \
+            np.asarray([0], object)
+        np.testing.assert_array_equal(cleaned_dataset1_row_mapping,
+                                      cleaning_result1.row_mapping)
+
+        cleaned_dataset1: np.ndarray = \
+            np.asarray([['', '0', '1'],
+                        [0, 0.0, 0.0]], object)
+        np.testing.assert_array_equal(cleaned_dataset1,
+                                      cleaning_result1.to_single_array())
 
         # progress finished
         self.assertTrue(self._run_cleaning)
@@ -147,15 +183,17 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
 
         # cleaning
         self._dc2.schedule()
-        cleaned_dataset2: np.ndarray = np.asarray([[0.00000000e+00, 1.00000000e+00, 0.00000000e+00, 1.00000000e+00,
-                                                    0.00000000e+00, 1.00000000e+00, 1.00000000e+00],
-                                                   [1.00000000e+00, 5.00405186e-01, 1.00000000e+00, 0.00000000e+00,
-                                                    8.12019199e-02, 1.32896857e-06, 0.00000000e+00],
-                                                   [6.07124844e-05, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
-                                                    1.00000000e+00, 0.00000000e+00, 9.87870182e-01],
-                                                   [6.07124844e-05, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
-                                                    1.00000000e+00, 0.00000000e+00, 9.87870182e-01]])
-        np.testing.assert_array_almost_equal(cleaned_dataset2, DataIO.read_cleaned_csv(self._cleaned_dataset_path2))
+        cleaned_dataset2: np.ndarray = np.asarray(
+            [[0.00000000e+00, 1.00000000e+00, 0.00000000e+00, 1.00000000e+00,
+              0.00000000e+00, 1.00000000e+00, 1.00000000e+00],
+             [1.00000000e+00, 5.00405186e-01, 1.00000000e+00, 0.00000000e+00,
+              8.12019199e-02, 1.32896857e-06, 0.00000000e+00],
+             [6.07124844e-05, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
+              1.00000000e+00, 0.00000000e+00, 9.87870182e-01],
+             [6.07124844e-05, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
+              1.00000000e+00, 0.00000000e+00, 9.87870182e-01]])
+        np.testing.assert_array_almost_equal(cleaned_dataset2, DataIO.read_cleaned_csv(
+            self._cleaned_dataset_path2))
 
         # progress finished
         self.assertTrue(self._run_cleaning)
@@ -173,9 +211,11 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
 
         # cleaning
         self._dc3.schedule()
-        cleaned_dataset3: np.ndarray = DataIO.read_cleaned_csv(self._cleaned_dataset_path3)
+        cleaned_dataset3: np.ndarray = DataIO.read_cleaned_csv(
+            self._cleaned_dataset_path3)
         np.testing.assert_array_almost_equal(cleaned_dataset3,
-                                             DataIO.read_cleaned_csv(self._cleaned_dataset_path_to_compare_result3))
+                                             DataIO.read_cleaned_csv(
+                                                 self._cleaned_dataset_path_to_compare_result3))
 
         # progress finished
         self.assertTrue(self._run_cleaning)
@@ -195,7 +235,8 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
         self._dc3_already_finished.schedule()
 
         # progress finished
-        self.assertFalse(self._run_cleaning)  # FALSE!!! because pipeline was skipped (result already exists)
+        self.assertFalse(
+            self._run_cleaning)  # FALSE!!! because pipeline was skipped (result already exists)
         self.assertTrue(self._finished_cleaning)
         self.assertEqual(1, self._latest_progress)
 
