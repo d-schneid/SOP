@@ -73,32 +73,25 @@ class DataIO:
         return to_convert
 
     @staticmethod
-    def write_csv(path: str, data: np.ndarray, add_index_column: bool = False, running_suffix: str = ".running",
+    def write_csv(path: str, data: np.ndarray, add_index_column: bool = False,
                   has_header: bool = False):
         """
         Writes the given 2D-dataset to a csv-file.
 
-        While the data is written to the file, a suffix (by default: ".running") is added at the end of the path,
-        which is renamed after the writing has finished,
-        so that a corrupted file due to a server crash can be detected.
-
-        :param path: The absolute path to the location of the csv-file to be created and written to.
+        :param path: The absolute path to the location of the csv-file
+                        to be created and written to.
                      If this file is already existing, it is overridden.
         :param data: The dataset that should be written to the file.
-        :param add_index_column: If True create an additional column at the start of the array with
+        :param add_index_column: If True create an additional column
+            at the start of the array with
         indexes for each row. If False don't change anything.
-        :param running_suffix: Specifies the suffix to be added to the file during writing.
-        :param has_header: The header of the dataset that should be read.
+        :param has_header: Has the dataset that should be written a header?
         """
-
-        temp_path: str = path + running_suffix
 
         df = pd.DataFrame(data)
         assert len(df.shape) == 2
 
-        df.to_csv(temp_path, index=add_index_column, header=has_header)
-
-        os.rename(temp_path, path)  # is an atomic operation (POSIX requirement)
+        df.to_csv(path, index=add_index_column, header=has_header)
 
     @staticmethod
     def save_write_csv(running_path: str, final_path: str, data: np.ndarray,
@@ -113,15 +106,16 @@ class DataIO:
         the writing has finished is moved to the path_cleaning path.
         For this to work, both paths have to be on the same file system.
 
-        :param path_running: The path the csv-data is saved in during the writing process.
+        :param running_path: The path the csv-data is saved in during the writing process.
                              Should be on the same file system as path_final.
                              If this file is already existing, it is overridden (= deleted).
-        :param path_final: The path the csv-file is saved in after the writing has finished.
+        :param final_path: The path the csv-file is saved in after the writing has finished.
                            Should be on the same file system as path_running.
                            If this file is already existing, it is overridden.
         :param data: The dataset that should be written to the file.
         :param add_index_column: If True create an additional column at the start of the array with
                                  indexes for each row. If False don't change anything.
+        :param has_header: Has the dataset that should be written a header?
         """
-        DataIO.write_csv(running_path, data, add_index_column, "", has_header)
+        DataIO.write_csv(running_path, data, add_index_column, has_header)
         shutil.move(running_path, final_path)
