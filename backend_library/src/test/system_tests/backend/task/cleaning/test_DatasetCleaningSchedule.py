@@ -27,7 +27,8 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
 
     # dataset 1
     _uncleaned_dataset_path1: str = os.path.join(_dir_name,
-                                                 "system_test_uncleaned_dataset1.csv.error")
+                                                 "system_test_uncleaned_dataset1"
+                                                 + ".csv.error")
     _cleaned_dataset_path1: str = os.path.join(_dir_name,
                                                "system_test_cleaned_dataset1.csv")
 
@@ -49,7 +50,8 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
     # dataset 3: canada_climate.csv
     _uncleaned_dataset_path3: str = "test/datasets/canada_climate_uncleaned.csv"
     _cleaned_dataset_path3: str = "test/datasets/canada_climate_cleaned.csv"
-    _cleaned_dataset_path_to_compare_result3: str = "test/datasets/canada_climate_cleaned_to_compare.csv"
+    _cleaned_dataset_path_to_compare_result3: str = \
+        "test/datasets/canada_climate_cleaned_to_compare.csv"
 
     _dataIO = DataIO()
 
@@ -139,8 +141,6 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
         self.assertFalse(self._finished_cleaning)
         self.assertEqual(0, self._latest_progress)
 
-        print("Start")
-
         # cleaning
         self._dc1.schedule()
         cleaning_result1: AnnotatedDataset = \
@@ -183,7 +183,10 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
 
         # cleaning
         self._dc2.schedule()
-        cleaned_dataset2: np.ndarray = np.asarray(
+        cleaning_result2: AnnotatedDataset = \
+            DataIO.read_annotated(self._cleaned_dataset_path2, True)
+
+        cleaned_dataset2_data: np.ndarray = np.asarray(
             [[0.00000000e+00, 1.00000000e+00, 0.00000000e+00, 1.00000000e+00,
               0.00000000e+00, 1.00000000e+00, 1.00000000e+00],
              [1.00000000e+00, 5.00405186e-01, 1.00000000e+00, 0.00000000e+00,
@@ -192,8 +195,18 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
               1.00000000e+00, 0.00000000e+00, 9.87870182e-01],
              [6.07124844e-05, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
               1.00000000e+00, 0.00000000e+00, 9.87870182e-01]])
-        np.testing.assert_array_almost_equal(cleaned_dataset2, DataIO.read_cleaned_csv(
-            self._cleaned_dataset_path2))
+        np.testing.assert_array_almost_equal(cleaned_dataset2_data,
+                                             cleaning_result2.data)
+
+        cleaned_dataset2_row_mapping: np.ndarray = np.asarray(
+            [0, 1, 2, 4])
+        np.testing.assert_array_almost_equal(cleaned_dataset2_row_mapping,
+                                             cleaning_result2.row_mapping)
+
+        cleaned_dataset2_headers: np.ndarray = np.asarray(
+            ['0', '1', '2', '3', '4', '7', '8'])
+        np.testing.assert_array_equal(cleaned_dataset2_headers,
+                                      cleaning_result2.headers)
 
         # progress finished
         self.assertTrue(self._run_cleaning)
