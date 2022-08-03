@@ -226,11 +226,6 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
         self.assertFalse(self._finished_cleaning)
         self.assertEqual(0, self._latest_progress)
 
-        # TODO: Pipeline 3 cannot find uncleaned file at path
-        print("Is there a file at " + self._uncleaned_dataset_path3 + "? : "
-              + str(os.path.isfile(self._uncleaned_dataset_path3)))
-
-
         # cleaning
         self.assertTrue(os.path.isfile(self._uncleaned_dataset_path3))
         self._dc3.schedule()
