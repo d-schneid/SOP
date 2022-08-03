@@ -48,10 +48,12 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
     _uncleaned_dataset2: np.ndarray = ds().system_test2
 
     # dataset 3: canada_climate.csv
-    _uncleaned_dataset_path3: str = "test/datasets/canada_climate_uncleaned.csv"
-    _cleaned_dataset_path3: str = "test/datasets/canada_climate_cleaned.csv"
+    _uncleaned_dataset_path3: str = os.path.join(_dir_name,
+                                                 "test/datasets" +
+                                                 "/canada_climate_uncleaned.csv")
+    _cleaned_dataset_path3: str = "./test/datasets/canada_climate_cleaned.csv"
     _cleaned_dataset_path_to_compare_result3: str = \
-        "test/datasets/canada_climate_cleaned_to_compare.csv"
+        "./test/datasets/canada_climate_cleaned_to_compare.csv"
 
     _dataIO = DataIO()
 
@@ -142,6 +144,7 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
         self.assertEqual(0, self._latest_progress)
 
         # cleaning
+        self.assertTrue(os.path.isfile(self._uncleaned_dataset_path1))
         self._dc1.schedule()
         cleaning_result1: AnnotatedDataset = \
             DataIO.read_annotated(self._cleaned_dataset_path1, True)
@@ -182,6 +185,7 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
         self.assertEqual(0, self._latest_progress)
 
         # cleaning
+        self.assertTrue(os.path.isfile(self._uncleaned_dataset_path2))
         self._dc2.schedule()
         cleaning_result2: AnnotatedDataset = \
             DataIO.read_annotated(self._cleaned_dataset_path2, True)
@@ -222,13 +226,22 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
         self.assertFalse(self._finished_cleaning)
         self.assertEqual(0, self._latest_progress)
 
+        # TODO: Pipeline 3 cannot find uncleaned file at path
+        print("Is there a file at " + self._uncleaned_dataset_path3 + "? : "
+              + str(os.path.isfile(self._uncleaned_dataset_path3)))
+
+
         # cleaning
+        self.assertTrue(os.path.isfile(self._uncleaned_dataset_path3))
         self._dc3.schedule()
+
+        cleaning_result3: AnnotatedDataset = \
+            DataIO.read_annotated(self._cleaned_dataset_path_to_compare_result3, True)
+
         cleaned_dataset3: np.ndarray = DataIO.read_cleaned_csv(
             self._cleaned_dataset_path3)
         np.testing.assert_array_almost_equal(cleaned_dataset3,
-                                             DataIO.read_cleaned_csv(
-                                                 self._cleaned_dataset_path_to_compare_result3))
+                                             cleaning_result3.data)
 
         # progress finished
         self.assertTrue(self._run_cleaning)
@@ -248,8 +261,8 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
         self._dc3_already_finished.schedule()
 
         # progress finished
-        self.assertFalse(
-            self._run_cleaning)  # FALSE!!! because pipeline was skipped (result already exists)
+        # false because pipeline was skipped (result already exists)
+        self.assertFalse(self._run_cleaning)
         self.assertTrue(self._finished_cleaning)
         self.assertEqual(1, self._latest_progress)
 
