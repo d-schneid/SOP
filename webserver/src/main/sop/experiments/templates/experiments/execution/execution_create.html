@@ -7,15 +7,40 @@
 
 {% block content %}
     <form method="post" enctype="multipart/form-data">{% csrf_token %}
-        <div class="mt-3">{{ form.as_p }}</div>
-        <div id="algorithm_errors">
-            <p class="text-danger" style="white-space: pre-line">
-                {{ form.algorithm_errors }}
-            </p>
+        <div class="card mt-3">
+            <div class="card-header bg-dark d-flex text-white">Subspace Generation</div>
+            <div class="card-body">
+                <div class="mt-3">
+                    <label for="subspace-size">Subspace Size Interval:</label>
+                    <div class="form-row" id="subspace-size">
+                        <span style="font-size:20pt">[</span>
+                        <div class="form-group col-md-2">
+                            {{ form.subspaces_min }}
+                        </div>
+                        <span style="font-size:20pt">,</span>
+                        <div class="form-group col-md-2">
+                            {{ form.subspaces_max }}
+                        </div>
+                        <span style="font-size:20pt">]</span>
+                    </div>
+                    <div class="form-row mt-3">
+                        <div class="form-group col-md-6">
+                            <label for="{{ form.subspace_amount.id_for_label }}">Subspace Amount:</label>
+                            {{ form.subspace_amount }}
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="{{ form.subspace_generation_seed.id_for_label }}">Subspace Generation
+                                Seed:</label>
+                            {{ form.subspace_generation_seed }}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+
         {% for algorithm in experiment.algorithms.all %}
             <div class="card shadow mt-4 mb-4">
-                <div class="card-header bg-dark d-flex hand text-white">
+                <div class="card-header bg-dark d-flex text-white">
                     <div class="flex-grow-1">{{ algorithm.display_name }}</div>
                     <div>{{ algorithm.group }}</div>
                 </div>

@@ -49,14 +49,11 @@
                 {% csrf_token %}
                 <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
                 <div class="form-floating">
-                    {{ form.username.errors }}
                     {{ form.username }}
                 </div>
                 <div class="form-floating">
-                    {{ form.password.errors }}
                     {{ form.password }}
                 </div>
-                {{ form.non_field_errors }}
                 <button class="w-100 btn btn-lg btn-primary mb-2">Sign in</button>
             </form>
         </div>

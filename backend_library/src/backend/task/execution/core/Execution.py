@@ -315,21 +315,18 @@ class Execution(Task, Schedulable):
         return iter(self._subspaces)
 
     @property
-    def subspace_identifier(self) -> list[str]:
-        """ TODO TEST THIS!
-        :return: A list which contains all the subspace identifier of the selected subspaces (in this Execution). \n
-        """
-        subspace_identifier: list[str] = list([])
-        for subspace in self._subspaces:
-            subspace_identifier.append(subspace.get_subspace_identifier())
-        return subspace_identifier
-
-    @property
     def zip_result_path(self) -> str:
         """
         :return: The absolute path where the ZIP-file of the result of this Execution can be found.
         """
         return self._final_zip_path
+
+    @property
+    def result_path(self) -> str:
+        """
+        :return: The absolute path where the ZIP-file of the result of this Execution can be found.
+        """
+        return self._result_path
 
     def run_later_on_main(self, statuscode: int):
         self.__generate_execution_subspaces()

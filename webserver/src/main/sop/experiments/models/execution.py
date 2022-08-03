@@ -1,5 +1,6 @@
 import math
 import random
+from enum import Enum, auto
 from typing import Any
 
 from django.conf import settings
@@ -8,6 +9,26 @@ from django.db import models
 from backend.task.TaskState import TaskState
 from experiments.models.experiment import Experiment
 from experiments.models.managers import ExecutionManager, ExecutionQuerySet
+
+
+class ExecutionStatus(Enum):
+    RUNNING = auto, False, False, False, True
+    RUNNING_WITH_ERROR = auto, False, False, True, True
+    FINISHED = auto, False, True, False, False
+    FINISHED_WITH_ERROR = auto, False, True, True, False
+    CRASHED = auto, True, False, False, False
+
+    def is_crashed(self) -> bool:
+        return self.value[1]
+
+    def has_result(self) -> bool:
+        return self.value[2]
+
+    def error_occurred(self) -> bool:
+        return self.value[3]
+
+    def is_running(self) -> bool:
+        return self.value[4]
 
 
 def generate_random_seed() -> int:
@@ -38,22 +59,28 @@ class Execution(models.Model):
         super(Execution, self).save(*args, **kwargs)
 
     @property
-    def is_finished(self) -> bool:
-        state = TaskState[self.status]
+    def has_result(self) -> bool:
+        state = ExecutionStatus[self.status]
         assert state is not None
-        return state.is_finished()
+        return state.has_result()
 
     @property
     def error_occurred(self) -> bool:
-        state = TaskState[self.status]
+        state = ExecutionStatus[self.status]
         assert state is not None
         return state.error_occurred()
 
     @property
     def is_running(self) -> bool:
-        state = TaskState[self.status]
+        state = ExecutionStatus[self.status]
         assert state is not None
         return state.is_running()
+
+    @property
+    def is_crashed(self) -> bool:
+        state = ExecutionStatus[self.status]
+        assert state is not None
+        return state.is_crashed()
 
     @property
     def progress_as_percent(self) -> float:

@@ -41,7 +41,6 @@ class DatasetUploadForm(forms.ModelForm[Dataset]):
 
 
 class ExperimentCreateForm(forms.ModelForm[Experiment]):
-
     class Meta:
         model = Experiment
         fields = ["display_name", "dataset", ]
@@ -63,7 +62,10 @@ class ExecutionCreateForm(forms.ModelForm[Execution]):
             "subspace_generation_seed",
         )
         widgets = {
+            "subspaces_min": forms.NumberInput(attrs={"placeholder": "minimum", "class": "form-control"}),
+            "subspaces_max": forms.NumberInput(attrs={"placeholder": "maximum", "class": "form-control"}),
+            "subspace_amount": forms.NumberInput(attrs={"placeholder": "amount", "class": "form-control"}),
             "subspace_generation_seed": forms.NumberInput(
-                attrs={"placeholder": "random"}
+                attrs={"placeholder": "random", "class": "form-control"}
             )
         }

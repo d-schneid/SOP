@@ -4,8 +4,7 @@ import os.path
 from typing import Optional
 
 from django.contrib import messages
-from django.http import HttpResponse, HttpRequest
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpRequest, HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views.generic import ListView, UpdateView, CreateView
 
@@ -16,12 +15,11 @@ from experiments.forms.edit import DatasetEditForm
 from experiments.models import Dataset
 from experiments.models.managers import DatasetQuerySet
 
-from experiments.services.dataset import schedule_backend, save_dataset
+from experiments.services.dataset import schedule_backend
 
 
 from experiments.views.generic import PostOnlyDeleteView
 from experiments.services.dataset import (
-    generate_path_dataset_cleaned,
     save_dataset,
     get_download_response,
 )
@@ -46,18 +44,20 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
         return super().post(request, *args, **kwargs)
 
     def form_valid(self, form):
-
-        if e := form.errors.as_data().get("path_original"):
-            messages.error(self.request, f"Invalid dataset: {e}")
-
         # save the file temporarily to disk
         temp_file_path: str = save_dataset(self.request.FILES["path_original"])
-
         assert os.path.isfile(temp_file_path)
 
+        try:
+            dataset_valid = DatasetInfo.is_dataset_valid(temp_file_path)
+        except UnicodeError as e:
+            os.remove(temp_file_path)
+            messages.error(self.request, "Unicode error in selected dataset: " + e.reason)
+            assert not os.path.isfile(temp_file_path)
+            return super(DatasetUploadView, self).form_invalid(form)
+
         # check if the file is a csv file
-        if not DatasetInfo.is_dataset_valid(temp_file_path):
-            # delete temp file
+        if not dataset_valid:
             os.remove(temp_file_path)
 
             # TODO: Maybe an error in FileField validator?
@@ -68,7 +68,6 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
 
         # don't add the data on datapoints and dimensions to the model
 
-        # delete temp file
         os.remove(temp_file_path)
 
         form.instance.user = self.request.user

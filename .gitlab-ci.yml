@@ -120,7 +120,7 @@ backend-tests:
   script:
     - which python3.9
     - cd backend_library/src
-    - python3.9 -m coverage run --source=backend/ --omit="*/__init__.py" -m unittest discover -p "*.py" -s test/ -t .
+    - python3.9 -m coverage run --source=backend/ --omit="*/__init__.py" --omit="backend/scheduler/DebugScheduler.py" --omit="backend/scheduler/ThreadedScheduler.py" -m unittest discover -p "*.py" -s test/ -t .
     - python3.9 -m coverage report --precision=2
     - 'wget -O ../../public/backend-tests.svg https://img.shields.io/badge/backend\ coverage-$(python3.9 -m coverage report --rcfile=.coveragerc --precision=2 | grep -E "^TOTAL.+?([0-9]+.[0-9]+%)$" | grep -Eo "[0-9]+.[0-9]+%$")-informational'
   artifacts:
@@ -167,20 +167,11 @@ deploy-app:
     - deployment
   before_script:
     - apt -y update
-    - apt -y install curl
-    - echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/ buster main' | tee /etc/apt/sources.list.d/cloudflare-main.list
-    - curl https://pkg.cloudflare.com/cloudflare-main.gpg -o /usr/share/keyrings/cloudflare-main.gpg
-    - apt -y update
-    - apt -y install cloudflared openssh-client gettext
-    - mkdir ~/.ssh && touch ~/.ssh/config
-    - envsubst < $SSH_CONF > ~/.ssh/config
+    - apt -y install openssh-client
 
   script:
     - chmod og= $ID_RSA
-    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login -u $DOCKERHUB_USER -p $DOCKERHUB_TOKEN"
-    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker-compose down"
-    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker pull $TAG_LATEST"
-    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker-compose up -d"
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "./redeploy.sh"
   environment:
     name: development
     url: https://sop.ffhz.site
