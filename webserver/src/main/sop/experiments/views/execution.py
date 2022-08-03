@@ -233,7 +233,7 @@ class ExecutionDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Execution]):
 
 
 def download_execution_result(
-        request: HttpRequest, experiment_pk: int, pk: int
+        request: HttpRequest, experiment_pk: Optional[int], pk: int
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
     if request.method == "GET":
         execution: Optional[Execution] = Execution.objects.filter(pk=pk).first()
