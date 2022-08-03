@@ -39,6 +39,7 @@ class AnnotatedDataset:
         if has_row_numbers and has_header:
             self.headers = np.delete(self.headers, 0)
             self.row_mapping = np.delete(self.row_mapping, 0)
+        self.row_mapping = self.row_mapping.astype(np.int32)
 
     def to_single_array(self) -> np.ndarray:
         """Merges the data from this into a single object array,

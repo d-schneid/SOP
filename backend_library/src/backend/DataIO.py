@@ -23,7 +23,7 @@ class DataIO:
         """
         assert os.path.isfile(path)
 
-        base = pd.read_csv(path, dtype=object).to_numpy()
+        base = pd.read_csv(path, dtype=object, header=None).to_numpy()
         anno_ds = AnnotatedDataset(base, None, None,
                                    not has_header, not has_row_numbers)
         if is_cleaned:
