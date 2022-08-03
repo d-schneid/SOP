@@ -42,7 +42,7 @@ class DatasetOverviewTests(LoggedInTestCase):
         self.assertContains(response, "name_b")
         self.assertContains(response, "name_c")
         self.assertQuerysetEqual(
-            response.context[self.QUERYSET_NAME], [dataset2, dataset1, dataset3]
+            response.context[self.QUERYSET_NAME], [dataset3, dataset2, dataset1]
         )
 
     def test_dataset_overview_sort_by_upload_date(self):
