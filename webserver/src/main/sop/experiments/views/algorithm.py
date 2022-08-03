@@ -3,9 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Optional, Dict, Any
 
-from django.http import HttpRequest, HttpResponseRedirect
 from django.contrib import messages
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.http import HttpRequest, HttpResponseRedirect
 from django.http.response import HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import (
@@ -24,11 +24,15 @@ from experiments.services.algorithm import (
     delete_temp_algorithm,
     convert_param_mapping_to_signature_dict,
 )
-from experiments.views.generic import PostOnlyDeleteView
 from experiments.services.dataset import get_download_response
+from experiments.views.generic import PostOnlyDeleteView
 
 
 class AlgorithmOverview(LoginRequiredMixin, ListView[Algorithm]):
+    """
+    A view to display all algorithms of a user, optionally sorted by specific traits
+    like name, group or upload_date.
+    """
     model = Algorithm
     template_name = "algorithm_overview.html"
 
@@ -51,6 +55,11 @@ class AlgorithmOverview(LoginRequiredMixin, ListView[Algorithm]):
 class AlgorithmUploadView(
     LoginRequiredMixin, CreateView[Algorithm, AlgorithmUploadForm]
 ):
+    """
+    A view to upload an own algorithm. It will check the algorithm for validity before
+    saving the algorithm in the database to make it usable for experiment creation
+    later.
+    """
     model = Algorithm
     form_class = AlgorithmUploadForm
     template_name = "algorithm_upload.html"
@@ -78,11 +87,19 @@ class AlgorithmUploadView(
 
 
 class AlgorithmDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Algorithm]):
+    """
+    A view to delete an algorithm. It inherits from PostOnlyDeleteView, so it can only
+    be called via a POST request and then execute the deletion.
+    """
     model = Algorithm
     success_url = reverse_lazy("algorithm_overview")
 
 
 class AlgorithmEditView(LoginRequiredMixin, UpdateView[Algorithm, AlgorithmEditForm]):
+    """
+    A view to edit an existing algorithm. It uses the AlgorithmEditForm to display
+    widgets for the fields that a user can edit.
+    """
     model = Algorithm
     form_class = AlgorithmEditForm
     template_name = "algorithm_edit.html"
@@ -92,6 +109,15 @@ class AlgorithmEditView(LoginRequiredMixin, UpdateView[Algorithm, AlgorithmEditF
 def download_algorithm(
         request: HttpRequest, pk: int
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
+    """
+    A function view that will let the user download a algorithm.
+    @param request: The HTTPRequest, this will be given by django.
+    @param pk: The primary key of the algorithm that will be downloaded.
+    @return: If the request is successful and an algorithm with the given primary
+    key exists, this function will return a HTTPResponse with the download of the
+    algorithm. Otherwise, it will return a redirect to the algorithm overview.
+    If this function is accessed with a POST request, it will return None.
+    """
     if request.method == "GET":
         algorithm: Optional[Algorithm] = Algorithm.objects.filter(pk=pk).first()
         if algorithm is None:
