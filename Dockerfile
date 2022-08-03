@@ -12,7 +12,7 @@ RUN apt update -y && apt upgrade -y \
     && DEBIAN_FRONTEND=noninteractive apt install -y python3-dev memcached
 
 # copy requirements list and docker entrypoint
-COPY requirements.txt requirements_deploy.txt entrypoint.sh ./
+COPY requirements.txt requirements_deploy.txt requirements_pyod_algorithms.txt entrypoint.sh ./
 
 # copy backend for install
 COPY ./backend_library /app/backend_library
@@ -21,6 +21,7 @@ COPY ./backend_library /app/backend_library
 RUN python3 -m pip install --upgrade pip \
     && python3 -m pip install --no-cache-dir -r requirements.txt \
     && python3 -m pip install --no-cache-dir -r requirements_deploy.txt \
+    && python3 -m pip install --no-cache-dir -r requirements_pyod_algorithms.txt \
     && python3 -m pip install --no-cache-dir /app/backend_library/src \
     && rm -rf /app/backend_library \
     && apt autoremove
