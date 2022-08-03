@@ -146,6 +146,8 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
         # cleaning
         self.assertTrue(os.path.isfile(self._uncleaned_dataset_path1))
         self._dc1.schedule()
+        self.assertTrue(os.path.isfile(self._cleaned_dataset_path1))
+
         cleaning_result1: AnnotatedDataset = \
             DataIO.read_annotated(self._cleaned_dataset_path1, True)
 
@@ -187,6 +189,8 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
         # cleaning
         self.assertTrue(os.path.isfile(self._uncleaned_dataset_path2))
         self._dc2.schedule()
+        self.assertTrue(os.path.isfile(self._cleaned_dataset_path2))
+
         cleaning_result2: AnnotatedDataset = \
             DataIO.read_annotated(self._cleaned_dataset_path2, True)
 
@@ -229,6 +233,7 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
         # cleaning
         self.assertTrue(os.path.isfile(self._uncleaned_dataset_path3))
         self._dc3.schedule()
+        self.assertTrue(os.path.isfile(self._cleaned_dataset_path3))
 
         cleaning_result3: AnnotatedDataset = \
             DataIO.read_annotated(self._cleaned_dataset_path_to_compare_result3, True)
