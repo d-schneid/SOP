@@ -166,7 +166,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
         :return: The loaded uncleaned dataset.
         (Throws FileNotFoundError if there exists no file at the uncleaned_dataset_path)
         """
-        return DataIO.read_annotated(self._uncleaned_dataset_path, False,
+        return DataIO.read_annotated(self._uncleaned_dataset_path, is_cleaned=False,
                                      has_row_numbers=False)
 
     def __run_cleaning_pipeline(self, csv_to_clean: AnnotatedDataset) -> \

@@ -80,8 +80,8 @@ class Datasets:
     @property
     def system_test1(self) -> np.ndarray:
         # No indices (row-mapping) for uncleaned datasets (only headers and data)
-        return np.asarray([['0', '1', '2', '3'],
-                           [1, 412, "I am an evil String", None]], object)
+        return np.asarray([['', '0', '1', '2', '3'],
+                           [0, 1, 412, "I am an evil String", None]], object)
 
     @property
     def system_test2(self) -> np.ndarray:

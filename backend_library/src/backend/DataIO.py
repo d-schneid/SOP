@@ -21,6 +21,8 @@ class DataIO:
         (false will generate them)
         :return: an annotated dataset from the file
         """
+        assert os.path.isfile(path)
+
         base = pd.read_csv(path, dtype=object).to_numpy()
         anno_ds = AnnotatedDataset(base, None, None,
                                    not has_header, not has_row_numbers)
@@ -54,6 +56,7 @@ class DataIO:
         :param has_header: The header of the dataset that should be read.
         :return: The uncleaned dataset.
         """
+        assert os.path.exists
         assert os.path.isfile(path)
 
         df: pd.DataFrame = pd.read_csv(path, dtype=object, header=has_header)
