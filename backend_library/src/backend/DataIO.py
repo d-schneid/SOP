@@ -21,11 +21,13 @@ class DataIO:
         (false will generate them)
         :return: an annotated dataset from the file
         """
-        base = DataIO.read_uncleaned_csv(path, None)
+        base = pd.read_csv(path, dtype=object).to_numpy()
         anno_ds = AnnotatedDataset(base, None, None,
                                    not has_header, not has_row_numbers)
         if is_cleaned:
             anno_ds.data = anno_ds.data.astype(np.float32)
+        else:
+            anno_ds.data = DataIO.__save_convert_to_float(anno_ds.data)
         return anno_ds
 
     @staticmethod
