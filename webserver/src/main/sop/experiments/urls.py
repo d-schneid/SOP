@@ -20,8 +20,7 @@ from experiments.views.execution import (
     ExecutionCreateView,
     ExecutionDeleteView,
     ExecutionDuplicateView,
-    download_execution_result,
-    get_execution_progress,
+    download_execution_result, get_execution_progress, restart_execution,
 )
 from experiments.views.experiment import (
     ExperimentOverview,
@@ -144,6 +143,11 @@ urlpatterns = [
         "experiment/<int:experiment_pk>/execution/<int:pk>/download_results/",
         download_execution_result,
         name="execution_download_result",
+    ),
+    path(
+        "experiment/<int:experiment_pk>/execution/<int:pk>/restart/",
+        restart_execution,
+        name="execution_restart",
     ),
     path("execution_progress/", get_execution_progress, name="execution_progress"),
     # upload progress

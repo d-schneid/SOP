@@ -47,10 +47,6 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
         return super().post(request, *args, **kwargs)
 
     def form_valid(self, form):
-
-        if e := form.errors.as_data().get("path_original"):
-            messages.error(self.request, f"Invalid dataset: {e}")
-
         # save the file temporarily to disk
         temp_file_path: str = save_dataset(self.request.FILES["path_original"])
         assert os.path.isfile(temp_file_path)

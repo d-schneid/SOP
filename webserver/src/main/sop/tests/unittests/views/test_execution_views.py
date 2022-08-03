@@ -43,7 +43,7 @@ class ExecutionCreateViewTests(LoggedInTestCase):
 
     def send_post(self) -> HttpResponse:
         with patch(
-            "experiments.views.execution.schedule_backend", lambda execution: None
+                "experiments.views.execution.schedule_backend", lambda execution: None
         ):
             response = self.client.post(
                 reverse_lazy("execution_create", args=(self.exp.pk,)),
@@ -81,34 +81,52 @@ class ExecutionCreateViewTests(LoggedInTestCase):
         response = self.send_post()
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.redirect_chain)
-        errors = response.context["form"].errors  # type: ignore
-        self.assertEqual(len(errors.keys()), 3)
-        self.assertIsNotNone(errors.get("subspaces_min"))
-        self.assertIsNotNone(errors.get("subspaces_max"))
-        self.assertIsNotNone(errors.get("subspace_amount"))
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 3)
+        # self.assertIsNotNone(errors.get("subspaces_min"))
+        # self.assertIsNotNone(errors.get("subspaces_max"))
+        # self.assertIsNotNone(errors.get("subspace_amount"))
         self.assertIsNone(Execution.objects.first())
 
     def test_execution_create_view_subspace_errors2(self) -> None:
+        """
+        Test that Subspaces max is greater than or equal to Subspaces min.
+        """
         self.data["subspaces_min"] = 4
         self.data["subspaces_max"] = 2
         response = self.send_post()
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.redirect_chain)
-        errors = response.context["form"].errors  # type: ignore
-        self.assertEqual(len(errors.keys()), 1)
-        self.assertIsNotNone(errors.get("subspaces_max"))
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(len([m for m in messages if "Min" in m.message and "Max" in m.message]), 1)
         self.assertIsNone(Execution.objects.first())
 
     def test_execution_create_view_subspace_errors3(self) -> None:
-        self.data["subspaces_max"] = -2
+        """
+        Test that subspace generation seed and Subspace amount cannot be smaller than zero
+        """
         self.data["subspace_generation_seed"] = -1
         response = self.send_post()
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.redirect_chain)
-        errors = response.context["form"].errors  # type: ignore
-        self.assertEqual(len(errors.keys()), 2)
-        self.assertIsNotNone(errors.get("subspaces_max"))
-        self.assertIsNotNone(errors.get("subspace_generation_seed"))
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(len([m for m in messages if "Seed" in m.message]), 1)
+        self.assertIsNone(Execution.objects.first())
+
+    def test_execution_create_view_subspace_errors4(self) -> None:
+        """
+        Test that subspace min and max can't be smaller than 0, even if min < max.
+        """
+        self.data["subspaces_min"] = -2
+        self.data["subspaces_max"] = -1
+        response = self.send_post()
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.redirect_chain)
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 2)
+        self.assertEqual(len([m for m in messages if "Min" in m.message or "Max" in m.message]), 2)
         self.assertIsNone(Execution.objects.first())
 
     def test_schedule_backend(self) -> None:
