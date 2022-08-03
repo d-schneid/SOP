@@ -238,7 +238,10 @@ def download_execution_result(
     if request.method == "GET":
         execution: Optional[Execution] = Execution.objects.filter(pk=pk).first()
         if execution is None:
-            return HttpResponseRedirect(reverse_lazy("experiment_overview"))
+            if "admin" not in request.path:
+                return HttpResponseRedirect(reverse_lazy("experiment_overview"))
+            return HttpResponseRedirect(
+                reverse_lazy("admin:experiments_execution_changelist"))
 
         file_name = "result.zip"
         with execution.result_path as file:
