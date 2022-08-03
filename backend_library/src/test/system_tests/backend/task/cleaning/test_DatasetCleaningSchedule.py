@@ -28,7 +28,7 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
     # dataset 1
     _uncleaned_dataset_path1: str = os.path.join(_dir_name,
                                                  "system_test_uncleaned_dataset1"
-                                                 + ".csv.error")
+                                                 + ".csv")
     _cleaned_dataset_path1: str = os.path.join(_dir_name,
                                                "system_test_cleaned_dataset1.csv")
 
@@ -81,9 +81,9 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
         self.__clean_created_files_and_directories()
 
         self._dataIO.write_csv(self._uncleaned_dataset_path1, self._uncleaned_dataset1,
-                               False)
+                               False, has_header=True)
         self._dataIO.write_csv(self._uncleaned_dataset_path2, self._uncleaned_dataset2,
-                               False)
+                               False, has_header=True)
 
         self._dc1: DatasetCleaning = DatasetCleaning(self._user_id, self._task_id,
                                                      self.task_progress_callback,
@@ -116,16 +116,16 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
 
     def __clean_created_files_and_directories(self):
         # dataset 1
-        if os.path.isfile(self._cleaned_dataset_path1):
-            os.remove(self._cleaned_dataset_path1)
+        #if os.path.isfile(self._cleaned_dataset_path1):
+            #os.remove(self._cleaned_dataset_path1)
         if os.path.isfile(self._cleaned_dataset_path1 + ".error"):
             os.remove(self._cleaned_dataset_path1 + ".error")
         if os.path.isfile(self._uncleaned_dataset_path1):
             os.remove(self._uncleaned_dataset_path1)
 
         # dataset 2
-        if os.path.isfile(self._cleaned_dataset_path2):
-            os.remove(self._cleaned_dataset_path2)
+        #if os.path.isfile(self._cleaned_dataset_path2):
+            #os.remove(self._cleaned_dataset_path2)
         if os.path.isfile(self._cleaned_dataset_path2 + ".error"):
             os.remove(self._cleaned_dataset_path2 + ".error")
         if os.path.isfile(self._uncleaned_dataset_path2):
@@ -150,6 +150,12 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
 
         cleaning_result1: AnnotatedDataset = \
             DataIO.read_annotated(self._cleaned_dataset_path1, True)
+
+        print("RESULT:")
+        print(cleaning_result1.data)
+        print(cleaning_result1.headers)
+        print(cleaning_result1.row_mapping)
+        print(str(self._cleaned_dataset_path1))
 
         cleaned_dataset1_data: np.ndarray = \
             np.asarray([[0.0, 0.0]], object)
@@ -193,6 +199,12 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
 
         cleaning_result2: AnnotatedDataset = \
             DataIO.read_annotated(self._cleaned_dataset_path2, True)
+
+        print("RESULT:")
+        print(cleaning_result2.data)
+        print(cleaning_result2.headers)
+        print(cleaning_result2.row_mapping)
+        print(str(self._cleaned_dataset_path1))
 
         cleaned_dataset2_data: np.ndarray = np.asarray(
             [[0.00000000e+00, 1.00000000e+00, 0.00000000e+00, 1.00000000e+00,
