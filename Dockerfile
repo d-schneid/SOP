@@ -23,8 +23,7 @@ RUN python3 -m pip install --upgrade pip \
     && python3 -m pip install --no-cache-dir -r requirements_deploy.txt \
     && python3 -m pip install --no-cache-dir -r requirements_pyod_algorithms.txt \
     && python3 -m pip install --no-cache-dir /app/backend_library/src \
-    && rm -rf /app/backend_library \
-    && apt autoremove
+    && rm -rf /app/backend_library
 
 # copy webserver
 COPY ./webserver /app/webserver
