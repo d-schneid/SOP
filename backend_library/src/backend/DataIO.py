@@ -12,6 +12,15 @@ class DataIO:
     @staticmethod
     def read_annotated(path: str, is_cleaned: bool, has_header: bool = True,
                        has_row_numbers: bool = True) -> AnnotatedDataset:
+        """
+        Reads an annotated Dataset from a file
+        :param path: the path where the dataset is
+        :param is_cleaned: whether the data-section consists of floats only
+        :param has_header: whether the file has headers (false will generate new ones)
+        :param has_row_numbers: whether the file has row numbers
+        (false will generate them)
+        :return: an annotated dataset from the file
+        """
         base = DataIO.read_uncleaned_csv(path, None)
         anno_ds = AnnotatedDataset(base, None, None,
                                    not has_header, not has_row_numbers)
