@@ -83,11 +83,11 @@ services:
   use whatever you want).
 + If the system you are deploying on uses SELinux, you might need a [:Z](https://docs.docker.com/storage/bind-mounts/)
   tag at the end of you bind mount.
-+ If you your compose version supports it, you can
++ If your compose version supports it, you can
   use [resource limits](https://stackoverflow.com/questions/42345235/how-to-specify-memory-cpu-limit-in-docker-compose-version-3)
   ,
   as the app will use a lot of resources,
-  especially CPU cores, if you don't impose limits.
+  especially CPU time, if you don't impose limits.
 
 ---
 
@@ -96,7 +96,8 @@ services:
 The second step is to define the webserver. We recommend using nginx.
 
 The easiest way to get nginx up and running, is to use our nginx image, prepacked with
-the upload progress module.
+the upload progress module. By default, the webserver will be accessible from `127.0.0.1` and
+probably doesn't need changing if you are using a reverse proxy on the same host.
 
 Of course, you can also use any other image containing nginx
 like [ this one ](https://hub.docker.com/_/nginx)(see [Example NGINX config](#example-nginx-config)).
