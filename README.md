@@ -7,7 +7,8 @@
 "Subspace Outlier Profiler" or SOP for short, provides a Platform
 for running outlier detection algorithms written in Python on subspaces of
 multidimensional datasets.  
-SOP is built with the web-framework [Django](https://djangoproject.com).
+SOP is built with the web-framework [Django](https://djangoproject.com) and the frontend
+toolkit [Boostrap](https://getbootstrap.com/).
 
 ---
 
@@ -32,11 +33,15 @@ a webserver like nginx to proxy http requests to the gunicorn process of the con
 
 The services are then configured via environment variables (see [Configuring Deployment](#configuring-deployment)).
 
-By default, this image uses sqlite as the database. It is strongly recommended to
-use an external database like MariaDB/MySQL or PostgreSQL.
+If you don't specify an external database, the app will use sqlite as the database. It is strongly discouraged from
+using sqlite, as sqlite does not pair well with parallel accesses, which is likely to cause problems with this program.
+Therefore, we recommend using a standard database like MariaDB/MySQL or PostgreSQL.
 
 To make the process of setting up the webserver, SOP and an external database easier,
-we recommend using `docker-compose`. To do this, clone the git repo and create a file `docker-compose.yaml`
+we recommend using `docker compose` (preferably compose v2)
+(see [Installing Docker](https://docs.docker.com/engine/install/)
+and [Installing compose](https://docs.docker.com/compose/install/)).
+To do this, clone the git repo and create a file `docker-compose.yaml`
 in the parent directory of the git repo and continue reading.
 
 ### Setting up the SOP image:
@@ -44,13 +49,14 @@ in the parent directory of the git repo and continue reading.
 Add to your `docker-compose.yaml`:
 
 ```yaml
-version: '3.7'
+version: '3.8'
 services:
   sop_app:
     container_name: sop_app
     build: ./implementierung
     restart: unless-stopped
     env_file: sop.env
+    shm_size: '2gb'
     expose:
       - 8000
     volumes:
@@ -60,14 +66,15 @@ services:
       - sop_db
 ```
 
-TODO: BACKEND needs persistent storage??????
-
 #### Explanation:
 
-+ `env_file`: use environment variables from file `sop.env`
-+ `expose`: Expose port 8000 to docker API (this is where gunicorn is listening)
++ `env_file`: use environment variables from file `sop.env`.
++ `shm_size`: Since SOP uses shared memory for accessing datasets between processes,
+  and docker limits `/dev/shm` to 64 MiByte by default, the size of shared memory
+  has to be increased to a reasonable size.
++ `expose`: Expose port 8000 to docker API (this is where gunicorn is listening).
 + `volumes`: If you want [persistent storage](https://docs.docker.com/storage) (and you probably do) use docker volumes
-  or bind mounts for locations `/static` and `/app/webserver/src/main/sop/media`
+  or bind mounts for locations `/static` and `/app/webserver/src/main/sop/media`.
 + `depends_on`: If you are using an external database, make sure the database starts before sop does.
 
 #### Notes:
@@ -76,6 +83,11 @@ TODO: BACKEND needs persistent storage??????
   use whatever you want).
 + If the system you are deploying on uses SELinux, you might need a [:Z](https://docs.docker.com/storage/bind-mounts/)
   tag at the end of you bind mount.
++ If your compose version supports it, you can
+  use [resource limits](https://stackoverflow.com/questions/42345235/how-to-specify-memory-cpu-limit-in-docker-compose-version-3)
+  ,
+  as the app will use a lot of resources,
+  especially CPU time, if you don't impose limits.
 
 ---
 
@@ -84,7 +96,8 @@ TODO: BACKEND needs persistent storage??????
 The second step is to define the webserver. We recommend using nginx.
 
 The easiest way to get nginx up and running, is to use our nginx image, prepacked with
-the upload progress module.
+the upload progress module. By default, the webserver will be accessible from `127.0.0.1` and
+probably doesn't need changing if you are using a reverse proxy on the same host.
 
 Of course, you can also use any other image containing nginx
 like [ this one ](https://hub.docker.com/_/nginx)(see [Example NGINX config](#example-nginx-config)).
@@ -119,6 +132,8 @@ existing content:
 If you want to provide a custom nginx config file (to make the site available from other hosts than localhost, for
 example)
 or use another image that is not `albinoboi/nginx-sop`, you will have to provide a config file.
+You can do this for example, by mounting the config to `/etc/nginx/conf.d/sop.conf`.
+
 (see [NGINX config documentation](https://nginx.org/en/docs/beginners_guide.html)).
 An example NGINX config `sop.conf` with the progressbar module enabled:
 
@@ -169,6 +184,8 @@ server {
 
 + The upstream `server` name **must** be the same as the django docker container name.
 + If you are using our nginx image and not replacing the config file, your SOP container name **has** to be `sop_app`.
++ If you are using our image, but want to supply a custom nginx config, the file
+  must be mounted to `/etc/nginx/http.d/` instead of `/etc/nginx/conf.d/`.
 + for upload progressbars to work correctly under nginx, you have to include
   the [NGINX upload progress module](https://www.nginx.com/resources/wiki/modules/upload_progress/)
   this is because NGINX buffers the uploads before transferring them to django.
@@ -176,7 +193,7 @@ server {
 
 ---
 
-### Setting up the database image (optional):
+### Setting up the database image (recommended):
 
 The last step is to define a service for the database container.
 We will use `postgres` for this example, but feel free to use MariaDB/MySQL.
@@ -249,7 +266,7 @@ Now that oyu have defined the docker services and environment variables, you're 
 Your `docker-compose.yaml` should now look similar to this:
 
 ```yaml
-version: '3.7'
+version: '3.8'
 
 services:
   sop_app:
@@ -257,6 +274,7 @@ services:
     build: ./implementierung
     restart: unless-stopped
     env_file: sop.env
+    shm_size: '2gb'
     expose:
       - 8000
     volumes:
@@ -274,7 +292,6 @@ services:
       - "443:443"
     volumes:
       - ./static:/static
-      - ./sop.conf:/etc/nginx/conf.d/sop.conf
     depends_on:
       - sop_app
 
@@ -287,7 +304,7 @@ services:
       - ./db-data:/var/lib/postgresql/data
 ```
 
-Run `docker-compose up -d` and navigate to `http://127.0.0.1` or your custom domain to see
+Run `docker compose up -d` and navigate to `http://127.0.0.1` or your custom domain to see
 the app.
 
 ---
