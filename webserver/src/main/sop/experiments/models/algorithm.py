@@ -12,6 +12,13 @@ HyperparameterTypes = Optional[Union[str, int, float, List[Any], Dict[Any, Any]]
 
 
 def get_algorithm_upload_path(instance: Algorithm, filename: str) -> str:
+    """
+    Generates a path relative to MEDIA_ROOT to which the .py file of the algorithm
+    should be saved. It will NOT save the algorithm.
+    @param instance: The algorithm model of which the .py file should be saved.
+    @param filename: The name of the .py file with extension (i.e. 'algorithm.py')
+    @return: The path to which the algorithm should be saved to as a string.
+    """
     user_id = instance.user.pk if instance.user is not None else 0
     return f"algorithms/user_{user_id}/{filename}"
 
@@ -22,6 +29,9 @@ class Algorithm(models.Model):
     """
 
     class AlgorithmGroup(models.TextChoices):
+        """
+        An Enum that describes the way an algorithm does its calculations.
+        """
         PROBABILISTIC = "Probabilistic"
         LINEAR_MODEL = "Linear Model"
         PROXIMITY_BASED = "Proximity-Based"
@@ -47,6 +57,11 @@ class Algorithm(models.Model):
     objects = AlgorithmManager.from_queryset(AlgorithmQuerySet)()  # type: ignore
 
     def get_signature_as_dict(self) -> dict[str, HyperparameterTypes]:
+        """
+        Gets the signature of the algorithm. This is a dictionary that maps parameter
+        name to parameter default value.
+        @return: signature dictionary.
+        """
         assert isinstance(self.signature, dict)
         return self.signature
 
