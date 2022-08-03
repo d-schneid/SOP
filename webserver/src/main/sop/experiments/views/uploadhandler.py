@@ -12,11 +12,6 @@ class UploadProgressCachedHandler(FileUploadHandler):
     Tracks progress for file uploads.
     The http post request must contain a header or query parameter, 'X-Progress-ID'
     which should contain a unique string to identify the upload to be tracked.
-
-    Copied from:
-    http://djangosnippets.org/snippets/678/
-
-    See views.py for upload_progress function...
     """
 
     def __init__(self, request: Optional[HttpRequest] = None) -> None:
@@ -74,11 +69,7 @@ def upload_progress(request: HttpRequest) -> HttpResponse:
     """
     A view to report back on upload progress.
     Return JSON object with information about the progress of an upload.
-
-    Copied from:
-    http://djangosnippets.org/snippets/678/
-
-    See upload.py for file upload handler.
+    The JSON object matches the specifications of the nginx-upload-progress module.
     """
     progress_id = ""
     if "X-Progress-ID" in request.GET:
