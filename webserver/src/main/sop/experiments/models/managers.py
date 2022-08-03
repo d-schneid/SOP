@@ -22,6 +22,10 @@ class AlgorithmManager(models.Manager["Algorithm"]):
 
 
 class AlgorithmQuerySet(models.QuerySet["Algorithm"]):
+    """
+    A QuerySet that has extra sort and filter functionality specific to algorithm
+    models.
+    """
     def get_sorted_by_group_and_name(self) -> AlgorithmQuerySet:
         return self.order_by("group", Lower("display_name"))
 
@@ -50,6 +54,9 @@ class DatasetManager(models.Manager["Dataset"]):
 
 
 class DatasetQuerySet(models.QuerySet["Dataset"]):
+    """
+    A QuerySet that has extra sort and filter functionality specific to dataset models.
+    """
     def get_sorted_by_name(self) -> DatasetQuerySet:
         return self.order_by(Lower("display_name"))
 
@@ -65,6 +72,9 @@ class ExperimentManager(models.Manager["Experiment"]):
 
 
 class ExperimentQuerySet(models.QuerySet["Experiment"]):
+    """
+    A QuerySet that has extra sort and filter functionality for experiment models.
+    """
     def get_sorted_by_name(self) -> ExperimentQuerySet:
         return self.order_by(Lower("display_name"))
 
@@ -79,6 +89,9 @@ class ExperimentQuerySet(models.QuerySet["Experiment"]):
 
 
 class ExecutionManager(models.Manager["Execution"]):
+    """
+    A model manager containing methods that operate on execution models.
+    """
     @staticmethod
     def mark_running_executions_as_crashed():
         from experiments.models.execution import Execution, ExecutionStatus
@@ -89,6 +102,10 @@ class ExecutionManager(models.Manager["Execution"]):
 
 
 class ExecutionQuerySet(models.QuerySet["Execution"]):
+    """
+    A QuerySet that has extra sort and filter functionality specific to execution
+    models.
+    """
     def get_sorted_by_creation_date(self) -> ExecutionQuerySet:
         return self.order_by("-creation_date")
 
