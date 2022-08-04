@@ -25,7 +25,7 @@ class ExecutionSubspace(Schedulable):
                  algorithms: Iterable[ParameterizedAlgorithm], subspace: Subspace,
                  result_path: str, ds_on_main: np.ndarray,
                  on_execution_element_finished_callback: Callable[[bool], None],
-                 ds_shm_name: str, priority: int = 5):
+                 ds_shm_name: str, row_numbers: np.ndarray, priority: int = 5):
         """
         :param ds_shm_name: name of the shared emory segment containing the full dataset
         :param user_id: The ID of the user belonging to the ExecutionSubspace. Has to be at least -1.
@@ -54,6 +54,7 @@ class ExecutionSubspace(Schedulable):
         self._on_execution_element_finished_callback: Callable[[bool], None] = \
             on_execution_element_finished_callback
         self._priority = priority
+        self._row_numbers = row_numbers
 
         # further private variables
         self._finished_execution_element_count: int = 0
@@ -85,7 +86,7 @@ class ExecutionSubspace(Schedulable):
                                                   result_path, self._ds_on_main.dtype,
                                                   self._subspace_shared_memory_name,
                                                   self.__execution_element_is_finished,
-                                                  self._ds_on_main.shape[0]))
+                                                  self._ds_on_main.shape[0], self._row_numbers))
 
     def __schedule_execution_elements(self) -> None:
         """

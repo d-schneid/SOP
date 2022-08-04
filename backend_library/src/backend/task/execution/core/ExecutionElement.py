@@ -24,7 +24,7 @@ class ExecutionElement(Schedulable):
                  algorithm: ParameterizedAlgorithm, result_path: str,
                  subspace_dtype: np.dtype, ss_shm_name: str,
                  execution_element_is_finished: Callable[[bool], None],
-                 datapoint_count: int, priority: int = 10):
+                 datapoint_count: int, row_numbers: np.ndarray, priority: int = 10):
         """
         :param user_id: The ID of the user belonging to this ExecutionElement. Has to be at least -1.
         :param task_id: The ID of this task. Has to be at least -1.
@@ -45,6 +45,7 @@ class ExecutionElement(Schedulable):
         self._task_id: int = task_id
         self._priority: int = priority
 
+        self._row_numbers = row_numbers
         self._datapoint_count = datapoint_count
         self._subspace: Subspace = subspace
         self._algorithm: ParameterizedAlgorithm = algorithm
@@ -94,8 +95,8 @@ class ExecutionElement(Schedulable):
 
         try:
             run_algo_result: np.ndarray = self.__run_algorithm()
-            result_to_save: np.ndarray = run_algo_result  # self.__convert_result_to_csv(run_algo_result)
-            DataIO.write_csv(self._result_path, result_to_save, add_index_column=True)
+            result_to_save: np.ndarray = self.__convert_result_to_csv(run_algo_result)
+            DataIO.write_csv(self._result_path, result_to_save, add_index_column=False)
         except Exception as e:
             error_message = str(e)
             if error_message == "":
@@ -129,8 +130,11 @@ class ExecutionElement(Schedulable):
         :param run_algo_result: The unchanged result of the algorithm.
         :return: The result-csv-file of this ExecutionElement.
         """
-        one_to_n = np.arange(0, run_algo_result.shape[0], 1, self._subspace_dtype)
-        return np.concatenate((one_to_n.T, run_algo_result), 1)
+        rows = np.expand_dims(self._row_numbers.astype(object), 1)
+
+        data = run_algo_result.astype(object)
+        rows_data = np.concatenate((rows, data), 1)
+        return rows_data
 
     def run_later_on_main(self, statuscode: int) -> None:
         self._execution_element_is_finished(statuscode != 0)
