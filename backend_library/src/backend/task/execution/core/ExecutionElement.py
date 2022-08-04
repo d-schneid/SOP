@@ -132,7 +132,7 @@ class ExecutionElement(Schedulable):
         """
         rows = np.expand_dims(self._row_numbers.astype(object), 1)
 
-        data = run_algo_result.astype(object)
+        data = np.expand_dims(run_algo_result.astype(object), 1)
         rows_data = np.concatenate((rows, data), 1)
         return rows_data
 
