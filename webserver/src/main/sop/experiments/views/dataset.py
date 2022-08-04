@@ -181,6 +181,6 @@ def dataset_status_view(
             if dataset is None:
                 return HttpResponseRedirect(reverse_lazy("dataset_overview"))
 
-            data = {"dataset_pk": dataset.pk, "is_cleaned": dataset.is_cleaned}
+            data = {"dataset_pk": dataset.pk, "cleaning_status": dataset.status}
             return HttpResponse(json.dumps(data))
     return None

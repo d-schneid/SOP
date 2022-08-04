@@ -38,6 +38,7 @@
             </blockquote>
         </div>
     {% endif %}
+
 {% endblock %}
 
 {% block edit %}
@@ -84,11 +85,16 @@
             progress_url = "/dataset-status/"
             $.getJSON(progress_url, {'dataset_pk': Number(id)}, function (data, status) {
                 status = document.getElementById("dataset-status-" + id)
-                if (data.is_cleaned) {
-                    status.innerText = "CLEANED";
-                } else {
-                    status.innerText = "CLEANING IN PROGRESS";
+                if (data.cleaning_status === "RUNNING") {
+                    status.innerText = "cleaning in progress";
                     setTimeout('fetch('+id+')', 2000)
+                } else if (data.cleaning_status === "FINISHED") {
+                    status.innerText = "cleaned"
+                } else if (data.cleaning_status === "FINISHED_WITH_ERROR") {
+                    status.innerText = "cleaning failed"
+
+                } else {
+                    status.innerText = "SERVER ERROR"
                 }
             });
         }
