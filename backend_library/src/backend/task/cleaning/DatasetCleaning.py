@@ -120,12 +120,6 @@ class DatasetCleaning(Task, Schedulable, ABC):
 
         dataset_to_clean: AnnotatedDataset = self.__load_uncleaned_dataset()
 
-        print("TEST THIS:")
-        #print(dataset_to_clean.data)
-        #print(dataset_to_clean.row_mapping)
-        #print(dataset_to_clean.headers)
-        print(dataset_to_clean.to_single_array())
-
         cleaning_pipeline_result: Optional[
             AnnotatedDataset] = self.__run_cleaning_pipeline(dataset_to_clean)
 
