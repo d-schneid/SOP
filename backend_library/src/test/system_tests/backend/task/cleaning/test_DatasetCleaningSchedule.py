@@ -33,9 +33,6 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
                                                "test/datasets" +
                                                "system_test_cleaned_dataset1.csv")
 
-    _uncleaned_dataset1: np.ndarray = ds().system_test1
-    _cleaned_dataset1: np.ndarray = np.asarray([[0., 0.]])
-
     _run_cleaning1: bool = False
     _finished_cleaning1: bool = False
     _latest_progress: float = 0.
@@ -48,15 +45,16 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
                                                "test/datasets" +
                                                "system_test_cleaned_dataset2.csv")
 
-    _uncleaned_dataset2: np.ndarray = ds().system_test2
-
     # dataset 3: canada_climate.csv
     _uncleaned_dataset_path3: str = os.path.join(_dir_name,
                                                  "test/datasets" +
                                                  "/canada_climate_uncleaned.csv")
-    _cleaned_dataset_path3: str = "./test/datasets/canada_climate_cleaned.csv"
-    _cleaned_dataset_path_to_compare_result3: str = \
-        "./test/datasets/canada_climate_cleaned_to_compare.csv"
+    _cleaned_dataset_path3: str = os.path.join(_dir_name,
+                                               "test/datasets" +
+                                               "canada_climate_cleaned.csv")
+    _cleaned_dataset_path_to_compare_result3: str = os.path.join(_dir_name,
+                                               "test/datasets" +
+                                               "canada_climate_cleaned_to_compare.csv")
 
     _dataIO = DataIO()
 
@@ -102,12 +100,11 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
                                                      self._priority)
 
         self._dc3_already_finished: DatasetCleaning = DatasetCleaning(self._user_id,
-                                                                      self._task_id,
-                                                                      self.task_progress_callback,
-                                                                      self._uncleaned_dataset_path3,
-                                                                      self._cleaned_dataset_path_to_compare_result3,
-                                                                      None,
-                                                                      self._priority)
+                                        self._task_id,
+                                        self.task_progress_callback,
+                                        self._uncleaned_dataset_path3,
+                                        self._cleaned_dataset_path_to_compare_result3,
+                                        None, self._priority)
 
     def tearDown(self) -> None:
         self.__clean_created_files_and_directories()
