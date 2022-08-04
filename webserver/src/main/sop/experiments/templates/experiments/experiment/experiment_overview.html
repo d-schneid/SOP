@@ -65,7 +65,7 @@
                         {% if execution.has_result %}
                             <a href="{% url 'execution_download_result' model.pk execution.pk %}"
                                class="btn btn-info mr-3" id="execution-download-{{ execution.pk }}"
-                               style="display: {% if not execution.is_finished %}none{% endif %}">Download
+                               style="display: {% if not execution.has_result %}none{% endif %}">Download
                                 Result</a>
                         {% endif %}
 
