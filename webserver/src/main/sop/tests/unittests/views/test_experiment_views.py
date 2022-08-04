@@ -68,7 +68,7 @@ class ExperimentOverviewTests(LoggedInTestCase):
         self.assertContains(response, "name_c")
         self.assertListEqual(
             list(response.context[self.QUERYSET_NAME]),  # type: ignore
-            [experiment2, experiment1, experiment3],
+            [experiment3, experiment2, experiment1],
         )
 
     def test_experiment_overview_sort_by_upload_date(self) -> None:

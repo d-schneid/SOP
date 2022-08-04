@@ -28,7 +28,7 @@ def _delete_file(path: str) -> None:
 
 @receiver(post_delete, sender=Algorithm)
 def delete_algorithm_file(
-    sender: Algorithm, instance: Algorithm, *args: Any, **kwargs: Any
+        sender: Algorithm, instance: Algorithm, *args: Any, **kwargs: Any
 ) -> None:
     if instance.path:
         _delete_file(instance.path.path)
@@ -36,7 +36,7 @@ def delete_algorithm_file(
 
 @receiver(post_delete, sender=Dataset)
 def delete_dataset_file(
-    sender: Dataset, instance: Dataset, *args: Any, **kwargs: Any
+        sender: Dataset, instance: Dataset, *args: Any, **kwargs: Any
 ) -> None:
     if instance.path_original:
         _delete_file(instance.path_original.path)
@@ -46,9 +46,9 @@ def delete_dataset_file(
 
 @receiver(post_delete, sender=Execution)
 def delete_result_file(
-    sender: Execution, instance: Execution, *args: Any, **kwargs: Any
+        sender: Execution, instance: Execution, *args: Any, **kwargs: Any
 ) -> None:
-    if not instance.is_finished and instance.pk is not None:
+    if instance.is_running and instance.pk is not None:
         Scheduler.get_instance().abort_by_task(task_id=instance.pk)
 
     if instance.result_path:

@@ -44,8 +44,8 @@ variables:
   MYSQL_HOST: mysql
 
   # Deployment tags
-  TAG_LATEST: albinoboi/sop:latest
-  TAG_COMMIT: albinoboi/sop:$CI_COMMIT_SHORT_SHA
+  TAG_LATEST: ghcr.io/albinoboi/sop-docker:latest
+  TAG_COMMIT: ghcr.io/albinoboi/sop-docker:$CI_COMMIT_SHORT_SHA
 
   # Fix tls issue in docker
   DOCKER_TLS_CERTDIR: ""
@@ -136,7 +136,7 @@ publish-build:
     - main
   image: docker:stable
   script:
-    - docker login -u $DOCKERHUB_USER -p $DOCKERHUB_TOKEN
+    - docker login ghcr.io -u $DOCKERHUB_USER -p $DOCKERHUB_TOKEN
     - docker pull $TAG_LATEST
     - docker build -t $TAG_COMMIT -t $TAG_LATEST --cache-from $TAG_LATEST .
     - docker push $TAG_COMMIT

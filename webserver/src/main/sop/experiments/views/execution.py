@@ -29,7 +29,7 @@ from experiments.callback import ExecutionCallbacks
 from experiments.forms.create import ExecutionCreateForm
 from experiments.models import Execution, Experiment, Algorithm
 from experiments.models.execution import get_result_path, ExecutionStatus
-from experiments.services.execution import get_params_out_of_form
+from experiments.services.execution import get_params_out_of_form, get_execution_result
 from experiments.views.generic import PostOnlyDeleteView
 
 
@@ -283,13 +283,20 @@ def download_execution_result(
         execution: Optional[Execution] = Execution.objects.filter(pk=pk).first()
         if execution is None:
             return HttpResponseRedirect(reverse_lazy("experiment_overview"))
+        return get_execution_result(execution)
+    else:
+        assert request.method in ("POST", "PUT")
+        return None
 
-        file_name = "result.zip"
-        with execution.result_path as file:
-            response = HttpResponse(file.read())
-            response["Content-Type"] = "text/plain"
-            response["Content-Disposition"] = f"attachment; filename={file_name}"
-        return response
+
+def download_execution_result_admin(request: HttpRequest, pk: int
+) -> Optional[HttpResponse | HttpResponseRedirect]:
+    if request.method == "GET":
+        execution: Optional[Execution] = Execution.objects.filter(pk=pk).first()
+        if execution is None:
+            return HttpResponseRedirect(
+                reverse_lazy("admin:experiments_execution_changelist"))
+        return get_execution_result(execution)
     else:
         assert request.method in ("POST", "PUT")
         return None
