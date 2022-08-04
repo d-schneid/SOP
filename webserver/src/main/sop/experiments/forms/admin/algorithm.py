@@ -14,11 +14,21 @@ from experiments.services.algorithm import (
 
 
 class AdminAddAlgorithmForm(forms.ModelForm[Algorithm]):
+    """
+    The form that associates with the Algorithm model and is used for the addition of
+    Algorithm model instances in the admin interface.
+    """
     class Meta:
         model = Algorithm
         exclude = ["signature", "upload_date"]
 
     def clean_path(self) -> Optional[TemporaryUploadedFile]:
+        """
+        Validates the given algorithm file of this AdminAddAlgorithmForm.
+        If the given algorithm file is not valid, it shows an appropriate error for the
+        respective field in this AdminAddAlgorithmForm on the respective add view in
+        the admin interface.
+        """
         cleaned_file: TemporaryUploadedFile = self.cleaned_data.get("path")  # type: ignore
 
         # current user is set in ModelAdmin of Algorithm
@@ -41,6 +51,10 @@ class AdminAddAlgorithmForm(forms.ModelForm[Algorithm]):
 
 
 class AdminChangeAlgorithmForm(forms.ModelForm[Algorithm]):
+    """
+    The form that associates with the Algorithm model and is used for the editing of
+    Algorithm model instances in the admin interface.
+    """
     class Meta:
         model = Algorithm
         exclude = ["path"]
