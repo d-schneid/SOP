@@ -7,36 +7,44 @@ from test.DatasetsForTesting import Datasets as ds
 
 
 class UnitTestImputationMode(unittest.TestCase):
-
     _ds: ds = ds()
     _mode: ImputationMode = ImputationMode()
 
     def test_imputation_mode(self):
         # use mode normally
-        cleaned_dataset7: np.ndarray = np.array([[-132., 7., 3.], [0., 7., 3.], [1., 7., 3.]])
+        cleaned_dataset7: np.ndarray = \
+            np.array([[-132., 7., 3.], [0., 7., 3.], [1., 7., 3.]])
         np.testing.assert_array_equal(cleaned_dataset7,
-                                      self._mode.do_cleaning(self._ds.dataset7))
+                                      self._mode.
+                                      do_cleaning(self._ds.data_to_annotated
+                                                  (self._ds.dataset7)).data)
 
         # No missing values -> Dont do anything
         cleaned_dataset3: np.ndarray = np.array([[-1, 2], [-1, 2], [-1, 2], [-1, 2]])
         self.assertTrue(np.array_equal(self._ds.dataset3,
-                                       self._mode.do_cleaning(self._ds.dataset3)), True)
-
+                                       self._mode.
+                                       do_cleaning(self._ds.data_to_annotated
+                                                   (self._ds.dataset3)).data))
+        print("passed2")
         # No missing values -> Dont do anything
         self.assertTrue(np.array_equal(self._ds.dataset4,
-                                       self._mode.do_cleaning(self._ds.dataset4)), True)
+                                       self._mode.
+                                       do_cleaning(self._ds.data_to_annotated
+                                                   (self._ds.dataset4)).data))
 
         # Raise exception when empty dataset is inputted
         with self.assertRaises(ValueError) as context:
-            self._mode.do_cleaning(self._ds.empty_dataset)
+            self._mode.do_cleaning(self._ds.data_to_annotated
+                                   (self._ds.empty_dataset))
 
         # Raise exception when column with only None-values is inputted
         with self.assertRaises(ValueError) as context:
-            self._mode.do_cleaning(self._ds.dataset1)
+            self._mode.do_cleaning(self._ds.data_to_annotated(self._ds.dataset1))
 
-        # edge case: Only one row -> Don't change anything
-        np.testing.assert_array_equal(self._ds.dataset6,
-                                      self._mode.do_cleaning(self._ds.dataset6))
+    def test_wrong_input_datatype(self):
+        # 1D dataset not allowed -> Assertion
+        with self.assertRaises(AssertionError) as context:
+            self._mode.do_cleaning(self._ds.one_dim_data_annotated)
 
 
 if __name__ == '__main__':

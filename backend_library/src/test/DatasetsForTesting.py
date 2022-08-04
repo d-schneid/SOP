@@ -1,15 +1,14 @@
 import numpy as np
 import pandas as pd
 
+from backend.AnnotatedDataset import AnnotatedDataset
+
 
 class Datasets:
 
     @property
     def empty_dataset(self) -> np.ndarray:
         # create a numpy array that is empty
-
-        #_df_empty: pd.DataFrame = pd.DataFrame({'empty': []})
-        #return _df_empty.to_numpy()
         return np.zeros((0, 0))
 
     @property
@@ -29,7 +28,8 @@ class Datasets:
 
     @property
     def dataset2(self) -> np.ndarray:
-        return np.array([[None, None, None, None, None], [0., 1., 0., 0., 4.], [0., 0., 1., 0., 2.]])
+        return np.array([[None, None, None, None, None], [0., 1., 0., 0., 4.],
+                         [0., 0., 1., 0., 2.]])
 
     @property
     def dataset3(self) -> np.ndarray:
@@ -37,7 +37,8 @@ class Datasets:
 
     @property
     def dataset4(self) -> np.ndarray:
-        return np.array([[-213., 0., 541., 1., 0., 0., 4., 341.], [0., 0., 1., 0., 2., 1491., 213., 432.]])
+        return np.array([[-213., 0., 541., 1., 0., 0., 4., 341.],
+                         [0., 0., 1., 0., 2., 1491., 213., 432.]])
 
     @property
     def dataset5(self) -> np.ndarray:
@@ -45,7 +46,7 @@ class Datasets:
 
     @property
     def dataset6(self) -> np.ndarray:
-        return np.array([-1, 1234, 12, 53, 6])
+        return np.array([[-1, 1234, 12, 53, 6]])
 
     @property
     def dataset7(self) -> np.ndarray:
@@ -64,30 +65,49 @@ class Datasets:
         return np.asarray([[1, 412, "I am an evil String", None]], object)
 
     @property
-    def cat_dataset4(self) -> np.ndarray:
-        return np.asarray([1, 412, "I am an evil String", None], object)  # 1 dim array
-
-    @property
     def mixed_dataset1(self) -> np.ndarray:
         return np.asarray([[1, 412, "I am an evil String", None]], object)
 
     @property
     def big_dataset1(self) -> np.ndarray:
         return np.array([[-1, 1234, 12, 53, 6, 124, None, 151245124, 1541],
-                         [214123, 1, 21, None, 1241, "Eve the evil String", None, 213, -124512],
+                         [214123, 1, 21, None, 1241, "Eve the evil String",
+                          None, 213, -124512],
                          [12, -1234, None, 1, 15215, 4, None, 12, 12],
                          [None, None, None, None, None, None, None, None, None],
                          [12, -1234, None, 1, 15215, 4, None, 12, 12]])
 
     @property
     def system_test1(self) -> np.ndarray:
-        return np.asarray([[0, 1, 2, 3], [1, 412, "I am an evil String", None]], object)
+        # No indices (row-mapping) for uncleaned datasets (only headers and data)
+        return np.asarray([['0', '1', '2', '3'],
+                           [1, 412, "I am an evil String", None]], object)
 
     @property
     def system_test2(self) -> np.ndarray:
+        # No indices (row-mapping) for uncleaned datasets (only headers and data)
         return np.array([[0, 1, 2, 3, 4, 5, 6, 7, 8],
                          [-1, 1234, 12, 53, 6, 124, None, 151245124, 1541],
-                         [214123, 1, 21, None, 1241, "Eve the evil String", None, 213, -124512],
+                         [214123, 1, 21, None, 1241, "Eve the evil String",
+                          None, 213, -124512],
                          [12, -1234, None, 1, 15215, 4, None, 12, 12],
                          [None, None, None, None, None, None, None, None, None],
                          [12, -1234, None, 1, 15215, 4, None, 12, 12]])
+
+    @property
+    def one_dim_data_annotated(self) -> AnnotatedDataset:
+        one_dim_data_annotated: AnnotatedDataset = \
+            self.data_to_annotated(np.zeros((1, 1)))
+        one_dim_data_annotated.data = np.zeros(1)
+        return one_dim_data_annotated
+
+    @property
+    def empty_annotated_dataset(self) -> AnnotatedDataset:
+        empty_annotated_dataset: AnnotatedDataset = \
+            self.data_to_annotated(np.zeros((1, 1)))
+        empty_annotated_dataset.data = self.empty_dataset
+        return empty_annotated_dataset
+
+    @staticmethod
+    def data_to_annotated(data: np.ndarray):
+        return AnnotatedDataset(data, generate_headers=True, generate_row_numbers=True)

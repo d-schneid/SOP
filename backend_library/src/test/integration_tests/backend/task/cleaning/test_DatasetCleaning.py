@@ -30,8 +30,10 @@ class IntegrationTestDatasetCleaning1(unittest.TestCase):
     def setUp(self) -> None:
         with open(self._uncleaned_dataset_path, 'w') as uncleaned_csv:
             self._dc: DatasetCleaning = DatasetCleaning(self._user_id, self._task_id,
-                                                        self.task_progress_callback, self._uncleaned_dataset_path,
-                                                        self._cleaned_dataset_path, iter([]), self._priority)
+                                                        self.task_progress_callback,
+                                                        self._uncleaned_dataset_path,
+                                                        self._cleaned_dataset_path,
+                                                        iter([]), self._priority)
         self._finished_cleaning = False
 
     def tearDown(self) -> None:
@@ -61,7 +63,8 @@ class IntegrationTestDatasetCleaning1(unittest.TestCase):
             self.assertTrue(self._finished_cleaning)
         os.remove(self._cleaned_dataset_path)
 
-    def task_progress_callback(self, _task_id: int, task_state: TaskState, progress: float) -> None:
+    def task_progress_callback(self, _task_id: int, task_state: TaskState,
+                               progress: float) -> None:
         if task_state.is_finished():
             self._finished_cleaning = True
 
@@ -78,11 +81,12 @@ class IntegrationTestDatasetCleaningNoUncleanedDataset(unittest.TestCase):
 
     def setUp(self) -> None:
         with open(self._uncleaned_dataset_path, 'w') as uncleaned_csv:
-            self._dc_missing_uncleaned_dataset: DatasetCleaning = DatasetCleaning(self._user_id, self._task_id,
-                                                                                  self.task_progress_callback,
-                                                                                  "no_uncleaned_dataset",
-                                                                                  self._cleaned_dataset_path, iter([]),
-                                                                                  self._priority)
+            self._dc_missing_uncleaned_dataset: DatasetCleaning = DatasetCleaning(
+                self._user_id, self._task_id,
+                self.task_progress_callback,
+                "no_uncleaned_dataset",
+                self._cleaned_dataset_path, iter([]),
+                self._priority)
 
     def tearDown(self) -> None:
         if os.path.isfile(self._uncleaned_dataset_path):
@@ -94,20 +98,26 @@ class IntegrationTestDatasetCleaningNoUncleanedDataset(unittest.TestCase):
     def test_load_uncleaned_dataset(self):
         # No uncleaned Dataset -> throw exception
         with self.assertRaises(AssertionError) as context:
-            self._dc_missing_uncleaned_dataset._DatasetCleaning__load_uncleaned_dataset()
+            self._dc_missing_uncleaned_dataset.\
+                _DatasetCleaning__load_uncleaned_dataset()
 
-    def task_progress_callback(self, _task_id: int, task_state: TaskState, progress: float) -> None:
+    def task_progress_callback(self, _task_id: int, task_state: TaskState,
+                               progress: float) -> None:
         pass
 
 
 class IntegrationTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
     _dir_name: str = os.getcwd()
     # dataset 1
-    _uncleaned_dataset_path: str = os.path.join(_dir_name, "uncleaned_dataset1.csv.error")
+    _uncleaned_dataset_path: str = os.path.join(_dir_name,
+                                                "uncleaned_dataset1.csv.error")
     _cleaned_dataset_path: str = os.path.join(_dir_name, "cleaned_dataset1.csv")
 
     _uncleaned_dataset1: np.ndarray = ds().cat_dataset3
-    _cleaned_dataset1: np.ndarray = np.asarray([[0., 0.]])
+    _cleaned_dataset1_data: np.ndarray = np.asarray([[0., 0.]])
+    _cleaned_dataset1: np.ndarray = \
+        np.asarray([['', '0', '1'],
+                    [0, 0., 0.]], object)
 
     # dataset 2
     _uncleaned_dataset2: np.ndarray = ds().big_dataset1
@@ -118,17 +128,22 @@ class IntegrationTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
     _task_id: int = -1
     _priority: int = 9999
 
-    def task_progress_callback(self, _task_id: int, task_state: TaskState, progress: float) -> None:
+    def task_progress_callback(self, _task_id: int, task_state: TaskState,
+                               progress: float) -> None:
         self.assertTrue(task_state.is_running())
         self.assertTrue(progress >= 0)
         self.assertTrue(progress < 1)  # Is smaller than one in run_pipeline
 
     def setUp(self) -> None:
+        self._ds = ds()
+
         self.__clean_created_files_and_directories()
         with open(self._uncleaned_dataset_path, 'w') as uncleaned_csv:
             self._dc: DatasetCleaning = DatasetCleaning(self._user_id, self._task_id,
-                                                         self.task_progress_callback, self._uncleaned_dataset_path,
-                                                         self._cleaned_dataset_path, None, self._priority)
+                                                        self.task_progress_callback,
+                                                        self._uncleaned_dataset_path,
+                                                        self._cleaned_dataset_path,
+                                                        None, self._priority)
 
     def __clean_created_files_and_directories(self):
         if os.path.isfile(self._cleaned_dataset_path):
@@ -139,20 +154,46 @@ class IntegrationTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
             os.remove(self._uncleaned_dataset_path)
 
     def test_run_cleaning_pipeline1(self):
+        np.testing.assert_array_equal(self._cleaned_dataset1_data,
+                                      self._dc._DatasetCleaning__run_cleaning_pipeline
+                                      (self._ds.data_to_annotated
+                                       (self._uncleaned_dataset1)).data)
         np.testing.assert_array_equal(self._cleaned_dataset1,
-                                      self._dc._DatasetCleaning__run_cleaning_pipeline(self._uncleaned_dataset1))
+                                      self._dc._DatasetCleaning__run_cleaning_pipeline
+                                      (self._ds.data_to_annotated
+                                       (self._uncleaned_dataset1)).to_single_array())
 
     def test_run_cleaning_pipeline2(self):
-        cleaned_dataset2: np.ndarray = np.asarray([[0.00000000e+00, 1.00000000e+00, 0.00000000e+00, 1.00000000e+00,
-                                                    0.00000000e+00, 1.00000000e+00, 1.00000000e+00],
-                                                   [1.00000000e+00, 5.00405186e-01, 1.00000000e+00, 0.00000000e+00,
-                                                    8.12019199e-02, 1.32896857e-06, 0.00000000e+00],
-                                                   [6.07124844e-05, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
-                                                    1.00000000e+00, 0.00000000e+00, 9.87870182e-01],
-                                                   [6.07124844e-05, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
-                                                    1.00000000e+00, 0.00000000e+00, 9.87870182e-01]])
-        np.testing.assert_array_almost_equal(cleaned_dataset2, self._dc._DatasetCleaning__run_cleaning_pipeline(
-            self._uncleaned_dataset2))
+        cleaned_dataset2_data: np.ndarray = np.asarray(
+            [[0.00000000e+00, 1.00000000e+00, 0.00000000e+00, 1.00000000e+00,
+              0.00000000e+00, 1.00000000e+00, 1.00000000e+00],
+             [1.00000000e+00, 5.00405186e-01, 1.00000000e+00, 0.00000000e+00,
+              8.12019199e-02, 1.32896857e-06, 0.00000000e+00],
+             [6.07124844e-05, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
+              1.00000000e+00, 0.00000000e+00, 9.87870182e-01],
+             [6.07124844e-05, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
+              1.00000000e+00, 0.00000000e+00, 9.87870182e-01]])
+        np.testing.assert_array_almost_equal(cleaned_dataset2_data,
+                                             self._dc
+                                             ._DatasetCleaning__run_cleaning_pipeline
+                                             (self._ds.data_to_annotated
+                                              (self._uncleaned_dataset2)).data)
+
+        cleaned_dataset2_header: np.ndarray = np.asarray(
+            ['0', '1', '2', '3', '4', '7', '8'])
+        np.testing.assert_array_equal(cleaned_dataset2_header,
+                                      self._dc
+                                      ._DatasetCleaning__run_cleaning_pipeline
+                                      (self._ds.data_to_annotated
+                                       (self._uncleaned_dataset2)).headers)
+
+        cleaned_dataset2_row_mapping: np.ndarray = np.asarray(
+            [0, 1, 2, 4])
+        np.testing.assert_array_equal(cleaned_dataset2_row_mapping,
+                                      self._dc
+                                      ._DatasetCleaning__run_cleaning_pipeline
+                                      (self._ds.data_to_annotated
+                                       (self._uncleaned_dataset2)).row_mapping)
 
 
 if __name__ == '__main__':
