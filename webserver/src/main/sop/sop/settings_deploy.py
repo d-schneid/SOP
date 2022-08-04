@@ -138,8 +138,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_ROOT = "static/"  # relative path, will be appended to SCRIPT_NAME
-STATIC_URL = "/static/"  # TODO has to be specified in the nginx settings to serve static content
+STATIC_URL = "static/"
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+
+# if it's a relative path, it will be appended to SCRIPT_NAME
+# has to be specified in the nginx settings to serve static content
+STATIC_ROOT = "/var/www/html/static/"
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
