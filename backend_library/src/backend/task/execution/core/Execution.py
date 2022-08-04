@@ -65,6 +65,7 @@ class Execution(Task, Schedulable):
         that should be processed on the subspaces.
         :param metric_callback: Called after the Execution-computation is complete.
         Carries out the metricizes.
+        :param datapoint_count: Number of datapoints in the dataset, may be specified to accelerate calculation
         """
         assert dataset_path.endswith(".csv")
         assert priority >= 0

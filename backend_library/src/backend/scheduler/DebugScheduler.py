@@ -5,6 +5,7 @@ from backend.scheduler.Scheduler import Scheduler
 
 
 class DebugScheduler(Scheduler):
+    """Simple scheduler for testing, does not do any scheduling or parallelization"""
     def abort_by_task(self, task_id: int) -> None:
         raise NotImplementedError
 
