@@ -168,7 +168,6 @@ deploy-app:
   before_script:
     - apt -y update
     - apt -y install openssh-client
-    - python3.9 manage.py collectstatic --noinput --clear --settings=sop.settings_deploy  # TODO: here?
 
   script:
     - chmod og= $ID_RSA
