@@ -23,7 +23,7 @@ class UnitTestExecutionSubspace(unittest.TestCase):
 
     _subspace: Subspace = Subspace(np.asarray([True, False, True, True, True]))
     _ds: np.ndarray = np.ndarray((1, 5), dtype=np.dtype('f4'))
-
+    _row_numbers = np.array([0, 1, 2, 3])
     # parameterized algorithms
     _hyper_parameter: dict = {"seed": 0}
     _display_names: list[str] = [
@@ -73,7 +73,7 @@ class UnitTestExecutionSubspace(unittest.TestCase):
             self._result_path,
             self._ds,
             self.__on_execution_element_finished1,
-            self._ds_shm_name
+            self._ds_shm_name, self._row_numbers
         )
         self._es.run_later_on_main(0)
 
@@ -99,7 +99,7 @@ class UnitTestExecutionSubspace(unittest.TestCase):
                 self._result_path,
                 self._ds,
                 self.__on_execution_element_finished,
-                self._ds_shm_name
+                self._ds_shm_name, self._row_numbers
             )
 
         with self.assertRaises(AssertionError) as context:
@@ -111,7 +111,7 @@ class UnitTestExecutionSubspace(unittest.TestCase):
                 self._result_path,
                 self._ds,
                 self.__on_execution_element_finished,
-                ""
+                "", self._row_numbers
             )
 
     def test_getter(self):
@@ -169,7 +169,7 @@ class UnitTestExecutionSubspace(unittest.TestCase):
                     self._result_path,
                     self._ds,
                     self.__on_execution_element_finished1,
-                    self._ds_shm_name,
+                    self._ds_shm_name, self._row_numbers,
                     wrong_priority
                 )
 

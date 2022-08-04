@@ -40,7 +40,7 @@ urlpatterns = [
     path(
         "algorithm/overview/",
         RedirectView.as_view(pattern_name="algorithm_overview_sorted", permanent=True),
-        {"sort": "name"},
+        {"sort": "upload_date"},
         name="algorithm_overview",
     ),
     path(
@@ -65,7 +65,7 @@ urlpatterns = [
     path(
         "dataset/overview/",
         RedirectView.as_view(pattern_name="dataset_overview_sorted", permanent=True),
-        {"sort": "name"},
+        {"sort": "upload_date"},
         name="dataset_overview",
     ),
     path(
@@ -97,7 +97,7 @@ urlpatterns = [
     path(
         "experiment/overview/",
         RedirectView.as_view(pattern_name="experiment_overview_sorted", permanent=True),
-        {"sort": "name"},
+        {"sort": "creation_date"},
         name="experiment_overview",
     ),
     path(

@@ -13,7 +13,7 @@ from authentication.mixins import LoginRequiredMixin
 from backend.DatasetInfo import DatasetInfo
 from experiments.forms.create import DatasetUploadForm
 from experiments.forms.edit import DatasetEditForm
-from experiments.models import Dataset
+from experiments.models.dataset import Dataset, CleaningState
 from experiments.models.managers import DatasetQuerySet
 from experiments.services.dataset import (
     save_dataset,
@@ -76,7 +76,7 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
         os.remove(temp_file_path)
 
         form.instance.user = self.request.user
-        form.instance.is_cleaned = False
+        form.instance.status = CleaningState.RUNNING.name
 
         # call the super().form_valid() before creating the DatasetCleaning, as the primary key is needed
         # to create the DatasetCleaning

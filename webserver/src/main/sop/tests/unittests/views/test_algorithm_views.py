@@ -46,7 +46,7 @@ class AlgorithmOverviewTests(LoggedInTestCase):
         self.assertContains(response, "name_b")
         self.assertContains(response, "name_c")
         self.assertQuerysetEqual(
-            response.context[self.QUERYSET_NAME], [algo2, algo1, algo3]
+            response.context[self.QUERYSET_NAME], [algo3, algo2, algo1]
         )
 
     def test_algorithm_overview_sort_by_group(self):

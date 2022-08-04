@@ -3,7 +3,7 @@ import os
 from backend.task import TaskState
 from backend.task.execution.core.Execution import Execution as BackendExecution
 from experiments.models import Execution
-from experiments.models.execution import get_zip_result_path
+from experiments.models.execution import get_zip_result_path, ExecutionStatus
 
 
 def execution_callback(
@@ -17,7 +17,15 @@ def execution_callback(
         assert os.path.exists(zip_path)
         execution.result_path.name = get_zip_result_path(execution)
 
-    execution.status = task_state.name
+    if task_state.is_finished() and not task_state.error_occurred():
+        execution.status = ExecutionStatus.FINISHED.name
+    elif task_state.is_finished() and task_state.error_occurred():
+        execution.status = ExecutionStatus.FINISHED_WITH_ERROR.name
+    elif task_state.is_running() and not task_state.error_occurred():
+        execution.status = ExecutionStatus.RUNNING.name
+    elif task_state.is_running() and task_state.error_occurred():
+        execution.status = ExecutionStatus.RUNNING_WITH_ERROR.name
+
     execution.progress = progress
 
     execution.save()
