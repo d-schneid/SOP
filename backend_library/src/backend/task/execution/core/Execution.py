@@ -227,7 +227,7 @@ class Execution(Task, Schedulable):
     def run_before_on_main(self) -> None:
         if self._datapoint_count is None:
             reader = csv.reader(self._dataset_path)
-            self._datapoint_count = sum(1 for _ in reader)
+            self._datapoint_count = sum(1 for _ in reader) - 1
         ds_dim_count = self._subspaces[0].get_dataset_dimension_count()
         entry_count = self._datapoint_count * ds_dim_count
         dtype = np.dtype('f4')
