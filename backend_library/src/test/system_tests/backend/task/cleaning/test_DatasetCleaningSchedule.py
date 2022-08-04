@@ -237,13 +237,24 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
         self._dc3.schedule()
         self.assertTrue(os.path.isfile(self._cleaned_dataset_path3))
 
+        # read solution
         cleaning_result3: AnnotatedDataset = \
-            DataIO.read_annotated(self._cleaned_dataset_path_to_compare_result3, True, True, False)
+            DataIO.read_annotated(self._cleaned_dataset_path_to_compare_result3,
+                                  True)
 
-        cleaned_dataset3: np.ndarray = DataIO.read_cleaned_csv(
-            self._cleaned_dataset_path3, 0)
-        np.testing.assert_array_almost_equal(cleaned_dataset3,
+        # read cleaning result
+        cleaned_dataset3: AnnotatedDataset = DataIO.read_annotated(
+            self._cleaned_dataset_path3, True)
+
+        # compare cleaning result with solution
+        np.testing.assert_array_almost_equal(cleaned_dataset3.data,
                                              cleaning_result3.data)
+
+        np.testing.assert_array_equal(cleaned_dataset3.headers,
+                                      cleaning_result3.headers)
+
+        np.testing.assert_array_equal(cleaned_dataset3.row_mapping,
+                                      cleaning_result3.row_mapping)
 
         # progress finished
         self.assertTrue(self._run_cleaning)
