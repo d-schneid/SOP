@@ -9,6 +9,9 @@ from experiments.forms.admin.experiment import AdminAddExperimentForm
 
 @admin.register(Experiment)
 class ExperimentAdmin(admin.ModelAdmin[Experiment]):
+    """
+    The representation of the Experiment model in the admin interface.
+    """
     list_display = ["display_name", "user", "creation_date"]
     raw_id_fields = ["user", "algorithms", "dataset"]
     list_filter = ["creation_date"]
@@ -33,5 +36,8 @@ class ExperimentAdmin(admin.ModelAdmin[Experiment]):
                  form_url: str = "",
                  extra_context: Optional[Dict[str, object]] = None
     ) -> HttpResponse:
+        """
+        View for the Experiment model instance addition page in the admin interface.
+        """
         self.form = AdminAddExperimentForm
         return super().add_view(request, form_url, extra_context)
