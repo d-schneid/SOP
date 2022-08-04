@@ -25,11 +25,14 @@ class SystemTest_Execution(unittest.TestCase):
     _user_id: int = 214
     _task_id: int = 1553
 
-    _dataset_path: str = os.path.join(os.getcwd(), "./test/datasets/canada_climate_cleaned_to_compare.csv")
+    _dataset_path: str = os.path.join(os.getcwd(),
+                                      "test/datasets"+
+                                      "/canada_climate_cleaned_to_compare.csv")
 
     _dir_name: str = os.getcwd()
 
-    _result_path: str = "./test/system_tests/backend/task/execution/execution_folder_system_test1"
+    _result_path: str = "./test/system_tests/backend/task/" \
+                        "execution/execution_folder_system_test1"
     _zipped_result_path: str = _result_path + ".zip"
     _details_path: str = os.path.join(_result_path, 'details.json')
 
@@ -40,13 +43,16 @@ class SystemTest_Execution(unittest.TestCase):
     _subspace_seed = 42
     _data_dimensions_count: int = 26
     _subspace_generation: rsg = rsg(usd(_subspace_size_min, _subspace_size_max),
-                                    _data_dimensions_count, _subspace_amount, _subspace_seed)
+                                    _data_dimensions_count, _subspace_amount,
+                                    _subspace_seed)
 
     # parameterized algorithms
     _algorithm_result: int = 42
     _hyper_parameter: dict = {'algorithm_result': _algorithm_result}
-    _display_names: list[str] = ["display_name", "display_name", "different_display_name", "display_name"]
-    _directory_names_in_execution: list[str] = ["display_name", "display_name (1)", "different_display_name",
+    _display_names: list[str] = ["display_name", "display_name",
+                                 "different_display_name", "display_name"]
+    _directory_names_in_execution: list[str] = ["display_name", "display_name (1)",
+                                                "different_display_name",
                                                 "display_name (2)"]
 
     _path: str = "./test/algorithms/DebugAlgorithm.py"
@@ -65,7 +71,8 @@ class SystemTest_Execution(unittest.TestCase):
         Scheduler._instance = None
         DebugScheduler()
 
-        # Delete all folders and files of the old execution structure: BEFORE creating the new execution!
+        # Delete all folders and files of the old execution structure:
+        # BEFORE creating the new execution!
         self.__clear_old_execution_file_structure()
 
         # Reset callback variables
@@ -124,9 +131,11 @@ class SystemTest_Execution(unittest.TestCase):
         """
         self.__clear_old_execution_file_structure()
         self._ex._Execution__unload_dataset = Mock(side_effect
-                                                   =Exception("Scheduler was called -> Execution was started"))
+                                                   =Exception("Scheduler was called -> "
+                                                              "Execution was started"))
         with self.assertRaises(Exception):
-            self._ex.schedule()  # Scheduler was called because no Execution result exists
+            # Scheduler was called because no Execution result exists -> Exception
+            self._ex.schedule()
 
         # Create the result of Execution by hand
         _test_folder: str = self._result_path + "_test_folder"
@@ -142,7 +151,8 @@ class SystemTest_Execution(unittest.TestCase):
         self.assertFalse(os.path.isdir(self._running_path))
         self.assertTrue(os.path.exists(self._final_zip_path))
 
-        self._ex.schedule()  # No Exception -> Execution wasn't scheduled -> Execution was correctly skipped
+        self._ex.schedule()  # No Exception -> Execution wasn't scheduled
+        # -> Execution was correctly skipped
 
         # Check callback result
         self.assertFalse(self._started_running)
@@ -166,7 +176,8 @@ class SystemTest_Execution(unittest.TestCase):
         if os.path.exists(self._running_path):
             shutil.rmtree(self._running_path)
 
-    def __task_progress_callback(self, task_id: int, task_state: TaskState, progress: float) -> None:
+    def __task_progress_callback(self, task_id: int,
+                                 task_state: TaskState, progress: float) -> None:
         self.assertFalse(task_state.error_occurred())
         if task_state.is_running():
             self._started_running = True

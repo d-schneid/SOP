@@ -117,8 +117,8 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
             os.remove(self._cleaned_dataset_path1 + ".error")
 
         # dataset 2
-        #if os.path.isfile(self._cleaned_dataset_path2):
-            #os.remove(self._cleaned_dataset_path2)
+        if os.path.isfile(self._cleaned_dataset_path2):
+            os.remove(self._cleaned_dataset_path2)
         if os.path.isfile(self._cleaned_dataset_path2 + ".error"):
             os.remove(self._cleaned_dataset_path2 + ".error")
 
