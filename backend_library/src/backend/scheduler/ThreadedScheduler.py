@@ -6,6 +6,7 @@ from backend.scheduler.Scheduler import Scheduler
 
 
 class ThreadedScheduler(Scheduler):
+    """Advanced scheduler for testing; runs all schedulables in new threads"""
     def schedule(self, to_schedule: Schedulable) -> None:
         Thread(target=ThreadedScheduler._run(to_schedule))
 
