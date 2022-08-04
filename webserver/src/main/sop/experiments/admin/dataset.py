@@ -19,6 +19,9 @@ from experiments.views.dataset import (
 
 @admin.register(Dataset)
 class DatasetAdmin(AbstractModelAdmin):
+    """
+    The representation of the Dataset model in the admin interface.
+    """
     inlines = [ExperimentInlineDataset]
     list_display = [
         "display_name",
@@ -61,18 +64,6 @@ class DatasetAdmin(AbstractModelAdmin):
         # for adding a new experiment
         return []
 
-    def get_urls(self) -> List[URLPattern]:
-        urls = super().get_urls()
-        urls += [
-            re_path(r'^dataset_download_uncleaned/(?P<pk>\d+)$',
-                    download_uncleaned_dataset,
-                    name='experiments_dataset_download_uncleaned'),
-            re_path(r'^dataset_download_cleaned/(?P<pk>\d+)$',
-                    download_cleaned_dataset,
-                    name='experiments_dataset_download_cleaned'),
-        ]
-        return urls
-
     def save_model(
             self,
             request: Any,
@@ -80,7 +71,11 @@ class DatasetAdmin(AbstractModelAdmin):
             form: Any,
             change: Any
     ) -> None:
-
+        """
+        Given a Dataset model instance save it to the database.
+        Additionally, initiates cleaning of the associated dataset if the given Dataset
+        model instance is newly added to the database via the admin interface.
+        """
         # start the dataset cleaning, if it is adding the model (not if it is changing the model)
 
         if change is not None and change is True:
@@ -102,7 +97,27 @@ class DatasetAdmin(AbstractModelAdmin):
             # now, start the cleaning
             schedule_backend(obj)
 
+    def get_urls(self) -> List[URLPattern]:
+        """
+        Adds custom view for downloading the associated dataset files to the URLs.
+        :return: The URLs to be used for this DatasetAdmin.
+        """
+        urls = super().get_urls()
+        urls += [
+            re_path(r'^dataset_download_uncleaned/(?P<pk>\d+)$',
+                    download_uncleaned_dataset,
+                    name='experiments_dataset_download_uncleaned'),
+            re_path(r'^dataset_download_cleaned/(?P<pk>\d+)$',
+                    download_cleaned_dataset,
+                    name='experiments_dataset_download_cleaned'),
+        ]
+        return urls
+
     def download_uncleaned(self, dataset: Dataset) -> str:
+        """
+        Custom field for this DatasetAdmin.
+        :return: Link to the custom function download_uncleaned_dataset.
+        """
         return format_html(
             '<a href="{}">Download</a>',
             reverse('admin:experiments_dataset_download_uncleaned', args=[dataset.pk])
@@ -110,6 +125,10 @@ class DatasetAdmin(AbstractModelAdmin):
     download_uncleaned.short_description = "Uncleaned dataset"
 
     def download_cleaned(self, dataset: Dataset) -> str:
+        """
+        Custom field for this DatasetAdmin.
+        :return: Link to the custom function download_cleaned_dataset.
+        """
         return format_html(
             '<a href="{}">Download</a>',
             reverse('admin:experiments_dataset_download_cleaned', args=[dataset.pk])
