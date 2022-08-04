@@ -21,8 +21,10 @@ COPY ./backend_library /app/backend_library
 RUN python3 -m pip install --upgrade pip \
     && python3 -m pip install --no-cache-dir -r requirements.txt \
     && python3 -m pip install --no-cache-dir -r requirements_deploy.txt \
-    && python3 -m pip install --no-cache-dir -r requirements_pyod_algorithms.txt \
-    && python3 -m pip install --no-cache-dir /app/backend_library/src \
+    && python3 -m pip install --no-cache-dir -r requirements_pyod_algorithms.txt
+
+# install backend library
+RUN python3 -m pip install --no-cache-dir /app/backend_library/src \
     && rm -rf /app/backend_library
 
 # copy webserver
