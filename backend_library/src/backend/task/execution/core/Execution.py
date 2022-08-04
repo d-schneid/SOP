@@ -243,7 +243,6 @@ class Execution(Task, Schedulable):
         Load the cleaned dataset into shared memory
         """
         data = DataIO.read_annotated(self._dataset_path, True).data
-        self._datapoint_count.set(data.shape[0])
 
         assert data.shape[0] == self._datapoint_count
         assert data.shape[1] == self._subspaces[0].get_dataset_dimension_count()

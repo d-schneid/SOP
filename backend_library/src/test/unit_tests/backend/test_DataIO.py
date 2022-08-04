@@ -26,7 +26,7 @@ class UnitTestDataIO(unittest.TestCase):
         with open(test_file_path, "w") as file:
             file.write("10,b,c,d\n1,gr,h,i\n4,l,m,n")
 
-        anno_ds = DataIO.DataIO.read_annotated(test_file_path, False)
+        anno_ds = DataIO.read_annotated(test_file_path, False)
         self.assertTrue(np.array_equal(anno_ds.row_mapping, np.array([1, 4])))
         exp_data = numpy.array([["gr", "h", "i"], ["l", "m", "n"]])
         self.assertTrue(np.array_equal(anno_ds.data, exp_data))
@@ -38,7 +38,7 @@ class UnitTestDataIO(unittest.TestCase):
         back_to_single[0][0] = 10
         self.assertTrue(np.array_equal(full_data, back_to_single))
 
-        anno_ds = DataIO.DataIO.read_annotated(test_file_path, False, False, False)
+        anno_ds = DataIO.read_annotated(test_file_path, False, False, False)
         self.assertTrue(np.array_equal(anno_ds.row_mapping, np.array([0, 1, 2])))
         self.assertTrue(np.array_equal(anno_ds.data, full_data))
         self.assertTrue(np.array_equal(anno_ds.headers, np.array(["0", "1", "2", "3"])))

@@ -66,10 +66,10 @@ class UnitTestUrrs(unittest.TestCase):
         tbc7 = manager.Value('b', False)
         for _ in range(multiprocessing.cpu_count()):
             urrs.schedule(TestSched(0, -1, 0, None, tr6, 1))
-            urrs.schedule(TestSched(1, -1, 0, tbc7, None, 1))
+            urrs.schedule(TestSched(1, -1, 0, tbc7, None, 3))
         urrs.abort_by_user(1)
         self.assertTrue(tr6.wait(timeout))
-        time.sleep(1)
+        time.sleep(3)
         self.assertFalse(tbc7.value)
 
         tbc2 = multiprocessing.Event()

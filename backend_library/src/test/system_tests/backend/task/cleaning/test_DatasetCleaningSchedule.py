@@ -56,8 +56,6 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
                                                "test/datasets/" +
                                                "canada_climate_cleaned_to_compare.csv")
 
-    _dataIO = DataIO()
-
     def task_progress_callback(self, _task_id: int, task_state: TaskState,
                                progress: float) -> None:
         if task_state.is_running():

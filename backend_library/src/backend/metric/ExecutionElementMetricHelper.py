@@ -31,7 +31,7 @@ class ExecutionElementMetricHelper:
 
         # The ExecutionElement result has to be in the right format:
         # (first column indices, second outlier score)
-        assert DataInfo.get_dataset_dimension(execution_element_result_path) == 2
+        assert DatasetInfo.get_dataset_dimension(execution_element_result_path) == 2
 
         # Read ExecutionElement Result
         execution_element_result_df: pd.DataFrame = \
