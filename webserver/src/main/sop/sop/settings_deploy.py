@@ -145,7 +145,7 @@ STATICFILES_DIRS = [
 
 # if it's a relative path, it will be appended to SCRIPT_NAME
 # has to be specified in the nginx settings to serve static content
-STATIC_ROOT = "/var/www/html/static/"
+STATIC_ROOT = "/static/"
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
