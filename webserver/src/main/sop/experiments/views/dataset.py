@@ -4,39 +4,25 @@ import os.path
 from typing import Optional
 
 from django.contrib import messages
-from django.db.models.fields.files import FieldFile
-from django.http import HttpResponse, HttpRequest
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpRequest, HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views.generic import ListView, UpdateView, CreateView
 
 from authentication.mixins import LoginRequiredMixin
-from backend.task.cleaning import DatasetCleaning
-from experiments.callback import DatasetCallbacks
+from backend.DatasetInfo import DatasetInfo
 from experiments.forms.create import DatasetUploadForm
 from experiments.forms.edit import DatasetEditForm
 from experiments.models import Dataset
 from experiments.models.managers import DatasetQuerySet
-from experiments.services.dataset import generate_path_dataset_cleaned, save_dataset
+
+from experiments.services.dataset import schedule_backend
+
+
 from experiments.views.generic import PostOnlyDeleteView
-
-
-def schedule_backend(dataset: Dataset) -> None:
-    # set and save the missing datafield entry for the cleaned csv file
-    cleaned_path = generate_path_dataset_cleaned(dataset.path_original.path)
-
-    # create DatasetCleaning object
-    dataset_cleaning: DatasetCleaning = DatasetCleaning(
-        user_id=dataset.user.pk,
-        task_id=dataset.pk,
-        task_progress_callback=DatasetCallbacks.cleaning_callback,
-        uncleaned_dataset_path=dataset.path_original.path,
-        cleaned_dataset_path=cleaned_path,
-        cleaning_steps=None,  # can be changed later on
-    )
-
-    # start the cleaning
-    dataset_cleaning.schedule()
+from experiments.services.dataset import (
+    save_dataset,
+    get_download_response,
+)
 
 
 class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadForm]):
@@ -58,32 +44,30 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
         return super().post(request, *args, **kwargs)
 
     def form_valid(self, form):
-
-        if e := form.errors.as_data().get("path_original"):
-            messages.error(self.request, f"Invalid dataset: {e}")
-
         # save the file temporarily to disk
-        temp_file_path: str = save_dataset(
-            self.request.FILES["path_original"], self.request.user
-        )
-
+        temp_file_path: str = save_dataset(self.request.FILES["path_original"])
         assert os.path.isfile(temp_file_path)
 
-        # check if the file is a csv file
-
-        # TODO: check if correct csv; if no return an error
-        #  and delete the file while returning an error
-        #  Felix: Maybe in FileField validator?
-        """
-        if not check_if_file_is_csv(temp_file_path):
-            form.add_error("path_original", "The given file is not a valid csv.-file.")
-            
+        try:
+            dataset_valid = DatasetInfo.is_dataset_valid(temp_file_path)
+        except UnicodeError as e:
             os.remove(temp_file_path)
+            messages.error(self.request, "Unicode error in selected dataset: " + e.reason)
             assert not os.path.isfile(temp_file_path)
-            
-            return super(DatasetUploadView, self).form_invalid()"""
+            return super(DatasetUploadView, self).form_invalid(form)
 
-        # delete temp file
+        # check if the file is a csv file
+        if not dataset_valid:
+            os.remove(temp_file_path)
+
+            # TODO: Maybe an error in FileField validator?
+            # return an error
+            form.add_error("path_original", "The given file is not a valid csv.-file.")
+            assert not os.path.isfile(temp_file_path)
+            return super(DatasetUploadView, self).form_invalid(form)
+
+        # don't add the data on datapoints and dimensions to the model
+
         os.remove(temp_file_path)
 
         form.instance.user = self.request.user
@@ -123,10 +107,9 @@ class DatasetOverview(LoginRequiredMixin, ListView[Dataset]):
 
 class DatasetDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Dataset]):
     model = Dataset
-    template_name = "dataset_delete.html"
     success_url = reverse_lazy("dataset_overview")
 
-    def form_valid(self, form) -> None:
+    def form_valid(self, form) -> HttpResponse:
         # processing before object is deleted
         # access object and its fields
         dataset: Dataset = self.get_object()
@@ -145,20 +128,16 @@ class DatasetEditView(LoginRequiredMixin, UpdateView[Dataset, DatasetEditForm]):
     success_url = reverse_lazy("dataset_overview")
 
 
-def get_download_response(file: FieldFile, download_name: str) -> HttpResponse:
-    response = HttpResponse(file.read())
-    response["Content-Type"] = "text/plain"
-    response["Content-Disposition"] = f"attachment; filename={download_name}"
-    return response
-
-
 def download_uncleaned_dataset(
         request: HttpRequest, pk: int
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
     if request.method == "GET":
         dataset: Optional[Dataset] = Dataset.objects.filter(pk=pk).first()
         if dataset is None:
-            return HttpResponseRedirect(reverse_lazy("dataset_overview"))
+            if "admin" not in request.path:
+                return HttpResponseRedirect(reverse_lazy("dataset_overview"))
+            return HttpResponseRedirect(
+                reverse_lazy("admin:experiments_dataset_changelist"))
 
         with dataset.path_original as file:
             return get_download_response(file, f"{dataset.display_name}.csv")
@@ -171,7 +150,11 @@ def download_cleaned_dataset(
     if request.method == "GET":
         dataset: Optional[Dataset] = Dataset.objects.filter(pk=pk).first()
         if dataset is None or dataset.is_cleaned is False:
-            return HttpResponseRedirect(reverse_lazy("dataset_overview"))
+            if "admin" not in request.path:
+                return HttpResponseRedirect(reverse_lazy("dataset_overview"))
+            return HttpResponseRedirect(
+                reverse_lazy("admin:experiments_dataset_changelist"))
+
         with dataset.path_cleaned as file:
             return get_download_response(file, f"{dataset.display_name}_cleaned.csv")
     return None

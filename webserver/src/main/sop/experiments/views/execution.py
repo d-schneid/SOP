@@ -4,6 +4,7 @@ import json
 from typing import Optional, Dict, Any, List
 
 from django.conf import settings
+from django.contrib import messages
 from django.db.models import QuerySet
 from django.http import (
     HttpRequest,
@@ -27,8 +28,8 @@ from backend.task.execution.subspace.UniformSubspaceDistribution import (
 from experiments.callback import ExecutionCallbacks
 from experiments.forms.create import ExecutionCreateForm
 from experiments.models import Execution, Experiment, Algorithm
-from experiments.models.execution import get_result_path
-from experiments.services.execution import get_params_out_of_form
+from experiments.models.execution import get_result_path, ExecutionStatus
+from experiments.services.execution import get_params_out_of_form, get_execution_result
 from experiments.views.generic import PostOnlyDeleteView
 
 
@@ -76,6 +77,7 @@ def schedule_backend(execution: Execution) -> Optional[Dict[str, list[str]]]:
         task_progress_callback=ExecutionCallbacks.execution_callback,
         dataset_path=str(settings.MEDIA_ROOT / dataset.path_cleaned.path),
         result_path=get_result_path(execution),
+        datapoint_count=dataset.datapoints_total,
         subspace_generation=subspace_generation_description,
         algorithms=parameterized_algorithms,
         metric_callback=ExecutionCallbacks.metric_callback,
@@ -124,12 +126,9 @@ class ExecutionCreateView(
         # Get subspaces_min out of form and do sanity checks
         subspaces_min = form.cleaned_data["subspaces_min"]
         if subspaces_min < 0:
-            form.errors.update(
-                {
-                    "subspaces_min": [
-                        "Subspaces Min has to be an Integer greater than or equal to 0"
-                    ]
-                }
+            messages.error(
+                self.request,
+                f"Subspaces Min has to be an Integer greater than or equal to 0.",
             )
         else:
             form.instance.subspaces_min = subspaces_min
@@ -137,33 +136,27 @@ class ExecutionCreateView(
         # Get subspaces_max out of form and do sanity checks
         subspaces_max = form.cleaned_data["subspaces_max"]
         if subspaces_max < 0:
-            error = True
-            form.errors.update(
-                {
-                    "subspaces_max": [
-                        "Subspaces Max has to be greater than Subspaces Min"
-                    ]
-                }
+            messages.error(
+                self.request,
+                f"Subspaces Max has to be an Integer greater than or equal to 0.",
             )
+            error = True
         if subspaces_max > experiment.dataset.dimensions_total:
-            error = True
-            form.errors.update(
-                {
-                    "subspaces_max": [
-                        f"Subspaces Max has to be smaller than or equal to the dataset dimension count: {experiment.dataset.dimensions_total}"
-                    ]
-                }
+            messages.error(
+                self.request,
+                f"Subspaces Max has to be smaller than or equal to the dataset dimension count: {experiment.dataset.dimensions_total}.",
             )
+            error = True
         elif 0 <= subspaces_max <= experiment.dataset.dimensions_total:
             form.instance.subspaces_max = subspaces_max
 
         # Get subspace_amount out of form and do sanity checks
         subspace_amount = form.cleaned_data["subspace_amount"]
         if subspace_amount <= 0:
-            error = True
-            form.errors.update(
-                {"subspace_amount": ["Subspaces amount has to be a positive Integer"]}
+            messages.error(
+                self.request, f"Subspace amount has to be a positive Integer."
             )
+            error = True
         else:
             form.instance.subspace_amount = subspace_amount
 
@@ -173,34 +166,26 @@ class ExecutionCreateView(
             form.instance.algorithm_parameters = dikt
         else:
             error = True
-            form.algorithm_errors = generate_hyperparameter_error_message(dikt)  # type: ignore
+            messages.error(self.request, generate_hyperparameter_error_message(dikt))
 
         # Get subspace_generation_seed out of form and do sanity checks
         seed: Optional[int] = form.cleaned_data.get("subspace_generation_seed")
         # If the seed was not specified, it will be set to a random seed during model creation
         if seed:
             if seed < 0:
-                error = True
-                form.errors.update(
-                    {
-                        "subspace_generation_seed": [
-                            "Subspaces Max has to be greater than Subspaces Min"
-                        ]
-                    }
+                messages.error(
+                    self.request, f"Seed has to be greater than 0. (is: {seed})."
                 )
+                error = True
             else:
                 form.instance.subspace_generation_seed = seed
 
         # Sanity check that subspaces_min must be smaller than subspaces_max
         if subspaces_min >= subspaces_max:
-            error = True
-            form.errors.update(
-                {
-                    "subspaces_max": [
-                        "Subspaces Max has to be greater than Subspaces Min"
-                    ]
-                }
+            messages.error(
+                self.request, f"Subspaces Max has to be greater than Subspace Min."
             )
+            error = True
 
         # set status of execution to running
         form.instance.status = TaskState.RUNNING.name
@@ -248,19 +233,26 @@ class ExecutionDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Execution]):
 
 
 def download_execution_result(
-    request: HttpRequest, experiment_pk: int, pk: int
+        request: HttpRequest, experiment_pk: int, pk: int
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
     if request.method == "GET":
         execution: Optional[Execution] = Execution.objects.filter(pk=pk).first()
         if execution is None:
             return HttpResponseRedirect(reverse_lazy("experiment_overview"))
+        return get_execution_result(execution)
+    else:
+        assert request.method in ("POST", "PUT")
+        return None
 
-        file_name = "result.zip"
-        with execution.result_path as file:
-            response = HttpResponse(file.read())
-            response["Content-Type"] = "text/plain"
-            response["Content-Disposition"] = f"attachment; filename={file_name}"
-        return response
+
+def download_execution_result_admin(request: HttpRequest, pk: int
+) -> Optional[HttpResponse | HttpResponseRedirect]:
+    if request.method == "GET":
+        execution: Optional[Execution] = Execution.objects.filter(pk=pk).first()
+        if execution is None:
+            return HttpResponseRedirect(
+                reverse_lazy("admin:experiments_execution_changelist"))
+        return get_execution_result(execution)
     else:
         assert request.method in ("POST", "PUT")
         return None
@@ -277,6 +269,8 @@ def get_execution_progress(request: HttpRequest) -> HttpResponse:
         data = {}
         if execution is not None:
             data["progress"] = execution.progress
+            data["status"] = execution.status
+            data["execution_pk"] = execution.pk
 
         return HttpResponse(json.dumps(data))
 
@@ -284,3 +278,13 @@ def get_execution_progress(request: HttpRequest) -> HttpResponse:
         return HttpResponseServerError(
             "Server Error: You must provide execution_pk header or query param."
         )
+
+
+def restart_execution(request: HttpRequest, experiment_pk: int, pk: int) -> HttpResponse:
+    execution = Execution.objects.filter(pk=pk).first()
+    if execution is not None:
+        execution.status = ExecutionStatus.RUNNING.name
+        execution.progress = 0.0
+        execution.save()
+        schedule_backend(execution)
+    return HttpResponseRedirect(reverse_lazy("experiment_overview"))

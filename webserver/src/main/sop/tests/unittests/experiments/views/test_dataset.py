@@ -5,8 +5,8 @@ import django.test
 from django.urls import reverse_lazy
 
 from experiments.models import Dataset
+from experiments.services.dataset import get_download_response
 from experiments.views.dataset import (
-    get_download_response,
     download_uncleaned_dataset,
     download_cleaned_dataset,
 )

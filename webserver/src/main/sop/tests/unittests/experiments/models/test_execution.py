@@ -5,12 +5,12 @@ import django.test
 from django.conf import settings
 from django.db.models import Model
 
-from backend.task.TaskState import TaskState
 from experiments.models.execution import (
     generate_random_seed,
     Execution,
     get_result_path,
     get_zip_result_path,
+    ExecutionStatus,
 )
 
 
@@ -39,36 +39,36 @@ class ExecutionModelTests(django.test.TestCase):
 
     def test_error_occurred(self) -> None:
         execution = Execution()
-        execution.status = TaskState.RUNNING.name
+        execution.status = ExecutionStatus.RUNNING.name
         self.assertFalse(execution.error_occurred)
 
-        execution.status = TaskState.FINISHED.name
+        execution.status = ExecutionStatus.FINISHED.name
         self.assertFalse(execution.error_occurred)
 
-        execution.status = TaskState.FINISHED_WITH_ERROR.name
+        execution.status = ExecutionStatus.FINISHED_WITH_ERROR.name
         self.assertTrue(execution.error_occurred)
 
     def test_is_running(self) -> None:
         execution = Execution()
-        execution.status = TaskState.RUNNING.name
+        execution.status = ExecutionStatus.RUNNING.name
         self.assertTrue(execution.is_running)
 
-        execution.status = TaskState.FINISHED.name
+        execution.status = ExecutionStatus.FINISHED.name
         self.assertFalse(execution.is_running)
 
-        execution.status = TaskState.FINISHED_WITH_ERROR.name
+        execution.status = ExecutionStatus.FINISHED_WITH_ERROR.name
         self.assertFalse(execution.is_running)
 
     def test_is_finished(self) -> None:
         execution = Execution()
-        execution.status = TaskState.RUNNING.name
-        self.assertFalse(execution.is_finished)
+        execution.status = ExecutionStatus.RUNNING.name
+        self.assertTrue(execution.is_running)
 
-        execution.status = TaskState.FINISHED.name
-        self.assertTrue(execution.is_finished)
+        execution.status = ExecutionStatus.FINISHED.name
+        self.assertFalse(execution.is_running)
 
-        execution.status = TaskState.FINISHED_WITH_ERROR.name
-        self.assertTrue(execution.is_finished)
+        execution.status = ExecutionStatus.FINISHED_WITH_ERROR.name
+        self.assertFalse(execution.is_running)
 
     def test_progress_as_percent(self) -> None:
         execution = Execution()

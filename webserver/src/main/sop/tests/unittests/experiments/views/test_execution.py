@@ -6,6 +6,7 @@ from django.http import HttpResponseRedirect, HttpResponse, HttpResponseServerEr
 from django.urls import reverse_lazy
 
 from experiments.models import Execution
+from experiments.models.execution import ExecutionStatus
 from experiments.views.execution import (
     download_execution_result,
     get_execution_progress,
@@ -58,12 +59,23 @@ class ExecutionViewTests(django.test.TestCase):
     def test_get_execution_progress(self) -> None:
         request = MagicMock()
         request.GET = {"execution_pk": 3}
+        execution = MagicMock()
+        execution.progress = 0.314
+        execution.status = ExecutionStatus.RUNNING.name
+        execution.pk = 3
         objects_mock = MagicMock()
-        objects_mock.filter.return_value.first.return_value.progress = 0.314
+        objects_mock.filter.return_value.first.return_value = execution
         with patch.object(Execution, "objects", objects_mock):
             response = get_execution_progress(request)
             dikt = json.loads(response.content)
-            self.assertDictEqual(dikt, {"progress": 0.314})
+            self.assertDictEqual(
+                dikt,
+                {
+                    "progress": execution.progress,
+                    "status": execution.status,
+                    "execution_pk": execution.pk,
+                },
+            )
 
     def test_get_execution_progress_invalid_pk(self) -> None:
         request = MagicMock()

@@ -17,7 +17,7 @@ from experiments.views.execution import (
     ExecutionCreateView,
     ExecutionDeleteView,
     ExecutionDuplicateView,
-    download_execution_result, get_execution_progress,
+    download_execution_result, get_execution_progress, restart_execution,
 )
 from experiments.views.experiment import (
     ExperimentOverview,
@@ -37,7 +37,7 @@ urlpatterns = [
     path(
         "algorithm/overview/",
         RedirectView.as_view(pattern_name="algorithm_overview_sorted", permanent=True),
-        {"sort": "name"},
+        {"sort": "upload_date"},
         name="algorithm_overview",
     ),
     path(
@@ -62,7 +62,7 @@ urlpatterns = [
     path(
         "dataset/overview/",
         RedirectView.as_view(pattern_name="dataset_overview_sorted", permanent=True),
-        {"sort": "name"},
+        {"sort": "upload_date"},
         name="dataset_overview",
     ),
     path(
@@ -87,7 +87,7 @@ urlpatterns = [
     path(
         "experiment/overview/",
         RedirectView.as_view(pattern_name="experiment_overview_sorted", permanent=True),
-        {"sort": "name"},
+        {"sort": "creation_date"},
         name="experiment_overview",
     ),
     path(
@@ -134,9 +134,12 @@ urlpatterns = [
         download_execution_result,
         name="execution_download_result",
     ),
-    path("execution_progress/",
-         get_execution_progress,
-         name="execution_progress"),
+    path(
+        "experiment/<int:experiment_pk>/execution/<int:pk>/restart/",
+        restart_execution,
+        name="execution_restart",
+    ),
+    path("execution_progress/", get_execution_progress, name="execution_progress"),
     # upload progress
     path("upload_progress/", upload_progress, name="upload-progress"),
 ]

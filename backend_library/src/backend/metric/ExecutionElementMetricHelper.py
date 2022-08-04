@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from backend.DataIO import DataIO
-from backend.DataInfo import DataInfo
+from backend.DatasetInfo import DatasetInfo
 from backend.task.execution.core.Execution import Execution
 
 

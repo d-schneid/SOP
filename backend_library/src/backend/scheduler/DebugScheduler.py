@@ -1,4 +1,4 @@
-from typing import Callable, Type
+from typing import Callable
 
 from backend.scheduler.Schedulable import Schedulable
 from backend.scheduler.Scheduler import Scheduler
@@ -21,7 +21,8 @@ class DebugScheduler(Scheduler):
         return False
 
     def schedule(self, to_schedule: Schedulable) -> None:
+        to_schedule.run_before_on_main()
         r = to_schedule.do_work()
         if r is None:
             r = 0
-        to_schedule.run_later_on_main(0)
+        to_schedule.run_later_on_main(r)

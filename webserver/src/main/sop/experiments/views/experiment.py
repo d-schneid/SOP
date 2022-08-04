@@ -7,11 +7,10 @@ from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView
 
-import experiments.models
 from authentication.mixins import LoginRequiredMixin
 from experiments.forms.create import ExperimentCreateForm
 from experiments.forms.edit import ExperimentEditForm
-from experiments.models import Experiment
+from experiments.models import Experiment, Dataset
 from experiments.models.managers import ExperimentQuerySet
 from experiments.views.generic import PostOnlyDeleteView
 from experiments.models.algorithm import Algorithm
@@ -67,8 +66,11 @@ class ExperimentCreateView(
 
         return response
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
+        context["form"].fields["dataset"].queryset = Dataset.objects.\
+            get_by_user(self.request.user).\
+            filter(is_cleaned=True)
         context.update({
             "algorithm_groups": Algorithm.AlgorithmGroup,
             "algorithms": Algorithm.objects.get_by_user_and_public(self.request.user),
@@ -101,5 +103,4 @@ class ExperimentEditView(
 
 class ExperimentDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Experiment]):
     model = Experiment
-    template_name = "experiment_delete.html"
     success_url = reverse_lazy("experiment_overview")

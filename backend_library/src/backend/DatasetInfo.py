@@ -1,10 +1,12 @@
 import os
+from typing import Optional
 
-import numpy as np
 import pandas as pd
 
+from backend.DataIO import DataIO
 
-class DataInfo:
+
+class DatasetInfo:
     @staticmethod
     def get_dataset_dimension(dataset_path) -> int:
         """
@@ -36,3 +38,24 @@ class DataInfo:
             return 0
 
         return df_first_column.shape[0]
+
+    @staticmethod
+    def is_dataset_valid(path: str) -> bool:
+        """
+        Checks, whether the dataset saved at the given path is valid.
+        :param path: The path where the dataset to check is saved at.
+        :return: True, if the dataset is valid; otherwise False
+        """
+
+        assert os.path.isfile(path)
+
+        try:
+            has_header: Optional[int] = 0
+            DataIO.read_uncleaned_csv(path, has_header=has_header)
+
+            # if no error was thrown upon reading, the dataset is valid
+            return True
+
+        except DataIO.DataIoInputException:
+            # if an error was thrown upon reading the dataset is invalid
+            return False

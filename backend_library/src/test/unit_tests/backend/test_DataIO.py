@@ -7,7 +7,7 @@ import numpy
 import numpy as np
 from typing import List
 
-from backend import DataIO
+from backend.DataIO import DataIO
 
 
 class UnitTestDataIO(unittest.TestCase):
@@ -49,7 +49,7 @@ class UnitTestDataIO(unittest.TestCase):
         with open(test_file_path, "w") as file:
             file.write("a,b,c,d,e\nf,g,h,i,j\nk,l,m,n,o")
 
-        dataset: np.ndarray = DataIO.DataIO.read_uncleaned_csv(test_file_path)
+        dataset: np.ndarray = DataIO.read_uncleaned_csv(test_file_path)
 
         self.assertEqual(str(dataset),
                          "[['f' 'g' 'h' 'i' 'j']\n ['k' 'l' 'm' 'n' 'o']]")
@@ -61,7 +61,7 @@ class UnitTestDataIO(unittest.TestCase):
         with open(test_file_path, "w") as file:
             file.write("a,b,c,d,e\n1,2,3,4,5\n6,7,8,9,10")
 
-        dataset: np.ndarray = DataIO.DataIO.read_cleaned_csv(test_file_path, has_header=0)
+        dataset: np.ndarray = DataIO.read_cleaned_csv(test_file_path, has_header=0)
 
         # validate the values
         values: List[List[int]] = [[1,2,3,4,5], [6,7,8,9,10]]
@@ -78,9 +78,18 @@ class UnitTestDataIO(unittest.TestCase):
             file.write("a,b,c,d,e\nf,g,h,i,j\nk,l,m,n,o")
 
         with self.assertRaises(ValueError):
-            dataset: np.ndarray = DataIO.DataIO.read_cleaned_csv(test_file_path)
+            dataset: np.ndarray = DataIO.read_cleaned_csv(test_file_path)
 
         # TODO
+
+    def test_invalid_file(self):
+        test_file: str = os.path.join("test", "datasets", "invalid_csv.csv")
+        try:
+            pd = DataIO.read_uncleaned_csv(test_file)
+            print("--------------")
+            print(pd)
+        except DataIO.DataIoInputException as exp:
+            print(exp)
 
     def test_write_csv(self):
         test_file_path: str = os.path.join(UnitTestDataIO._test_dir_path, "test_file_path")
@@ -88,7 +97,8 @@ class UnitTestDataIO(unittest.TestCase):
         array: np.array =  np.array([[1,2,3,4,5], [6,7,8,9,10]])
         nd_array: np.ndarray = np.ndarray(shape=(2,5), dtype=int, buffer=array)
 
-        DataIO.DataIO.write_csv(test_file_path, nd_array, has_header=True)
+        DataIO.write_csv(test_file_path, nd_array, has_header=True)
+        # TODO: Check, ob erste Zeile als Header oder Datenpunkte geschrieben werden
 
         # check the written data
         with open(test_file_path) as file:
@@ -103,6 +113,7 @@ class UnitTestDataIO(unittest.TestCase):
     def _clean_dir(path: str):
         if os.path.isdir(path):
             shutil.rmtree(path)
+
 
 if __name__ == '__main__':
     unittest.main()

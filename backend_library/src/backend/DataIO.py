@@ -4,6 +4,7 @@ from typing import Optional
 
 import numpy as np
 import pandas as pd
+from pandas.errors import ParserError, EmptyDataError
 
 from backend.AnnotatedDataset import AnnotatedDataset
 
@@ -59,7 +60,13 @@ class DataIO:
         assert os.path.exists
         assert os.path.isfile(path)
 
-        df: pd.DataFrame = pd.read_csv(path, dtype=object, header=has_header)
+        # process errors that can occur when the given csv-file is not valid (in terms for pandas)
+        df: pd.DataFrame
+        try:
+            df: pd.DataFrame = pd.read_csv(path, dtype=object, header=has_header)
+        except (ParserError, EmptyDataError) as err:
+            raise DataIO.DataIoInputException("An error occurred while reading the given dataset", err)
+
         return DataIO.__save_convert_to_float(df.to_numpy())
 
     @staticmethod
@@ -133,3 +140,20 @@ class DataIO:
         """
         DataIO.write_csv(running_path, data, add_index_column, has_header)
         shutil.move(running_path, final_path)
+
+    class DataIoInputException(ValueError):
+        """
+        Represents an error which can occur when trying to read a dataset from a file.
+        """
+
+        def __init__(self, message: str, exception: ValueError) -> None:
+            super().__init__(message + "; reference error message: " + str(exception))
+            self._exception: ValueError = exception
+
+        @property
+        def exception(self) -> ValueError:
+            """
+            The specific error which occurred while trying to read the dataset form a file.
+            :return: The specific error which occurred.
+            """
+            return self._exception

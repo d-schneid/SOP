@@ -46,7 +46,7 @@ class UnitTestUrrs(unittest.TestCase):
 
     def test_exec(self):
         timeout = 10
-        manager = Scheduler.get_manager()
+        manager = Manager()
         tr = multiprocessing.Event()
         Scheduler._instance = None
         urrs = UserRoundRobinScheduler()
@@ -59,7 +59,7 @@ class UnitTestUrrs(unittest.TestCase):
         urrs.schedule(TestSched(-1, 1, 0, tbc5, None, 2))
         urrs.abort_by_task(1)
         self.assertTrue(tr4.wait(timeout))
-        time.sleep(1)
+        time.sleep(2)
         self.assertFalse(tbc5.value)
 
         tr6 = multiprocessing.Event()
@@ -81,6 +81,12 @@ class UnitTestUrrs(unittest.TestCase):
         self.assertTrue(tbc3.wait(timeout))
         self.assertTrue(urrs.is_shutting_down())
 
+    def test_get_instance(self):
+        Scheduler._instance = None
+        urrs = UserRoundRobinScheduler()
+        urrs = Scheduler.get_instance()
+        self.assertEqual(UserRoundRobinScheduler, urrs.__class__)
+        self.assertEqual(urrs, UserRoundRobinScheduler.get_instance())
 
 if __name__ == '__main__':
     unittest.main()

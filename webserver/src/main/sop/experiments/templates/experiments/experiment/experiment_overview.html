@@ -51,7 +51,7 @@
             <li class="list-group-item">
                 <div class="d-flex flex-column-reverse">
                     <div>
-                        {% if not execution.is_finished %}
+                        {% if execution.is_running %}
                             <div class="flex-grow-1 mr-3 execution-progress-div"
                                  id="container-{{ execution.pk }}"></div>
                         {% endif %}
@@ -62,12 +62,17 @@
                         <a class="flex-fill">{{ execution.progess }}</a>
                         <a class="flex-fill">{{ execution.creation_date }}</a>
 
-                        {% if execution.is_finished %}
+                        {% if execution.has_result %}
                             <a href="{% url 'execution_download_result' model.pk execution.pk %}"
                                class="btn btn-info mr-3" id="execution-download-{{ execution.pk }}"
-                               style="display: {% if not execution.is_finished %}none{% endif %}">Download
+                               style="display: {% if not execution.has_result %}none{% endif %}">Download
                                 Result</a>
                         {% endif %}
+
+                        {% if execution.is_crashed %}
+                            <a href="{% url "execution_restart" model.pk execution.pk %}" class="btn btn-success mr-3">Restart</a>
+                        {% endif %}
+
                         <a href="{% url "execution_duplicate" model.pk execution.pk %}" class="btn btn-warning mr-3">Duplicate</a>
                         <button type="button"
                                 class="btn btn-danger mr-3"
@@ -162,12 +167,10 @@
 {% block javascript %}
     <script>
         $(document).ready(function () {
-            console.log("on ready function call")
             let containers = document.getElementsByClassName("execution-progress-div")
             for (let i = 0; i < containers.length; i++) {
                 let container = containers[i]
                 let id = container.id.replace("container-", "")
-                console.log("creating bar for container with id: " + id)
 
                 let $progress = $('<div id="execution-progress-' + id + '" class="execution-progress mt-3"></div>').appendTo(container).append('<div class="progress-container"><div class="progress-status"></div><div class="bg-white border border-dark"><div class="progress-bar hidden progress-bar-striped progress-bar-animated bg-dark" style="width: 0%" role="progressbar" aria-valuemin="0" aria-valuemax="100">0%</div></div></div>');
                 $progress.show();
@@ -190,6 +193,7 @@
                     var progress = parseFloat(data.progress);
                     $progress.find('.progress-bar').css("width", progress * 100 + "%");
                     $progress.find('.progress-bar').html(parseInt(progress * 100) + '%');
+                    document.getElementById("execution-status-" + data.execution_pk).innerText = data.status
                 } else {
                     $progress.find('.progress-bar').css("width", 100 + "%");
                     $progress.find('.progress-bar').html('refresh page to refresh execution state');

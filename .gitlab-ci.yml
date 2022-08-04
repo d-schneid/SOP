@@ -44,8 +44,8 @@ variables:
   MYSQL_HOST: mysql
 
   # Deployment tags
-  TAG_LATEST: albinoboi/sop:latest
-  TAG_COMMIT: albinoboi/sop:$CI_COMMIT_SHORT_SHA
+  TAG_LATEST: ghcr.io/albinoboi/sop-docker:latest
+  TAG_COMMIT: ghcr.io/albinoboi/sop-docker:$CI_COMMIT_SHORT_SHA
 
   # Fix tls issue in docker
   DOCKER_TLS_CERTDIR: ""
@@ -56,7 +56,7 @@ default:
   cache:
     key: build-cache
     paths:
-      - ~/.cache/pip/
+      - .cache/pip/
   #
   # Pick zero or more services to be used on all builds.
   # Only needed when using a docker container to run your tests in.
@@ -70,8 +70,9 @@ default:
     - apt -y update
     - apt -y upgrade
     - apt-get -yq install software-properties-common
-    - apt -y install apt-utils net-tools default-mysql-client default-libmysqlclient-dev python3-distutils python3-dev gcc memcached
-    - "[ ! -d 'venv3.9' ]  && python3 -m venv venv3.9"
+    - apt -y install apt-utils net-tools wget default-mysql-client default-libmysqlclient-dev python3-distutils python3-dev gcc memcached
+    - "[ ! -d 'venv3.9' ] && python3 -m venv venv3.9"
+    - "[ ! -d 'public' ] && mkdir public"
     - source venv3.9/bin/activate
     - python3.9 -m pip install --upgrade pip
     - python3.9 -m pip install -r requirements.txt
@@ -93,9 +94,11 @@ migrations:
 
 django-tests:
   stage: test
+  coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
   script:
     - source venv3.9/bin/activate
-    - pip3 install -r requirements_pyod_algorithms.txt
+    # We skip pyodtodb django admin command tests because it needs way to big python dependencies
+    # - pip3 install -r requirements_pyod_algorithms.txt
     - which python3.9
     - cd webserver/src/main/sop
     - pip3 install django_coverage_plugin
@@ -104,17 +107,26 @@ django-tests:
     # The MYSQL user only gets permissions for MYSQL_DB, so Django can't create a test database.
     - echo "GRANT ALL on *.* to '${MYSQL_USER}';"| mysql -u root --password="${MYSQL_ROOT_PASSWORD}" -h mysql
     - python3.9 manage.py showmigrations --settings=sop.settings_ci
-    - python3.9 -m coverage run --rcfile=.coveragerc --source="." --omit="media/*","*/migrations/*","*/__init__.py","tests/*","sop/*" manage.py test --settings sop.settings_ci
-    - python3.9 -m coverage report --rcfile=.coveragerc
-
+    - python3.9 -m coverage run --rcfile=.coveragerc --source="." --omit="media/*","*/migrations/*","*/__init__.py","tests/*","sop/*","*/pyodtodb.py" manage.py test --settings sop.settings_ci
+    - python3.9 -m coverage report --rcfile=.coveragerc --precision=2
+    - 'wget -O ../../../../public/django-tests.svg https://img.shields.io/badge/webserver\ coverage-$(python3.9 -m coverage report --rcfile=.coveragerc --precision=2 | grep -E "^TOTAL.+?([0-9]+.[0-9]+%)$" | grep -Eo "[0-9]+.[0-9]+%$")-informational'
+  artifacts:
+    paths:
+      - public/django-tests.svg
 
 backend-tests:
   stage: test
+  coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
   script:
     - which python3.9
     - cd backend_library/src
-    - python3.9 -m coverage run --source=backend/ --omit="*/__init__.py" -m unittest discover -p "*.py" -s test/ -t .
-    - python3.9 -m coverage report
+    - python3.9 -m coverage run --source=backend/ --omit="*/__init__.py" --omit="backend/scheduler/DebugScheduler.py" --omit="backend/scheduler/ThreadedScheduler.py" -m unittest discover -p "*.py" -s test/ -t .
+    - python3.9 -m coverage report --precision=2
+    - 'wget -O ../../public/backend-tests.svg https://img.shields.io/badge/backend\ coverage-$(python3.9 -m coverage report --rcfile=.coveragerc --precision=2 | grep -E "^TOTAL.+?([0-9]+.[0-9]+%)$" | grep -Eo "[0-9]+.[0-9]+%$")-informational'
+  artifacts:
+    paths:
+      - public/backend-tests.svg
+
 
 publish-build:
   inherit:
@@ -124,12 +136,25 @@ publish-build:
     - main
   image: docker:stable
   script:
-    - docker login -u $DOCKERHUB_USER -p $DOCKERHUB_TOKEN
+    - docker login ghcr.io -u $DOCKERHUB_USER -p $DOCKERHUB_TOKEN
     - docker pull $TAG_LATEST
     - docker build -t $TAG_COMMIT -t $TAG_LATEST --cache-from $TAG_LATEST .
     - docker push $TAG_COMMIT
     - docker push $TAG_LATEST
     - docker image rm -f $TAG_COMMIT
+
+
+deploy-badges:
+  inherit:
+    default: false
+  stage: deploy
+  only:
+    - main
+  artifacts:
+    paths:
+      - public
+  script:
+    - ''
 
 deploy-app:
   inherit:
@@ -142,20 +167,11 @@ deploy-app:
     - deployment
   before_script:
     - apt -y update
-    - apt -y install curl
-    - echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/ buster main' | tee /etc/apt/sources.list.d/cloudflare-main.list
-    - curl https://pkg.cloudflare.com/cloudflare-main.gpg -o /usr/share/keyrings/cloudflare-main.gpg
-    - apt -y update
-    - apt -y install cloudflared openssh-client gettext
-    - mkdir ~/.ssh && touch ~/.ssh/config
-    - envsubst < $SSH_CONF > ~/.ssh/config
+    - apt -y install openssh-client
 
   script:
     - chmod og= $ID_RSA
-    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login -u $DOCKERHUB_USER -p $DOCKERHUB_TOKEN"
-    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker-compose down"
-    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker pull $TAG_LATEST"
-    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker-compose up -d"
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "./redeploy.sh"
   environment:
     name: development
     url: https://sop.ffhz.site

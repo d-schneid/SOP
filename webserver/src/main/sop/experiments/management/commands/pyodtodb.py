@@ -125,7 +125,7 @@ def save_algorithms_in_db(pyod_models_root: Path):
             "user": None,
         }
         algo = Algorithm.objects.create(**data)
-        algo.path.name = str(path.relative_to(settings.ALGORITHM_ROOT_DIR))
+        algo.path.name = str(path.relative_to(settings.MEDIA_ROOT))
         algo.save()
 
 

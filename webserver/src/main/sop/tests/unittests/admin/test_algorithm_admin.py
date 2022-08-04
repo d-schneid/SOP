@@ -116,7 +116,7 @@ class AlgorithmAdminTests(AdminLoggedInTestCase):
         self.assertContains(response, "Usage in experiments")
         self.assertContains(response, "Not used in any experiment")
 
-    def test_admin_delete_algorithm(self):
+    def test_admin_delete_algorithm_valid(self):
         self.assertTrue(Algorithm.objects.exists())
         # confirm deletion on confirmation site
         data = {"post": "yes"}
@@ -128,6 +128,27 @@ class AlgorithmAdminTests(AdminLoggedInTestCase):
         self.assertFalse(Algorithm.objects.exists())
         self.assertEqual(
             "experiments_algorithm_changelist", response.resolver_match.url_name
+        )
+
+    def test_admin_delete_algorithm_invalid(self):
+        self.dataset = Dataset.objects.create(
+            datapoints_total=1, dimensions_total=1, user=self.admin
+        )
+        self.exp = Experiment.objects.create(display_name="Test Exp",
+                                             dataset=self.dataset, user=self.admin)
+        self.exp.algorithms.add(self.algo)
+        self.assertTrue(Algorithm.objects.exists())
+        # confirm deletion on confirmation site
+        data = {"post": "yes"}
+        url = reverse("admin:experiments_algorithm_delete", args=(self.algo.pk,))
+        response = self.client.post(url, data, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f"{self.algo.display_name}")
+        self.assertContains(response, "cannot be deleted")
+        self.assertContains(response, "is used in at least one experiment")
+        self.assertTrue(Algorithm.objects.exists())
+        self.assertEqual(
+            "experiments_algorithm_delete", response.resolver_match.url_name
         )
 
     def test_admin_add_valid_algorithm(self):

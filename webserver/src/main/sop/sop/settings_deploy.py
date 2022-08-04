@@ -138,8 +138,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
+STATIC_URL = "static/"
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+
+# if it's a relative path, it will be appended to SCRIPT_NAME
+# has to be specified in the nginx settings to serve static content
 STATIC_ROOT = "/static/"
-STATIC_URL = "/static/"
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -159,12 +165,12 @@ LOGOUT_REDIRECT_URL = "login"
 
 # Configure django messages to use bootstrap styling
 MESSAGE_TAGS = {
-        messages.DEBUG: 'alert-secondary',
-        messages.INFO: 'alert-info',
-        messages.SUCCESS: 'alert-success',
-        messages.WARNING: 'alert-warning',
-        messages.ERROR: 'alert-danger',
- }
+    messages.DEBUG: 'alert-secondary',
+    messages.INFO: 'alert-info',
+    messages.SUCCESS: 'alert-success success',
+    messages.WARNING: 'alert-warning warning',
+    messages.ERROR: 'alert-danger error',
+}
 
 # Needed for typing webserver
 import django_stubs_ext  # noqa: E402

@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import Dict, Tuple, List
 
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 
-from experiments.models import Experiment
+from experiments.models import Experiment, Execution
 from experiments.models.algorithm import HyperparameterTypes
 
 
@@ -42,3 +42,12 @@ def get_params_out_of_form(
         return False, errors
     else:
         return True, dikt
+
+
+def get_execution_result(execution: Execution) -> HttpResponse:
+    file_name = "result.zip"
+    with execution.result_path as file:
+        response = HttpResponse(file.read())
+        response["Content-Type"] = "text/plain"
+        response["Content-Disposition"] = f"attachment; filename={file_name}"
+    return response
