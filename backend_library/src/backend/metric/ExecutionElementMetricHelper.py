@@ -30,8 +30,8 @@ class ExecutionElementMetricHelper:
         assert os.path.isfile(execution_element_result_path)
 
         # The ExecutionElement result has to be in the right format:
-        # (first column indices, second outlier score)
-        assert DatasetInfo.get_dataset_dimension(execution_element_result_path) == 2
+        # (first column indices -> not counted, second outlier score)
+        assert DatasetInfo.get_dataset_dimension(execution_element_result_path) == 1
 
         # Read ExecutionElement Result
         execution_element_result_df: pd.DataFrame = \
