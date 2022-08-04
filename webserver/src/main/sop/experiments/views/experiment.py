@@ -70,7 +70,7 @@ class ExperimentCreateView(
         context = super().get_context_data(**kwargs)
         context["form"].fields["dataset"].queryset = Dataset.objects.\
             get_by_user(self.request.user).\
-            filter(is_cleaned=True)
+            filter(status="FINISHED")
         context.update({
             "algorithm_groups": Algorithm.AlgorithmGroup,
             "algorithms": Algorithm.objects.get_by_user_and_public(self.request.user),

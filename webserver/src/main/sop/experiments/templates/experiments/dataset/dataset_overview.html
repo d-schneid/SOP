@@ -23,18 +23,29 @@
             {{ model.display_name }}
         </a>
     </h5>
-    {% if model.path_cleaned.name|slice:"-5:" == "error" %}
-        <a class="text-white ml-auto">ERROR</a>
-    {% elif model.is_cleaned %}
+    {% if model.is_cleaned and model.has_error %}
+        <a class="text-white ml-auto">cleaning failed</a>
+    {% elif model.is_cleaned and not mmodel.has_error %}
         <a class="text-white ml-auto">cleaned</a>
-    {% else %}
+    {% elif not model.is_cleaned %}
         <a class="text-white ml-auto">cleaning in progress</a>
+    {% else %}
+        <a class="text-white ml-auto">SERVER-ERROR</a>
     {% endif %}
 {% endblock %}
 
 
 {% block card-body %}
     <span style="white-space: pre">{{ model.description }}</span>
+
+    {% if model.is_cleaned and model.has_error %}
+        <div class="alert alert-danger mt-4" role="alert">
+            <b>The following Error occurred during cleaning:</b>
+            <blockquote class="ml-3 mt-3">
+                {{ model.get_error_message }}
+            </blockquote>
+        </div>
+    {% endif %}
 {% endblock %}
 
 {% block edit %}
@@ -42,7 +53,7 @@
        class="btn btn-warning mr-3">Edit</a>
     <div class="flex-grow-1">
         <a href="{% url 'dataset_download_uncleaned' model.pk %}" class="btn btn-info mr-3">Download Uncleaned</a>
-        {% if model.is_cleaned %}
+        {% if model.is_cleaned and not model.has_error %}
             <a href="{% url 'dataset_download_cleaned' model.pk %}" class="btn btn-info mr-3">Download
                 Cleaned</a>
         {% endif %}

@@ -25,7 +25,7 @@ class AlgorithmUploadForm(forms.ModelForm[Algorithm]):
 class DatasetUploadForm(forms.ModelForm[Dataset]):
     class Meta:
         model = Dataset
-        fields = ("display_name", "description", "path_original")
+        fields = ("display_name", "description", "path_original", "has_header")
         widgets = {
             "display_name": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "Dataset name"}
@@ -37,6 +37,13 @@ class DatasetUploadForm(forms.ModelForm[Dataset]):
                 }
             ),
             "path_original": forms.FileInput(attrs={"accept": ".csv"}),
+            "has_header" : forms.CheckboxInput(
+                attrs={
+                    "type": "checkbox",
+                    "class": "custom-control-input",
+                    "placeholder": "Does the Dataset have a header?",
+                }
+            ),
         }
 
 
