@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os.path
 from typing import Optional
 
@@ -14,15 +15,12 @@ from experiments.forms.create import DatasetUploadForm
 from experiments.forms.edit import DatasetEditForm
 from experiments.models.dataset import Dataset, CleaningState
 from experiments.models.managers import DatasetQuerySet
-
-from experiments.services.dataset import schedule_backend
-
-
-from experiments.views.generic import PostOnlyDeleteView
 from experiments.services.dataset import (
     save_dataset,
     get_download_response,
 )
+from experiments.services.dataset import schedule_backend
+from experiments.views.generic import PostOnlyDeleteView
 
 
 class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadForm]):
@@ -37,8 +35,13 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
 
         # Check is form is invalid and set error messages
         if not form.is_valid():
-            error_text = ' '.join(
-                [error_message for error in form.errors.values() for error_message in error])
+            error_text = " ".join(
+                [
+                    error_message
+                    for error in form.errors.values()
+                    for error_message in error
+                ]
+            )
 
             messages.error(request, f"Invalid dataset: {error_text}")
         return super().post(request, *args, **kwargs)
@@ -52,7 +55,9 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
             dataset_valid = DatasetInfo.is_dataset_valid(temp_file_path)
         except UnicodeError as e:
             os.remove(temp_file_path)
-            messages.error(self.request, "Unicode error in selected dataset: " + e.reason)
+            messages.error(
+                self.request, "Unicode error in selected dataset: " + e.reason
+            )
             assert not os.path.isfile(temp_file_path)
             return super(DatasetUploadView, self).form_invalid(form)
 
@@ -129,7 +134,7 @@ class DatasetEditView(LoginRequiredMixin, UpdateView[Dataset, DatasetEditForm]):
 
 
 def download_uncleaned_dataset(
-        request: HttpRequest, pk: int
+    request: HttpRequest, pk: int
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
     if request.method == "GET":
         dataset: Optional[Dataset] = Dataset.objects.filter(pk=pk).first()
@@ -137,7 +142,8 @@ def download_uncleaned_dataset(
             if "admin" not in request.path:
                 return HttpResponseRedirect(reverse_lazy("dataset_overview"))
             return HttpResponseRedirect(
-                reverse_lazy("admin:experiments_dataset_changelist"))
+                reverse_lazy("admin:experiments_dataset_changelist")
+            )
 
         with dataset.path_original as file:
             return get_download_response(file, f"{dataset.display_name}.csv")
@@ -145,7 +151,7 @@ def download_uncleaned_dataset(
 
 
 def download_cleaned_dataset(
-        request: HttpRequest, pk: int
+    request: HttpRequest, pk: int
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
     if request.method == "GET":
         dataset: Optional[Dataset] = Dataset.objects.filter(pk=pk).first()
@@ -153,8 +159,28 @@ def download_cleaned_dataset(
             if "admin" not in request.path:
                 return HttpResponseRedirect(reverse_lazy("dataset_overview"))
             return HttpResponseRedirect(
-                reverse_lazy("admin:experiments_dataset_changelist"))
+                reverse_lazy("admin:experiments_dataset_changelist")
+            )
 
         with dataset.path_cleaned as file:
             return get_download_response(file, f"{dataset.display_name}_cleaned.csv")
+    return None
+
+
+def dataset_status_view(
+    request: HttpRequest,
+) -> Optional[HttpResponse | HttpResponseRedirect]:
+    if request.method == "GET":
+        dataset_pk: int = -1
+        if "dataset_pk" in request.GET:
+            dataset_pk = int(request.GET["dataset_pk"])
+        elif "dataset_pk" in request.META:
+            dataset_pk = request.META["dataset_pk"]
+        if dataset_pk >= 0:
+            dataset: Optional[Dataset] = Dataset.objects.filter(pk=dataset_pk).first()
+            if dataset is None:
+                return HttpResponseRedirect(reverse_lazy("dataset_overview"))
+
+            data = {"dataset_pk": dataset.pk, "cleaning_status": dataset.status}
+            return HttpResponse(json.dumps(data))
     return None
