@@ -113,6 +113,11 @@ class Execution(Task, Schedulable):
         self._shared_memory_on_main: Optional[SharedMemory] = None
         self._dataset_on_main: Optional[np.ndarray] = None
 
+        self._rownrs_shm_name: Optional[str] = None
+        self._rownrs_shm_on_main: Optional[SharedMemory] = None
+        self._rownrs_on_main: Optional[np.ndarray] = None
+        self._row_numbers: Optional[np.ndarray]
+
     def __fill_algorithms_directory_name(self) -> None:
         """
         Fills all algorithms with their corresponding
@@ -182,7 +187,7 @@ class Execution(Task, Schedulable):
                 ExecutionSubspace(self._user_id, self._task_id, self._algorithms,
                                   subspace, self._result_path, self._dataset_on_main,
                                   self.__on_execution_element_finished,
-                                  self._shared_memory_name))
+                                  self._shared_memory_name, self._row_numbers))
 
     # schedule
     def schedule(self) -> None:
@@ -238,21 +243,33 @@ class Execution(Task, Schedulable):
                                            buffer=self._shared_memory_on_main.buf,
                                            dtype=dtype)
 
+        self._rownrs_shm_on_main = SharedMemory(None, True, self._datapoint_count * 4)
+        self._rownrs_shm_name = self._rownrs_shm_on_main.name
+        self._rownrs_on_main = np.ndarray([self._datapoint_count],
+                                          buffer=self._rownrs_shm_on_main.buf,
+                                          dtype=np.int32)
+
     def __load_dataset(self) -> None:
         """
         Load the cleaned dataset into shared memory
         """
-        data = DataIO.read_annotated(self._dataset_path, True).data
+        dataset = DataIO.read_annotated(self._dataset_path, True)
+        data = dataset.data
 
         assert data.shape[0] == self._datapoint_count
         assert data.shape[1] == self._subspaces[0].get_dataset_dimension_count()
 
         shm = shared_memory.SharedMemory(self._shared_memory_name, False)
-        
         shared_data = np.ndarray(data.shape, data.dtype, shm.buf)
+
+        rownrs_shm = shared_memory.SharedMemory(self._rownrs_shm_name, False)
+        rownrs_shared_data = np.ndarray([self._datapoint_count], np.int32, rownrs_shm.buf)
+
         shared_data[:] = data[:]
-        
-        shm.close()
+        rownrs_shared_data[:] = dataset.row_mapping[:]
+        if (type(multiprocessing.current_process()) == multiprocessing.Process):
+            shm.close()
+            rownrs_shm.close()
 
     def __on_execution_element_finished(self, error: bool) -> None:
         """
@@ -311,6 +328,12 @@ class Execution(Task, Schedulable):
         scheduler.schedule(result_zipper)
 
     def run_later_on_main(self, statuscode: int):
+        self._row_numbers = np.copy(self._rownrs_on_main)
+        self._rownrs_shm_on_main.close()
+        self._rownrs_shm_on_main.unlink()
+        self._rownrs_shm_name = None
+        self._rownrs_on_main = None
+        self._rownrs_shm_on_main = None
         self.__generate_execution_subspaces()
         for ess in self._execution_subspaces:
             Scheduler.get_instance().schedule(ess)
