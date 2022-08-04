@@ -37,6 +37,15 @@
 
 {% block card-body %}
     <span style="white-space: pre">{{ model.description }}</span>
+
+    {% if model.is_cleaned and model.has_error %}
+        <div class="alert alert-danger mt-4" role="alert">
+            <b>The following Error occurred during cleaning:</b>
+            <blockquote class="ml-3 mt-3">
+                {{ model.get_error_message }}
+            </blockquote>
+        </div>
+    {% endif %}
 {% endblock %}
 
 {% block edit %}

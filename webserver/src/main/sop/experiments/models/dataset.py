@@ -69,7 +69,9 @@ class Dataset(models.Model):
     @property
     def get_error_message(self) -> str:
         assert self.has_error is True
-        return "An error occurred during cleaning."  # TODO: wo genau wird Fehler gespeichert?
+        error_file_path: str = self.path_cleaned.path + ".error"
+        with open(error_file_path, "r") as file:
+            return file.read()
 
     def __str__(self) -> str:
         return str(self.display_name) + " | " + str(self.user)
