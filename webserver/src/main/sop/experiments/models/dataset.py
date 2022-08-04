@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os.path
+from enum import Enum, auto
 
 from django.conf import settings
 from django.core.validators import FileExtensionValidator
@@ -12,6 +13,18 @@ from experiments.models.managers import DatasetManager, DatasetQuerySet
 def get_dataset_upload_path(instance: Dataset, filename: str) -> str:
     user_id = instance.user.id
     return os.path.join("datasets", "user_" + str(user_id), filename)
+
+
+class CleaningState(Enum):
+    RUNNING = auto, False, False
+    FINISHED = auto, True, False
+    FINISHED_WITH_ERROR = auto, True, True
+
+    def is_cleaned(self) -> bool:
+        return self.value[1]
+
+    def has_error(self) -> bool:
+        return self.value[2]
 
 
 class Dataset(models.Model):
@@ -30,7 +43,8 @@ class Dataset(models.Model):
         validators=(FileExtensionValidator(allowed_extensions=["csv"]),),
     )
     path_cleaned = models.FileField(null=True)
-    is_cleaned = models.BooleanField(default=False)
+    status = models.CharField(max_length=80)
+    has_header = models.BooleanField(default=True)
     objects = DatasetManager.from_queryset(DatasetQuerySet)()  # type: ignore
 
     @property
@@ -40,5 +54,25 @@ class Dataset(models.Model):
 
         return not Experiment.objects.get_with_dataset(self).exists()
 
+    @property
+    def is_cleaned(self) -> bool:
+        status: CleaningState = CleaningState[self.status]
+        assert status is not None
+        return status.is_cleaned()
+
+    @property
+    def has_error(self) -> bool:
+        status: CleaningState = CleaningState[self.status]
+        assert status is not None
+        return status.has_error()
+
+    @property
+    def get_error_message(self) -> str:
+        assert self.has_error is True
+        return "An error occurred during cleaning."  # TODO: wo genau wird Fehler gespeichert?
+
     def __str__(self) -> str:
         return str(self.display_name) + " | " + str(self.user)
+
+
+
