@@ -7,6 +7,7 @@ from django.http import HttpRequest
 from django.urls import re_path, reverse
 from django.urls.resolvers import URLPattern
 from django.utils.html import format_html
+from django.utils.safestring import SafeString
 
 from experiments.admin.inlines import ExperimentInlineAlgorithm
 from experiments.admin.abstract_model_admin import AbstractModelAdmin
@@ -20,6 +21,9 @@ from experiments.views.algorithm import download_algorithm
 
 @admin.register(Algorithm)
 class AlgorithmAdmin(AbstractModelAdmin):
+    """
+    The representation of the Algorithm model in the admin interface.
+    """
     inlines = [ExperimentInlineAlgorithm]
     list_display = ["display_name", "group", "user", "upload_date"]
     raw_id_fields = ["user"]
@@ -47,6 +51,10 @@ class AlgorithmAdmin(AbstractModelAdmin):
         return []
 
     def get_urls(self) -> List[URLPattern]:
+        """
+        Adds custom view for downloading the associated algorithm file to the URLs.
+        :return: The URLs to be used for this AlgorithmAdmin.
+        """
         urls = super().get_urls()
         urls += [
             re_path(r'^algorithm_download/(?P<pk>\d+)$',
@@ -55,7 +63,11 @@ class AlgorithmAdmin(AbstractModelAdmin):
         ]
         return urls
 
-    def download(self, algorithm: Algorithm) -> str:
+    def download(self, algorithm: Algorithm) -> SafeString:
+        """
+        Custom field for this AlgorithmAdmin.
+        :return: Link to the custom function download_algorithm.
+        """
         return format_html(
             '<a href="{}">Download</a>',
             reverse('admin:experiments_algorithm_download', args=[algorithm.pk])

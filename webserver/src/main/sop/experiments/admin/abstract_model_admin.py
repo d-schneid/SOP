@@ -21,7 +21,6 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
     processes and the application of concrete views for models that are registered in
     the admin site.
     """
-
     class Meta:
         abstract = True
 
@@ -43,7 +42,7 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
     @abstractmethod
     def get_model_name(self) -> str:
         """
-        Return the name of the model.
+        Return the name of the associated model.
         """
         pass
 
@@ -61,7 +60,6 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
         """
         :return: The inline instances that belong to the selected object.
         """
-
         return obj and super().get_inline_instances(request, obj) or []
 
     def add_view(self,
@@ -74,7 +72,6 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
 
         After adding a new object, it redirects back to the change list.
         """
-
         self.form = self.get_admin_add_form()
         return super().add_view(request, form_url, extra_context)
 
@@ -89,7 +86,6 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
 
         After editing the selected object, it redirects back to the change list.
         """
-
         self.form = self.get_admin_change_form()
         return super().change_view(request, object_id, form_url, extra_context)
 
@@ -108,7 +104,6 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
 
         Next, it deletes the selected object and redirects back to the change list.
         """
-
         instance = self.get_object(request, object_id)
         if instance is None:
             return
@@ -135,7 +130,6 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
 
         Next, it deletes all selected objects and redirects back to the change list.
         """
-
         instances = obj.all()
         for instance in instances:
             if instance.experiment_set.count() > 0:  # type: ignore
