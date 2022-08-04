@@ -47,7 +47,7 @@ class ExecutionAdmin(admin.ModelAdmin[Execution]):
         """
         Adds custom view for downloading the result file of the associated
         Execution model instance to the URLs.
-        :return: The URLs to be used for this ExecutionAdmin.
+        @return: The URLs to be used for this ExecutionAdmin.
         """
         urls = super().get_urls()
         urls += [
@@ -60,7 +60,7 @@ class ExecutionAdmin(admin.ModelAdmin[Execution]):
     def download(self, execution: Execution) -> SafeString:
         """
         Custom field for this ExecutionAdmin.
-        :return: Link to the custom function download_execution_result_admin.
+        @return: Link to the custom function download_execution_result_admin.
         """
         return format_html(
             '<a href="{}">Download</a>',

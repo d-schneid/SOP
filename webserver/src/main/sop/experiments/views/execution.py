@@ -291,6 +291,19 @@ def download_execution_result(
 
 def download_execution_result_admin(request: HttpRequest, pk: int
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
+    """
+    A function view that will download an execution result. This view asserts that the
+    execution has results located at the path in the result_path attribute of the
+    execution. Accessing this view with an unfinished execution will result in
+    unexpected behaviour.
+
+    @param request: The HTTPRequest, this will be given by django.
+    @param pk: The primary key of the execution.
+    @return: If the request is valid and the given primary key is valid, this returns
+    a HTTPResponse with the result download. If the given primary key is invalid, this
+    return a redirect to the change list of the Execution model instances in the admin
+    interface. If this view is accessed with a POST request, it will return None.
+    """
     if request.method == "GET":
         execution: Optional[Execution] = Execution.objects.filter(pk=pk).first()
         if execution is None:

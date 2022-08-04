@@ -23,7 +23,6 @@ def get_params_out_of_form(
     a mapping from the hyperparameter form_field which caused an error to an error
     message.
     """
-
     dikt: Dict[str, Dict[str, HyperparameterTypes]] = dict()
     errors: Dict[str, List[str]] = dict()
 
@@ -57,6 +56,12 @@ def get_params_out_of_form(
 
 
 def get_execution_result(execution: Execution) -> HttpResponse:
+    """
+    Generates a HttpResponse for a download with the content of the result file of the
+    given execution.
+    @param execution: The execution of which the result file shall be downloaded.
+    @return: A HttpResponse with the download.
+    """
     file_name = "result.zip"
     with execution.result_path as file:
         response = HttpResponse(file.read())

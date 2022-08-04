@@ -53,7 +53,7 @@ class AlgorithmAdmin(AbstractModelAdmin):
     def get_urls(self) -> List[URLPattern]:
         """
         Adds custom view for downloading the associated algorithm file to the URLs.
-        :return: The URLs to be used for this AlgorithmAdmin.
+        @return: The URLs to be used for this AlgorithmAdmin.
         """
         urls = super().get_urls()
         urls += [
@@ -66,7 +66,7 @@ class AlgorithmAdmin(AbstractModelAdmin):
     def download(self, algorithm: Algorithm) -> SafeString:
         """
         Custom field for this AlgorithmAdmin.
-        :return: Link to the custom function download_algorithm.
+        @return: Link to the custom function download_algorithm.
         """
         return format_html(
             '<a href="{}">Download</a>',

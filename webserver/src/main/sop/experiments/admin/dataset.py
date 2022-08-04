@@ -101,7 +101,7 @@ class DatasetAdmin(AbstractModelAdmin):
     def get_urls(self) -> List[URLPattern]:
         """
         Adds custom view for downloading the associated dataset files to the URLs.
-        :return: The URLs to be used for this DatasetAdmin.
+        @return: The URLs to be used for this DatasetAdmin.
         """
         urls = super().get_urls()
         urls += [
@@ -117,7 +117,7 @@ class DatasetAdmin(AbstractModelAdmin):
     def download_uncleaned(self, dataset: Dataset) -> SafeString:
         """
         Custom field for this DatasetAdmin.
-        :return: Link to the custom function download_uncleaned_dataset.
+        @return: Link to the custom function download_uncleaned_dataset.
         """
         return format_html(
             '<a href="{}">Download</a>',
@@ -128,7 +128,7 @@ class DatasetAdmin(AbstractModelAdmin):
     def download_cleaned(self, dataset: Dataset) -> SafeString:
         """
         Custom field for this DatasetAdmin.
-        :return: Link to the custom function download_cleaned_dataset.
+        @return: Link to the custom function download_cleaned_dataset.
         """
         return format_html(
             '<a href="{}">Download</a>',

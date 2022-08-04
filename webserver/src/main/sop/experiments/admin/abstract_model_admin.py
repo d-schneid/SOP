@@ -58,7 +58,7 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
                              obj: Optional[Model] = None
     ) -> List[InlineModelAdmin]:
         """
-        :return: The inline instances that belong to the selected object.
+        @return: The inline instances that belong to the selected object.
         """
         return obj and super().get_inline_instances(request, obj) or []
 
