@@ -51,11 +51,12 @@ class DatasetAdmin(AbstractModelAdmin):
             readonly_fields = ["dimensions_total",
                                "datapoints_total",
                                "status",
+                               "has_header",
                                "user",
                                "upload_date",
                                "download_uncleaned",
                                "download_cleaned"]
-            if not obj.is_cleaned:
+            if not obj.is_cleaned or obj.has_error:
                 readonly_fields.remove("download_cleaned")
             return readonly_fields
         # for adding a new experiment
