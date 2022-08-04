@@ -56,10 +56,10 @@ class UnitTestUrrs(unittest.TestCase):
         tr4 = multiprocessing.Event()
         tbc5 = manager.Value('b', False)
         urrs.schedule(TestSched(-1, 0, 0, None, tr4, 1))
-        urrs.schedule(TestSched(-1, 1, 0, tbc5, None, 2))
+        urrs.schedule(TestSched(-1, 1, 0, tbc5, None, 3))
         urrs.abort_by_task(1)
         self.assertTrue(tr4.wait(timeout))
-        time.sleep(2)
+        time.sleep(3)
         self.assertFalse(tbc5.value)
 
         tr6 = multiprocessing.Event()
