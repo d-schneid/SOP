@@ -5,6 +5,7 @@ from django.http import HttpRequest
 from django.urls import reverse, re_path
 from django.urls.resolvers import URLPattern
 from django.utils.html import format_html
+from django.utils.safestring import SafeString
 
 from experiments.admin.inlines import ExperimentInlineDataset
 from experiments.admin.abstract_model_admin import AbstractModelAdmin
@@ -113,7 +114,7 @@ class DatasetAdmin(AbstractModelAdmin):
         ]
         return urls
 
-    def download_uncleaned(self, dataset: Dataset) -> str:
+    def download_uncleaned(self, dataset: Dataset) -> SafeString:
         """
         Custom field for this DatasetAdmin.
         :return: Link to the custom function download_uncleaned_dataset.
@@ -124,7 +125,7 @@ class DatasetAdmin(AbstractModelAdmin):
         )
     download_uncleaned.short_description = "Uncleaned dataset"
 
-    def download_cleaned(self, dataset: Dataset) -> str:
+    def download_cleaned(self, dataset: Dataset) -> SafeString:
         """
         Custom field for this DatasetAdmin.
         :return: Link to the custom function download_cleaned_dataset.
