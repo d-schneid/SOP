@@ -12,7 +12,7 @@ class DebugAlgorithm(BaseDetector):
         self._algorithm_result: int = algorithm_result
 
     def decision_function(self, X: np.ndarray):
-        return np.expand_dims(np.repeat(self._algorithm_result, X.shape[0]), 1)
+        return np.repeat(self._algorithm_result, X.shape[0])
 
     def fit(self, X, y=None):
         pass
