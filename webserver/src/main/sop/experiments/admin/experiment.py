@@ -9,6 +9,9 @@ from experiments.forms.admin.experiment import AdminAddExperimentForm
 
 @admin.register(Experiment)
 class ExperimentAdmin(admin.ModelAdmin[Experiment]):
+    """
+    The representation of the Experiment model in the admin interface.
+    """
     list_display = ["display_name", "user", "creation_date"]
     raw_id_fields = ["user", "algorithms", "dataset"]
     list_filter = ["creation_date"]
@@ -33,5 +36,16 @@ class ExperimentAdmin(admin.ModelAdmin[Experiment]):
                  form_url: str = "",
                  extra_context: Optional[Dict[str, object]] = None
     ) -> HttpResponse:
+        """
+        View for the experiment model instance addition page in the admin interface.
+        After adding a new experiment model instance, it redirects back to the change
+        list.
+
+        @param request: The HTTPRequest, this will be given by django.
+        @param form_url: The URL of the form that shall be used for the add view.
+        @param extra_context: Additional information that shall be presented by the
+        add view.
+        @return: A redirect to the change list.
+        """
         self.form = AdminAddExperimentForm
         return super().add_view(request, form_url, extra_context)

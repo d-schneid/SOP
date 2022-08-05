@@ -10,6 +10,14 @@ _M = TypeVar("_M", bound=Model)
 
 
 class PostOnlyDeleteView(DeleteView[_M]):
+    """
+    A generic delete view that is only accessible via POST requests.
+    If it is accessed with a GET request, it will redirect to the url specified in the
+    success_url attribute that is defined by the subclass.
+    It will delete a model of the model class specified in the model attribute with the
+    primary key specified in self.kwargs with key "pk". If no model of that class with
+    the given primary key exists, it will also redirect to the success_url.
+    """
     def dispatch(
         self, request: HttpRequest, *args: Any, **kwargs: Any
     ) -> HttpResponseBase:

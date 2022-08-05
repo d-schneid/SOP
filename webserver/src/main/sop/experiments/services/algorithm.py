@@ -13,6 +13,12 @@ from experiments.models.algorithm import HyperparameterTypes
 
 
 def save_temp_algorithm(user: User, file: UploadedFile) -> Path:
+    """
+    Saves the given file at a temp location.
+    @param user: The user who owns the algorithm.
+    @param file: The UploadedFile object that is given by django.
+    @return: A Path object of the newly created file.
+    """
     temp_dir = settings.ALGORITHM_ROOT_DIR / "temp" / f"{user.id}"
     assert file.name is not None
     temp_file_path = temp_dir / file.name
@@ -29,6 +35,12 @@ def save_temp_algorithm(user: User, file: UploadedFile) -> Path:
 
 
 def delete_temp_algorithm(temp_file_path: Path) -> None:
+    """
+    Deletes a temporarily saved algorithm. It will also clean up the temp directory if
+    it does not contain any more files.
+    @param temp_file_path: The path of the algorithm.
+    @return: None
+    """
     parent_folder = temp_file_path.parent
     assert temp_file_path.parent.parent == settings.ALGORITHM_ROOT_DIR / "temp"
 
@@ -49,6 +61,14 @@ def delete_temp_algorithm(temp_file_path: Path) -> None:
 def convert_param_mapping_to_signature_dict(
     mapping: MappingProxyType[str, Parameter]
 ) -> Dict[str, Optional[HyperparameterTypes]]:
+    """
+    Converts the parameter mapping given by the backend AlgorithmLoader to a signature
+    dictionary that is safe to use (does not contain args, kwargs and 'unsafe'
+    parameters, which default values are of type 'type' or that are callable).
+    @param mapping: The mapping of parameter name to Parameter object.
+    @return: A dictionary that maps parameter names to their default values and does not
+    contain args, kwargs and unsafe parameters.
+    """
     dikt = dict()
     for name, param in mapping.items():
         # We don't want to handle args and kwargs

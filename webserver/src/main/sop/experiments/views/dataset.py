@@ -24,6 +24,11 @@ from experiments.views.generic import PostOnlyDeleteView
 
 
 class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadForm]):
+    """
+    A view to upload a dataset. It will use the DatasetUploadForm to display widgets for
+    the fields that a user has to enter. When the form is valid, this view will save the
+    dataset in the database and start a DatasetCleaning for the given dataset.
+    """
     model = Dataset
     form_class = DatasetUploadForm
     template_name = "dataset_upload.html"
@@ -92,6 +97,10 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
 
 
 class DatasetOverview(LoginRequiredMixin, ListView[Dataset]):
+    """
+    A view to display all datasets of the user that requests this view. Datasets can
+    be sorted by traits like name and upload date.
+    """
     model = Dataset
     template_name = "dataset_overview.html"
 
@@ -111,6 +120,10 @@ class DatasetOverview(LoginRequiredMixin, ListView[Dataset]):
 
 
 class DatasetDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Dataset]):
+    """
+    A view to delete a dataset. It inherits PostOnlyDeleteView, so it is only accessible
+    via a POST request and will then perform the deletion of the dataset model.
+    """
     model = Dataset
     success_url = reverse_lazy("dataset_overview")
 
@@ -127,6 +140,10 @@ class DatasetDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Dataset]):
 
 
 class DatasetEditView(LoginRequiredMixin, UpdateView[Dataset, DatasetEditForm]):
+    """
+    A view to edit an existing dataset. It uses the DatasetEditForm to display widgets
+    for fields that a user can edit.
+    """
     model = Dataset
     form_class = DatasetEditForm
     template_name = "dataset_edit.html"
@@ -136,6 +153,15 @@ class DatasetEditView(LoginRequiredMixin, UpdateView[Dataset, DatasetEditForm]):
 def download_uncleaned_dataset(
     request: HttpRequest, pk: int
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
+    """
+    A function view to download the uncleaned csv of a dataset.
+    @param request: The HTTPRequest, this will be given by django.
+    @param pk: The primary key of the wanted dataset.
+    @return: If the request is correct and a dataset with the given primary key exists,
+    this view will return a HTTPResponse with the download. If there is no dataset with
+    the given primary key, the view will redirect to the dataset overview.
+    If this view is accessed via a POST request it will return None.
+    """
     if request.method == "GET":
         dataset: Optional[Dataset] = Dataset.objects.filter(pk=pk).first()
         if dataset is None:
@@ -153,6 +179,17 @@ def download_uncleaned_dataset(
 def download_cleaned_dataset(
     request: HttpRequest, pk: int
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
+    """
+    A function view to download the cleaned csv of a dataset. This view asserts that the
+    dataset is already cleaned. Calling this view with an uncleaned dataset will result
+    in unexpected behaviour.
+    @param request: The HTTPRequest, this will be given by django.
+    @param pk: The primary key of the wanted dataset.
+    @return: If the request is correct and a dataset with the given primary key exists,
+    this view will return a HTTPResponse with the download. If there is no dataset with
+    the given primary key, the view will redirect to the dataset overview.
+    If this view is accessed via a POST request it will return None.
+    """
     if request.method == "GET":
         dataset: Optional[Dataset] = Dataset.objects.filter(pk=pk).first()
         if dataset is None or dataset.is_cleaned is False:

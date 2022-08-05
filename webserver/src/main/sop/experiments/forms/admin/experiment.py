@@ -9,11 +9,24 @@ from authentication.models import User
 
 
 class AdminAddExperimentForm(forms.ModelForm[Experiment]):
+    """
+    The form that associates with the Experiment model and is used for the addition of
+    Experiment model instances in the admin interface.
+    """
     class Meta:
         model = Experiment
         fields = ["display_name", "user", "dataset", "algorithms"]
 
     def clean(self) -> Optional[Dict[str, object]]:
+        """
+        Validates the fields of this AdminAddExperimentForm.
+        If at least one field is not valid, it shows an appropriate error for the
+        respective field in this AdminAddExperimentForm on the respective add view in
+        the admin interface.
+
+        @return: The clean fields of this AdminAddExperimentForm if all validated
+        fields are valid. Otherwise None.
+        """
         cleaned_user: Optional[User] = self.cleaned_data.get("user")
         cleaned_dataset: Optional[Dataset] = self.cleaned_data.get("dataset")
         cleaned_algorithms: Optional[AlgorithmQuerySet] = self.cleaned_data.get("algorithms")
