@@ -46,10 +46,9 @@
        class="btn btn-warning mr-3">Edit</a>
     <div class="flex-grow-1">
         <a href="{% url 'dataset_download_uncleaned' model.pk %}" class="btn btn-info mr-3">Download Uncleaned</a>
-        {% if model.is_cleaned and not model.has_error %}
-            <a href="{% url 'dataset_download_cleaned' model.pk %}" class="btn btn-info mr-3">Download
-                Cleaned</a>
-        {% endif %}
+        <a href="{% url 'dataset_download_cleaned' model.pk %}" class="btn btn-info mr-3" id="cleaned-download"
+           style="visibility: {% if model.is_cleaned and not model.has_error %}visible{% else %}hidden{% endif %}">Download
+            Cleaned</a>
     </div>
 {% endblock %}
 
@@ -87,12 +86,12 @@
                 status = document.getElementById("dataset-status-" + id)
                 if (data.cleaning_status === "RUNNING") {
                     status.innerText = "cleaning in progress";
-                    setTimeout('fetch('+id+')', 2000)
+                    setTimeout('fetch(' + id + ')', 2000)
                 } else if (data.cleaning_status === "FINISHED") {
                     status.innerText = "cleaned"
+                    document.getElementById("cleaned-download").style.visibility = "visible"
                 } else if (data.cleaning_status === "FINISHED_WITH_ERROR") {
                     status.innerText = "cleaning failed"
-
                 } else {
                     status.innerText = "SERVER ERROR"
                 }
