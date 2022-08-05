@@ -60,6 +60,7 @@ class ExecutionAdmin(admin.ModelAdmin[Execution]):
     def download(self, execution: Execution) -> SafeString:
         """
         Custom field for this ExecutionAdmin.
+        @param execution: The execution model instance whose result shall be downloaded.
         @return: Link to the custom function download_execution_result_admin.
         """
         return format_html(
