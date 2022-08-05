@@ -22,10 +22,13 @@ class AdminAddDatasetForm(forms.ModelForm[Dataset]):
 
     def clean(self) -> Optional[Dict[str, Any]]:
         """
-        Validates the given dataset file of this AdminAddDatasetForm.
-        If the given dataset file is not valid, it shows an appropriate error for the
+        Validates the dataset file of this AdminAddDatasetForm.
+        If this dataset file is not valid, it shows an appropriate error for the
         respective field in this AdminAddDatasetForm on the respective add view in
         the admin interface.
+
+        @return: The clean fields of this AdminAddDatasetForm if the dataset file is
+        valid. Otherwise None.
         """
         dataset: Optional[TemporaryUploadedFile] = self.cleaned_data.get("path_original")
 

@@ -19,10 +19,13 @@ class AdminAddExperimentForm(forms.ModelForm[Experiment]):
 
     def clean(self) -> Optional[Dict[str, object]]:
         """
-        Validates the given fields of this AdminAddExperimentForm.
+        Validates the fields of this AdminAddExperimentForm.
         If at least one field is not valid, it shows an appropriate error for the
         respective field in this AdminAddExperimentForm on the respective add view in
         the admin interface.
+
+        @return: The clean fields of this AdminAddExperimentForm if all validated
+        fields are valid. Otherwise None.
         """
         cleaned_user: Optional[User] = self.cleaned_data.get("user")
         cleaned_dataset: Optional[Dataset] = self.cleaned_data.get("dataset")

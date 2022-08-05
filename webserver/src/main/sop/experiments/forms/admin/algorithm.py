@@ -24,10 +24,12 @@ class AdminAddAlgorithmForm(forms.ModelForm[Algorithm]):
 
     def clean_path(self) -> Optional[TemporaryUploadedFile]:
         """
-        Validates the given algorithm file of this AdminAddAlgorithmForm.
-        If the given algorithm file is not valid, it shows an appropriate error for the
+        Validates the algorithm file of this AdminAddAlgorithmForm.
+        If this algorithm file is not valid, it shows an appropriate error for the
         respective field in this AdminAddAlgorithmForm on the respective add view in
         the admin interface.
+
+        @return: The algorithm file if it is valid. Otherwise None.
         """
         cleaned_file: TemporaryUploadedFile = self.cleaned_data.get("path")  # type: ignore
 
