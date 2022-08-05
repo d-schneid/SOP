@@ -181,9 +181,9 @@ class ExecutionCreateView(
                 form.instance.subspace_generation_seed = seed
 
         # Sanity check that subspaces_min must be smaller than subspaces_max
-        if subspaces_min >= subspaces_max:
+        if subspaces_min > subspaces_max:
             messages.error(
-                self.request, f"Subspaces Max has to be greater than Subspace Min."
+                self.request, f"Subspaces Max has to be greater than or equal to Subspaces Min."
             )
             error = True
 
