@@ -37,7 +37,15 @@ class ExperimentAdmin(admin.ModelAdmin[Experiment]):
                  extra_context: Optional[Dict[str, object]] = None
     ) -> HttpResponse:
         """
-        View for the Experiment model instance addition page in the admin interface.
+        View for the experiment model instance addition page in the admin interface.
+        After adding a new experiment model instance, it redirects back to the change
+        list.
+
+        @param request: The HTTPRequest, this will be given by django.
+        @param form_url: The URL of the form that shall be used for the add view.
+        @param extra_context: Additional information that shall be presented by the
+        add view.
+        @return: A redirect to the change list.
         """
         self.form = AdminAddExperimentForm
         return super().add_view(request, form_url, extra_context)

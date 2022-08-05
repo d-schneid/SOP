@@ -78,8 +78,8 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
                  extra_context: Optional[Dict[str, object]] = None
     ) -> HttpResponse:
         """
-        The view for adding a new object.
-        After adding a new object, it redirects back to the change list.
+        View for the model instance addition page in the admin interface.
+        After adding a new model instance, it redirects back to the change list.
 
         @param request: The HTTPRequest, this will be given by django.
         @param form_url: The URL of the form that shall be used for the add view.
