@@ -129,6 +129,8 @@ django-tests:
       - public/django-tests.svg
 
 backend-tests:
+  variables:
+    IS_EXECUTING_IN_CI: "1"
   needs: [ ]
   stage: test
   coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
