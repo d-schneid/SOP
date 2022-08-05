@@ -14,6 +14,7 @@ from typing import List
 import numpy as np
 
 from backend.DataIO import DataIO
+from backend.JsonSerializable import JsonSerializable
 from backend.scheduler.Schedulable import Schedulable
 from backend.scheduler.Scheduler import Scheduler
 from backend.task.Task import Task
@@ -27,7 +28,7 @@ from backend.task.execution.subspace.SubspaceGenerationDescription import \
     SubspaceGenerationDescription
 
 
-class Execution(Task, Schedulable):
+class Execution(JsonSerializable, Task, Schedulable):
     """
         A task that is provided by the BackendLibrary.
         When scheduled by the Scheduler it executes an execution with the
