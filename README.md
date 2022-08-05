@@ -56,7 +56,7 @@ services:
     build: ./implementierung
     restart: unless-stopped
     env_file: sop.env
-    shm_size: '2gb'
+    shm_size: '8gb'
     expose:
       - 8000
     volumes:
@@ -71,7 +71,8 @@ services:
 + `env_file`: use environment variables from file `sop.env`.
 + `shm_size`: Since SOP uses shared memory for accessing datasets between processes,
   and docker limits `/dev/shm` to 64 MiByte by default, the size of shared memory
-  has to be increased to a reasonable size.
+  has to be increased to a reasonable size. Effectively, this should be roughly
+  the amount of RAM you are intending to use.
 + `expose`: Expose port 8000 to docker API (this is where gunicorn is listening).
 + `volumes`: If you want [persistent storage](https://docs.docker.com/storage) (and you probably do) use docker volumes
   or bind mounts for locations `/static` and `/app/webserver/src/main/sop/media`.
@@ -274,7 +275,7 @@ services:
     build: ./implementierung
     restart: unless-stopped
     env_file: sop.env
-    shm_size: '2gb'
+    shm_size: '8gb'
     expose:
       - 8000
     volumes:
