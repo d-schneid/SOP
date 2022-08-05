@@ -45,7 +45,6 @@ class AdminAddDatasetForm(forms.ModelForm[Dataset]):
         # and add data to the input (no datapoints / dimensions)
         self.cleaned_data.update({"status": CleaningState.RUNNING.name,
                                   "path_cleaned__name": generate_path_dataset_cleaned(dataset_path)})
-        # TODO: testen
 
         os.remove(temp_file_path)
         assert not os.path.isfile(temp_file_path)
