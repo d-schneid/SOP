@@ -2,16 +2,15 @@ from __future__ import annotations
 
 from typing import Dict, Tuple, List
 
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 
-from experiments.models import Experiment
+from experiments.models import Experiment, Execution
 from experiments.models.algorithm import HyperparameterTypes
 
 
 def get_params_out_of_form(
     request: HttpRequest, experiment: Experiment
 ) -> Tuple[bool, Dict[str, List[str]] | Dict[str, Dict[str, HyperparameterTypes]]]:
-
     dikt: Dict[str, Dict[str, HyperparameterTypes]] = dict()
     errors: Dict[str, List[str]] = dict()
 
@@ -42,3 +41,16 @@ def get_params_out_of_form(
         return False, errors
     else:
         return True, dikt
+
+
+def get_download_http_response(data, file_name: str) -> HttpResponse:
+    response = HttpResponse(data)
+    response["Content-Type"] = "text/plain"
+    response["Content-Disposition"] = f"attachment; filename={file_name}"
+    return response
+
+
+def get_execution_result(execution: Execution) -> HttpResponse:
+    file_name = "result.zip"
+    with execution.result_path as file:
+        return get_download_http_response(file.read(), file_name)

@@ -11,13 +11,18 @@ from experiments.views.dataset import (
     DatasetOverview,
     DatasetUploadView,
     DatasetDeleteView,
-    DatasetEditView, download_cleaned_dataset, download_uncleaned_dataset,
+    DatasetEditView,
+    download_cleaned_dataset,
+    download_uncleaned_dataset,
+    dataset_status_view,
 )
 from experiments.views.execution import (
     ExecutionCreateView,
     ExecutionDeleteView,
     ExecutionDuplicateView,
-    download_execution_result, get_execution_progress, restart_execution,
+    download_execution_result,
+    get_execution_progress,
+    restart_execution,
 )
 from experiments.views.experiment import (
     ExperimentOverview,
@@ -25,6 +30,7 @@ from experiments.views.experiment import (
     ExperimentDeleteView,
     ExperimentEditView,
     ExperimentDuplicateView,
+    download_all_execution_results,
 )
 from experiments.views.uploadhandler import upload_progress
 
@@ -37,7 +43,7 @@ urlpatterns = [
     path(
         "algorithm/overview/",
         RedirectView.as_view(pattern_name="algorithm_overview_sorted", permanent=True),
-        {"sort": "name"},
+        {"sort": "upload_date"},
         name="algorithm_overview",
     ),
     path(
@@ -62,7 +68,7 @@ urlpatterns = [
     path(
         "dataset/overview/",
         RedirectView.as_view(pattern_name="dataset_overview_sorted", permanent=True),
-        {"sort": "name"},
+        {"sort": "upload_date"},
         name="dataset_overview",
     ),
     path(
@@ -75,10 +81,17 @@ urlpatterns = [
         "dataset/<int:pk>/delete/", DatasetDeleteView.as_view(), name="dataset_delete"
     ),
     path("dataset/<int:pk>/edit/", DatasetEditView.as_view(), name="dataset_edit"),
-    path("dataset/<int:pk>/download_cleaned/",
-         download_cleaned_dataset, name="dataset_download_cleaned"),
-    path("dataset/<int:pk>/download_uncleaned/",
-         download_uncleaned_dataset, name="dataset_download_uncleaned"),
+    path(
+        "dataset/<int:pk>/download_cleaned/",
+        download_cleaned_dataset,
+        name="dataset_download_cleaned",
+    ),
+    path(
+        "dataset/<int:pk>/download_uncleaned/",
+        download_uncleaned_dataset,
+        name="dataset_download_uncleaned",
+    ),
+    path("dataset-status/", dataset_status_view, name="dataset_status"),
     # Experiment URLs
     path(
         "experiment/",
@@ -87,7 +100,7 @@ urlpatterns = [
     path(
         "experiment/overview/",
         RedirectView.as_view(pattern_name="experiment_overview_sorted", permanent=True),
-        {"sort": "name"},
+        {"sort": "creation_date"},
         name="experiment_overview",
     ),
     path(
@@ -112,6 +125,11 @@ urlpatterns = [
         "experiment/<int:pk>/duplicate/",
         ExperimentDuplicateView.as_view(),
         name="experiment_duplicate",
+    ),
+    path(
+        "experiment/<int:pk>/download_results/",
+        download_all_execution_results,
+        name="experiment_download_results",
     ),
     # Execution URLs
     path(

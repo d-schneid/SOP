@@ -3,7 +3,10 @@ from typing import Optional
 
 
 class Schedulable(ABC):
-    """Abstract class for work units that can be scheduled using a scheduler"""
+    """
+    Abstract class for work units that can be scheduled using a scheduler.
+    Note: a Schedulable may never be scheduled twice
+    """
 
     @property
     @abstractmethod

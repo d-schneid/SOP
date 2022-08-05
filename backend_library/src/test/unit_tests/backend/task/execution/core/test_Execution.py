@@ -154,6 +154,7 @@ class UnitTestExecution(unittest.TestCase):
 
         # Check if method generates the right amount of execution subspaces
         self.assertEqual(0, len(self._ex._execution_subspaces))
+        self._ex._row_numbers = np.array([[0]])
         self._ex._Execution__generate_execution_subspaces()
         self.assertEqual(len(_subspaces), len(self._ex._execution_subspaces))
 

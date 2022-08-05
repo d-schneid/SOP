@@ -1,19 +1,24 @@
 from __future__ import annotations
 
+import io
+import zipfile
+from pathlib import Path
 from typing import Any, Dict, List
 
 from django.contrib import messages
-from django.http import HttpResponse
+from django.db import models
+from django.http import HttpResponse, HttpRequest
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView
 
 from authentication.mixins import LoginRequiredMixin
 from experiments.forms.create import ExperimentCreateForm
 from experiments.forms.edit import ExperimentEditForm
-from experiments.models import Experiment, Dataset
-from experiments.models.managers import ExperimentQuerySet
-from experiments.views.generic import PostOnlyDeleteView
+from experiments.models import Experiment, Dataset, Execution
 from experiments.models.algorithm import Algorithm
+from experiments.models.managers import ExperimentQuerySet
+from experiments.services.execution import get_download_http_response
+from experiments.views.generic import PostOnlyDeleteView
 
 
 class ExperimentOverview(LoginRequiredMixin, ListView[Experiment]):
@@ -49,7 +54,10 @@ class ExperimentCreateView(
         form.instance.user = self.request.user
 
         # get algorithms
-        algos: List[Algorithm] = [Algorithm.objects.get(pk=key) for key in self.request.POST.getlist("check-algo")]
+        algos: List[Algorithm] = [
+            Algorithm.objects.get(pk=key)
+            for key in self.request.POST.getlist("check-algo")
+        ]
 
         # If no algos are selected, display error
         if len(algos) == 0:
@@ -68,13 +76,17 @@ class ExperimentCreateView(
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context["form"].fields["dataset"].queryset = Dataset.objects.\
-            get_by_user(self.request.user).\
-            filter(is_cleaned=True)
-        context.update({
-            "algorithm_groups": Algorithm.AlgorithmGroup,
-            "algorithms": Algorithm.objects.get_by_user_and_public(self.request.user),
-        })
+        context["form"].fields["dataset"].queryset = Dataset.objects.get_by_user(
+            self.request.user
+        ).filter(status="FINISHED")
+        context.update(
+            {
+                "algorithm_groups": Algorithm.AlgorithmGroup,
+                "algorithms": Algorithm.objects.get_by_user_and_public(
+                    self.request.user
+                ),
+            }
+        )
         return context
 
 
@@ -88,8 +100,15 @@ class ExperimentDuplicateView(ExperimentCreateView):
             original = Experiment.objects.get(pk=og_experiment_pk)
             form["display_name"] = original.display_name
             form["dataset"] = original.dataset
-            form["algorithms"] = original.algorithms.all()
         return form
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+
+        og_experiment_pk = self.kwargs["pk"]
+        original = Experiment.objects.get(pk=og_experiment_pk)
+        context.update({"initial_algorithms": original.algorithms.all()})
+        return context
 
 
 class ExperimentEditView(
@@ -104,3 +123,29 @@ class ExperimentEditView(
 class ExperimentDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Experiment]):
     model = Experiment
     success_url = reverse_lazy("experiment_overview")
+
+
+def download_all_execution_results(request: HttpRequest, pk: int):
+    if not Experiment.objects.filter(pk=pk).exists():
+        return
+
+    if request.method == "GET":
+        experiment = Experiment.objects.get(pk=pk)
+        executions: models.QuerySet[Execution] = Execution.objects.filter(
+            experiment=experiment
+        )
+
+        # create zip file in memory
+        in_memory_file = io.BytesIO()
+        with zipfile.ZipFile(in_memory_file, "a") as zip_file:
+            # save all results of finished executions in our zip file
+            for execution in executions:
+                if execution.has_result:
+                    with execution.result_path as file:
+                        result_name = Path(file.path).name
+                        zip_file.writestr(result_name, file.read())
+        # zip file is closed, we can send the data of it to the user
+        return get_download_http_response(
+            in_memory_file.getvalue(), f"{experiment.display_name}_results.zip"
+        )
+    return None

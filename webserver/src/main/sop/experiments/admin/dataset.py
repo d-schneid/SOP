@@ -9,7 +9,7 @@ from django.utils.html import format_html
 from experiments.admin.inlines import ExperimentInlineDataset
 from experiments.admin.abstract_model_admin import AbstractModelAdmin
 from experiments.forms.admin.dataset import AdminAddDatasetForm, AdminChangeDatasetForm
-from experiments.models import Dataset
+from experiments.models.dataset import Dataset, CleaningState
 from experiments.services.dataset import schedule_backend
 from experiments.views.dataset import (
     download_uncleaned_dataset,
@@ -26,10 +26,10 @@ class DatasetAdmin(AbstractModelAdmin):
         "datapoints_total",
         "dimensions_total",
         "upload_date",
-        "is_cleaned",
+        "status",
     ]
     raw_id_fields = ["user"]
-    list_filter = ["upload_date", "is_cleaned"]
+    list_filter = ["upload_date", "status"]
     search_fields = ["display_name"]
     actions = ["delete_selected"]
 
@@ -50,7 +50,8 @@ class DatasetAdmin(AbstractModelAdmin):
         if not obj is None:
             readonly_fields = ["dimensions_total",
                                "datapoints_total",
-                               "is_cleaned",
+                               "status",
+                               "has_header",
                                "user",
                                "upload_date",
                                "download_uncleaned",
@@ -91,7 +92,7 @@ class DatasetAdmin(AbstractModelAdmin):
 
         else:
             # else start the DatasetCleaning and reset possible (wrong) values entered
-            obj.is_cleaned = False
+            obj.status = CleaningState.RUNNING.name
             obj.datapoints_total = None
             obj.dimensions_total = None
             obj.path_cleaned = None
