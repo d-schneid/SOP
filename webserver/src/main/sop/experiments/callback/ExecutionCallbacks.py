@@ -71,7 +71,7 @@ def metric_callback(be: BackendExecution) -> None:
     """
     The metric callback used by the backend execution task. It calls metrics in the
     backend and saves their results in the executions results path before it is zipped.
-    @param execution: The backend execution object on which the metrics will be called.
+    @param be: The backend execution object on which the metrics will be called.
     @return: None
     """
     print(f"metric callback for execution {be.task_id}")
