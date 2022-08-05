@@ -159,6 +159,10 @@
                     Experiment</a>
                 <a href="{% url 'experiment_edit' model.pk %}"
                    class="btn btn-warning mr-3">Edit Experiment</a>
+                {% if model.has_result %}
+                <a href="{% url "experiment_download_results" model.pk %}" class="btn btn-info mr-3">Download all
+                    results</a>
+                {% endif %}
             </div>
         </li>
     </ul>
