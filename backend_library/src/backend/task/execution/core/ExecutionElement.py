@@ -34,6 +34,7 @@ class ExecutionElement(Schedulable):
         :param subspace_dtype: The dtype of the values that are stored in the dataset for processing.
         :param ss_shm_name: The name of the shared memory containing the subspace data
         :param execution_element_is_finished: Reports the ExecutionSubspace that it finished its execution.
+        :param row_numbers: the row numbers of the dataset, see AnnotatedDataset.row_mapping
         """
         assert priority <= 100
         assert priority >= 10
@@ -132,7 +133,7 @@ class ExecutionElement(Schedulable):
         """
         rows = np.expand_dims(self._row_numbers.astype(object), 1)
 
-        data = run_algo_result.astype(object)
+        data = np.expand_dims(run_algo_result.astype(object), 1)
         rows_data = np.concatenate((rows, data), 1)
         return rows_data
 

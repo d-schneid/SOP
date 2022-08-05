@@ -32,10 +32,12 @@ class ExecutionSubspace(Schedulable):
         :param task_id: The ID of the task. Has to be at least -1.
         :param algorithms: Contains all algorithms that should be processed on the subspaces.
         :param subspace: The Subspace whose ExecutionElements are managed by this ExecutionSubspace.
-        :param _result_path: The absolute path where the Execution will store its results
+        :param result_path: The absolute path where the Execution will store its results
         (ends with the directory name of this specific Execution. f.e. execution1).
-        :param ds_on_main: The dtype of the values that are stored in the dataset for processing
+        :param ds_on_main: The dataset array, only available on the main process
         :param on_execution_element_finished_callback: Reports the Execution that a ExecutionElement finished.
+        :param ds_shm_name: the name of the shared memory segment containing the dataset
+        :param row_numbers: the row numbers of the dataset, see AnnotatedDataset.row_mapping
         """
         assert priority < 10
         assert priority >= 5
@@ -99,13 +101,13 @@ class ExecutionSubspace(Schedulable):
 
     def __load_subspace_from_dataset(self) -> SharedMemory:
         """
-        :return: Loads the dataset for this subspace into shared_memory
+        Loads the dataset for this subspace into shared_memory
+        :return: the shared memory loaded
         """
         ds_shm: SharedMemory = SharedMemory(self._ds_shm_name)
         ds_dim_cnt: int = self._subspace.get_dataset_dimension_count()
         ds_arr = np.ndarray((self._ds_on_main.shape[0], ds_dim_cnt),
                             dtype=self._ds_on_main.dtype, buffer=ds_shm.buf)
-        buffer_size = self._subspace.get_size_of_subspace_buffer(ds_arr)
         ss_shm = SharedMemory(self._subspace_shared_memory_name, False)
         self._subspace.make_subspace_array(ds_arr, ss_shm)
         return ss_shm

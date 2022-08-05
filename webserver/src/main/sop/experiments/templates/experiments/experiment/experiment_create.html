@@ -43,7 +43,11 @@
                                                                    type="checkbox"
                                                                    value="{{ algorithm.pk }}"
                                                                    name="check-algo"
-                                                                   id="check-algo-{{ algorithm.pk }}">
+                                                                   id="check-algo-{{ algorithm.pk }}"
+                                                                    {% if algorithm in initial_algorithms %}
+                                                                   checked
+                                                                    {% endif %}
+                                                            >
                                                             {{ algorithm.display_name }}
                                                         </span>
                                                     </label>
