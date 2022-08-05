@@ -20,5 +20,9 @@ class Experiment(models.Model):
     creation_date = models.DateTimeField(auto_now_add=True)
     objects = ExperimentManager.from_queryset(ExperimentQuerySet)()  # type: ignore
 
+    @property
+    def has_result(self):
+        return any(execution.has_result for execution in self.execution_set.all())
+
     def __str__(self) -> str:
         return str(self.display_name)
