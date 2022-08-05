@@ -70,8 +70,7 @@ class ExecutionElementMetricHelper:
     @staticmethod
     def __get_csv_files_in_directory(execution_folder_path: str) -> list[str]:
         """
-        Return a list of all paths in this directory in its children directories
-        that end with .csv. \n
+        Return a list of all paths in this directory that end with .csv. \n
         :param execution_folder_path: The directory that should be scanned
         for files that end with .csv.
         :return: The list of paths to .csv files.
