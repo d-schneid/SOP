@@ -19,7 +19,7 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
     """
     An abstract class that encapsulates functionality for checks before deletion
     processes and the application of concrete views for models that are registered in
-    the admin site.
+    the admin interface.
     """
     class Meta:
         abstract = True
@@ -27,14 +27,17 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
     @abstractmethod
     def get_admin_add_form(self) -> Type[ModelForm[Model]]:
         """
-        Return a Form class for use in the admin add view. This is used by add_view.
+        Hook for specifying custom admin add forms.
+        @return: The Form class for use in the admin add view. This is used by
+        add_view.
         """
         pass
 
     @abstractmethod
     def get_admin_change_form(self) -> Type[ModelForm[Model]]:
         """
-        Return a Form class for use in the admin change view. This is used by
+        Hook for specifying custom admin change forms.
+        @return: The Form class for use in the admin change view. This is used by
         change_view.
         """
         pass
@@ -42,7 +45,8 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
     @abstractmethod
     def get_model_name(self) -> str:
         """
-        Return the name of the associated model.
+        Hook for specifying custom model names.
+        @return: The name of the associated model of this model admin.
         """
         pass
 
@@ -58,7 +62,13 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
                              obj: Optional[Model] = None
     ) -> List[InlineModelAdmin]:
         """
-        @return: The inline instances that belong to the selected object.
+        Fetches the inline instances of the given object.
+
+        @param request: The HTTPRequest, this will be given by django.
+        @param obj: If any, the model instance of which the inline instances shall be
+        returned.
+        @return: If an object was given, a list of the inline instances that belong to
+        the given object. Otherwise, an empty list.
         """
         return obj and super().get_inline_instances(request, obj) or []
 
@@ -68,9 +78,14 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
                  extra_context: Optional[Dict[str, object]] = None
     ) -> HttpResponse:
         """
-        Encapsulates the logic for adding a new object.
-
+        The view for adding a new object.
         After adding a new object, it redirects back to the change list.
+
+        @param request: The HTTPRequest, this will be given by django.
+        @param form_url: The URL of the form that shall be used for the add view.
+        @param extra_context: Additional information that shall be presented by the
+        add view.
+        @return: A redirect to the change list.
         """
         self.form = self.get_admin_add_form()
         return super().add_view(request, form_url, extra_context)
@@ -82,9 +97,15 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
                     extra_context: Optional[Dict[str, object]] = None
     ) -> HttpResponse:
         """
-        Encapsulates the logic for editing the selected object.
-
+        The view for editing a selected object.
         After editing the selected object, it redirects back to the change list.
+
+        @param request: The HTTPRequest, this will be given by django.
+        @param object_id: The primary key of the object that shall be edited.
+        @param form_url: The URL of the form that shall be used for the add view.
+        @param extra_context: Additional information that shall be presented by the
+        change view.
+        @return: A redirect to the change list.
         """
         self.form = self.get_admin_change_form()
         return super().change_view(request, object_id, form_url, extra_context)
@@ -97,12 +118,16 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
             extra_context: Optional[Dict[str, object]] = None,
     ) -> HttpResponse:
         """
-        Encapsulates the logic for deleting the selected object and checking if it can
+        The view for deleting a selected object. Also checks if the selected object can
         be deleted.
-
-        If the selected object can be  deleted, it displays a confirmation page.
-
+        If the selected object can be deleted, it displays a confirmation page.
         Next, it deletes the selected object and redirects back to the change list.
+
+        @param request: The HTTPRequest, this will be given by django.
+        @param object_id: The primary key of the object that shall be deleted.
+        @param extra_context: Additional information that shall be presented by the
+        delete view.
+        @return: A redirect to the change list.
         """
         instance = self.get_object(request, object_id)
         if instance is None:
@@ -123,12 +148,14 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
     ) -> Optional[TemplateResponse]:
         """
         Default action which deletes the selected objects.
-
         This action first displays a confirmation page which shows all the deletable
         objects, or, if the user has no permission one of the related
         childs (foreignkeys), a "permission denied" message.
-
         Next, it deletes all selected objects and redirects back to the change list.
+
+        @param request: The HTTPRequest, this will be given by django.
+        @param obj: The selected objects that shall be deleted.
+        @return: A redirect to the change list.
         """
         instances = obj.all()
         for instance in instances:
