@@ -176,7 +176,7 @@ class UserRoundRobinScheduler(Scheduler):
 
     def __get_targeted_worker_count(self) -> int:
         """Calculates the number of worker threads to use"""
-        return math.ceil(multiprocessing.cpu_count() * 1.4)
+        return math.ceil(multiprocessing.cpu_count() * 1.1)
 
 
 @dataclass(order=True)
