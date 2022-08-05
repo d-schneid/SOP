@@ -16,15 +16,18 @@ def get_dataset_upload_path(instance: Dataset, filename: str) -> str:
 
 
 class CleaningState(Enum):
-    RUNNING = auto, False, False
-    FINISHED = auto, True, False
-    FINISHED_WITH_ERROR = auto, True, True
+    RUNNING = auto, False, False, False
+    FINISHED = auto, True, False, True
+    FINISHED_WITH_ERROR = auto, True, True, False
 
-    def is_cleaned(self) -> bool:
+    def has_finished(self) -> bool:
         return self.value[1]
 
     def has_error(self) -> bool:
         return self.value[2]
+
+    def is_cleaned(self) -> bool:
+        return self.value[3]
 
 
 class Dataset(models.Model):
@@ -55,16 +58,22 @@ class Dataset(models.Model):
         return not Experiment.objects.get_with_dataset(self).exists()
 
     @property
-    def is_cleaned(self) -> bool:
+    def has_finished(self) -> bool:
         status: CleaningState = CleaningState[self.status]
         assert status is not None
-        return status.is_cleaned()
+        return status.has_finished()
 
     @property
     def has_error(self) -> bool:
         status: CleaningState = CleaningState[self.status]
         assert status is not None
         return status.has_error()
+
+    @property
+    def is_cleaned(self) -> bool:
+        status: CleaningState = CleaningState[self.status]
+        assert status is not None
+        return status.is_cleaned()
 
     @property
     def get_error_message(self) -> str:
