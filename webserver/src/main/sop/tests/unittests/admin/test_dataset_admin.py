@@ -3,10 +3,9 @@ import shutil
 
 from django.urls import reverse
 
+from experiments.models.dataset import Dataset, CleaningState
 from sop import settings
 from tests.unittests.views.generic_test_cases import AdminLoggedInTestCase
-
-from experiments.models.dataset import Dataset, CleaningState
 
 
 class DatasetAdminTests(AdminLoggedInTestCase):
@@ -15,10 +14,8 @@ class DatasetAdminTests(AdminLoggedInTestCase):
         self.dataset_finished = Dataset.objects.create(
             display_name="dataset_finished_1",
             description="This is a description.",
-            datapoints_total=2,
-            dimensions_total=4,
             user=self.admin,
-            status=CleaningState.FINISHED.name
+            status=CleaningState.FINISHED.name,
         )
         # create directory
         if os.path.exists(settings.MEDIA_ROOT):
@@ -60,9 +57,9 @@ class DatasetAdminTests(AdminLoggedInTestCase):
 
         with open(file_path, "r") as file:
             data = {
-                "display_name": "dataset_add_1",
-                "description": "This is a description.",
-                "user": self.admin,
+                "display_name": "dataset_add_valid_1",
+                "description": "test",
+                "user": self.admin.pk,
                 "path_original": file,
                 "has_header": True,
             }
@@ -75,7 +72,6 @@ class DatasetAdminTests(AdminLoggedInTestCase):
         self.assertEqual(response.resolver_match.url_name, "experiments_dataset_changelist")
         self.assertContains(response, "was added successfully")
         self.assertContains(response, data["display_name"])
-        self.assertContains(response, data["description"])
 
     def test_delete_dataset(self):
         url = reverse("admin:experiments_dataset_delete", args=(self.dataset_finished.pk,))
@@ -87,18 +83,6 @@ class DatasetAdminTests(AdminLoggedInTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.resolver_match.url_name, "experiments_dataset_changelist")
         self.assertContains(response, "was deleted successfully")
-
-    def test_change_dataset(self):
-        url = reverse("admin:experiments_dataset_change", args=(self.dataset_finished.pk,))
-        data = {
-            "display_name": "this_is_new",
-            "description": "this is a new description",
-        }
-        response = self.client.post(url, data, follow=True)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual("experiments_dataset_changelist", response.resolver_match.url_name)
-        self.assertContains(response, "was changed successfully.")
 
     def test_delete_multiple_datasets_action(self):
         delete_datasets = [self.dataset_finished]
@@ -124,7 +108,7 @@ class DatasetAdminTests(AdminLoggedInTestCase):
             data = {
                 "display_name": "dataset_add_1",
                 "description": "This is a description.",
-                "user": self.admin,
+                "user": self.admin.pk,
                 "path_original": file,
                 "has_header": True,
             }
