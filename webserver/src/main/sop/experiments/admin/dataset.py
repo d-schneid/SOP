@@ -5,6 +5,8 @@ from django.http import HttpRequest
 from django.urls import reverse, re_path
 from django.urls.resolvers import URLPattern
 from django.utils.html import format_html
+from django.utils.safestring import SafeString
+from django.forms import ModelForm
 
 from experiments.admin.inlines import ExperimentInlineDataset
 from experiments.admin.abstract_model_admin import AbstractModelAdmin
@@ -19,6 +21,9 @@ from experiments.views.dataset import (
 
 @admin.register(Dataset)
 class DatasetAdmin(AbstractModelAdmin):
+    """
+    The representation of the Dataset model in the admin interface.
+    """
     inlines = [ExperimentInlineDataset]
     list_display = [
         "display_name",
@@ -62,26 +67,24 @@ class DatasetAdmin(AbstractModelAdmin):
         # for adding a new experiment
         return []
 
-    def get_urls(self) -> List[URLPattern]:
-        urls = super().get_urls()
-        urls += [
-            re_path(r'^dataset_download_uncleaned/(?P<pk>\d+)$',
-                    download_uncleaned_dataset,
-                    name='experiments_dataset_download_uncleaned'),
-            re_path(r'^dataset_download_cleaned/(?P<pk>\d+)$',
-                    download_cleaned_dataset,
-                    name='experiments_dataset_download_cleaned'),
-        ]
-        return urls
-
     def save_model(
             self,
-            request: Any,
+            request: HttpRequest,
             obj: Dataset,
-            form: Any,
-            change: Any
+            form: ModelForm,
+            change: bool
     ) -> None:
+        """
+        Given a Dataset model instance save it to the database.
+        Additionally, initiates cleaning of the associated dataset if the given Dataset
+        model instance is newly added to the database via the admin interface.
 
+        @param request: The HTTPRequest, this will be given by django.
+        @param obj: The dataset model instance that shall be saved to the database.
+        @param form: The form that is used to save the given dataset model instance.
+        @param change: True if the given dataset model instance shall be changed. False
+        if the given dataset model instance shall be added to the database.
+        """
         # start the dataset cleaning, if it is adding the model (not if it is changing the model)
 
         if change is not None and change is True:
@@ -103,14 +106,42 @@ class DatasetAdmin(AbstractModelAdmin):
             # now, start the cleaning
             schedule_backend(obj)
 
-    def download_uncleaned(self, dataset: Dataset) -> str:
+    def get_urls(self) -> List[URLPattern]:
+        """
+        Adds custom view for downloading the associated dataset files to the URLs.
+        @return: The URLs to be used for this DatasetAdmin.
+        """
+        urls = super().get_urls()
+        urls += [
+            re_path(r'^dataset_download_uncleaned/(?P<pk>\d+)$',
+                    download_uncleaned_dataset,
+                    name='experiments_dataset_download_uncleaned'),
+            re_path(r'^dataset_download_cleaned/(?P<pk>\d+)$',
+                    download_cleaned_dataset,
+                    name='experiments_dataset_download_cleaned'),
+        ]
+        return urls
+
+    def download_uncleaned(self, dataset: Dataset) -> SafeString:
+        """
+        Custom field for this DatasetAdmin.
+        @param dataset: The dataset model instance whose uncleaned dataset shall be
+        downloaded.
+        @return: Link to the custom function download_uncleaned_dataset.
+        """
         return format_html(
             '<a href="{}">Download</a>',
             reverse('admin:experiments_dataset_download_uncleaned', args=[dataset.pk])
         )
     download_uncleaned.short_description = "Uncleaned dataset"
 
-    def download_cleaned(self, dataset: Dataset) -> str:
+    def download_cleaned(self, dataset: Dataset) -> SafeString:
+        """
+        Custom field for this DatasetAdmin.
+        @param dataset: The dataset model instance whose cleaned dataset shall be
+        downloaded.
+        @return: Link to the custom function download_cleaned_dataset.
+        """
         return format_html(
             '<a href="{}">Download</a>',
             reverse('admin:experiments_dataset_download_cleaned', args=[dataset.pk])

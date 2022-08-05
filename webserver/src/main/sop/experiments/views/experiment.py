@@ -22,6 +22,10 @@ from experiments.views.generic import PostOnlyDeleteView
 
 
 class ExperimentOverview(LoginRequiredMixin, ListView[Experiment]):
+    """
+    A view to display all experiments of a user. Experiments can be sorted by traits
+    like their display name or creation date
+    """
     model = Experiment
     template_name = "experiment_overview.html"
 
@@ -45,6 +49,12 @@ class ExperimentOverview(LoginRequiredMixin, ListView[Experiment]):
 class ExperimentCreateView(
     LoginRequiredMixin, CreateView[Experiment, ExperimentCreateForm]
 ):
+    """
+    A view to create a new experiment. It uses the ExperimentCreateForm to display
+    widgets for the fields needed to create a new experiment.
+    When the form inputs are valid it will create the experiment model and save it in
+    the database.
+    """
     model = Experiment
     template_name = "experiment_create.html"
     form_class = ExperimentCreateForm
@@ -91,6 +101,11 @@ class ExperimentCreateView(
 
 
 class ExperimentDuplicateView(ExperimentCreateView):
+    """
+    A view to duplicate an experiment. It inherits from ExperimentCreateView and
+    therefor will behave the same way, except that it provides default values for the
+    needed fields that match the original experiments values.
+    """
     def get_initial(
         self,
     ) -> Dict[str, Any]:
@@ -114,6 +129,10 @@ class ExperimentDuplicateView(ExperimentCreateView):
 class ExperimentEditView(
     LoginRequiredMixin, UpdateView[Experiment, ExperimentEditForm]
 ):
+    """
+    A view to edit an existing experiment. It uses the ExperimentEditForm to display
+    widgets for the fields a user can edit.
+    """
     model = Experiment
     form_class = ExperimentEditForm
     template_name = "experiment_edit.html"
@@ -121,6 +140,10 @@ class ExperimentEditView(
 
 
 class ExperimentDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Experiment]):
+    """
+    A view to delete an existing experiment. It inherits from PostOnlyDeleteView and
+    can therefor only be accessed with a POST request.
+    """
     model = Experiment
     success_url = reverse_lazy("experiment_overview")
 

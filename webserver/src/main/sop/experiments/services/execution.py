@@ -11,6 +11,18 @@ from experiments.models.algorithm import HyperparameterTypes
 def get_params_out_of_form(
     request: HttpRequest, experiment: Experiment
 ) -> Tuple[bool, Dict[str, List[str]] | Dict[str, Dict[str, HyperparameterTypes]]]:
+    """
+    Extracts the hyperparameters specified in the ExecutionCreateForm.
+    @param request: The HttpRequest containing the fields of the hyperparameters.
+    @param experiment: The experiment of the created execution.
+    @return: A tuple containing a success boolean and a result dictionary.
+    If the boolean is True, the extraction was successful and the result dictionary
+    contains parameter name to parameter value mappings for each algorithm in the
+    experiment.
+    If the boolean is False, the extraction was not successful and the dict contains
+    a mapping from the hyperparameter form_field which caused an error to an error
+    message.
+    """
     dikt: Dict[str, Dict[str, HyperparameterTypes]] = dict()
     errors: Dict[str, List[str]] = dict()
 
@@ -51,6 +63,12 @@ def get_download_http_response(data, file_name: str) -> HttpResponse:
 
 
 def get_execution_result(execution: Execution) -> HttpResponse:
+    """
+    Generates a HttpResponse for a download with the content of the result file of the
+    given execution.
+    @param execution: The execution of which the result file shall be downloaded.
+    @return: A HttpResponse with the download.
+    """
     file_name = "result.zip"
     with execution.result_path as file:
         return get_download_http_response(file.read(), file_name)

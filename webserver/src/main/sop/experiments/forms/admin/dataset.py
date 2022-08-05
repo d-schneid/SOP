@@ -9,6 +9,10 @@ from experiments.services.dataset import save_dataset, generate_path_dataset_cle
 
 
 class AdminAddDatasetForm(forms.ModelForm[Dataset]):
+    """
+    The form that associates with the Dataset model and is used for the addition of
+    Dataset model instances in the admin interface.
+    """
     class Meta:
         model = Dataset
         exclude = ["datapoints_total",
@@ -17,6 +21,15 @@ class AdminAddDatasetForm(forms.ModelForm[Dataset]):
                    "status"]
 
     def clean(self) -> Optional[Dict[str, Any]]:
+        """
+        Validates the dataset file of this AdminAddDatasetForm.
+        If this dataset file is not valid, it shows an appropriate error for the
+        respective field in this AdminAddDatasetForm on the respective add view in
+        the admin interface.
+
+        @return: The clean fields of this AdminAddDatasetForm if the dataset file is
+        valid. Otherwise None.
+        """
         dataset: Optional[TemporaryUploadedFile] = self.cleaned_data.get("path_original")
 
         if dataset is None:
@@ -53,6 +66,10 @@ class AdminAddDatasetForm(forms.ModelForm[Dataset]):
 
 
 class AdminChangeDatasetForm(forms.ModelForm[Dataset]):
+    """
+    The form that associates with the Dataset model and is used for the editing of
+    Dataset model instances in the admin interface.
+    """
     class Meta:
         model = Dataset
         exclude = ["path_original", "path_cleaned"]

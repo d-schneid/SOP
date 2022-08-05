@@ -7,7 +7,6 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db.models.fields.files import FieldFile
 from django.http import HttpResponse
 
-from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
 from backend.task.cleaning import DatasetCleaning
 from experiments.callback import DatasetCallbacks
 from experiments.models import Dataset
@@ -16,6 +15,11 @@ DATASET_ROOT_DIR: Final = settings.MEDIA_ROOT / "datasets"
 
 
 def save_dataset(file: UploadedFile) -> str:
+    """
+    Saves the given file that contains the dataset at a temporary location.
+    @param file: A UploadedFile object containing the uploaded dataset.
+    @return: The path to the temporary location as a string.
+    """
     temp_dir = os.path.join(DATASET_ROOT_DIR, "temp")
     temp_file_path = os.path.join(temp_dir, str(uuid.uuid1()))
 
@@ -33,11 +37,21 @@ def save_dataset(file: UploadedFile) -> str:
 
 
 def generate_path_dataset_cleaned(uncleaned_path: str) -> str:
+    """
+    Generates the path for the cleaned csv of a dataset out of the uncleaned path.
+    @param uncleaned_path: The path of the uncleaned csv.
+    @return: The path of the cleaned csv as a string.
+    """
     (root, ext) = os.path.splitext(uncleaned_path)
     return root + "_cleaned" + ext
 
 
 def schedule_backend(dataset: Dataset) -> None:
+    """
+    Schedules a DatasetCleaning task in the backend.
+    @param dataset: The dataset model for which a cleaning should be started.
+    @return: None
+    """
 
     # set and save the missing datafield entry for the cleaned csv file
     # name is the path relative to the media root dir --> use name, not path
@@ -54,15 +68,18 @@ def schedule_backend(dataset: Dataset) -> None:
         cleaning_steps=None,  # can be changed later on
     )
 
-    # TODO: DO NOT do this here. Move it to AppConfig or whatever
-    if UserRoundRobinScheduler._instance is None:
-        UserRoundRobinScheduler()
-
     # start the cleaning
     dataset_cleaning.schedule()
 
 
 def get_download_response(file: FieldFile, download_name: str) -> HttpResponse:
+    """
+    Generates a HttpResponse for a download with the content of a given FieldFile with a
+    given name for the downloaded file.
+    @param file: The file which should be downloaded.
+    @param download_name: The default name of the downloaded file.
+    @return: A HttpResponse with the download.
+    """
     response = HttpResponse(file.read())
     response["Content-Type"] = "text/plain"
     response["Content-Disposition"] = f"attachment; filename={download_name}"

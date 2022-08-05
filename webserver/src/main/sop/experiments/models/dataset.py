@@ -11,6 +11,12 @@ from experiments.models.managers import DatasetManager, DatasetQuerySet
 
 
 def get_dataset_upload_path(instance: Dataset, filename: str) -> str:
+    """
+    Generates a path to which the uncleaned .csv file of a dataset should be saved to.
+    @param instance: The dataset model.
+    @param filename: The filename of the .csv file containing the .csv extension.
+    @return: The path to which the uncleaned .csv file should be saved to.
+    """
     user_id = instance.user.id
     return os.path.join("datasets", "user_" + str(user_id), filename)
 
@@ -52,6 +58,11 @@ class Dataset(models.Model):
 
     @property
     def is_deletable(self) -> bool:
+        """
+        Checks if the dataset is deletable. This is not the case if the dataset is used
+        in an experiment.
+        @return: True, if the dataset is deletable, False otherwise.
+        """
         # Import this here to avoid circular import
         from experiments.models import Experiment
 

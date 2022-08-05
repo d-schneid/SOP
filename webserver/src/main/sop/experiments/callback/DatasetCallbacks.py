@@ -8,6 +8,14 @@ from experiments.models.dataset import Dataset, CleaningState
 def cleaning_callback(
     task_id: int, task_state: TaskState.TaskState, progress: float
 ) -> None:
+    """
+    The callback function used for backend callbacks. It will update values of the
+    dataset based on the DatasetCleaning progress and state.
+    @param task_id: The task_id of the cleaning which will be the datasets primary key.
+    @param task_state: The TaskState of the DatasetCleaning.
+    @param progress: The progress of the DatasetCleaning.
+    @return: None
+    """
 
     dataset: Dataset = Dataset.objects.get(pk=task_id)
 

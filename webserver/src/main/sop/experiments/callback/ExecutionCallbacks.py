@@ -47,7 +47,6 @@ def execution_callback(
 
     execution.save()
 
-
 def generate_datapoints_metric(metric_dir: Path, be: BackendExecution):
     assert os.path.isdir(metric_dir)
     metric_result_path = metric_dir / "datapoints_metric.csv"
@@ -69,6 +68,12 @@ def generate_subspace_outlier_metric(metric_dir: Path, be: BackendExecution):
 
 
 def metric_callback(be: BackendExecution) -> None:
+    """
+    The metric callback used by the backend execution task. It calls metrics in the
+    backend and saves their results in the executions results path before it is zipped.
+    @param be: The backend execution object on which the metrics will be called.
+    @return: None
+    """
     print(f"metric callback for execution {be.task_id}")
     execution_pk = be.task_id
     if not Execution.objects.filter(pk=execution_pk).exists():
