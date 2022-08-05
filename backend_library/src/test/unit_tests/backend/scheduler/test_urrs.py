@@ -45,6 +45,7 @@ class UnitTestUrrs(unittest.TestCase):
         self.assertNotEqual(sched.next_sched().user_id, sched.next_sched().user_id)
 
     def test_exec(self):
+        margin = 8
         timeout = 10
         manager = Manager()
         tr = multiprocessing.Event()
@@ -56,26 +57,26 @@ class UnitTestUrrs(unittest.TestCase):
         tr4 = multiprocessing.Event()
         tbc5 = manager.Value('b', False)
         urrs.schedule(TestSched(-1, 0, 0, None, tr4, 1))
-        urrs.schedule(TestSched(-1, 1, 0, tbc5, None, 6))
+        urrs.schedule(TestSched(-1, 1, 0, tbc5, None, 1 + margin))
         urrs.abort_by_task(1)
         self.assertTrue(tr4.wait(timeout))
-        time.sleep(6)
+        time.sleep(1 + margin)
         self.assertFalse(tbc5.value)
 
         tr6 = multiprocessing.Event()
         tbc7 = manager.Value('b', False)
         for _ in range(multiprocessing.cpu_count()):
             urrs.schedule(TestSched(0, -1, 0, None, tr6, 1))
-            urrs.schedule(TestSched(1, -1, 0, tbc7, None, 6))
+            urrs.schedule(TestSched(1, -1, 0, tbc7, None, 1 + margin))
         urrs.abort_by_user(1)
         self.assertTrue(tr6.wait(timeout))
-        time.sleep(6)
+        time.sleep(1 + margin)
         self.assertFalse(tbc7.value)
 
         tbc2 = multiprocessing.Event()
         tbc3 = multiprocessing.Event()
-        urrs.schedule(TestSched(-1, -1, 0, None, tbc2, 10))
-        time.sleep(5)
+        urrs.schedule(TestSched(-1, -1, 0, None, tbc2, 2 * margin))
+        time.sleep(margin)
         urrs.graceful_shutdown(lambda: tbc3.set())
         self.assertTrue(tbc2.wait(timeout))
         self.assertTrue(tbc3.wait(timeout))
