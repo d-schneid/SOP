@@ -79,5 +79,5 @@ def metric_callback(be: BackendExecution) -> None:
     assert os.path.isdir(metric_dir.parent)
     os.makedirs(metric_dir)
 
-    # generate_datapoints_metric(metric_dir, be)
+    generate_datapoints_metric(metric_dir, be)
     generate_subspace_outlier_metric(metric_dir, be)
