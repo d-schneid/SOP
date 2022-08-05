@@ -56,7 +56,7 @@ class DatasetAdmin(AbstractModelAdmin):
                                "upload_date",
                                "download_uncleaned",
                                "download_cleaned"]
-            if not obj.is_cleaned or obj.has_error:
+            if not obj.is_cleaned:
                 readonly_fields.remove("download_cleaned")
             return readonly_fields
         # for adding a new experiment
