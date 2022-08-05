@@ -66,6 +66,8 @@ class AlgorithmAdmin(AbstractModelAdmin):
     def download(self, algorithm: Algorithm) -> SafeString:
         """
         Custom field for this AlgorithmAdmin.
+        @param algorithm: The algorithm model instance whose algorithm file shall be
+        downloaded.
         @return: Link to the custom function download_algorithm.
         """
         return format_html(
