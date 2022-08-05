@@ -219,6 +219,7 @@ class ExecutionDuplicateView(ExecutionCreateView):
             form["subspaces_min"] = original.subspaces_min
             form["subspaces_max"] = original.subspaces_max
             form["subspace_amount"] = original.subspace_amount
+            form["subspace_generation_seed"] = original.subspace_generation_seed
         return form
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
@@ -246,7 +247,7 @@ def download_execution_result(
 
 
 def download_execution_result_admin(request: HttpRequest, pk: int
-) -> Optional[HttpResponse | HttpResponseRedirect]:
+                                    ) -> Optional[HttpResponse | HttpResponseRedirect]:
     if request.method == "GET":
         execution: Optional[Execution] = Execution.objects.filter(pk=pk).first()
         if execution is None:
