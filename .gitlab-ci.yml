@@ -116,6 +116,7 @@ django-tests:
 
 backend-tests:
   stage: test
+  needs: [ ]
   coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
   script:
     - which python3.9
