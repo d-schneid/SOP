@@ -3,7 +3,7 @@ from django.urls import reverse
 from tests.unittests.views.generic_test_cases import AdminLoggedInTestCase
 
 from experiments.models.experiment import Experiment
-from experiments.models.dataset import Dataset
+from experiments.models.dataset import Dataset, CleaningState
 from experiments.models.algorithm import Algorithm
 
 from authentication.models import User
@@ -27,7 +27,7 @@ class AlgorithmAdminTests(AdminLoggedInTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.dataset = Dataset.objects.create(
-            datapoints_total=1, dimensions_total=1, user=self.admin, is_cleaned=True
+            datapoints_total=1, dimensions_total=1, user=self.admin, status=CleaningState.FINISHED.name
         )
         self.algo = Algorithm.objects.create(display_name="Test Algo", signature="", user=self.admin)
         self.exp = Experiment.objects.create(display_name="Test Exp", dataset=self.dataset, user=self.admin)
@@ -125,7 +125,7 @@ class AlgorithmAdminTests(AdminLoggedInTestCase):
     def test_admin_add_experiment_invalid_dataset(self):
         # dataset is not cleaned and, therefore, cannot be used
         uncleaned_dataset = Dataset.objects.create(
-            datapoints_total=1, dimensions_total=1, user=self.admin, is_cleaned=False
+            datapoints_total=1, dimensions_total=1, user=self.admin, status=CleaningState.RUNNING.name
         )
         data = {
             "display_name": "newExp",

@@ -4,7 +4,7 @@ from typing import Optional, Any, Dict
 from backend.DatasetInfo import DatasetInfo
 from django import forms
 from django.core.files.uploadedfile import TemporaryUploadedFile
-from experiments.models import Dataset
+from experiments.models.dataset import Dataset, CleaningState
 from experiments.services.dataset import save_dataset, generate_path_dataset_cleaned
 
 
@@ -18,7 +18,7 @@ class AdminAddDatasetForm(forms.ModelForm[Dataset]):
         exclude = ["datapoints_total",
                    "dimensions_total",
                    "path_cleaned",
-                   "is_cleaned"]
+                   "status"]
 
     def clean(self) -> Optional[Dict[str, Any]]:
         """
@@ -56,7 +56,7 @@ class AdminAddDatasetForm(forms.ModelForm[Dataset]):
 
         dataset_path: str = dataset.name
         # and add data to the input (no datapoints / dimensions)
-        self.cleaned_data.update({"is_cleaned": False,
+        self.cleaned_data.update({"status": CleaningState.RUNNING.name,
                                   "path_cleaned__name": generate_path_dataset_cleaned(dataset_path)})
         # TODO: testen
 

@@ -2,8 +2,10 @@ import math
 from abc import ABC, abstractmethod
 from typing import Dict
 
+from backend.JsonSerializable import JsonSerializable
 
-class SubspaceSizeDistribution(ABC):
+
+class SubspaceSizeDistribution(JsonSerializable, ABC):
     def has_enough_subspaces(self, requested_subspace_count: int,
                              dataset_dimension_count: int) -> bool:
         """
@@ -32,9 +34,4 @@ class SubspaceSizeDistribution(ABC):
 
     @abstractmethod
     def to_json(self) -> Dict[str, object]:
-        """
-        Converts the important information of the SubspaceSizeDistribution into a JSON-string, so that the
-        SubspaceSizeDistribution can be understood and reproduced.
-        :return:
-        """
         pass

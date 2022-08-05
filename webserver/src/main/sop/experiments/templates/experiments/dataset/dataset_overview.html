@@ -23,18 +23,22 @@
             {{ model.display_name }}
         </a>
     </h5>
-    {% if model.path_cleaned.name|slice:"-5:" == "error" %}
-        <a class="text-white ml-auto">ERROR</a>
-    {% elif model.is_cleaned %}
-        <a class="text-white ml-auto">cleaned</a>
-    {% else %}
-        <a class="text-white ml-auto">cleaning in progress</a>
-    {% endif %}
+    <a class="text-white ml-auto dataset-status" id="dataset-status-{{ model.pk }}">STATUS</a>
 {% endblock %}
 
 
 {% block card-body %}
     <span style="white-space: pre">{{ model.description }}</span>
+
+    {% if model.is_cleaned and model.has_error %}
+        <div class="alert alert-danger mt-4" role="alert">
+            <b>The following Error occurred during cleaning:</b>
+            <blockquote class="ml-3 mt-3">
+                {{ model.get_error_message }}
+            </blockquote>
+        </div>
+    {% endif %}
+
 {% endblock %}
 
 {% block edit %}
@@ -42,10 +46,9 @@
        class="btn btn-warning mr-3">Edit</a>
     <div class="flex-grow-1">
         <a href="{% url 'dataset_download_uncleaned' model.pk %}" class="btn btn-info mr-3">Download Uncleaned</a>
-        {% if model.is_cleaned %}
-            <a href="{% url 'dataset_download_cleaned' model.pk %}" class="btn btn-info mr-3">Download
-                Cleaned</a>
-        {% endif %}
+        <a href="{% url 'dataset_download_cleaned' model.pk %}" class="btn btn-info mr-3" id="cleaned-download"
+           style="visibility: {% if model.is_cleaned and not model.has_error %}visible{% else %}hidden{% endif %}">Download
+            Cleaned</a>
     </div>
 {% endblock %}
 
@@ -62,4 +65,37 @@
         {% csrf_token %}
         <button type="submit" class="btn btn-danger ml-auto mr-3">Yes</button>
     </form>
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        $(document).ready(function () {
+            let statuses = document.getElementsByClassName("dataset-status")
+            for (let i = 0; i < statuses.length; i++) {
+                let status = statuses[i]
+                let id = status.id.replace("dataset-status-", "")
+                console.log(id)
+
+                fetch(id)
+            }
+        });
+
+        function fetch(id) {
+            progress_url = "/dataset-status/"
+            $.getJSON(progress_url, {'dataset_pk': Number(id)}, function (data, status) {
+                status = document.getElementById("dataset-status-" + id)
+                if (data.cleaning_status === "RUNNING") {
+                    status.innerText = "cleaning in progress";
+                    setTimeout('fetch(' + id + ')', 2000)
+                } else if (data.cleaning_status === "FINISHED") {
+                    status.innerText = "cleaned"
+                    document.getElementById("cleaned-download").style.visibility = "visible"
+                } else if (data.cleaning_status === "FINISHED_WITH_ERROR") {
+                    status.innerText = "cleaning failed"
+                } else {
+                    status.innerText = "SERVER ERROR"
+                }
+            });
+        }
+    </script>
 {% endblock %}

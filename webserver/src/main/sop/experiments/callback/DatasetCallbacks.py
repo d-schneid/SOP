@@ -2,7 +2,7 @@ import os
 
 from backend.DatasetInfo import DatasetInfo
 from backend.task import TaskState
-from experiments.models import Dataset
+from experiments.models.dataset import Dataset, CleaningState
 
 
 def cleaning_callback(
@@ -20,16 +20,20 @@ def cleaning_callback(
     dataset: Dataset = Dataset.objects.get(pk=task_id)
 
     # if the task has finished, update the database
-    if task_state.is_finished() and not task_state.error_occurred():
+    if task_state.is_finished():
+        if task_state.error_occurred():
+            dataset.status = CleaningState.FINISHED_WITH_ERROR.name
 
-        dataset.datapoints_total = DatasetInfo.get_dataset_datapoint_amount(dataset.path_cleaned.path)
-        dataset.dimensions_total = DatasetInfo.get_dataset_dimension(dataset.path_cleaned.path)
-        dataset.is_cleaned = True
+            # assert that the error message is available
+            # TODO
 
-        # also, check for assertions
-        assert os.path.exists(dataset.path_cleaned.path)
+        else:
+            dataset.status = CleaningState.FINISHED.name
 
-    elif task_state.is_finished() and task_state.error_occurred():
-        pass  # TODO: braucht extra model parameter
+            dataset.datapoints_total = DatasetInfo.get_dataset_datapoint_amount(dataset.path_cleaned.path)
+            dataset.dimensions_total = DatasetInfo.get_dataset_dimension(dataset.path_cleaned.path)
+
+            # check for the cleaned file to exist
+            assert os.path.exists(dataset.path_cleaned.path)
 
     dataset.save()

@@ -22,6 +22,8 @@ class UnitTestExecutionElement(unittest.TestCase):
     _dir_name: str = os.getcwd()
     _result_path: str = os.path.join(_dir_name, "ee_result_path.csv")
 
+    _row_numbers = np.array([0])
+
     _subspace: Subspace = Subspace(np.asarray([True, True, True]))
     _algorithm: ParameterizedAlgorithm = ParameterizedAlgorithm("algorithm_path", {},
                                                                 "display_name")
@@ -33,7 +35,8 @@ class UnitTestExecutionElement(unittest.TestCase):
         self._ee: ee = ee(self._user_id, self._task_id, self._subspace, self._algorithm,
                           self._result_path,
                           self._subspace_dtype, self._subspace_shared_memory_name,
-                          self.__execution_element_is_finished1, self._priority)
+                          self.__execution_element_is_finished1, self._datapoint_count, self._row_numbers,
+                          self._priority)
 
         # mock Execution Element for do_work()
         self._ee._ExecutionElement__run_algorithm = Mock(return_value=np.asarray([["algorithm result"]]))
@@ -65,7 +68,7 @@ class UnitTestExecutionElement(unittest.TestCase):
                                             self._algorithm, self._result_path,
                                             self._subspace_dtype, "",
                                             self.__execution_element_is_finished,
-                                            self._datapoint_count)
+                                            self._datapoint_count, self._row_numbers)
 
         with self.assertRaises(AssertionError) as context:
             self._ee_wrong_task_id: ee = ee(self._user_id, _wrong_task_id,
@@ -73,7 +76,7 @@ class UnitTestExecutionElement(unittest.TestCase):
                                             self._algorithm, self._result_path,
                                             self._subspace_dtype, "",
                                             self.__execution_element_is_finished,
-                                            self._datapoint_count)
+                                            self._datapoint_count, self._row_numbers)
 
     def test_getter(self):
         self.assertEqual(self._ee.user_id, self._user_id)
@@ -91,7 +94,7 @@ class UnitTestExecutionElement(unittest.TestCase):
         self._ee_faulty: ee = ee(self._user_id, self._task_id, self._subspace, self._algorithm,
                                  self._result_path,
                                  self._subspace_dtype, self._subspace_shared_memory_name,
-                                 self.__execution_element_is_finished1, self._datapoint_count)
+                                 self.__execution_element_is_finished1, self._datapoint_count, self._row_numbers)
 
         # mock Execution Element for do_work()
         self._ee._ExecutionElement__run_algorithm = Mock(side_effect
@@ -113,7 +116,7 @@ class UnitTestExecutionElement(unittest.TestCase):
                 ee(self._user_id, self._task_id, self._subspace, self._algorithm,
                    self._result_path,
                    self._subspace_dtype, self._subspace_shared_memory_name,
-                   self.__execution_element_is_finished1, 1, wrong_priority)
+                   self.__execution_element_is_finished1, 1, self._row_numbers, wrong_priority)
 
 
 if __name__ == '__main__':

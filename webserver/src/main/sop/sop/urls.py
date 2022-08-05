@@ -25,6 +25,10 @@ def home(request):
     return render(request, "home.html", {})
 
 
+admin.site.site_header = "Subspace Outlier Profiling Administration"
+admin.site.index_title = "Administration of Database Model Instances"
+
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", home, name="home"),

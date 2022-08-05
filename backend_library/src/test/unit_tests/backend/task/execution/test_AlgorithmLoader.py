@@ -15,7 +15,7 @@ class UnitTestAlgorithmLoader(unittest.TestCase):
         self.assertEqual("DebugAlgorithm", algorithm_class.__name__)
         paras = {"algorithm_result": 2}
         algorithm_obj = AlgorithmLoader.get_algorithm_object(self.algo_location, paras)
-        self.assertEqual(2, algorithm_obj._algorithm_result[0, 0])
+        self.assertEqual(2, algorithm_obj._algorithm_result)
         algorithm_paras = AlgorithmLoader.get_algorithm_parameters(self.algo_location)
         self.assertIn("algorithm_result", algorithm_paras)
         wrongAlgo = "./test/algorithms/WrongAlgorithm.py"

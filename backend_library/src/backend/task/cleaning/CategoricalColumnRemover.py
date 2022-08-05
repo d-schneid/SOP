@@ -3,6 +3,7 @@ from abc import ABC
 import numpy as np
 import pandas as pd
 
+from backend.AnnotatedDataset import AnnotatedDataset
 from backend.task.cleaning.CategoricalDataHandler import CategoricalDataHandler
 from backend.task.cleaning.DatasetCleaningStepExceptionHanding \
     import DatasetCleaningStepExceptionHandling as eh
@@ -10,36 +11,37 @@ from backend.task.cleaning.DatasetCleaningStepExceptionHanding \
 
 class CategoricalColumnRemover(CategoricalDataHandler, ABC):
     """
-    A cleaning_step for the dataset cleaning that removes all columns that contain categorical data.
+    A cleaning_step for the dataset cleaning that removes
+    all columns that contain categorical data.
     """
 
-    def do_cleaning(self, dataset_to_clean: np.ndarray) -> np.ndarray:
+    def do_cleaning(self, dataset_to_clean: AnnotatedDataset) -> AnnotatedDataset:
         """
         Remove all columns that contain categorical data. \n
         :param dataset_to_clean: The dataset that will be cleaned in this cleaning_step.
         :return: The cleaned dataset.
         """
         # exception logic
-        eh.check_non_empty_array(dataset_to_clean, "CategoricalColumnRemover")
+        assert len(dataset_to_clean.data.shape) == 2
+        eh.check_non_empty_array(dataset_to_clean.data, "CategoricalColumnRemover")
 
         # CategoricalColumnRemover logic
-        df = pd.DataFrame(dataset_to_clean)
+        df = pd.DataFrame(dataset_to_clean.to_single_array())
         columns_to_drop = []
 
-        # normal case -> more than one row
-        if len(dataset_to_clean.shape) > 1:
-            for column in df:
-                column_df: pd.DataFrame = pd.DataFrame(df[column])
-                if column_df.applymap(type).eq(str).any().any():
-                    columns_to_drop.append(column)
-                    continue
-            return df.drop(df.columns[columns_to_drop], axis=1).to_numpy()
-        # only one row -> needs special treatment
-        else:
-            for idx in range(0, dataset_to_clean.shape[0]):
-                if type(dataset_to_clean[idx]) is str:
-                    columns_to_drop.append(idx)
-            return np.asarray(np.delete(dataset_to_clean, columns_to_drop, axis=0))
+        # start with the second column because the first column are the indices
+        for column in range(1, df.columns.size):
+            column_df: pd.DataFrame = pd.DataFrame(df[column])
 
+            # header are always strings -> remove them
+            column_df = column_df.iloc[1:, :]
 
+            # check if any entry of the column is a string
+            if column_df.applymap(type).eq(str).any().any():
+                columns_to_drop.append(column)
+                continue
 
+        cleaned_single_array_dataset: np.ndarray = \
+            df.drop(df.columns[columns_to_drop], axis=1).to_numpy()
+
+        return AnnotatedDataset(cleaned_single_array_dataset)

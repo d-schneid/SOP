@@ -51,24 +51,36 @@ variables:
   DOCKER_TLS_CERTDIR: ""
 
 default:
-  image: python:3.9-slim-bullseye
+  image: python:3.9
 
   cache:
     key: build-cache
     paths:
       - .cache/pip/
+
+  #
+  # This folder is cached between builds
+  # http://docs.gitlab.com/ee/ci/yaml/README.html#cache
+  before_script:
+    - "[ ! -d 'venv3.9' ] && python3 -m venv venv3.9"
+    - "[ ! -d 'public' ] && mkdir public"
+    - source venv3.9/bin/activate
+    - python3.9 -m pip install --upgrade pip
+    - python3.9 -m pip install -r requirements.txt
+    - python3.9 -m pip install coverage
+    - python3.9 -m pip install -e backend_library/src
+    - python3.9 -V
+
+.frontend-base:
+  image: python:3.9-slim-bullseye
   #
   # Pick zero or more services to be used on all builds.
   # Only needed when using a docker container to run your tests in.
   # Check out: https://docs.gitlab.com/ee/ci/services/index.html
   services:
     - mysql:8.0
-  #
-  # This folder is cached between builds
-  # http://docs.gitlab.com/ee/ci/yaml/README.html#cache
   before_script:
     - apt -y update
-    - apt -y upgrade
     - apt-get -yq install software-properties-common
     - apt -y install apt-utils net-tools wget default-mysql-client default-libmysqlclient-dev python3-distutils python3-dev gcc memcached
     - "[ ! -d 'venv3.9' ] && python3 -m venv venv3.9"
@@ -82,6 +94,7 @@ default:
 
 migrations:
   stage: build
+  extends: .frontend-base
   script:
     - source venv3.9/bin/activate
     - cd webserver/src/main/sop
@@ -94,6 +107,7 @@ migrations:
 
 django-tests:
   stage: test
+  extends: .frontend-base
   coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
   script:
     - source venv3.9/bin/activate
@@ -115,18 +129,39 @@ django-tests:
       - public/django-tests.svg
 
 backend-tests:
+  needs: [ ]
   stage: test
   coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
   script:
     - which python3.9
     - cd backend_library/src
-    - python3.9 -m coverage run --source=backend/ --omit="*/__init__.py" --omit="backend/scheduler/DebugScheduler.py" --omit="backend/scheduler/ThreadedScheduler.py" -m unittest discover -p "*.py" -s test/ -t .
+    - python3.9 -m coverage run --source=backend/ --omit="*/__init__.py","backend/scheduler/DebugScheduler.py","backend/scheduler/ThreadedScheduler.py","backend/scheduler/Schedulable.py","backend/task/execution/subspace/SubspaceGenerationDescription.py","backend/task/execution/subspace/SubspaceSizeDistribution.py"  -m unittest discover -p "*.py" -s test/ -t .
     - python3.9 -m coverage report --precision=2
     - 'wget -O ../../public/backend-tests.svg https://img.shields.io/badge/backend\ coverage-$(python3.9 -m coverage report --rcfile=.coveragerc --precision=2 | grep -E "^TOTAL.+?([0-9]+.[0-9]+%)$" | grep -Eo "[0-9]+.[0-9]+%$")-informational'
   artifacts:
     paths:
       - public/backend-tests.svg
 
+
+backend-docs:
+  inherit:
+    default: false
+  image: python:3.9-slim-bullseye
+  needs: [ ]
+  stage: publish
+  before_script:
+    - pip install pdoc
+    - apt update
+    - apt -y install zip
+  script:
+    - which python3.9
+    - cd backend_library/src
+    - python3.9 -m pdoc ./backend -o docs
+    - mkdir -p ../../public/
+    - zip -r ../../public/backend-docs.zip ./docs
+  artifacts:
+    paths:
+      - public/backend-docs.zip
 
 publish-build:
   inherit:
@@ -145,6 +180,7 @@ publish-build:
 
 
 deploy-badges:
+  needs: [ "backend-tests", "django-tests" ]
   inherit:
     default: false
   stage: deploy

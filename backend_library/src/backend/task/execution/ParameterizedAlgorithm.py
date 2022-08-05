@@ -1,7 +1,9 @@
 from typing import Dict
 
+from backend.JsonSerializable import JsonSerializable
 
-class ParameterizedAlgorithm(object):
+
+class ParameterizedAlgorithm(JsonSerializable, object):
     """
     Used to describe one algorithm that is used in an execution.
     Saves all the important information about this algorithm.
@@ -20,10 +22,6 @@ class ParameterizedAlgorithm(object):
         self._directory_name_in_execution: str = ""
 
     def to_json(self) -> Dict[str, object]:
-        """
-        Converts the ParameterizedAlgorithm object into a JSON str. \n
-        :return: The important information of the algorithm as JSON-str.
-        """
         return {'display_name': self._display_name,
                 'directory_name': self._directory_name_in_execution,
                 'hyper_parameter': self._hyper_parameter}

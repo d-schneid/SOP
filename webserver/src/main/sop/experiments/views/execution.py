@@ -201,9 +201,9 @@ class ExecutionCreateView(
                 form.instance.subspace_generation_seed = seed
 
         # Sanity check that subspaces_min must be smaller than subspaces_max
-        if subspaces_min >= subspaces_max:
+        if subspaces_min > subspaces_max:
             messages.error(
-                self.request, f"Subspaces Max has to be greater than Subspace Min."
+                self.request, f"Subspaces Max has to be greater than or equal to Subspaces Min."
             )
             error = True
 
@@ -245,6 +245,7 @@ class ExecutionDuplicateView(ExecutionCreateView):
             form["subspaces_min"] = original.subspaces_min
             form["subspaces_max"] = original.subspaces_max
             form["subspace_amount"] = original.subspace_amount
+            form["subspace_generation_seed"] = original.subspace_generation_seed
         return form
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:

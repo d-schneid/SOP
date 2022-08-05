@@ -55,6 +55,13 @@ def get_params_out_of_form(
         return True, dikt
 
 
+def get_download_http_response(data, file_name: str) -> HttpResponse:
+    response = HttpResponse(data)
+    response["Content-Type"] = "text/plain"
+    response["Content-Disposition"] = f"attachment; filename={file_name}"
+    return response
+
+
 def get_execution_result(execution: Execution) -> HttpResponse:
     """
     Generates a HttpResponse for a download with the content of the result file of the
@@ -64,7 +71,4 @@ def get_execution_result(execution: Execution) -> HttpResponse:
     """
     file_name = "result.zip"
     with execution.result_path as file:
-        response = HttpResponse(file.read())
-        response["Content-Type"] = "text/plain"
-        response["Content-Disposition"] = f"attachment; filename={file_name}"
-    return response
+        return get_download_http_response(file.read(), file_name)

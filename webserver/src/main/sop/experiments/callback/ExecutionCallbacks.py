@@ -1,9 +1,16 @@
 import os
+from pathlib import Path
 
+from backend.metric.MetricDataPointsAreOutliers import MetricDataPointsAreOutliers
+from backend.metric.MetricSubspaceOutlierAmount import MetricSubspaceOutlierAmount
 from backend.task import TaskState
 from backend.task.execution.core.Execution import Execution as BackendExecution
 from experiments.models import Execution
-from experiments.models.execution import get_zip_result_path, ExecutionStatus
+from experiments.models.execution import (
+    get_zip_result_path,
+    ExecutionStatus,
+    get_result_path,
+)
 
 
 def execution_callback(
@@ -40,12 +47,42 @@ def execution_callback(
 
     execution.save()
 
+def generate_datapoints_metric(metric_dir: Path, be: BackendExecution):
+    assert os.path.isdir(metric_dir)
+    metric_result_path = metric_dir / "datapoints_metric.csv"
+    metric = MetricDataPointsAreOutliers(indices_mapping=be.dataset_indices)
+    metric.compute_metric(
+        metric_result_path=str(metric_result_path),
+        algorithm_directory_paths=be.algorithm_directory_paths,
+    )
 
-def metric_callback(execution: BackendExecution) -> None:
+
+def generate_subspace_outlier_metric(metric_dir: Path, be: BackendExecution):
+    assert os.path.exists(metric_dir)
+    metric_result_path = metric_dir / "subspace_outliers.csv"
+    metric = MetricSubspaceOutlierAmount()
+    metric.compute_metric(
+        metric_result_path=str(metric_result_path),
+        algorithm_directory_paths=be.algorithm_directory_paths,
+    )
+
+
+def metric_callback(be: BackendExecution) -> None:
     """
     The metric callback used by the backend execution task. It calls metrics in the
     backend and saves their results in the executions results path before it is zipped.
     @param execution: The backend execution object on which the metrics will be called.
     @return: None
     """
-    print("METRIC CALLBACK!!")
+    print(f"metric callback for execution {be.task_id}")
+    execution_pk = be.task_id
+    if not Execution.objects.filter(pk=execution_pk).exists():
+        return
+
+    execution = Execution.objects.get(pk=execution_pk)
+    metric_dir = Path(get_result_path(execution)) / "metrics"
+    assert os.path.isdir(metric_dir.parent)
+    os.makedirs(metric_dir)
+
+    generate_datapoints_metric(metric_dir, be)
+    generate_subspace_outlier_metric(metric_dir, be)
