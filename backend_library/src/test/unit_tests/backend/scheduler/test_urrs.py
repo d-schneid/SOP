@@ -45,8 +45,12 @@ class UnitTestUrrs(unittest.TestCase):
         self.assertNotEqual(sched.next_sched().user_id, sched.next_sched().user_id)
 
     def test_exec(self):
-        margin = 8
-        timeout = 10
+        import os
+        margin = 5
+        if os.environ.get("IS_EXECUTING_IN_CI") == "1":
+            print("detected CI, will allow more slack for scheduler testing!")
+            margin = 20
+        timeout = margin * 3
         manager = Manager()
         tr = multiprocessing.Event()
         Scheduler._instance = None
