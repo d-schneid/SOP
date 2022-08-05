@@ -81,8 +81,8 @@ class ExecutionCreateViewTests(LoggedInTestCase):
         response = self.send_post()
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.redirect_chain)
-        messages = list(response.context['messages'])
-        self.assertEqual(len(messages), 2)
+        self.assertNotEqual(str(response.context["form"]).find("greater than or equal to 0"), -1)
+        # self.assertContains(response, "Value must be greater than or equal to 0")
         self.assertIsNone(Execution.objects.first())
 
     def test_execution_create_view_subspace_errors2(self) -> None:
@@ -95,6 +95,7 @@ class ExecutionCreateViewTests(LoggedInTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.redirect_chain)
         messages = list(response.context['messages'])
+        self.assertEqual(str(response.context["form"]).find("greater than or equal to 0"), -1)
         self.assertEqual(len(messages), 1)
         self.assertEqual(len([m for m in messages if "Min" in m.message and "Max" in m.message]), 1)
         self.assertIsNone(Execution.objects.first())
@@ -107,9 +108,7 @@ class ExecutionCreateViewTests(LoggedInTestCase):
         response = self.send_post()
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.redirect_chain)
-        messages = list(response.context['messages'])
-        self.assertEqual(len(messages), 1)
-        self.assertEqual(len([m for m in messages if "Seed" in m.message]), 1)
+        self.assertNotEqual(str(response.context["form"]).find("greater than or equal to 0"), -1)
         self.assertIsNone(Execution.objects.first())
 
     def test_execution_create_view_subspace_errors4(self) -> None:
@@ -121,9 +120,7 @@ class ExecutionCreateViewTests(LoggedInTestCase):
         response = self.send_post()
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.redirect_chain)
-        messages = list(response.context['messages'])
-        self.assertEqual(len(messages), 2)
-        self.assertEqual(len([m for m in messages if "Min" in m.message or "Max" in m.message]), 2)
+        self.assertNotEqual(str(response.context["form"]).find("greater than or equal to 0"), -1)
         self.assertIsNone(Execution.objects.first())
 
     def test_schedule_backend(self) -> None:
