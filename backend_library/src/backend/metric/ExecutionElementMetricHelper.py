@@ -1,14 +1,11 @@
-from glob import glob
 import os
 from pathlib import Path
-from typing import Iterator
 
 import numpy as np
 import pandas as pd
 
 from backend.DataIO import DataIO
 from backend.DatasetInfo import DatasetInfo
-from backend.task.execution.core.Execution import Execution
 
 
 class ExecutionElementMetricHelper:
@@ -79,11 +76,11 @@ class ExecutionElementMetricHelper:
         for files that end with .csv.
         :return: The list of paths to .csv files.
         """
-        all_csv_files: list[str] = [file
-                                    for path, subdir,
-                                        files in os.walk(execution_folder_path)
-                                    for file in glob(os.path.join(path, "*.csv"))]
-        return all_csv_files
+        files = []
+        for file in os.listdir(execution_folder_path):
+            if file.endswith(".csv"):
+                files.append(os.path.join(execution_folder_path, file))
+        return files
 
     @staticmethod
     def compute_data_point_outlier_count(
