@@ -6,8 +6,11 @@ build-backend = "setuptools.build_meta"
 name = "sop-backend"
 version = "0.0.1"
 dependencies = [
-    "numpy",
-    "pandas",
+    "numpy>=1.22.4",
+    "pandas>=1.4.3",
+    "pyod>=1.0.3",
+    "scipy>=1.8.1",
+    "scikit-learn>=1.1.1"
 ]
 
 [tool.setuptools.packages.find]
