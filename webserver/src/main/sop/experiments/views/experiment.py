@@ -68,8 +68,8 @@ class ExperimentCreateView(
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context["form"].fields["dataset"].queryset = Dataset.objects.\
-            get_by_user(self.request.user).\
+        context["form"].fields["dataset"].queryset = Dataset.objects. \
+            get_by_user(self.request.user). \
             filter(status="FINISHED")
         context.update({
             "algorithm_groups": Algorithm.AlgorithmGroup,
@@ -80,7 +80,7 @@ class ExperimentCreateView(
 
 class ExperimentDuplicateView(ExperimentCreateView):
     def get_initial(
-        self,
+            self,
     ) -> Dict[str, Any]:
         form: Dict[str, Any] = {}
         if self.request.method == "GET":
@@ -88,8 +88,15 @@ class ExperimentDuplicateView(ExperimentCreateView):
             original = Experiment.objects.get(pk=og_experiment_pk)
             form["display_name"] = original.display_name
             form["dataset"] = original.dataset
-            form["algorithms"] = original.algorithms.all()
         return form
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+
+        og_experiment_pk = self.kwargs["pk"]
+        original = Experiment.objects.get(pk=og_experiment_pk)
+        context.update({"initial_algorithms": original.algorithms.all()})
+        return context
 
 
 class ExperimentEditView(
