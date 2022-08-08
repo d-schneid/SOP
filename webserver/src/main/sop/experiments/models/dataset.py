@@ -53,6 +53,7 @@ class Dataset(models.Model):
     )
     path_cleaned = models.FileField(null=True)
     status = models.CharField(max_length=80)
+    cleaning_progress = models.FloatField(default=0.0)
     has_header = models.BooleanField(default=True)
     objects = DatasetManager.from_queryset(DatasetQuerySet)()  # type: ignore
 
@@ -95,6 +96,3 @@ class Dataset(models.Model):
 
     def __str__(self) -> str:
         return str(self.display_name) + " | " + str(self.user)
-
-
-

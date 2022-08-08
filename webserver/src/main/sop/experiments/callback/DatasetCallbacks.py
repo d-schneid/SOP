@@ -18,6 +18,7 @@ def cleaning_callback(
     """
 
     dataset: Dataset = Dataset.objects.get(pk=task_id)
+    dataset.cleaning_progress = progress
 
     # if the task has finished, update the database
     if task_state.is_finished():

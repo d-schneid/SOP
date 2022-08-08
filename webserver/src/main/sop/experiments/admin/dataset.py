@@ -53,14 +53,17 @@ class DatasetAdmin(AbstractModelAdmin):
     ) -> Sequence[str]:
         # for editing an existing experiment
         if not obj is None:
-            readonly_fields = ["dimensions_total",
-                               "datapoints_total",
-                               "status",
-                               "has_header",
-                               "user",
-                               "upload_date",
-                               "download_uncleaned",
-                               "download_cleaned"]
+            readonly_fields = [
+                "dimensions_total",
+                "datapoints_total",
+                "status",
+                "cleaning_progress",
+                "has_header",
+                "user",
+                "upload_date",
+                "download_uncleaned",
+                "download_cleaned",
+            ]
             if not obj.is_cleaned:
                 readonly_fields.remove("download_cleaned")
             return readonly_fields
