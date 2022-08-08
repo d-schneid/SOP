@@ -80,7 +80,6 @@
                 let id = status.id.replace("dataset-status-", "")
 
                 let progress_div = document.getElementById("dataset-progress-div-" + id)
-                console.log(progress_div)
 
                 let $progress = $('<div id="dataset-progress-' + id + '" class="dataset-progress mt-3"></div>').appendTo(progress_div).append('<div class="progress-container"><div class="progress-status"></div><div class="bg-white border border-dark"><div class="progress-bar hidden progress-bar-striped progress-bar-animated bg-dark" style="width: 0%" role="progressbar" aria-valuemin="0" aria-valuemax="100">0%</div></div></div>');
                 $progress.show();

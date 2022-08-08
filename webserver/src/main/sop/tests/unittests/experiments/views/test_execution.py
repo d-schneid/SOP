@@ -63,6 +63,9 @@ class ExecutionViewTests(django.test.TestCase):
         execution.progress = 0.314
         execution.status = ExecutionStatus.RUNNING.name
         execution.pk = 3
+        execution.experiment.pk = 10
+        execution.is_running = True
+        execution.has_result = False
         objects_mock = MagicMock()
         objects_mock.filter.return_value.first.return_value = execution
         with patch.object(Execution, "objects", objects_mock):
@@ -73,7 +76,9 @@ class ExecutionViewTests(django.test.TestCase):
                 {
                     "progress": execution.progress,
                     "status": execution.status,
-                    "execution_pk": execution.pk,
+                    "is_running": execution.is_running,
+                    "has_result": execution.has_result,
+                    "experiment_pk": execution.experiment.pk,
                 },
             )
 
