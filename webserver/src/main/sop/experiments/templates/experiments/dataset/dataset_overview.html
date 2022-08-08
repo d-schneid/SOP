@@ -23,12 +23,16 @@
             {{ model.display_name }}
         </a>
     </h5>
-    <a class="text-white ml-auto dataset-status" id="dataset-status-{{ model.pk }}">STATUS</a>
+    <a class="text-white ml-auto dataset-status" id="dataset-status-{{ model.pk }}"></a>
 {% endblock %}
 
 
 {% block card-body %}
     <span style="white-space: pre">{{ model.description }}</span>
+
+    {% if not model.has_finished and not model.has_error %}
+        <div id="dataset-progress-div-{{ model.pk }}"></div>
+    {% endif %}
 
     {% if model.is_cleaned and model.has_error %}
         <div class="alert alert-danger mt-4" role="alert">
@@ -46,7 +50,7 @@
        class="btn btn-warning mr-3">Edit</a>
     <div class="flex-grow-1">
         <a href="{% url 'dataset_download_uncleaned' model.pk %}" class="btn btn-info mr-3">Download Uncleaned</a>
-        <a href="{% url 'dataset_download_cleaned' model.pk %}" class="btn btn-info mr-3" id="cleaned-download"
+        <a href="{% url 'dataset_download_cleaned' model.pk %}" class="btn btn-info mr-3" id="cleaned-download-{{ model.pk }}"
            style="visibility: {% if model.is_cleaned and not model.has_error %}visible{% else %}hidden{% endif %}">Download
             Cleaned</a>
     </div>
@@ -74,25 +78,38 @@
             for (let i = 0; i < statuses.length; i++) {
                 let status = statuses[i]
                 let id = status.id.replace("dataset-status-", "")
-                console.log(id)
 
-                fetch(id)
+                let progress_div = document.getElementById("dataset-progress-div-" + id)
+                console.log(progress_div)
+
+                let $progress = $('<div id="dataset-progress-' + id + '" class="dataset-progress mt-3"></div>').appendTo(progress_div).append('<div class="progress-container"><div class="progress-status"></div><div class="bg-white border border-dark"><div class="progress-bar hidden progress-bar-striped progress-bar-animated bg-dark" style="width: 0%" role="progressbar" aria-valuemin="0" aria-valuemax="100">0%</div></div></div>');
+                $progress.show();
+
+                fetch($progress, id)
             }
         });
 
-        function fetch(id) {
+        function fetch($progress, id) {
             progress_url = "/dataset-status/"
             $.getJSON(progress_url, {'dataset_pk': Number(id)}, function (data, status) {
                 status = document.getElementById("dataset-status-" + id)
                 if (data.cleaning_status === "RUNNING") {
                     status.innerText = "cleaning in progress";
-                    setTimeout('fetch(' + id + ')', 2000)
+                    var progress = parseFloat(data.progress);
+                    $progress.find('.progress-bar').css("width", progress * 100 + "%");
+                    $progress.find('.progress-bar').html("cleaning " + parseInt(progress * 100) + '%');
+                    setTimeout(function () {
+                        return fetch($progress, id)
+                    }, 1000)
                 } else if (data.cleaning_status === "FINISHED") {
+                    $progress.remove()
                     status.innerText = "cleaned"
-                    document.getElementById("cleaned-download").style.visibility = "visible"
+                    document.getElementById("cleaned-download-" + id).style.visibility = "visible"
                 } else if (data.cleaning_status === "FINISHED_WITH_ERROR") {
+                    $progress.remove()
                     status.innerText = "cleaning failed"
                 } else {
+                    $progress.remove()
                     status.innerText = "SERVER ERROR"
                 }
             });

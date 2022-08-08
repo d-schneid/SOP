@@ -29,6 +29,7 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
     the fields that a user has to enter. When the form is valid, this view will save the
     dataset in the database and start a DatasetCleaning for the given dataset.
     """
+
     model = Dataset
     form_class = DatasetUploadForm
     template_name = "dataset_upload.html"
@@ -101,6 +102,7 @@ class DatasetOverview(LoginRequiredMixin, ListView[Dataset]):
     A view to display all datasets of the user that requests this view. Datasets can
     be sorted by traits like name and upload date.
     """
+
     model = Dataset
     template_name = "dataset_overview.html"
 
@@ -124,6 +126,7 @@ class DatasetDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Dataset]):
     A view to delete a dataset. It inherits PostOnlyDeleteView, so it is only accessible
     via a POST request and will then perform the deletion of the dataset model.
     """
+
     model = Dataset
     success_url = reverse_lazy("dataset_overview")
 
@@ -144,6 +147,7 @@ class DatasetEditView(LoginRequiredMixin, UpdateView[Dataset, DatasetEditForm]):
     A view to edit an existing dataset. It uses the DatasetEditForm to display widgets
     for fields that a user can edit.
     """
+
     model = Dataset
     form_class = DatasetEditForm
     template_name = "dataset_edit.html"
@@ -218,6 +222,10 @@ def dataset_status_view(
             if dataset is None:
                 return HttpResponseRedirect(reverse_lazy("dataset_overview"))
 
-            data = {"dataset_pk": dataset.pk, "cleaning_status": dataset.status}
+            data = {
+                "dataset_pk": dataset.pk,
+                "cleaning_status": dataset.status,
+                "progress": dataset.cleaning_progress,
+            }
             return HttpResponse(json.dumps(data))
     return None
