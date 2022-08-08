@@ -121,6 +121,7 @@ class ExecutionCreateView(
     for hyperparameters of all algorithms in the experiment out of the form.
     When the form is valid a backend task for the calculation will be scheduled.
     """
+
     model = Execution
     template_name = "execution_create.html"
     form_class = ExecutionCreateForm
@@ -148,7 +149,7 @@ class ExecutionCreateView(
         if subspaces_min < 0:
             messages.error(
                 self.request,
-                f"Subspaces Min has to be an Integer greater than or equal to 0.",
+                "Subspaces Min has to be an Integer greater than or equal to 0.",
             )
         else:
             form.instance.subspaces_min = subspaces_min
@@ -158,7 +159,7 @@ class ExecutionCreateView(
         if subspaces_max < 0:
             messages.error(
                 self.request,
-                f"Subspaces Max has to be an Integer greater than or equal to 0.",
+                "Subspaces Max has to be an Integer greater than or equal to 0.",
             )
             error = True
         if subspaces_max > experiment.dataset.dimensions_total:
@@ -174,7 +175,7 @@ class ExecutionCreateView(
         subspace_amount = form.cleaned_data["subspace_amount"]
         if subspace_amount <= 0:
             messages.error(
-                self.request, f"Subspace amount has to be a positive Integer."
+                self.request, "Subspace amount has to be a positive Integer."
             )
             error = True
         else:
@@ -203,7 +204,8 @@ class ExecutionCreateView(
         # Sanity check that subspaces_min must be smaller than subspaces_max
         if subspaces_min > subspaces_max:
             messages.error(
-                self.request, f"Subspaces Max has to be greater than or equal to Subspaces Min."
+                self.request,
+                "Subspaces Max has to be greater than or equal to Subspaces Min.",
             )
             error = True
 
@@ -237,6 +239,7 @@ class ExecutionDuplicateView(ExecutionCreateView):
     original execution to the context, so that the template can enter default values for
     the hyperparameters.
     """
+
     def get_initial(self) -> Dict[str, int]:
         form = {}
         if self.request.method == "GET":
@@ -259,12 +262,13 @@ class ExecutionDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Execution]):
     A view to delete an execution model. It inherits form PostOnlyDeleteView, so it is
     only accessible via POST requests.
     """
+
     model = Execution
     success_url = reverse_lazy("experiment_overview")
 
 
 def download_execution_result(
-        request: HttpRequest, experiment_pk: int, pk: int
+    request: HttpRequest, experiment_pk: int, pk: int
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
     """
     A function view that will download an execution result. This view asserts that the
@@ -290,7 +294,8 @@ def download_execution_result(
         return None
 
 
-def download_execution_result_admin(request: HttpRequest, pk: int
+def download_execution_result_admin(
+    request: HttpRequest, pk: int
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
     """
     A function view that will download an execution result. This view asserts that the
@@ -309,7 +314,8 @@ def download_execution_result_admin(request: HttpRequest, pk: int
         execution: Optional[Execution] = Execution.objects.filter(pk=pk).first()
         if execution is None:
             return HttpResponseRedirect(
-                reverse_lazy("admin:experiments_execution_changelist"))
+                reverse_lazy("admin:experiments_execution_changelist")
+            )
         return get_execution_result(execution)
     else:
         assert request.method in ("POST", "PUT")
@@ -342,11 +348,13 @@ def get_execution_progress(request: HttpRequest) -> HttpResponse:
         pk = request.META["execution_pk"]
     if pk:
         execution: Optional[Execution] = Execution.objects.filter(pk=pk).first()
-        data = {}
+        data: Dict[str, Any] = {}
         if execution is not None:
+            data["is_running"] = execution.is_running
+            data["has_result"] = execution.has_result
             data["progress"] = execution.progress
             data["status"] = execution.status
-            data["execution_pk"] = execution.pk
+            data["experiment_pk"] = execution.experiment.pk
 
         return HttpResponse(json.dumps(data))
 
@@ -356,7 +364,9 @@ def get_execution_progress(request: HttpRequest) -> HttpResponse:
         )
 
 
-def restart_execution(request: HttpRequest, experiment_pk: int, pk: int) -> HttpResponse:
+def restart_execution(
+    request: HttpRequest, experiment_pk: int, pk: int
+) -> HttpResponse:
     """
     A view that can be accessed in any way (GET or POST). When accessed, it will restart
     the execution specified by the given primary key.
