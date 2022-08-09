@@ -1,8 +1,10 @@
+import django.test
+
 from experiments.models import Algorithm, Dataset, Experiment
-from tests.unittests.views.generic_test_cases import LoggedInTestCase
+from tests.generic import LoggedInMixin
 
 
-class LoggedInSiteTests(LoggedInTestCase):
+class LoggedInSiteTests(LoggedInMixin, django.test.TestCase):
     def test_algorithm_overview_urls_logged_in(self):
         response = self.client.get("/algorithm/overview/", follow=True)
         self.assertEqual(response.status_code, 200)

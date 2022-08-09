@@ -1,5 +1,4 @@
 import os
-import shutil
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -7,24 +6,14 @@ import django.test
 from django.conf import settings
 
 from experiments.services.dataset import save_dataset, generate_path_dataset_cleaned
+from tests.generic import MediaMixin
 
 
-class DatasetServicesTests(django.test.TestCase):
+class DatasetServicesTests(MediaMixin, django.test.TestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.init_mocks()
         os.makedirs(settings.MEDIA_ROOT)
-        super().setUp()
-
-    def tearDown(self) -> None:
-        if os.path.exists(settings.MEDIA_ROOT):
-            shutil.rmtree(settings.MEDIA_ROOT)
-        super().tearDown()
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        if os.path.exists(settings.MEDIA_ROOT):
-            shutil.rmtree(settings.MEDIA_ROOT)
-        super().tearDownClass()
 
     def init_mocks(self) -> None:
         self.user = MagicMock()

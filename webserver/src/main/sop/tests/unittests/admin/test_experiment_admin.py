@@ -1,16 +1,17 @@
+import django.test
 from django.urls import reverse
 
-from tests.unittests.views.generic_test_cases import AdminLoggedInTestCase
-
-from experiments.models.experiment import Experiment
-from experiments.models.dataset import Dataset, CleaningState
-from experiments.models.algorithm import Algorithm
-
 from authentication.models import User
+from experiments.models.algorithm import Algorithm
+from experiments.models.dataset import Dataset, CleaningState
+from experiments.models.experiment import Experiment
+from tests.generic import AdminLoggedInMixin
 
 
 def delete_selected_experiments(client, dataset, algorithm, user):
-    other_exp = Experiment.objects.create(display_name="other Exp", dataset=dataset, user=user)
+    other_exp = Experiment.objects.create(
+        display_name="other Exp", dataset=dataset, user=user
+    )
     other_exp.algorithms.add(algorithm)
     exp_queryset = Experiment.objects.all()
     data = {
@@ -23,15 +24,28 @@ def delete_selected_experiments(client, dataset, algorithm, user):
     return client.post(url, data, follow=True)
 
 
-class AlgorithmAdminTests(AdminLoggedInTestCase):
-    def setUp(self) -> None:
-        super().setUp()
-        self.dataset = Dataset.objects.create(
-            datapoints_total=1, dimensions_total=1, user=self.admin, status=CleaningState.FINISHED.name
+class AlgorithmAdminTests(AdminLoggedInMixin, django.test.TestCase):
+    admin: User
+    dataset: Dataset
+    algo: Algorithm
+    exp: Experiment
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.dataset = Dataset.objects.create(
+            datapoints_total=1,
+            dimensions_total=1,
+            user=cls.admin,
+            status=CleaningState.FINISHED.name,
         )
-        self.algo = Algorithm.objects.create(display_name="Test Algo", signature="", user=self.admin)
-        self.exp = Experiment.objects.create(display_name="Test Exp", dataset=self.dataset, user=self.admin)
-        self.exp.algorithms.add(self.algo)
+        cls.algo = Algorithm.objects.create(
+            display_name="Test Algo", signature="", user=cls.admin
+        )
+        cls.exp = Experiment.objects.create(
+            display_name="Test Exp", dataset=cls.dataset, user=cls.admin
+        )
+        cls.exp.algorithms.add(cls.algo)
 
     def test_experiment_admin_changelist_view(self):
         url = reverse("admin:experiments_experiment_changelist")
@@ -69,7 +83,9 @@ class AlgorithmAdminTests(AdminLoggedInTestCase):
 
     def test_admin_delete_selected_experiments_action(self):
         self.assertTrue(Experiment.objects.exists())
-        response = delete_selected_experiments(self.client, self.dataset, self.algo, self.admin)
+        response = delete_selected_experiments(
+            self.client, self.dataset, self.algo, self.admin
+        )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Successfully deleted")
         self.assertFalse(Experiment.objects.exists())
@@ -93,7 +109,7 @@ class AlgorithmAdminTests(AdminLoggedInTestCase):
             "display_name": "newExp",
             "user": self.admin.pk,
             "dataset": self.dataset.pk,
-            "algorithms": self.algo.pk
+            "algorithms": self.algo.pk,
         }
         url = reverse("admin:experiments_experiment_add")
         response = self.client.post(url, data, follow=True)
@@ -111,33 +127,32 @@ class AlgorithmAdminTests(AdminLoggedInTestCase):
             "display_name": "newExp",
             "user": user.pk,
             "dataset": self.dataset.pk,
-            "algorithms": self.algo.pk
+            "algorithms": self.algo.pk,
         }
         url = reverse("admin:experiments_experiment_add")
         response = self.client.post(url, data, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Please correct the errors below")
         self.assertContains(response, "Selected user")
-        self.assertEqual(
-            "experiments_experiment_add", response.resolver_match.url_name
-        )
+        self.assertEqual("experiments_experiment_add", response.resolver_match.url_name)
 
     def test_admin_add_experiment_invalid_dataset(self):
         # dataset is not cleaned and, therefore, cannot be used
         uncleaned_dataset = Dataset.objects.create(
-            datapoints_total=1, dimensions_total=1, user=self.admin, status=CleaningState.RUNNING.name
+            datapoints_total=1,
+            dimensions_total=1,
+            user=self.admin,
+            status=CleaningState.RUNNING.name,
         )
         data = {
             "display_name": "newExp",
             "user": self.admin.pk,
             "dataset": uncleaned_dataset.pk,
-            "algorithms": self.algo.pk
+            "algorithms": self.algo.pk,
         }
         url = reverse("admin:experiments_experiment_add")
         response = self.client.post(url, data, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Please correct the error below")
         self.assertContains(response, "Selected dataset is not cleaned")
-        self.assertEqual(
-            "experiments_experiment_add", response.resolver_match.url_name
-        )
+        self.assertEqual("experiments_experiment_add", response.resolver_match.url_name)

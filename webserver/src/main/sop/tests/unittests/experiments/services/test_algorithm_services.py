@@ -1,5 +1,4 @@
 import os
-import shutil
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -11,25 +10,13 @@ from experiments.services.algorithm import (
     delete_temp_algorithm,
     convert_param_mapping_to_signature_dict,
 )
+from tests.generic import MediaMixin
 
 
-class AlgorithmServicesTests(django.test.TestCase):
-    @classmethod
-    def tearDownClass(cls) -> None:
-        if os.path.exists(settings.MEDIA_ROOT):
-            shutil.rmtree(settings.MEDIA_ROOT)
-        super().tearDownClass()
-
+class AlgorithmServicesTests(MediaMixin, django.test.TestCase):
     def setUp(self) -> None:
         self.init_mocks()
-        if not os.path.exists(settings.MEDIA_ROOT):
-            os.makedirs(settings.MEDIA_ROOT)
         super().setUp()
-
-    def tearDown(self) -> None:
-        if os.path.exists(settings.MEDIA_ROOT):
-            shutil.rmtree(settings.MEDIA_ROOT)
-        super().tearDown()
 
     def init_mocks(self) -> None:
         self.user = MagicMock()
@@ -76,6 +63,7 @@ class AlgorithmServicesTests(django.test.TestCase):
 
     def test_delete_temp_algorithm_wrong_dir(self) -> None:
         path = settings.MEDIA_ROOT / "temp.txt"
+        os.makedirs(path.parent)
         with open(path, "w") as f:
             f.write("Text")
         assert os.path.exists(path)

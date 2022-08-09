@@ -1,16 +1,19 @@
 from typing import Any, Dict
 from unittest.mock import patch, MagicMock
 
+import django.test
 from django.http import HttpResponse
 from django.urls import reverse_lazy
 
 from backend.task.execution.core.Execution import Execution as BackendExecution
 from experiments.models import Experiment, Dataset, Algorithm, Execution
 from experiments.views.execution import schedule_backend
-from tests.unittests.views.generic_test_cases import LoggedInTestCase
+from tests.generic import LoggedInMixin, MediaMixin, DebugSchedulerMixin
 
 
-class ExecutionCreateViewTests(LoggedInTestCase):
+class ExecutionCreateViewTests(
+    LoggedInMixin, DebugSchedulerMixin, MediaMixin, django.test.TestCase
+):
     dataset: Dataset
     algo1: Algorithm
     algo2: Algorithm
@@ -43,7 +46,7 @@ class ExecutionCreateViewTests(LoggedInTestCase):
 
     def send_post(self) -> HttpResponse:
         with patch(
-                "experiments.views.execution.schedule_backend", lambda execution: None
+            "experiments.views.execution.schedule_backend", lambda execution: None
         ):
             response = self.client.post(
                 reverse_lazy("execution_create", args=(self.exp.pk,)),
@@ -81,7 +84,9 @@ class ExecutionCreateViewTests(LoggedInTestCase):
         response = self.send_post()
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.redirect_chain)
-        self.assertNotEqual(str(response.context["form"]).find("greater than or equal to 0"), -1)
+        self.assertNotEqual(
+            str(response.context["form"]).find("greater than or equal to 0"), -1
+        )
         # self.assertContains(response, "Value must be greater than or equal to 0")
         self.assertIsNone(Execution.objects.first())
 
@@ -94,10 +99,14 @@ class ExecutionCreateViewTests(LoggedInTestCase):
         response = self.send_post()
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.redirect_chain)
-        messages = list(response.context['messages'])
-        self.assertEqual(str(response.context["form"]).find("greater than or equal to 0"), -1)
+        messages = list(response.context["messages"])
+        self.assertEqual(
+            str(response.context["form"]).find("greater than or equal to 0"), -1
+        )
         self.assertEqual(len(messages), 1)
-        self.assertEqual(len([m for m in messages if "Min" in m.message and "Max" in m.message]), 1)
+        self.assertEqual(
+            len([m for m in messages if "Min" in m.message and "Max" in m.message]), 1
+        )
         self.assertIsNone(Execution.objects.first())
 
     def test_execution_create_view_subspace_errors3(self) -> None:
@@ -108,7 +117,9 @@ class ExecutionCreateViewTests(LoggedInTestCase):
         response = self.send_post()
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.redirect_chain)
-        self.assertNotEqual(str(response.context["form"]).find("greater than or equal to 0"), -1)
+        self.assertNotEqual(
+            str(response.context["form"]).find("greater than or equal to 0"), -1
+        )
         self.assertIsNone(Execution.objects.first())
 
     def test_execution_create_view_subspace_errors4(self) -> None:
@@ -120,7 +131,9 @@ class ExecutionCreateViewTests(LoggedInTestCase):
         response = self.send_post()
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.redirect_chain)
-        self.assertNotEqual(str(response.context["form"]).find("greater than or equal to 0"), -1)
+        self.assertNotEqual(
+            str(response.context["form"]).find("greater than or equal to 0"), -1
+        )
         self.assertIsNone(Execution.objects.first())
 
     def test_schedule_backend(self) -> None:
@@ -174,7 +187,7 @@ class ExecutionCreateViewTests(LoggedInTestCase):
             self.assertIsNotNone(errors.get("subspace_amount"))
 
 
-class ExecutionDuplicateViewTests(LoggedInTestCase):
+class ExecutionDuplicateViewTests(LoggedInMixin, django.test.TestCase):
     dataset: Dataset
     algo1: Algorithm
     algo2: Algorithm

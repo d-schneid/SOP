@@ -1,14 +1,14 @@
 import os
-import shutil
 
-from django.conf import settings
+import django.test
 from django.urls import reverse
 
+from backend.scheduler.Scheduler import Scheduler
 from experiments.models import Dataset
-from tests.unittests.views.generic_test_cases import LoggedInTestCase
+from tests.generic import LoggedInMixin, MediaMixin, DebugSchedulerMixin
 
 
-class DatasetOverviewTests(LoggedInTestCase):
+class DatasetOverviewTests(LoggedInMixin, django.test.TestCase):
     def setUp(self) -> None:
         self.QUERYSET_NAME = "models_list"
         super().setUp()
@@ -61,23 +61,14 @@ class DatasetOverviewTests(LoggedInTestCase):
         )
 
 
-class DatasetUploadViewTests(LoggedInTestCase):
+class DatasetUploadViewTests(
+    LoggedInMixin, DebugSchedulerMixin, MediaMixin, django.test.TestCase
+):
     def setUp(self) -> None:
         self.name = "Test Valid Dataset"
         self.description = "Test Valid Description"
         self.file_name = "valid_dataset.csv"
         super().setUp()
-
-    @classmethod
-    def setUpClass(cls):
-        if os.path.exists(settings.MEDIA_ROOT):
-            shutil.rmtree(settings.MEDIA_ROOT)
-        super().setUpClass()
-
-    def tearDown(self) -> None:
-        if os.path.exists(settings.MEDIA_ROOT):
-            shutil.rmtree(settings.MEDIA_ROOT)
-        super().tearDown()
 
     def upload_dataset(self, client: str, file_name: str):
         file_path = os.path.join("tests", "sample_datasets", file_name)
@@ -90,6 +81,7 @@ class DatasetUploadViewTests(LoggedInTestCase):
             return client.post(reverse("dataset_upload"), data=data, follow=True)
 
     def test_dataset_upload_view_valid_upload(self):
+        print(Scheduler.default_scheduler)
         file_name = "valid_dataset.csv"
         response = self.upload_dataset(self.client, file_name)
 
@@ -126,7 +118,28 @@ class DatasetUploadViewTests(LoggedInTestCase):
         )
 
 
-class DatasetEditViewTests(LoggedInTestCase):
+class DatasetEditViewTests(LoggedInMixin, django.test.TestCase):
+    name: str
+    new_name: str
+    description: str
+    new_description: str
+    dataset: Dataset
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.name = "Original Name"
+        cls.description = "Original Description"
+        cls.new_name = "New Name"
+        cls.new_description = "New Description"
+        cls.dataset = Dataset.objects.create(
+            display_name=cls.name,
+            description=cls.description,
+            user=cls.user,
+            datapoints_total=4,
+            dimensions_total=7,
+        )
+
     def post_dataset_edit(
         self, dataset_pk=None, expected_status=200, update_model=True
     ):
@@ -153,20 +166,6 @@ class DatasetEditViewTests(LoggedInTestCase):
         self.assertTrue(response.redirect_chain)
         self.assertEqual(self.new_name, self.dataset.display_name)
         self.assertEqual(self.new_description, self.dataset.description)
-
-    def setUp(self) -> None:
-        self.name = "Original Name"
-        self.description = "Original Description"
-        self.new_name = "New Name"
-        self.new_description = "New Description"
-        super().setUp()
-        self.dataset = Dataset.objects.create(
-            display_name=self.name,
-            description=self.description,
-            user=self.user,
-            datapoints_total=4,
-            dimensions_total=7,
-        )
 
     def test_dataset_edit_view_valid_edit(self):
         response = self.post_dataset_edit()
@@ -197,7 +196,7 @@ class DatasetEditViewTests(LoggedInTestCase):
         self.assertNoDatasetChange(response)
 
 
-class DatasetDeleteViewTests(LoggedInTestCase):
+class DatasetDeleteViewTests(LoggedInMixin, django.test.TestCase):
     def test_dataset_delete_view_valid_delete(self):
         dataset = Dataset.objects.create(
             datapoints_total=0, dimensions_total=0, user=self.user

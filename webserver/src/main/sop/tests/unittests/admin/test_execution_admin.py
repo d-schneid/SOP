@@ -1,19 +1,18 @@
 from unittest.mock import MagicMock, patch
 
+import django.test
 from django.contrib.admin.sites import AdminSite
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
 
-from tests.unittests.views.generic_test_cases import AdminLoggedInTestCase
-
+from authentication.models import User
 from experiments.admin.execution import ExecutionAdmin
+from experiments.models.algorithm import Algorithm
+from experiments.models.dataset import Dataset
 from experiments.models.execution import Execution, ExecutionStatus
 from experiments.models.experiment import Experiment
-from experiments.models.dataset import Dataset
-from experiments.models.algorithm import Algorithm
 from experiments.views.execution import download_execution_result_admin
-
-from authentication.models import User
+from tests.generic import AdminLoggedInMixin
 
 
 class MockRequest:
@@ -23,7 +22,7 @@ class MockRequest:
 request = MockRequest()
 
 
-class ExecutionAdminTests(AdminLoggedInTestCase):
+class ExecutionAdminTests(AdminLoggedInMixin, django.test.TestCase):
     @classmethod
     def setUpTestData(cls) -> None:
         super().setUpTestData()
@@ -31,17 +30,21 @@ class ExecutionAdminTests(AdminLoggedInTestCase):
         cls.dataset = Dataset.objects.create(
             datapoints_total=1, dimensions_total=1, user=cls.user
         )
-        cls.algo = Algorithm.objects.create(display_name="Test Algo", signature="",
-                                             user=cls.user)
-        cls.exp = Experiment.objects.create(display_name="Test Exp",
-                                             dataset=cls.dataset, user=cls.user)
+        cls.algo = Algorithm.objects.create(
+            display_name="Test Algo", signature="", user=cls.user
+        )
+        cls.exp = Experiment.objects.create(
+            display_name="Test Exp", dataset=cls.dataset, user=cls.user
+        )
         cls.exp.algorithms.add(cls.algo)
-        cls.exec = Execution.objects.create(experiment=cls.exp,
-                                            subspace_amount=5,
-                                            subspaces_max=3,
-                                            subspaces_min=1,
-                                            algorithm_parameters="",
-                                            status=ExecutionStatus.RUNNING.name)
+        cls.exec = Execution.objects.create(
+            experiment=cls.exp,
+            subspace_amount=5,
+            subspaces_max=3,
+            subspaces_min=1,
+            algorithm_parameters="",
+            status=ExecutionStatus.RUNNING.name,
+        )
 
     def setUp(self):
         super().setUp()
@@ -74,12 +77,14 @@ class ExecutionAdminTests(AdminLoggedInTestCase):
         self.assertContains(response, "Close")
 
     def test_execution_admin_change_view_result(self):
-        exec_with_result = Execution.objects.create(experiment=self.exp,
-                                            subspace_amount=5,
-                                            subspaces_max=3,
-                                            subspaces_min=1,
-                                            algorithm_parameters="",
-                                            status=ExecutionStatus.FINISHED.name)
+        exec_with_result = Execution.objects.create(
+            experiment=self.exp,
+            subspace_amount=5,
+            subspaces_max=3,
+            subspaces_min=1,
+            algorithm_parameters="",
+            status=ExecutionStatus.FINISHED.name,
+        )
         url = reverse("admin:experiments_execution_change", args=(exec_with_result.pk,))
         response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, 200)
@@ -119,7 +124,9 @@ class ExecutionAdminTests(AdminLoggedInTestCase):
             self.assertIsNotNone(response)
             assert isinstance(response, HttpResponseRedirect)
             self.assertEqual(response.status_code, 302)
-            self.assertEqual(response.url, reverse_lazy("admin:experiments_execution_changelist"))
+            self.assertEqual(
+                response.url, reverse_lazy("admin:experiments_execution_changelist")
+            )
 
     def test_download_execution_result_admin_post(self) -> None:
         content = "Line 1\nLine 2\nLast Line"

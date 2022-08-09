@@ -1,14 +1,13 @@
 import os
-import shutil
 
-from django.conf import settings
+import django.test
 from django.urls import reverse
 
 from experiments.models import Algorithm
-from tests.unittests.views.generic_test_cases import LoggedInTestCase
+from tests.generic import LoggedInMixin, MediaMixin
 
 
-class AlgorithmOverviewTests(LoggedInTestCase):
+class AlgorithmOverviewTests(LoggedInMixin, django.test.TestCase):
     def setUp(self) -> None:
         self.QUERYSET_NAME = "models_list"
         super().setUp()
@@ -123,18 +122,7 @@ def upload_algorithm(client, name, group, description, file_name):
         return client.post(reverse("algorithm_upload"), data=data, follow=True)
 
 
-class AlgorithmUploadViewTests(LoggedInTestCase):
-    @classmethod
-    def setUpClass(cls):
-        if os.path.exists(settings.MEDIA_ROOT):
-            shutil.rmtree(settings.MEDIA_ROOT)
-        super().setUpClass()
-
-    def tearDown(self) -> None:
-        if os.path.exists(settings.MEDIA_ROOT):
-            shutil.rmtree(settings.MEDIA_ROOT)
-        super().tearDown()
-
+class AlgorithmUploadViewTests(LoggedInMixin, MediaMixin, django.test.TestCase):
     def test_algorithm_upload_view_valid_upload(self):
         test_name = "Test Valid Algorithm"
         test_group = Algorithm.AlgorithmGroup.COMBINATION
@@ -203,7 +191,7 @@ class AlgorithmUploadViewTests(LoggedInTestCase):
         self.assertFalse(os.path.exists(f"algorithms/{self.user.pk}/" + test_file_name))
 
 
-class AlgorithmDeleteViewTests(LoggedInTestCase):
+class AlgorithmDeleteViewTests(LoggedInMixin, django.test.TestCase):
     def test_algorithm_delete_view_valid_delete(self):
         algorithm = Algorithm.objects.create(signature="")
         response = self.client.post(
@@ -224,7 +212,23 @@ class AlgorithmDeleteViewTests(LoggedInTestCase):
         self.assertTemplateUsed(response, "algorithm_overview.html")
 
 
-class AlgorithmEditViewTest(LoggedInTestCase):
+class AlgorithmEditViewTest(LoggedInMixin, django.test.TestCase):
+    def setUp(self) -> None:
+        self.name = "Original Name"
+        self.group = Algorithm.AlgorithmGroup.COMBINATION
+        self.description = "Original Description"
+        self.new_name = "New Name"
+        self.new_description = "New Description"
+        self.new_group = Algorithm.AlgorithmGroup.PROBABILISTIC
+        self.algo = Algorithm.objects.create(
+            display_name=self.name,
+            group=self.group,
+            description=self.description,
+            user=self.user,
+            signature="",
+        )
+        super().setUp()
+
     def post_algorithm_edit(
         self, algorithm_pk=None, expected_code=200, update_model=True
     ):
@@ -254,22 +258,6 @@ class AlgorithmEditViewTest(LoggedInTestCase):
         self.assertEqual(self.new_name, self.algo.display_name)
         self.assertEqual(self.new_description, self.algo.description)
         self.assertEqual(self.new_group, self.algo.group)
-
-    def setUp(self) -> None:
-        self.name = "Original Name"
-        self.group = Algorithm.AlgorithmGroup.COMBINATION
-        self.description = "Original Description"
-        self.new_name = "New Name"
-        self.new_description = "New Description"
-        self.new_group = Algorithm.AlgorithmGroup.PROBABILISTIC
-        super().setUp()
-        self.algo = Algorithm.objects.create(
-            display_name=self.name,
-            group=self.group,
-            description=self.description,
-            user=self.user,
-            signature="",
-        )
 
     def test_algorithm_edit_view_valid_edit(self):
         response = self.post_algorithm_edit()
