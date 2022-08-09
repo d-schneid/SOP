@@ -1,14 +1,15 @@
 import os
-import shutil
 
+import django.test
 from django.urls import reverse
 
 from experiments.models.dataset import Dataset, CleaningState
-from sop import settings
-from tests.unittests.views.generic_test_cases import AdminLoggedInTestCase
+from tests.generic import AdminLoggedInMixin, MediaMixin, DebugSchedulerMixin
 
 
-class DatasetAdminTests(AdminLoggedInTestCase):
+class DatasetAdminTests(
+    AdminLoggedInMixin, MediaMixin, DebugSchedulerMixin, django.test.TestCase
+):
     def setUp(self) -> None:
         super().setUp()
         self.dataset_finished = Dataset.objects.create(
@@ -17,17 +18,11 @@ class DatasetAdminTests(AdminLoggedInTestCase):
             user=self.admin,
             status=CleaningState.FINISHED.name,
         )
-        # create directory
-        if os.path.exists(settings.MEDIA_ROOT):
-            shutil.rmtree(settings.MEDIA_ROOT)
-
-    def tearDown(self) -> None:
-        if os.path.exists(settings.MEDIA_ROOT):
-            shutil.rmtree(settings.MEDIA_ROOT)
-        super().tearDown()
 
     def test_dataset_change_view(self):
-        url = reverse("admin:experiments_dataset_change", args=(self.dataset_finished.pk,))
+        url = reverse(
+            "admin:experiments_dataset_change", args=(self.dataset_finished.pk,)
+        )
         response = self.client.get(url, follow=True)
 
         self.assertEqual(response.status_code, 200)
@@ -69,19 +64,25 @@ class DatasetAdminTests(AdminLoggedInTestCase):
         assert response is not None
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.resolver_match.url_name, "experiments_dataset_changelist")
+        self.assertEqual(
+            response.resolver_match.url_name, "experiments_dataset_changelist"
+        )
         self.assertContains(response, "was added successfully")
         self.assertContains(response, data["display_name"])
 
     def test_delete_dataset(self):
-        url = reverse("admin:experiments_dataset_delete", args=(self.dataset_finished.pk,))
+        url = reverse(
+            "admin:experiments_dataset_delete", args=(self.dataset_finished.pk,)
+        )
         data = {
             "post": "yes",
         }
         response = self.client.post(url, data, follow=True)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.resolver_match.url_name, "experiments_dataset_changelist")
+        self.assertEqual(
+            response.resolver_match.url_name, "experiments_dataset_changelist"
+        )
         self.assertContains(response, "was deleted successfully")
 
     def test_delete_multiple_datasets_action(self):
@@ -89,13 +90,15 @@ class DatasetAdminTests(AdminLoggedInTestCase):
         data = {
             "action": "delete_selected",
             "_selected_action": [dataset.pk for dataset in delete_datasets],
-            "post": "yes"  # extra prompt
+            "post": "yes",  # extra prompt
         }
         url = reverse("admin:experiments_dataset_changelist")
         response = self.client.post(url, data, follow=True)
 
         self.assertEqual(200, response.status_code)
-        self.assertEqual("experiments_dataset_changelist", response.resolver_match.url_name)
+        self.assertEqual(
+            "experiments_dataset_changelist", response.resolver_match.url_name
+        )
         self.assertContains(response, "Successfully deleted")
 
     def test_add_dataset_invalid_file(self):
@@ -119,7 +122,10 @@ class DatasetAdminTests(AdminLoggedInTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual("experiments_dataset_add", response.resolver_match.url_name)
-        self.assertContains(response, "File extension “txt” is not allowed. Allowed extensions are: csv.")
+        self.assertContains(
+            response,
+            "File extension “txt” is not allowed. Allowed extensions are: csv.",
+        )
 
     def test_add_dataset_invalid_user(self):
         file_path: str = os.path.join("tests", "sample_datasets", "valid_dataset.csv")
@@ -142,6 +148,7 @@ class DatasetAdminTests(AdminLoggedInTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual("experiments_dataset_add", response.resolver_match.url_name)
-        self.assertContains(response, "Select a valid choice. That choice is not one of the available choices.")
-
-
+        self.assertContains(
+            response,
+            "Select a valid choice. That choice is not one of the available choices.",
+        )

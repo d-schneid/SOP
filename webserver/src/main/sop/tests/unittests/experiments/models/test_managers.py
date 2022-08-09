@@ -15,6 +15,7 @@ class AlgorithmQuerySetTests(django.test.TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
+        super().setUpTestData()
         cls.user1 = User.objects.create(username="1", password="pswd")
         cls.user2 = User.objects.create(username="2", password="pswd")
         cls.algo1 = Algorithm.objects.create(
@@ -97,6 +98,7 @@ class DatasetQuerySetTests(django.test.TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
+        super().setUpTestData()
         cls.user1 = User.objects.create(username="1", password="pswd")
         cls.user2 = User.objects.create(username="2", password="pswd")
         cls.dataset1 = Dataset.objects.create(user=cls.user1, display_name="A")
@@ -158,6 +160,7 @@ class ExperimentQuerySetTests(django.test.TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
+        super().setUpTestData()
         cls.user1 = User.objects.create(username="1", password="pswd")
         cls.user2 = User.objects.create(username="2", password="pswd")
         cls.dataset1 = Dataset.objects.create(user=cls.user1, display_name="D1")
@@ -218,6 +221,7 @@ class ExecutionQuerySetTests(django.test.TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
+        super().setUpTestData()
         cls.user1 = User.objects.create(username="1", password="pswd")
         cls.user2 = User.objects.create(username="2", password="pswd")
         cls.dataset1 = Dataset.objects.create(user=cls.user1, display_name="D1")

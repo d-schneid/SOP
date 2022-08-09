@@ -1,13 +1,14 @@
 import unittest
 from unittest.mock import MagicMock
 
-from django.test import TestCase
+import django.test
 
 from experiments.services.execution import get_params_out_of_form
 
 
-class ExecutionServiceTests(TestCase):
+class ExecutionServiceTests(django.test.TestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.algo1 = MagicMock()
         self.algo1.pk = 4
         self.algo1.get_signature_as_dict.return_value = {

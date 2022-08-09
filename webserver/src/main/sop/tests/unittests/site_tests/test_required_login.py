@@ -1,10 +1,12 @@
+import django.test
 from django.test import Client
 
-from tests.unittests.views.generic_test_cases import DebugSchedulerTestCase
+from tests.generic import DebugSchedulerMixin
 
 
-class UrlLoginRequiredTests(DebugSchedulerTestCase):
+class UrlLoginRequiredTests(DebugSchedulerMixin, django.test.TestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.client = Client()
 
     def test_algorithm_overview_redirect_to_login(self) -> None:

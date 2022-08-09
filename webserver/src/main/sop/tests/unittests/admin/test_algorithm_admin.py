@@ -1,3 +1,4 @@
+import django.test
 from django.contrib.admin.sites import AdminSite
 from django.urls import reverse
 
@@ -5,7 +6,7 @@ from experiments.admin.inlines import ExperimentInlineAlgorithm
 from experiments.models.algorithm import Algorithm
 from experiments.models.dataset import Dataset
 from experiments.models.experiment import Experiment
-from tests.unittests.views.generic_test_cases import AdminLoggedInTestCase
+from tests.generic import AdminLoggedInMixin
 
 
 class MockRequest:
@@ -15,7 +16,7 @@ class MockRequest:
 request = MockRequest()
 
 
-class ExperimentInlineTests(AdminLoggedInTestCase):
+class ExperimentInlineTests(AdminLoggedInMixin, django.test.TestCase):
     def setUp(self):
         super().setUp()
         request.user = self.admin
@@ -68,7 +69,7 @@ def delete_selected_algorithms(client):
     return client.post(url, data, follow=True)
 
 
-class AlgorithmAdminTests(AdminLoggedInTestCase):
+class AlgorithmAdminTests(AdminLoggedInMixin, django.test.TestCase):
     def setUp(self) -> None:
         super().setUp()
         self.algo = Algorithm.objects.create(display_name="Test Algo", signature="")
@@ -134,8 +135,9 @@ class AlgorithmAdminTests(AdminLoggedInTestCase):
         self.dataset = Dataset.objects.create(
             datapoints_total=1, dimensions_total=1, user=self.admin
         )
-        self.exp = Experiment.objects.create(display_name="Test Exp",
-                                             dataset=self.dataset, user=self.admin)
+        self.exp = Experiment.objects.create(
+            display_name="Test Exp", dataset=self.dataset, user=self.admin
+        )
         self.exp.algorithms.add(self.algo)
         self.assertTrue(Algorithm.objects.exists())
         # confirm deletion on confirmation site

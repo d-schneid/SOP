@@ -1,17 +1,15 @@
 import json
-import os
-import shutil
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 
-from django.conf import settings
+import django.test
 from django.http import HttpResponse
 from django.urls import reverse, reverse_lazy
 
 from experiments.models import Experiment, Dataset, Algorithm
-from tests.unittests.views.generic_test_cases import LoggedInTestCase
+from tests.generic import LoggedInMixin, MediaMixin
 
 
-class ExperimentOverviewTests(LoggedInTestCase):
+class ExperimentOverviewTests(LoggedInMixin, django.test.TestCase):
     def setUp(self) -> None:
         self.QUERYSET_NAME: str = "models_list"
         super().setUp()
@@ -88,43 +86,37 @@ class ExperimentOverviewTests(LoggedInTestCase):
         )
 
 
-class ExperimentCreateViewTests(LoggedInTestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        if os.path.exists(settings.MEDIA_ROOT):
-            shutil.rmtree(settings.MEDIA_ROOT)
-        super().setUpClass()
+class ExperimentCreateViewTests(LoggedInMixin, MediaMixin, django.test.TestCase):
+    name: str
+    dataset: Dataset
+    algorithms: List[Algorithm]
 
-    def setUp(self) -> None:
-        # do this before, so we have access to self.user later
-        super().setUp()
-        self.name = "Test Valid Dataset"
-        self.dataset = Dataset.objects.create(
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+
+        cls.name = "Test Valid Dataset"
+        cls.dataset = Dataset.objects.create(
             display_name="Datset Name",
             description="Dataset Description",
-            user=self.user,
+            user=cls.user,
             datapoints_total=4,
             dimensions_total=7,
         )
-        self.algorithms = [
+        cls.algorithms = [
             Algorithm.objects.create(
                 display_name="First Algorithm",
                 group=Algorithm.AlgorithmGroup.PROBABILISTIC,
-                user=self.user,
+                user=cls.user,
                 signature="",
             ),
             Algorithm.objects.create(
                 display_name="Second Algorithm",
                 group=Algorithm.AlgorithmGroup.COMBINATION,
-                user=self.user,
+                user=cls.user,
                 signature="",
             ),
         ]
-
-    def tearDown(self) -> None:
-        if os.path.exists(settings.MEDIA_ROOT):
-            shutil.rmtree(settings.MEDIA_ROOT)
-        super().tearDown()
 
     def post_experiment_creation(self) -> HttpResponse:
         data = {
@@ -167,36 +159,42 @@ class ExperimentCreateViewTests(LoggedInTestCase):
         self.assertIsNone(experiment)
 
 
-class ExperimentEditViewTests(LoggedInTestCase):
-    def setUp(self) -> None:
-        self.name = "Original Name"
-        self.new_name = "New Name"
-        super().setUp()
-        self.dataset = Dataset.objects.create(
+class ExperimentEditViewTests(LoggedInMixin, django.test.TestCase):
+    name: str
+    dataset: Dataset
+    algorithms: List[Algorithm]
+    experiment: Experiment
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.name = "Original Name"
+        cls.new_name = "New Name"
+        cls.dataset = Dataset.objects.create(
             display_name="Datset Name",
             description="Dataset Description",
-            user=self.user,
+            user=cls.user,
             datapoints_total=4,
             dimensions_total=7,
         )
-        self.algorithms = [
+        cls.algorithms = [
             Algorithm.objects.create(
                 display_name="First Algorithm",
                 group=Algorithm.AlgorithmGroup.PROBABILISTIC,
-                user=self.user,
+                user=cls.user,
                 signature="",
             ),
             Algorithm.objects.create(
                 display_name="Second Algorithm",
                 group=Algorithm.AlgorithmGroup.COMBINATION,
-                user=self.user,
+                user=cls.user,
                 signature="",
             ),
         ]
-        self.experiment = Experiment.objects.create(
-            display_name=self.name, user=self.user, dataset=self.dataset
+        cls.experiment = Experiment.objects.create(
+            display_name=cls.name, user=cls.user, dataset=cls.dataset
         )
-        self.experiment.algorithms.set(self.algorithms)
+        cls.experiment.algorithms.set(cls.algorithms)
 
     def post_experiment_edit(
         self,
@@ -251,7 +249,7 @@ class ExperimentEditViewTests(LoggedInTestCase):
         self.assertNoExperimentChange(response)
 
 
-class ExperimentDeleteViewTests(LoggedInTestCase):
+class ExperimentDeleteViewTests(LoggedInMixin, django.test.TestCase):
     def test_experiment_delete_view_valid_delete(self) -> None:
         dataset = Dataset.objects.create(
             datapoints_total=0, dimensions_total=0, user=self.user
@@ -278,7 +276,7 @@ class ExperimentDeleteViewTests(LoggedInTestCase):
         self.assertTemplateUsed(response, "experiment_overview.html")
 
 
-class ExperimentDuplicateViewTests(LoggedInTestCase):
+class ExperimentDuplicateViewTests(LoggedInMixin, django.test.TestCase):
     dataset: Dataset
     algo1: Algorithm
     algo2: Algorithm
