@@ -32,33 +32,33 @@ class Scheduler(ABC):
     @abstractmethod
     def schedule(self, to_schedule: Schedulable) -> None:
         """schedules a given Schedulable for processing"""
-        pass
+        pass  # pragma: no cover
 
     @abstractmethod
-    def abort_by_task(self, task_id: int) -> None:
+    def abort_by_task(self, task_id: int) -> None:  # pragma: no cover
         """Aborts all Tasks matching a Task id
          :raises NotImplementedError if not supported"""
         pass
 
     @abstractmethod
-    def abort_by_user(self, user_id: int) -> None:
+    def abort_by_user(self, user_id: int) -> None:  # pragma: no cover
         """Aborts all Tasks matching a User id
          :raises NotImplementedError if not supported"""
         pass
 
     @abstractmethod
-    def hard_shutdown(self) -> None:
+    def hard_shutdown(self) -> None:  # pragma: no cover
         """Terminates all work now, scheduler might not be usable after calling this"""
         pass
 
     @abstractmethod
-    def graceful_shutdown(self, on_shutdown_completed: Callable) -> None:
+    def graceful_shutdown(self, on_shutdown_completed: Callable) -> None:  # pragma: no cover
         """Waits for active Tasks to finish, no new ones are started after this
          :raises NotImplementedError if not supported"""
         pass
 
     @abstractmethod
-    def is_shutting_down(self) -> bool:
+    def is_shutting_down(self) -> bool:  # pragma: no cover
         """Returns whether a graceful shutdown is ongoing,
         false if that feature is not supported """
         pass
