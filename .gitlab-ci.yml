@@ -149,8 +149,9 @@ backend-docs:
   inherit:
     default: false
   image: python:3.9-slim-bullseye
-  needs: [ ]
-  stage: publish
+  only:
+    - main
+  stage: build
   before_script:
     - pip install pdoc
     - apt update
