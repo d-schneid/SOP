@@ -8,7 +8,7 @@ from backend.scheduler.Schedulable import Schedulable
 from backend.scheduler.Scheduler import Scheduler
 from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
 
-timeout = 1
+timeout = 60
 manager = Manager()
 
 
