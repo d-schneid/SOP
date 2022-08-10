@@ -4,6 +4,7 @@ import math
 import multiprocessing
 import sys
 import threading
+import time
 from collections import OrderedDict
 from dataclasses import dataclass, field
 from multiprocessing import Condition, Process
@@ -72,7 +73,7 @@ class UserRoundRobinScheduler(Scheduler):
             for k, v in self.__running.items():
                 if selector(k) and not v[1]:
                     try:
-                        v[0].terminate()
+                        v[0].kill()
                     except AttributeError:
                         # Has just stopped, ignore
                         pass
@@ -85,7 +86,7 @@ class UserRoundRobinScheduler(Scheduler):
                 if not v[1]:
                     self.__running[k] = (v[0], True)
                     try:
-                        v[0].terminate()
+                        v[0].kill()
                     except AttributeError:
                         # Has just stopped, ignore
                         pass
@@ -132,6 +133,9 @@ class UserRoundRobinScheduler(Scheduler):
         while not self.__shutdown_ongoing:
             with self.__empty_queue:
                 next_sched = self.__get_next_schedulable()
+                if self.__shutdown_ongoing:
+                    self.__handle_shutdown()
+                    return
                 while next_sched is None:
                     self.__empty_queue.wait()
                     next_sched = self.__get_next_schedulable()

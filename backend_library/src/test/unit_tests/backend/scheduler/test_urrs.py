@@ -1,5 +1,5 @@
 import multiprocessing
-import time
+import threading
 import unittest
 from multiprocessing import Manager
 from typing import Optional
@@ -7,6 +7,9 @@ from typing import Optional
 from backend.scheduler.Schedulable import Schedulable
 from backend.scheduler.Scheduler import Scheduler
 from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
+
+timeout = 1
+manager = Manager()
 
 
 class UserRoundRobinSchedulerMock(UserRoundRobinScheduler):
@@ -18,13 +21,11 @@ class UserRoundRobinSchedulerMock(UserRoundRobinScheduler):
         return self._UserRoundRobinScheduler__get_next_schedulable()
 
 
-class UnitTestUrrs(unittest.TestCase):
-
-    def tearDown(self) -> None:
-        Scheduler.get_instance().hard_shutdown()
-
-    def test_priority(self):
+class PriorityTests(unittest.TestCase):
+    def setUp(self) -> None:
         Scheduler._instance = None
+
+    def test_priority1(self):
         sched = UserRoundRobinSchedulerMock()
         self.assertEqual(None, sched.next_sched())  # add assertion here
         a = TestSched(-1, -1, 1)
@@ -38,73 +39,88 @@ class UnitTestUrrs(unittest.TestCase):
         self.assertEqual(b, sched.next_sched())
         self.assertEqual(None, sched.next_sched())
 
+    def test_priority2(self):
+        sched = UserRoundRobinSchedulerMock()
+
         sched.schedule(TestSched(0, -1, 2))
         sched.schedule(TestSched(0, -1, 2))
         sched.schedule(TestSched(1, -1, 2))
         sched.schedule(TestSched(1, -1, 2))
         self.assertNotEqual(sched.next_sched().user_id, sched.next_sched().user_id)
 
-    def test_exec(self):
-        import os
-        margin = 5
-        if os.environ.get("IS_EXECUTING_IN_CI") == "1":
-            print("detected CI, will allow more slack for scheduler testing!")
-            margin = 20
-        timeout = margin * 3
-        manager = Manager()
-        tr = multiprocessing.Event()
+    def tearDown(self) -> None:
+        Scheduler.get_instance().hard_shutdown()
         Scheduler._instance = None
+
+
+class UnitTestUrrs(unittest.TestCase):
+    def setUp(self) -> None:
+        Scheduler._instance = None
+
+    def tearDown(self) -> None:
+        Scheduler.get_instance().hard_shutdown()
+        Scheduler._instance = None
+
+    def test_exec(self):
         urrs = UserRoundRobinScheduler()
+        tr = multiprocessing.Event()
+
         urrs.schedule(TestSched(-1, -1, 0, None, tr))
         self.assertTrue(tr.wait(timeout))
-
         tr4 = multiprocessing.Event()
         tbc5 = manager.Value('b', False)
-        urrs.schedule(TestSched(-1, 0, 0, None, tr4, 1))
-        urrs.schedule(TestSched(-1, 1, 0, tbc5, None, 1 + margin))
-        urrs.abort_by_task(1)
+        wait_for_subprocesses = multiprocessing.Event()
+        wait_for_main = multiprocessing.Lock()
+        with wait_for_main:
+            urrs.schedule(TestSched(-1, 0, 0, None, tr4, wait_for_subprocesses, wait_for_main))
+            urrs.schedule(TestSched(-1, 1, 0, tbc5, None, wait_for_subprocesses, wait_for_main))
+            wait_for_subprocesses.wait(timeout)
+            urrs.abort_by_task(1)
         self.assertTrue(tr4.wait(timeout))
-        time.sleep(1 + margin)
         self.assertFalse(tbc5.value)
 
+    def test_exec2(self):
+        urrs = UserRoundRobinScheduler()
         tr6 = multiprocessing.Event()
         tbc7 = manager.Value('b', False)
-        for _ in range(multiprocessing.cpu_count()):
-            urrs.schedule(TestSched(0, -1, 0, None, tr6, 1))
-            urrs.schedule(TestSched(1, -1, 0, tbc7, None, 1 + margin))
-        urrs.abort_by_user(1)
+        wait_for_subprocesses = multiprocessing.Event()
+        wait_for_main = multiprocessing.Lock()
+        with wait_for_main:
+            for _ in range(multiprocessing.cpu_count()):
+                urrs.schedule(TestSched(0, -1, 0, None, tr6, wait_for_subprocesses, wait_for_main))
+                urrs.schedule(TestSched(1, -1, 0, tbc7, None, wait_for_subprocesses, wait_for_main))
+            wait_for_subprocesses.wait(timeout)
+            urrs.abort_by_user(1)
         self.assertTrue(tr6.wait(timeout))
-        time.sleep(1 + margin)
         self.assertFalse(tbc7.value)
 
+    def test_exec3(self):
+        urrs = UserRoundRobinScheduler()
         tbc2 = multiprocessing.Event()
         tbc3 = multiprocessing.Event()
-        urrs.schedule(TestSched(-1, -1, 0, None, tbc2, 2 * margin))
-        time.sleep(margin)
-        urrs.graceful_shutdown(lambda: tbc3.set())
+        wait_for_subprocesses = multiprocessing.Event()
+        wait_for_main = multiprocessing.Lock()
+        with wait_for_main:
+            urrs.schedule(TestSched(-1, -1, 0, None, tbc2, wait_for_subprocesses, wait_for_main))
+            wait_for_subprocesses.wait(timeout)
+            urrs.graceful_shutdown(lambda: tbc3.set())
         self.assertTrue(tbc2.wait(timeout))
         self.assertTrue(tbc3.wait(timeout))
         self.assertTrue(urrs.is_shutting_down())
-
-    def test_get_instance(self):
-        Scheduler._instance = None
-        urrs = UserRoundRobinScheduler()
-        urrs = Scheduler.get_instance()
-        self.assertEqual(UserRoundRobinScheduler, urrs.__class__)
-        self.assertEqual(urrs, UserRoundRobinScheduler.get_instance())
 
 if __name__ == '__main__':
     unittest.main()
 
 
 class TestSched(Schedulable):
-    def __init__(self, uid, tid, prio, tbc=None, tr=None, sleep_dur=0):
+    def __init__(self, uid, tid, prio, tbc=None, tr=None, set_before: multiprocessing.Event = None, wait_for=None):
         self.uid = uid
         self.tid = tid
         self.prio = prio
         self.tbc = tbc
         self.tr = tr
-        self.slp_dur = sleep_dur
+        self.set_before: multiprocessing.Event = set_before
+        self.wait_for: threading.Lock = wait_for
 
     @property
     def user_id(self) -> int:
@@ -119,7 +135,11 @@ class TestSched(Schedulable):
         return self.prio
 
     def do_work(self) -> None:
-        time.sleep(self.slp_dur)
+        if self.set_before is not None:
+            self.set_before.set()
+        if self.wait_for is not None:
+            self.wait_for.acquire(True, timeout)
+            self.wait_for.release()
         if self.tbc is not None:
             self.tbc.set(True)
         if self.tr is not None:
