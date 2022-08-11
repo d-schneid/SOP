@@ -269,7 +269,7 @@ class Execution(JsonSerializable, Task, Schedulable):
 
         shared_data[:] = data[:]
         rownrs_shared_data[:] = dataset.row_mapping[:]
-        if (type(multiprocessing.current_process()) == multiprocessing.Process):
+        if type(multiprocessing.current_process()) == multiprocessing.Process:
             shm.close()
             rownrs_shm.close()
 
@@ -329,7 +329,7 @@ class Execution(JsonSerializable, Task, Schedulable):
         scheduler: Scheduler = Scheduler.get_instance()
         scheduler.schedule(result_zipper)
 
-    def run_later_on_main(self, statuscode: int):
+    def run_later_on_main(self, statuscode: Optional[int]):
         self._row_numbers = np.copy(self._rownrs_on_main)
         self._rownrs_shm_on_main.close()
         self._rownrs_shm_on_main.unlink()

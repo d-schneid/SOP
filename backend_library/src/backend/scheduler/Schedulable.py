@@ -47,7 +47,7 @@ class Schedulable(ABC):
         """
         return None
 
-    def run_later_on_main(self, statuscode: int) -> None:
+    def run_later_on_main(self, statuscode: Optional[int]) -> None:
         """
         Executed after do_work finished on the main Process.
         This method may or may not be executed on an extra thread of the main Process.
@@ -55,5 +55,6 @@ class Schedulable(ABC):
          depending on the python implementation,
           only the last 8/16/32 bit might be transferred.
          If do_work returned None no assumptions about this parameter are to be made
+         This method receives None as input iff the Task was aborted
         """
         return None

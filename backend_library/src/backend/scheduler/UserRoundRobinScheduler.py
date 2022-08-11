@@ -4,7 +4,6 @@ import math
 import multiprocessing
 import sys
 import threading
-import time
 from collections import OrderedDict
 from dataclasses import dataclass, field
 from multiprocessing import Condition, Process
@@ -48,7 +47,7 @@ class UserRoundRobinScheduler(Scheduler):
         """Creates a new supervisor thread"""
         t = Thread(
             target=UserRoundRobinScheduler.__thread_main,
-            args=(self,))
+            args=(self,), daemon=True)
         self.__threads.append(t)
         t.start()
 
@@ -147,6 +146,13 @@ class UserRoundRobinScheduler(Scheduler):
                 self.__running[next_sched] = (p, False)
             next_sched.run_before_on_main()
             with self.__empty_queue:
+                if self.__shutdown_ongoing:
+                    next_sched.run_later_on_main(None)
+                    self.__handle_shutdown()
+                    return
+                if self.__running[next_sched][1]:
+                    next_sched.run_later_on_main(None)
+                    continue
                 p.start()
             p.join()
             if not self.__running[next_sched][1]:

@@ -137,7 +137,7 @@ class ExecutionSubspace(Schedulable):
         self._subspace_shared_memory_on_main.close()
         self._subspace_shared_memory_name = None
 
-    def run_later_on_main(self, statuscode: int) -> None:
+    def run_later_on_main(self, statuscode: Optional[int]) -> None:
         self.__generate_execution_elements(self._algorithms)
         for ee in self._execution_elements:
             Scheduler.get_instance().schedule(ee)

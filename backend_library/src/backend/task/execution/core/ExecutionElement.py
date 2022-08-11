@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from multiprocessing.shared_memory import SharedMemory
-from typing import Callable
+from typing import Callable, Optional
 
 import numpy as np
 
