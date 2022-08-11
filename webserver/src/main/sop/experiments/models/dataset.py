@@ -90,9 +90,15 @@ class Dataset(models.Model):
     @property
     def get_error_message(self) -> str:
         assert self.has_error is True
+
         error_file_path: str = self.path_cleaned.path + ".error"
-        with open(error_file_path, "r") as file:
-            return file.read()
+
+        # check, if error file exists / is accessible
+        if os.path.isfile(error_file_path):
+            with open(error_file_path, "r") as file:
+                return file.read()
+        else:
+            return "Internal Error: The error message could not be read."
 
     @property
     def get_representation(self) -> str:
