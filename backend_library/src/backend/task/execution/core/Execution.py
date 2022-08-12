@@ -335,13 +335,14 @@ class Execution(JsonSerializable, Task, Schedulable):
 
     def run_later_on_main(self, statuscode: Optional[int]):
         self._row_numbers = np.copy(self._rownrs_on_main)
-        self._rownrs_shm_on_main.close()
-        self._rownrs_shm_on_main.unlink()
-        self._rownrs_shm_name = None
-        self._rownrs_on_main = None
-        self._rownrs_shm_on_main = None
+        if self._rownrs_shm_name is not None:
+            self._rownrs_shm_on_main.close()
+            self._rownrs_shm_on_main.unlink()
+            self._rownrs_shm_name = None
+            self._rownrs_on_main = None
+            self._rownrs_shm_on_main = None
         if statuscode is None:
-            self.__unload_dataset()
+            self.__unload_dataset(True)
         else:
             self.__generate_execution_subspaces()
             for ess in self._execution_subspaces:

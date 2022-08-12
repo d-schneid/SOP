@@ -65,14 +65,17 @@ class UserRoundRobinScheduler(Scheduler):
                 while i < len(q):
                     if selector(q[i].schedulable):
                         # there is no way to delete nicely from python heapqs
+                        q[i].schedulable.run_later_on_main(None)
                         q[i] = q[-1]
                         q.pop()
+                        heapq.heapify(q)
                     else:
                         i = i + 1
             for k, v in self.__running.items():
                 if selector(k) and not v[1]:
                     try:
                         v[0].kill()
+                        k.run_later_on_main(None)
                     except AttributeError:
                         # Has just stopped, ignore
                         pass
@@ -80,16 +83,8 @@ class UserRoundRobinScheduler(Scheduler):
     def hard_shutdown(self) -> None:
         self.__on_shutdown_completed = None
         self.__shutdown_ongoing = True
-        with self.__empty_queue:
-            for k, v in self.__running.items():
-                if not v[1]:
-                    self.__running[k] = (v[0], True)
-                    try:
-                        v[0].kill()
-                    except AttributeError:
-                        # Has just stopped, ignore
-                        pass
-            self.__empty_queue.notify_all()
+        self.__abort(lambda _: True)
+        self.__empty_queue.notify_all()
 
     def graceful_shutdown(self,
                           on_shutdown_completed: Optional[Callable] = None) -> None:
