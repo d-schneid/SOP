@@ -12,7 +12,7 @@ import numpy as np
 from backend.scheduler.Schedulable import Schedulable
 from backend.scheduler.Scheduler import Scheduler
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
-from backend.task.execution.core import ExecutionElement
+from backend.task.execution.core.ExecutionElement import ExecutionElement
 from backend.task.execution.subspace.Subspace import Subspace
 
 
@@ -24,7 +24,7 @@ class ExecutionSubspace(Schedulable):
     def __init__(self, user_id: int, task_id: int,
                  algorithms: Iterable[ParameterizedAlgorithm], subspace: Subspace,
                  result_path: str, ds_on_main: np.ndarray,
-                 on_execution_element_finished_callback: Callable[[bool], None],
+                 on_execution_element_finished_callback: Callable[[bool, bool], None],
                  ds_shm_name: str, row_numbers: np.ndarray, priority: int = 5):
         """
         :param ds_shm_name: name of the shared emory segment containing the full dataset
@@ -53,7 +53,7 @@ class ExecutionSubspace(Schedulable):
         self._algorithms: list[ParameterizedAlgorithm] = list(algorithms)
         self._result_path: str = result_path
         self._ds_on_main: np.ndarray = ds_on_main
-        self._on_execution_element_finished_callback: Callable[[bool], None] = \
+        self._on_execution_element_finished_callback: Callable[[bool, bool], None] = \
             on_execution_element_finished_callback
         self._priority = priority
         self._row_numbers = row_numbers
@@ -83,12 +83,9 @@ class ExecutionSubspace(Schedulable):
                 self._subspace.get_subspace_identifier() + ".csv")  # TODO: TEST THIS!
 
             self._execution_elements.append(
-                ExecutionElement.ExecutionElement(self._user_id, self._task_id,
-                                                  self._subspace, algorithm,
-                                                  result_path, self._ds_on_main.dtype,
-                                                  self._subspace_shared_memory_name,
-                                                  self.__execution_element_is_finished,
-                                                  self._ds_on_main.shape[0], self._row_numbers))
+                ExecutionElement(self._user_id, self._task_id, self._subspace, algorithm, result_path,
+                                 self._ds_on_main.dtype, self._subspace_shared_memory_name,
+                                 self.__execution_element_is_finished, self._ds_on_main.shape[0], self._row_numbers))
 
     def __schedule_execution_elements(self) -> None:
         """
@@ -112,35 +109,41 @@ class ExecutionSubspace(Schedulable):
         self._subspace.make_subspace_array(ds_arr, ss_shm)
         return ss_shm
 
-    def __execution_element_is_finished(self, error_occurred: bool) -> None:
+    def __execution_element_is_finished(self, error_occurred: bool, aborted: bool = False) -> None:
         """
         The ExecutionSubspace gets notified by an ExecutionElement when it finishes by calling this method. \n
         Passes the notification on to the Execution. \n
         :param error_occurred: True if the ExecutionElement finished with an error. Is otherwise False.
         :return: None
         """
-        if self._finished_execution_element_count < self._total_execution_element_count:
+        if not aborted:
+            assert self._finished_execution_element_count < self._total_execution_element_count, \
+                "More execution elements finished than existing"
             self._finished_execution_element_count += 1
             if self._finished_execution_element_count >= self._total_execution_element_count:
                 self.__unload_subspace_shared_memory()
         else:
-            raise AssertionError("More execution elements finished than existing")
-        self._on_execution_element_finished_callback(error_occurred)
+            self.__unload_subspace_shared_memory(True)
+        self._on_execution_element_finished_callback(error_occurred, aborted)
 
-    def __unload_subspace_shared_memory(self) -> None:
+    def __unload_subspace_shared_memory(self, ignore_if_done: bool = False) -> None:
         """
         Unlinks the dataset from the subspace from shared_memory. \n
         :return: None
         """
-        assert self._subspace_shared_memory_name is not None
-        self._subspace_shared_memory_on_main.unlink()
-        self._subspace_shared_memory_on_main.close()
-        self._subspace_shared_memory_name = None
+        assert ignore_if_done or self._subspace_shared_memory_name is not None
+        if self._subspace_shared_memory_name is not None:
+            self._subspace_shared_memory_on_main.unlink()
+            self._subspace_shared_memory_on_main.close()
+            self._subspace_shared_memory_name = None
 
-    def run_later_on_main(self, statuscode: int) -> None:
-        self.__generate_execution_elements(self._algorithms)
-        for ee in self._execution_elements:
-            Scheduler.get_instance().schedule(ee)
+    def run_later_on_main(self, statuscode: Optional[int]) -> None:
+        if statuscode is None:
+            self._on_execution_element_finished_callback(False, True)
+        else:
+            self.__generate_execution_elements(self._algorithms)
+            for ee in self._execution_elements:
+                Scheduler.get_instance().schedule(ee)
 
     def run_before_on_main(self) -> None:
         size = self._subspace.get_size_of_subspace_buffer(self._ds_on_main)

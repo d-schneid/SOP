@@ -4,7 +4,6 @@ import math
 import multiprocessing
 import sys
 import threading
-import time
 from collections import OrderedDict
 from dataclasses import dataclass, field
 from multiprocessing import Condition, Process
@@ -48,7 +47,7 @@ class UserRoundRobinScheduler(Scheduler):
         """Creates a new supervisor thread"""
         t = Thread(
             target=UserRoundRobinScheduler.__thread_main,
-            args=(self,))
+            args=(self,), daemon=True)
         self.__threads.append(t)
         t.start()
 
@@ -66,30 +65,26 @@ class UserRoundRobinScheduler(Scheduler):
                 while i < len(q):
                     if selector(q[i].schedulable):
                         # there is no way to delete nicely from python heapqs
+                        q[i].schedulable.run_later_on_main(None)
                         q[i] = q[-1]
                         q.pop()
+                        heapq.heapify(q)
                     else:
                         i = i + 1
             for k, v in self.__running.items():
                 if selector(k) and not v[1]:
                     try:
                         v[0].kill()
+                        k.run_later_on_main(None)
                     except AttributeError:
                         # Has just stopped, ignore
                         pass
 
     def hard_shutdown(self) -> None:
-        self.__on_shutdown_completed = None
-        self.__shutdown_ongoing = True
         with self.__empty_queue:
-            for k, v in self.__running.items():
-                if not v[1]:
-                    self.__running[k] = (v[0], True)
-                    try:
-                        v[0].kill()
-                    except AttributeError:
-                        # Has just stopped, ignore
-                        pass
+            self.__on_shutdown_completed = None
+            self.__shutdown_ongoing = True
+            self.__abort(lambda _: True)
             self.__empty_queue.notify_all()
 
     def graceful_shutdown(self,
@@ -147,6 +142,13 @@ class UserRoundRobinScheduler(Scheduler):
                 self.__running[next_sched] = (p, False)
             next_sched.run_before_on_main()
             with self.__empty_queue:
+                if self.__shutdown_ongoing:
+                    next_sched.run_later_on_main(None)
+                    self.__handle_shutdown()
+                    return
+                if self.__running[next_sched][1]:
+                    next_sched.run_later_on_main(None)
+                    continue
                 p.start()
             p.join()
             if not self.__running[next_sched][1]:
