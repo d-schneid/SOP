@@ -122,8 +122,8 @@ class ExecutionSubspace(Schedulable):
             self._finished_execution_element_count += 1
             if self._finished_execution_element_count >= self._total_execution_element_count:
                 self.__unload_subspace_shared_memory()
-            else:
-                self.__unload_subspace_shared_memory(True)
+        else:
+            self.__unload_subspace_shared_memory(True)
         self._on_execution_element_finished_callback(error_occurred, aborted)
 
     def __unload_subspace_shared_memory(self, ignore_if_done: bool = False) -> None:
