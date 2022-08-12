@@ -83,7 +83,7 @@ class UnitTestExecutionSubspace(unittest.TestCase):
     def __on_execution_element_finished(self, error: bool) -> None:
         pass
 
-    def __on_execution_element_finished1(self, error: bool) -> None:
+    def __on_execution_element_finished1(self, error: bool, aborted: bool = False) -> None:
         self._execution_elements_finished1 += 1
 
     def test_dont_create_execution_element_with_wrong_user_id_or_task_id(self):

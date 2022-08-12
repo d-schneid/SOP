@@ -81,10 +81,11 @@ class UserRoundRobinScheduler(Scheduler):
                         pass
 
     def hard_shutdown(self) -> None:
-        self.__on_shutdown_completed = None
-        self.__shutdown_ongoing = True
-        self.__abort(lambda _: True)
-        self.__empty_queue.notify_all()
+        with self.__empty_queue:
+            self.__on_shutdown_completed = None
+            self.__shutdown_ongoing = True
+            self.__abort(lambda _: True)
+            self.__empty_queue.notify_all()
 
     def graceful_shutdown(self,
                           on_shutdown_completed: Optional[Callable] = None) -> None:

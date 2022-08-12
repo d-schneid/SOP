@@ -52,7 +52,7 @@ class UnitTestExecutionElement(unittest.TestCase):
     def __get_subspace_data_for_processing_callback(self) -> SharedMemory:
         pass
 
-    def __execution_element_is_finished1(self, error_occurred: bool) -> None:
+    def __execution_element_is_finished1(self, error_occurred: bool, aborted: bool = False) -> None:
         self._ee1_is_finished = True
 
     def __execution_element_is_finished(self, error_occurred: bool) -> None:
