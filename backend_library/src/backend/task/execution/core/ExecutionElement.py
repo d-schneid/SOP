@@ -23,7 +23,7 @@ class ExecutionElement(Schedulable):
     def __init__(self, user_id: int, task_id: int, subspace: Subspace,
                  algorithm: ParameterizedAlgorithm, result_path: str,
                  subspace_dtype: np.dtype, ss_shm_name: str,
-                 execution_element_is_finished: Callable[[bool], None],
+                 execution_element_is_finished: Callable[[bool, bool], None],
                  datapoint_count: int, row_numbers: np.ndarray, priority: int = 10):
         """
         :param user_id: The ID of the user belonging to this ExecutionElement. Has to be at least -1.
@@ -137,5 +137,5 @@ class ExecutionElement(Schedulable):
         rows_data = np.concatenate((rows, data), 1)
         return rows_data
 
-    def run_later_on_main(self, statuscode: int) -> None:
-        self._execution_element_is_finished(statuscode != 0)
+    def run_later_on_main(self, statuscode: Optional[int]) -> None:
+        self._execution_element_is_finished(statuscode != 0, statuscode is None)

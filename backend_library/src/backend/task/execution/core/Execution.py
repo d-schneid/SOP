@@ -142,7 +142,7 @@ class Execution(JsonSerializable, Task, Schedulable):
                 algorithm_display_name_dict[algorithm.display_name] = 1
             else:
                 algorithm.directory_name_in_execution = display_name + " (" \
-                                + str(algorithm_display_name_dict[display_name]) + ")"
+                                                        + str(algorithm_display_name_dict[display_name]) + ")"
                 algorithm_display_name_dict[algorithm.display_name] += 1
 
     # Generates all missing folders of the file system structure of this execution
@@ -273,7 +273,7 @@ class Execution(JsonSerializable, Task, Schedulable):
             shm.close()
             rownrs_shm.close()
 
-    def __on_execution_element_finished(self, error: bool) -> None:
+    def __on_execution_element_finished(self, error: bool, aborted: bool = False) -> None:
         """
         The Execution gets notified by the corresponding ExecutionSubspace
         when an ExecutionElement finished by calling this method. \n
@@ -281,22 +281,25 @@ class Execution(JsonSerializable, Task, Schedulable):
         Is otherwise False.
         :return: None
         """
-        if not self._has_failed_element and error:
-            self._has_failed_element = True
-        assert self._finished_execution_element_count < \
-               self._total_execution_element_count, \
-            "More execution elements finished than existing"
+        if not aborted:
+            if not self._has_failed_element and error:
+                self._has_failed_element = True
+            assert self._finished_execution_element_count < \
+                   self._total_execution_element_count, \
+                "More execution elements finished than existing"
 
-        with self._execution_element_finished_lock:
-            self._finished_execution_element_count += 1
-            self.__run_progress_callback()
-            if self._finished_execution_element_count == \
-                    self._total_execution_element_count:
-                self.__unload_dataset()
-                self._metric_callback(self)
-                self._metric_finished = True
+            with self._execution_element_finished_lock:
+                self._finished_execution_element_count += 1
                 self.__run_progress_callback()
-                self.__schedule_result_zipping()
+                if self._finished_execution_element_count == \
+                        self._total_execution_element_count:
+                    self.__unload_dataset()
+                    self._metric_callback(self)
+                    self._metric_finished = True
+                    self.__run_progress_callback()
+                    self.__schedule_result_zipping()
+        else:
+            self.__unload_dataset(True)
 
     def __run_progress_callback(self):
         """Executes the task progress callback with the appropriate parameters"""
@@ -304,16 +307,17 @@ class Execution(JsonSerializable, Task, Schedulable):
             TaskState.RUNNING
         self._task_progress_callback(self.task_id, state, self.__compute_progress())
 
-    def __unload_dataset(self) -> None:
+    def __unload_dataset(self, ignore_if_done: bool = False) -> None:
         """
         Unloads the cleaned dataset from shared_memory. \n
         :return: None
         """
-        assert self._shared_memory_name is not None, \
+        assert ignore_if_done or self._shared_memory_name is not None, \
             "If there is no shared memory currently loaded it can not be unloaded"
-        self._shared_memory_on_main.unlink()
-        self._shared_memory_on_main.close()
-        self._shared_memory_name = None
+        if self._shared_memory_name is not None:
+            self._shared_memory_on_main.unlink()
+            self._shared_memory_on_main.close()
+            self._shared_memory_name = None
 
     def __schedule_result_zipping(self) -> None:
         """
@@ -336,9 +340,12 @@ class Execution(JsonSerializable, Task, Schedulable):
         self._rownrs_shm_name = None
         self._rownrs_on_main = None
         self._rownrs_shm_on_main = None
-        self.__generate_execution_subspaces()
-        for ess in self._execution_subspaces:
-            Scheduler.get_instance().schedule(ess)
+        if statuscode is None:
+            self.__unload_dataset()
+        else:
+            self.__generate_execution_subspaces()
+            for ess in self._execution_subspaces:
+                Scheduler.get_instance().schedule(ess)
 
     # Schedulable
     def do_work(self) -> None:
