@@ -12,7 +12,7 @@ import numpy as np
 from backend.scheduler.Schedulable import Schedulable
 from backend.scheduler.Scheduler import Scheduler
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
-from backend.task.execution.core import ExecutionElement
+from backend.task.execution.core.ExecutionElement import ExecutionElement
 from backend.task.execution.subspace.Subspace import Subspace
 
 
@@ -83,12 +83,9 @@ class ExecutionSubspace(Schedulable):
                 self._subspace.get_subspace_identifier() + ".csv")  # TODO: TEST THIS!
 
             self._execution_elements.append(
-                ExecutionElement.ExecutionElement(self._user_id, self._task_id,
-                                                  self._subspace, algorithm,
-                                                  result_path, self._ds_on_main.dtype,
-                                                  self._subspace_shared_memory_name,
-                                                  self.__execution_element_is_finished,
-                                                  self._ds_on_main.shape[0], self._row_numbers))
+                ExecutionElement(self._user_id, self._task_id, self._subspace, algorithm, result_path,
+                                 self._ds_on_main.dtype, self._subspace_shared_memory_name,
+                                 self.__execution_element_is_finished, self._ds_on_main.shape[0], self._row_numbers))
 
     def __schedule_execution_elements(self) -> None:
         """
@@ -123,11 +120,11 @@ class ExecutionSubspace(Schedulable):
             self._finished_execution_element_count += 1
             if self._finished_execution_element_count >= self._total_execution_element_count:
                 self.__unload_subspace_shared_memory()
-        else:
-            raise AssertionError("More execution elements finished than existing")
-        self._on_execution_element_finished_callback(error_occurred)
+            else:
+                self.__unload_subspace_shared_memory(True)
+        self._on_execution_element_finished_callback(error_occurred, aborted)
 
-    def __unload_subspace_shared_memory(self) -> None:
+    def __unload_subspace_shared_memory(self, ignore_if_done: bool = False) -> None:
         """
         Unlinks the dataset from the subspace from shared_memory. \n
         :return: None
