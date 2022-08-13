@@ -170,10 +170,11 @@ backend-docs:
 deploy-docs:
   inherit:
     default: false
-  image: alpine
+  image: debian:latest
   stage: deploy
   before_script:
-    - apk add --no-cache openssh
+    - apt -y update
+    - apt -y install openssh-client
   script:
     - chmod og= $ID_RSA
     - >-
