@@ -36,8 +36,8 @@ stages:
   - deploy
 
 variables:
-  DOCKER_DRIVER: overlay2
   # DJANGO_CONFIG: "test"
+  DOCKER_DRIVER: overlay2
   MYSQL_DATABASE: "db_name"
   MYSQL_ROOT_PASSWORD: "dbpass"
   MYSQL_USER: "username"
@@ -173,20 +173,15 @@ deploy-docs:
   image: debian:latest
   needs: [ ]
   stage: deploy
-  tags:
-    - deployment
   before_script:
     - apt -y update
     - apt -y install openssh-client
   script:
-    - echo $ID_RSA_VAR > ~/id_rsa
-    - cat ~/id_rsa
-    - echo $SERVER_USER
+    - chmod og= $ID_RSA
     - echo "Pulling docs..."
-    - ssh -i ~/id_rsa -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "echo $HOSTNAME"
     - >-
-      ssh -i ~/id_rsa -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP curl --location --output ~/sop-docs/backend-docs.zip --header 'JOB-TOKEN: $CI_JOB_TOKEN' 'https://git.scc.kit.edu/api/v4/projects/$CI_PROJECT_ID/jobs/artifacts/main/raw/public/backend-docs.zip?job=backend-docs'
-    - ssh -i ~/id_rsa -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "./deploy-docs.sh"
+      ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "curl --location --output ~/sop-docs/backend-docs.zip --header 'JOB-TOKEN: $CI_JOB_TOKEN' 'https://git.scc.kit.edu/api/v4/projects/$CI_PROJECT_ID/jobs/artifacts/main/raw/public/backend-docs.zip?job=backend-docs'"
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "./deploy-docs.sh"
 
 
 publish-build:
