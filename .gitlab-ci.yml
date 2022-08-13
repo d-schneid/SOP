@@ -171,11 +171,13 @@ deploy-docs:
   inherit:
     default: false
   image: debian:latest
+  needs: [ ]
   stage: deploy
   before_script:
     - apt -y update
     - apt -y install openssh-client
   script:
+    - cat $ID_RSA
     - chmod og= $ID_RSA
     - echo "Pulling docs..."
     - >-
