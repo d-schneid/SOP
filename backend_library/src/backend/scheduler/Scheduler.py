@@ -30,20 +30,23 @@ class Scheduler(ABC):
         return Scheduler._instance
 
     @abstractmethod
-    def schedule(self, to_schedule: Schedulable) -> None:
+    def schedule(self, to_schedule: Schedulable) -> None:  # pragma: no cover
         """schedules a given Schedulable for processing"""
-        pass  # pragma: no cover
+        pass
 
     @abstractmethod
     def abort_by_task(self, task_id: int) -> None:  # pragma: no cover
-        """Aborts all Tasks matching a Task id
-         :raises NotImplementedError if not supported"""
+        """Aborts all Tasks matching a Task id.
+        Aborts do not happen whilst running run_before_on_main or run_later_on_main.
+        :raises NotImplementedError if not supported
+        :raises Value error optionally if -1 is provided as task_id"""
         pass
 
     @abstractmethod
     def abort_by_user(self, user_id: int) -> None:  # pragma: no cover
         """Aborts all Tasks matching a User id
-         :raises NotImplementedError if not supported"""
+         :raises NotImplementedError if not supported
+         :raises Value error optionally if -1 is provided as user_id"""
         pass
 
     @abstractmethod
@@ -53,8 +56,10 @@ class Scheduler(ABC):
 
     @abstractmethod
     def graceful_shutdown(self, on_shutdown_completed: Callable) -> None:  # pragma: no cover
-        """Waits for active Tasks to finish, no new ones are started after this
-         :raises NotImplementedError if not supported"""
+        """Waits for active Tasks to finish, no new ones are started after this.
+        If called after a tasks run_before_on_main started but before do_work started,
+        the task may or may not be aborted.
+        :raises NotImplementedError if not supported"""
         pass
 
     @abstractmethod
