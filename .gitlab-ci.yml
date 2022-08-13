@@ -151,11 +151,10 @@ backend-docs:
   only:
     - main
   stage: build
-  before_script:
+  script:
     - pip install pdoc
     - apt update
     - apt -y install zip
-  script:
     - which python3.9
     - cd backend_library/src
     - python3.9 -m pdoc ./backend -o docs
