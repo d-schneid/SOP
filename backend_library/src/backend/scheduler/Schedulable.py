@@ -12,14 +12,17 @@ class Schedulable(ABC):
     @abstractmethod
     def user_id(self) -> int:
         """The id of the user this Schedulable belongs to, has to be >=-1,
-         where -1 indicates that the Schedulable belongs to no user"""
+         where -1 indicates that the Schedulable belongs to no user.
+         The user id of a Schedulable must not change after scheduling"""
         pass
 
     @property
     @abstractmethod
     def task_id(self) -> int:
         """The id of the task this Schedulable belongs to, has to be >=-1,
-         where -1 indicates that the Schedulable belongs to no task"""
+         where -1 indicates that the Schedulable belongs to no task.
+        Two Schedulables with the same taskid != -1 must have the same user id.
+        The task id of a Schedulable must not change after scheduling."""
         pass
 
     @property
@@ -43,6 +46,8 @@ class Schedulable(ABC):
         a) on the main thread
         b) on an extra thread of the main process
         c) in an extra process, if created after run_before_on_main using fork
+
+        May be stopped by abort calls.
         :return: Optionally an integer status provided to the run_later_on_main function
         """
         return None
@@ -52,9 +57,9 @@ class Schedulable(ABC):
         Executed after do_work finished on the main Process.
         This method may or may not be executed on an extra thread of the main Process.
         :param statuscode: The statuscode provided by do_work,
-         depending on the python implementation,
-          only the last 8/16/32 bit might be transferred.
-         If do_work returned None no assumptions about this parameter are to be made
-         This method receives None as input iff the Task was aborted
+        depending on the python implementation,
+        only the last 8/16/32 bit might be transferred.
+        If do_work returned None no assumptions about this parameter are to be made.
+        This method receives None as input iff the Task was aborted.
         """
         return None
