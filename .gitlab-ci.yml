@@ -36,6 +36,7 @@ stages:
   - deploy
 
 variables:
+  DOCKER_DRIVER: overlay2
   # DJANGO_CONFIG: "test"
   MYSQL_DATABASE: "db_name"
   MYSQL_ROOT_PASSWORD: "dbpass"
@@ -81,7 +82,6 @@ default:
     - mysql:8.0
   before_script:
     - apt -y update
-    - apt-get -yq install software-properties-common
     - apt -y install apt-utils net-tools wget default-mysql-client default-libmysqlclient-dev python3-distutils python3-dev gcc memcached
     - "[ ! -d 'venv3.9' ] && python3 -m venv venv3.9"
     - "[ ! -d 'public' ] && mkdir public"
@@ -173,6 +173,8 @@ deploy-docs:
   image: debian:latest
   needs: [ ]
   stage: deploy
+  tags:
+    - deployment
   before_script:
     - apt -y update
     - apt -y install openssh-client
