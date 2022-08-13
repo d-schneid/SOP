@@ -22,7 +22,7 @@ from backend.task.TaskHelper import TaskHelper
 from backend.task.TaskState import TaskState
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 from backend.task.execution.ResultZipper import ResultZipper
-from backend.task.execution.core import ExecutionSubspace
+from backend.task.execution.core.ExecutionSubspace import ExecutionSubspace
 from backend.task.execution.subspace.Subspace import Subspace
 from backend.task.execution.subspace.SubspaceGenerationDescription import \
     SubspaceGenerationDescription
@@ -185,7 +185,6 @@ class Execution(JsonSerializable, Task, Schedulable):
         """
         for subspace in self._subspaces:
             self._execution_subspaces.append(
-                ExecutionSubspace.
                 ExecutionSubspace(self._user_id, self._task_id, self._algorithms,
                                   subspace, self._result_path, self._dataset_on_main,
                                   self.__on_execution_element_finished,
