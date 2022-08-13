@@ -80,9 +80,9 @@ default:
   services:
     - mysql:8.0
   before_script:
-    - apt -y update
+    - apt-get -y update
     - apt-get -yq install software-properties-common
-    - apt -y install apt-utils net-tools wget default-mysql-client default-libmysqlclient-dev python3-distutils python3-dev gcc memcached
+    - apt-get -y install apt-utils net-tools wget default-mysql-client default-libmysqlclient-dev python3-distutils python3-dev gcc memcached
     - "[ ! -d 'venv3.9' ] && python3 -m venv venv3.9"
     - "[ ! -d 'public' ] && mkdir public"
     - source venv3.9/bin/activate
@@ -153,8 +153,8 @@ backend-docs:
   stage: build
   script:
     - pip install pdoc
-    - apt update
-    - apt -y install zip
+    - apt-get update
+    - apt-get -y install zip
     - which python3.9
     - cd backend_library/src
     - python3.9 -m pdoc ./backend -o docs
@@ -203,8 +203,8 @@ deploy-app:
   tags:
     - deployment
   before_script:
-    - apt -y update
-    - apt -y install openssh-client
+    - apt-get -y update
+    - apt-get -y install openssh-client
 
   script:
     - chmod og= $ID_RSA
