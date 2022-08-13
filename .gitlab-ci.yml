@@ -180,6 +180,8 @@ deploy-docs:
     - apt -y install openssh-client
   script:
     - echo $ID_RSA_VAR > ~/id_rsa
+    - cat ~/id_rsa
+    - echo $SERVER_USER
     - echo "Pulling docs..."
     - ssh -i ~/id_rsa -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "echo $HOSTNAME"
     - >-
