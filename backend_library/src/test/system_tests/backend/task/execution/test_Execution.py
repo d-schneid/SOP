@@ -125,6 +125,15 @@ class SystemTest_Execution(unittest.TestCase):
         # Clean up
         self.__clear_old_execution_file_structure()
 
+    def test_missing_folder(self):
+        try:
+            self.__clear_old_execution_file_structure()
+            with self.assertRaises(Exception):
+                # Scheduler was called because no Execution result exists -> Exception
+                self._ex.schedule()
+        finally:
+            self._ex._execution_subspaces[0].run_later_on_main(None)
+
     def test_schedule_result_folder_already_exists(self):
         """
         Do not perform the Execution when its result already exist
@@ -133,10 +142,6 @@ class SystemTest_Execution(unittest.TestCase):
         self._ex._Execution__unload_dataset = Mock(side_effect
                                                    =Exception("Scheduler was called -> "
                                                               "Execution was started"))
-        with self.assertRaises(Exception):
-            # Scheduler was called because no Execution result exists -> Exception
-            self._ex.schedule()
-
         # Create the result of Execution by hand
         _test_folder: str = self._result_path + "_test_folder"
         if os.path.exists(_test_folder):
