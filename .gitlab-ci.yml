@@ -146,8 +146,6 @@ backend-tests:
 
 
 backend-docs:
-  inherit:
-    default: false
   image: python:3.9-slim-bullseye
   allow_failure: true
   only:
