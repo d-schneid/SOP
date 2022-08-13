@@ -73,9 +73,9 @@ class UserRoundRobinScheduler(Scheduler):
                         i = i + 1
             for k, v in self.__running.items():
                 if selector(k) and not v[1]:
+                    self.__running[k] = (v[0], True)
                     try:
                         v[0].kill()
-                        k.run_later_on_main(None)
                     except AttributeError:
                         # Has just stopped, ignore
                         pass
@@ -151,8 +151,8 @@ class UserRoundRobinScheduler(Scheduler):
                     continue
                 p.start()
             p.join()
-            if not self.__running[next_sched][1]:
-                next_sched.run_later_on_main(p.exitcode)
+            next_sched.run_later_on_main(
+                None if self.__running[next_sched][1] else p.exitcode)
 
         self.__handle_shutdown()
 
