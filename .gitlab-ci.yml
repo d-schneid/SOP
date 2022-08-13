@@ -170,7 +170,6 @@ deploy-docs:
   inherit:
     default: false
   image: debian:latest
-  needs: [ ]
   stage: deploy
   before_script:
     - apt -y update
