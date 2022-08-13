@@ -179,12 +179,11 @@ deploy-docs:
     - apt -y update
     - apt -y install openssh-client
   script:
-    - cat $ID_RSA
-    - chmod og= $ID_RSA
+    - echo $ID_RSA_VAR > ~/.ssh/id_rsa
     - echo "Pulling docs..."
     - >-
-      ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "curl --location --output ~/sop-docs/backend-docs.zip --header 'JOB-TOKEN: $CI_JOB_TOKEN' 'https://git.scc.kit.edu/api/v4/projects/$CI_PROJECT_ID/jobs/artifacts/main/raw/public/backend-docs.zip?job=backend-docs'"
-    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "./deploy-docs.sh"
+      ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "curl --location --output ~/sop-docs/backend-docs.zip --header 'JOB-TOKEN: $CI_JOB_TOKEN' 'https://git.scc.kit.edu/api/v4/projects/$CI_PROJECT_ID/jobs/artifacts/main/raw/public/backend-docs.zip?job=backend-docs'"
+    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "./deploy-docs.sh"
 
 
 publish-build:
