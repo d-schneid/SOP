@@ -171,6 +171,8 @@ deploy-docs:
     default: false
   image: debian:latest
   stage: deploy
+  only:
+    - main
   before_script:
     - apt -y update
     - apt -y install openssh-client
