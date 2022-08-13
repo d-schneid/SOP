@@ -139,6 +139,7 @@ class ExecutionSubspace(Schedulable):
 
     def run_later_on_main(self, statuscode: Optional[int]) -> None:
         if statuscode is None:
+            self.__unload_subspace_shared_memory(True)
             self._on_execution_element_finished_callback(False, True)
         else:
             self.__generate_execution_elements(self._algorithms)
