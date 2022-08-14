@@ -63,7 +63,7 @@ def generate_datapoints_metric(metric_dir: Path, be: BackendExecution):
 
 
 def generate_subspace_outlier_metric(metric_dir: Path, be: BackendExecution):
-    assert os.path.exists(metric_dir)
+    assert os.path.isdir(metric_dir)
     metric_result_path = metric_dir / "subspace_outliers.csv"
     metric = MetricSubspaceOutlierAmount()
     metric.compute_metric(
