@@ -1,6 +1,6 @@
 import os.path
 
-from tests.systemtests.selenium_base_test_case.SeleniumTestCase import SeleniumTestCase
+from tests.systemtests.selenium_base_test_cases.SeleniumTestCase import SeleniumTestCase
 
 from selenium.webdriver.common.by import By
 
@@ -48,7 +48,7 @@ class DatasetUploadTests(SeleniumTestCase):
         # assert the upload worked
         # get page source instantly
         page_source = self.driver.page_source
-        self.assertIn(SeleniumTestCase.BASE_URL + "dataset/overview", page_source)
+        self.assertIn(SeleniumTestCase.BASE_URL + "dataset/overview", self.driver.current_url)
         self.assertIn(dataset_name, page_source)
         self.assertIn(dataset_description, page_source)
 
