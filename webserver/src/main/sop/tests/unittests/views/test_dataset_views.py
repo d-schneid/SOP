@@ -69,7 +69,7 @@ class DatasetUploadViewTests(
         self.file_name = "valid_dataset.csv"
         super().setUp()
 
-    def upload_dataset(self, client: str, file_name: str):
+    def upload_dataset(self, client: django.test.Client, file_name: str):
         file_path = os.path.join("tests", "sample_datasets", file_name)
         with open(file_path, "r") as file:
             data = {
