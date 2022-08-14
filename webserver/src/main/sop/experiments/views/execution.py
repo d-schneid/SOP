@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from typing import Optional, Any
+from typing import Optional, Dict, Any, List
 
 from django.conf import settings
 from django.contrib import messages
@@ -33,7 +33,7 @@ from experiments.services.execution import get_params_out_of_form, get_execution
 from experiments.views.generic import PostOnlyDeleteView
 
 
-def schedule_backend(execution: Execution) -> Optional[dict[str, list[str]]]:
+def schedule_backend(execution: Execution) -> Optional[Dict[str, list[str]]]:
     """
     Schedules a backend task that will start the calculations of the given execution.
     @param execution: The execution for which the calculation should be started.
@@ -95,7 +95,7 @@ def schedule_backend(execution: Execution) -> Optional[dict[str, list[str]]]:
     return None
 
 
-def generate_hyperparameter_error_message(dikt: dict[str, list[str]]) -> str:
+def generate_hyperparameter_error_message(dikt: Dict[str, List[str]]) -> str:
     """
     Create an error message string out of a given errors dictionary. This method will
     most likely be removed when errors are displayed by django messages.
@@ -127,7 +127,7 @@ class ExecutionCreateView(
     form_class = ExecutionCreateForm
     success_url = reverse_lazy("experiment_overview")
 
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         experiment_id = self.kwargs["experiment_pk"]
         experiment = Experiment.objects.get(pk=experiment_id)
@@ -146,41 +146,23 @@ class ExecutionCreateView(
 
         # Get subspaces_min out of form and do sanity checks
         subspaces_min = form.cleaned_data["subspaces_min"]
-        if subspaces_min < 0:
-            messages.error(
-                self.request,
-                "Subspaces Min has to be an Integer greater than or equal to 0.",
-            )
-        else:
-            form.instance.subspaces_min = subspaces_min
+        form.instance.subspaces_min = subspaces_min
 
         # Get subspaces_max out of form and do sanity checks
         subspaces_max = form.cleaned_data["subspaces_max"]
-        if subspaces_max < 0:
-            messages.error(
-                self.request,
-                "Subspaces Max has to be an Integer greater than or equal to 0.",
-            )
-            error = True
+
         if subspaces_max > experiment.dataset.dimensions_total:
             messages.error(
                 self.request,
-                "Subspaces Max has to be smaller than or equal to the dataset"
-                f" dimension count: {experiment.dataset.dimensions_total}.",
+                f"Subspaces Max has to be smaller than or equal to the dataset dimension count: {experiment.dataset.dimensions_total}.",
             )
             error = True
-        elif 0 <= subspaces_max <= experiment.dataset.dimensions_total:
+        else:
             form.instance.subspaces_max = subspaces_max
 
         # Get subspace_amount out of form and do sanity checks
         subspace_amount = form.cleaned_data["subspace_amount"]
-        if subspace_amount <= 0:
-            messages.error(
-                self.request, "Subspace amount has to be a positive Integer."
-            )
-            error = True
-        else:
-            form.instance.subspace_amount = subspace_amount
+        form.instance.subspace_amount = subspace_amount
 
         # Generate algorithm_parameters out of form inputs
         success, dikt = get_params_out_of_form(self.request, experiment)
@@ -192,16 +174,10 @@ class ExecutionCreateView(
 
         # Get subspace_generation_seed out of form and do sanity checks
         seed: Optional[int] = form.cleaned_data.get("subspace_generation_seed")
-        # If the seed was not specified,
-        # it will be set to a random seed during model creation
+        # If the seed was not specified, it will be set to a random seed during
+        # model creation
         if seed:
-            if seed < 0:
-                messages.error(
-                    self.request, f"Seed has to be greater than 0. (is: {seed})."
-                )
-                error = True
-            else:
-                form.instance.subspace_generation_seed = seed
+            form.instance.subspace_generation_seed = seed
 
         # Sanity check that subspaces_min must be smaller than subspaces_max
         if subspaces_min > subspaces_max:
@@ -242,7 +218,7 @@ class ExecutionDuplicateView(ExecutionCreateView):
     the hyperparameters.
     """
 
-    def get_initial(self) -> dict[str, int]:
+    def get_initial(self) -> Dict[str, int]:
         form = {}
         if self.request.method == "GET":
             og_execution_pk = self.kwargs["pk"]
@@ -253,7 +229,7 @@ class ExecutionDuplicateView(ExecutionCreateView):
             form["subspace_generation_seed"] = original.subspace_generation_seed
         return form
 
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["original"] = Execution.objects.get(pk=self.kwargs["pk"])
         return context
@@ -350,7 +326,7 @@ def get_execution_progress(request: HttpRequest) -> HttpResponse:
         pk = request.META["execution_pk"]
     if pk:
         execution: Optional[Execution] = Execution.objects.filter(pk=pk).first()
-        data: dict[str, Any] = {}
+        data: Dict[str, Any] = {}
         if execution is not None:
             data["is_running"] = execution.is_running
             data["has_result"] = execution.has_result
