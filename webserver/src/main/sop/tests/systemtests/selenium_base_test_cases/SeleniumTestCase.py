@@ -1,3 +1,4 @@
+import os
 import unittest
 
 import selenium
@@ -30,14 +31,13 @@ class SeleniumTestCase(unittest.TestCase):
         # log in
         cls.driver.get(SeleniumTestCase.BASE_URL)
 
-        # maybe log out first before logging in
+        # first, try to log out
         SeleniumTestCase.logout(cls)
-        SeleniumTestCase.login(cls, "SeleniumTestUser", "this_is_a_test")
 
     @classmethod
     def tearDownClass(cls) -> None:
-        # log out
-        cls.driver.find_element(By.LINK_TEXT, "Logout").click()
+        # try to log out
+        SeleniumTestCase.logout(cls)
 
         # stop webdriver
         cls.driver.quit()
@@ -60,3 +60,26 @@ class SeleniumTestCase(unittest.TestCase):
             return True
         else:
             return False
+
+    def upload_dataset(self, dataset_path: str, dataset_name: str, dataset_description: str):
+        assert os.path.isfile(dataset_path)
+
+        self.driver.find_element(By.LINK_TEXT, "Datasets").click()
+        self.assertRegex(self.driver.current_url, SeleniumTestCase.BASE_URL + "dataset/overview/sort-by=[a-zA-Z_]+/")
+
+        self.driver.find_element(By.LINK_TEXT, "Upload dataset").click()
+        self.assertEqual(self.driver.current_url, SeleniumTestCase.BASE_URL + "dataset/upload/")
+
+        self.driver.find_element(By.ID, "id_display_name").send_keys(dataset_name)
+        self.driver.find_element(By.ID, "id_description").send_keys(dataset_description)
+        absolute_path = os.path.join(os.getcwd(), dataset_path)
+        self.driver.find_element(By.ID, "id_path_original").send_keys(absolute_path)
+        self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
+
+        # assert the upload worked
+        page_source = self.driver.page_source  # get page source instantly
+        self.assertRegex(self.driver.current_url, SeleniumTestCase.BASE_URL + "dataset/overview/sort-by=[a-zA-Z_]+/")
+        self.assertIn(dataset_name, page_source)
+        self.assertIn(dataset_description, page_source)
+
+        # TODO: check maybe visibility of buttons depending on cleaning state
