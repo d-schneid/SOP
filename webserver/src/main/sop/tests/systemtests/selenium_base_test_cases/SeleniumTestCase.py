@@ -13,6 +13,10 @@ from webdriver_manager.chrome import ChromeDriverManager
 class SeleniumTestCase(unittest.TestCase):
 
     BASE_URL = "http://127.0.0.1:8000/"
+    STANDARD_USERNAME_USER = "SeleniumTestUser"
+    STANDARD_PASSWORD_USER = "this_is_a_test"
+    STANDARD_USERNAME_ADMIN = "SeleniumTestAdmin"
+    STANDARD_PASSWORD_ADMIN = "this_is_a_test"
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -28,19 +32,21 @@ class SeleniumTestCase(unittest.TestCase):
             options=chrome_options
         )
 
-        # log in
-        cls.driver.get(SeleniumTestCase.BASE_URL)
-
-        # first, try to log out
-        SeleniumTestCase.logout(cls)
-
     @classmethod
     def tearDownClass(cls) -> None:
-        # try to log out
-        SeleniumTestCase.logout(cls)
-
         # stop webdriver
         cls.driver.quit()
+
+    def setUp(self) -> None:
+        # get base url
+        self.driver.get(SeleniumTestCase.BASE_URL)
+
+        # try to log out
+        SeleniumTestCase.logout(self)
+
+    def tearDown(self) -> None:
+        # try to log out
+        SeleniumTestCase.logout(self)
 
     @staticmethod
     def logout(cls) -> bool:
