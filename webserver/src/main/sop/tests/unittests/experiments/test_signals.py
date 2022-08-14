@@ -7,15 +7,21 @@ from django.conf import settings
 
 from experiments.models.execution import get_result_path
 from experiments.signals import (
-    _delete_file,
+    _delete_file,  # noqa
     delete_dataset_file,
     delete_algorithm_file,
     delete_result_file,
-)  # noqa
+)
 from tests.generic import MediaMixin
 
 
 class TestSignalHandler(MediaMixin, django.test.TestCase):
+    def test_delete_file_invalid_file(self):
+        path = settings.MEDIA_ROOT / "does_not_exist.txt"
+        assert not os.path.isfile(path)
+
+        _delete_file(path)
+
     def test_delete_file_last_file(self):
         # create file
         path = settings.MEDIA_ROOT / "test.txt"
