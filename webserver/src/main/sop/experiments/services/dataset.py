@@ -1,6 +1,5 @@
 import os
 import uuid
-from typing import Final
 
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
@@ -11,8 +10,6 @@ from backend.task.cleaning.DatasetCleaning import DatasetCleaning
 from experiments.callback import DatasetCallbacks
 from experiments.models import Dataset
 
-DATASET_ROOT_DIR: Final = settings.MEDIA_ROOT / "datasets"
-
 
 def save_dataset(file: UploadedFile) -> str:
     """
@@ -20,7 +17,7 @@ def save_dataset(file: UploadedFile) -> str:
     @param file: A UploadedFile object containing the uploaded dataset.
     @return: The path to the temporary location as a string.
     """
-    temp_dir = os.path.join(DATASET_ROOT_DIR, "temp")
+    temp_dir = os.path.join(settings.DATASET_ROOT_DIR, "temp")
     temp_file_path = os.path.join(temp_dir, str(uuid.uuid1()))
 
     assert not os.path.isfile(temp_file_path)

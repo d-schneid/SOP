@@ -1,4 +1,5 @@
 import os
+import shutil
 from typing import Any
 
 from django.db.models.signals import post_delete
@@ -6,6 +7,7 @@ from django.dispatch import receiver
 
 from backend.scheduler.Scheduler import Scheduler
 from experiments.models import Algorithm, Dataset, Execution
+from experiments.models.execution import get_result_path
 
 
 def _delete_file(path: str) -> None:
@@ -50,6 +52,9 @@ def delete_result_file(
 ) -> None:
     if instance.is_running and instance.pk is not None:
         Scheduler.get_instance().abort_by_task(task_id=instance.pk)
+        working_directory = get_result_path(instance)
+        if os.path.isdir(working_directory):
+            shutil.rmtree(working_directory)
 
     if instance.result_path:
         _delete_file(instance.result_path.path)
