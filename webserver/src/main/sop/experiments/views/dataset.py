@@ -211,6 +211,17 @@ def download_cleaned_dataset(
 def dataset_status_view(
     request: HttpRequest,
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
+    """
+    A function view to retrieve the status of a dataset and it's cleaning progress.
+    It is used in dataset templates to display this information to a user.
+    @param request: The HttpRequest, given by django. It must contain the datasets
+    primary key in it.
+    @return: A HttpResponse containing JSON data describing the status and progress
+    of the wanted dataset, if a dataset with the given primary key exists.
+    If no dataset with the given primary exists, this redirects to the dataset overview.
+    If this view is accessed via a POST request or no primary key is given,
+    it will return None.
+    """
     if request.method == "GET":
         dataset_pk: int = -1
         if "dataset_pk" in request.GET:
