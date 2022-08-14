@@ -99,8 +99,25 @@ class DatasetUploadViewTests(
             str(dataset.path_original),
         )
 
+    def test_dataset_upload_view_empty_dataset(self):
+        file_name = "empty_dataset.csv"
+        response = self.upload_dataset(self.client, file_name)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.redirect_chain)
+        self.assertTemplateNotUsed(response, "dataset_overview.html")
+        self.assertTemplateUsed(response, "dataset_upload.html")
+
+    def test_dataset_upload_different_column_size(self):
+        file_name = "parser_error.csv"
+        response = self.upload_dataset(self.client, file_name)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.redirect_chain)
+        self.assertTemplateUsed(response, "dataset_upload.html")
+
     def test_dataset_upload_view_invalid_file_type(self):
-        file_name = "invalid_dataset.txt"
+        file_name = "no_csv.txt"
         response = self.upload_dataset(self.client, file_name)
 
         self.assertEqual(response.status_code, 200)
