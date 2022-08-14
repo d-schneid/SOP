@@ -108,6 +108,8 @@ migrations:
 
 django-tests:
   stage: test
+  needs: 
+    - migrations
   extends: .frontend-base
   coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
   script:
@@ -168,6 +170,8 @@ backend-docs:
 deploy-docs:
   inherit:
     default: false
+  needs: 
+    - backend-docs
   image: debian:latest
   stage: deploy
   only:
@@ -186,6 +190,9 @@ deploy-docs:
 publish-build:
   inherit:
     default: false
+  needs:
+    - backend-tests
+    - django-tests
   stage: publish
   only:
     - main
@@ -200,7 +207,9 @@ publish-build:
 
 
 deploy-badges:
-  needs: [ "backend-tests", "django-tests" ]
+  needs: 
+    - backend-tests
+    - django-tests
   inherit:
     default: false
   stage: deploy
@@ -213,6 +222,8 @@ deploy-badges:
     - ''
 
 deploy-app:
+  needs:
+    - publish-build
   inherit:
     default: false
   stage: deploy
