@@ -8,7 +8,7 @@ from django.conf import settings
 from experiments.models.execution import get_result_path
 from experiments.signals import _delete_file, delete_dataset_file, \
     delete_algorithm_file, delete_result_file  # noqa
-from generic import MediaMixin
+from tests.generic import MediaMixin
 
 
 class TestSignalHandler(MediaMixin, django.test.TestCase):

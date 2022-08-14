@@ -11,7 +11,7 @@ from experiments.models.execution import (
     Execution,
     get_result_path,
 )
-from generic import MediaMixin
+from tests.generic import MediaMixin
 
 
 def call_execution_progress_callback(execution, task_state, progress):
