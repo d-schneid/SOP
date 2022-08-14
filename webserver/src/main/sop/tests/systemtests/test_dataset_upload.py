@@ -34,18 +34,24 @@ class DatasetUploadTests(SeleniumTestCase):
         print(valid_dataset_path)
         assert os.path.isfile(valid_dataset_path)
 
+        dataset_name = "Test Dataset: Canada"
+        dataset_description = "This is the Canada Dataset, used for automated tests with Selenium."
+
         self.driver.find_element(By.LINK_TEXT, "Datasets").click()
         self.driver.find_element(By.LINK_TEXT, "Upload dataset").click()
-        self.driver.find_element(By.ID, "id_display_name").send_keys("Test Dataset: Canada")
-        self.driver.find_element(By.ID, "id_description").send_keys(
-            "This is the Canada Dataset, used for automated tests with Selenium."
-        )
+        self.driver.find_element(By.ID, "id_display_name").send_keys(dataset_name)
+        self.driver.find_element(By.ID, "id_description").send_keys(dataset_description)
         absolute_path = os.path.join(os.getcwd(), valid_dataset_path)
         self.driver.find_element(By.ID, "id_path_original").send_keys(absolute_path)
         self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
 
         # assert the upload worked
-        self.assertIn(SeleniumTestCase.BASE_URL + "dataset/overview", self.driver.current_url)
-        # TODO: weitere Tests, v.a. zu hochgeladenem Datensatz
+        # get page source instantly
+        page_source = self.driver.page_source
+        self.assertIn(SeleniumTestCase.BASE_URL + "dataset/overview", page_source)
+        self.assertIn(dataset_name, page_source)
+        self.assertIn(dataset_description, page_source)
+
+        # TODO: check maybe visibility of buttons depeinding on cleaning state
 
 
