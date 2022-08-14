@@ -1,5 +1,6 @@
 import os
 import shutil
+from pathlib import Path
 from typing import Any
 
 from django.db.models.signals import post_delete
@@ -10,15 +11,14 @@ from experiments.models import Algorithm, Dataset, Execution
 from experiments.models.execution import get_result_path
 
 
-def _delete_file(path: str) -> None:
-    try:
-        if os.path.isfile(path):
-            os.remove(path)
-        if not any(os.scandir(os.path.dirname(path))):
+def _delete_file(path_name: str) -> None:
+    path = Path(path_name)
+    if os.path.isfile(path):
+        os.unlink(path)
+    if os.path.isdir(path.parent):
+        if not any(os.scandir(path.parent)):
             # Directory for user will be created again once user uploads a file
-            os.rmdir(os.path.dirname(path))
-    except OSError as e:
-        print(f"Error: {e.strerror}")
+            os.rmdir(path.parent)
 
 
 # Signal handlers delete all the respective files of a user
