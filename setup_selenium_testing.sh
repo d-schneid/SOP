@@ -12,3 +12,18 @@ python3 webserver/src/main/sop/manage.py pyodtodb
 
 # install libraries required for testing with Selenium
 pip install -r requirements_test.txt
+
+
+# install the browsers needed for testing with selenium
+# (apt update && upgrade should be run beforehand)
+
+# Chrome
+sudo apt-get update --quiet
+sudo apt-get upgrade --quiet --assume-yes
+wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+sudo apt-get install --install-suggests --quiet --assume-yes ./google-chrome-stable_current_amd64.deb
+rm google-chrome-stable_current_amd64.deb
+
+
+
+# TODO Firefix
