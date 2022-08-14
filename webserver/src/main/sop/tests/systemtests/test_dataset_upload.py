@@ -16,7 +16,16 @@ class DatasetUploadTests(SeleniumTestCase):
     def tearDownClass(cls) -> None:
         super().tearDownClass()
 
+    def setUp(self) -> None:
+        super().setUp()
+
+    def tearDown(self) -> None:
+        super().tearDown()
+
     def test_standard_site(self):
+        # login
+        SeleniumTestCase.login(self, SeleniumTestCase.STANDARD_USERNAME_USER, SeleniumTestCase.STANDARD_PASSWORD_USER)
+
         # check, if links to subpages are in the generated site
         self.assertIn("/experiment/overview", self.driver.page_source)
         self.assertIn("/dataset/overview", self.driver.page_source)
@@ -31,6 +40,9 @@ class DatasetUploadTests(SeleniumTestCase):
         self.assertNotIn("/admin/login", self.driver.page_source)
 
     def test_valid_dataset_upload(self):
+        # login
+        SeleniumTestCase.login(self, SeleniumTestCase.STANDARD_USERNAME_USER, SeleniumTestCase.STANDARD_PASSWORD_USER)
+
         valid_dataset_path = os.path.join("tests", "sample_datasets", "canada.csv")
 
         dataset_name = "Test Dataset: Canada"
