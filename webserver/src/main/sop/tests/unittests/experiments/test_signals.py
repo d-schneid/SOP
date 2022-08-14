@@ -6,8 +6,12 @@ import django.test
 from django.conf import settings
 
 from experiments.models.execution import get_result_path
-from experiments.signals import _delete_file, delete_dataset_file, \
-    delete_algorithm_file, delete_result_file  # noqa
+from experiments.signals import (
+    _delete_file,
+    delete_dataset_file,
+    delete_algorithm_file,
+    delete_result_file,
+)  # noqa
 from tests.generic import MediaMixin
 
 
@@ -104,8 +108,20 @@ class TestSignalHandler(MediaMixin, django.test.TestCase):
         assert os.path.isfile(execution_running_dir / "file1")
         assert os.path.isfile(execution_running_dir / "file2")
 
-        delete_result_file(execution, execution)
+        scheduler_mock = mock.MagicMock()
+
+        with mock.patch(
+            "backend.scheduler.Scheduler.Scheduler._instance", scheduler_mock
+        ):
+            delete_result_file(execution, execution)
+            self.assertTrue(scheduler_mock.abort_by_task.called)
+
+            # check if the abort method of the scheduler was called with the primary
+            # key of the execution
+            self.assertTrue(
+                scheduler_mock.abort_by_task.call_args.kwargs == {"task_id": 3}
+                or scheduler_mock.abort_by_task.call_args.args == (3,)
+            )
 
         self.assertFalse(os.path.isdir(execution_running_dir))
         self.assertTrue(os.path.isdir(execution_running_dir.parent))
-
