@@ -41,6 +41,7 @@ class DebugSchedulerMixin(MixinBase):
         super().tearDownClass()
         if Scheduler._instance is not None:
             Scheduler.get_instance().hard_shutdown()
+            Scheduler.default_scheduler = None
             Scheduler._instance = None
 
 
