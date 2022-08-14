@@ -143,8 +143,7 @@ class ExecutionSubspace(Schedulable):
             self._on_execution_element_finished_callback(False, True)
         else:
             self.__generate_execution_elements(self._algorithms)
-            for ee in self._execution_elements:
-                Scheduler.get_instance().schedule(ee)
+            self.__schedule_execution_elements()
 
     def run_before_on_main(self) -> None:
         size = self._subspace.get_size_of_subspace_buffer(self._ds_on_main)
