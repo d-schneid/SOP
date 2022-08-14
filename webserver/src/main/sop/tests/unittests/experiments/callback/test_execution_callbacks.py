@@ -122,3 +122,18 @@ class TestMetricCallback(MediaMixin, django.test.TestCase):
         # check if both metrics are called
         self.assertTrue(subspace_metric_mock.called)
         self.assertTrue(datapoint_metric_mock.called)
+
+    def test_metric_callback_invalid_pk(self):
+        # We use an extra mock for the get method of Execution.objects to validate that
+        # the callback function returned before fetching an execution if there is no
+        # execution with the given task_id as its pk
+        get_mock = mock.MagicMock()
+
+        objects_mock = mock.MagicMock()
+        objects_mock.filter.return_value.exists.return_value = False
+        objects_mock.get = get_mock
+
+        with mock.patch.object(Execution, "objects", objects_mock):
+            metric_callback(self.be)  # type: ignore
+
+        self.assertFalse(get_mock.called)
