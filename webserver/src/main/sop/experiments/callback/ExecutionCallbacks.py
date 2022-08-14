@@ -26,13 +26,17 @@ def execution_callback(
     @param progress: The progress of the backend execution.
     @return: None
     """
+
+    if not Execution.objects.filter(pk=task_id).exists():
+        return
+
     print("execution callback", task_id, task_state, progress)
     execution: Execution = Execution.objects.get(pk=task_id)
 
     if task_state.is_finished():
         zip_path = get_zip_result_path(execution)
         assert os.path.exists(zip_path)
-        execution.result_path.name = get_zip_result_path(execution)
+        execution.result_path.name = zip_path
 
     if task_state.is_finished() and not task_state.error_occurred():
         execution.status = ExecutionStatus.FINISHED.name
