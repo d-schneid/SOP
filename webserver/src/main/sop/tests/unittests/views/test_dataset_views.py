@@ -3,7 +3,6 @@ import os
 import django.test
 from django.urls import reverse
 
-from backend.scheduler.Scheduler import Scheduler
 from experiments.models import Dataset
 from tests.generic import LoggedInMixin, MediaMixin, DebugSchedulerMixin
 
@@ -81,7 +80,6 @@ class DatasetUploadViewTests(
             return client.post(reverse("dataset_upload"), data=data, follow=True)
 
     def test_dataset_upload_view_valid_upload(self):
-        print(Scheduler.default_scheduler)
         file_name = "valid_dataset.csv"
         response = self.upload_dataset(self.client, file_name)
 
