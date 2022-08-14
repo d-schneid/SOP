@@ -11,13 +11,11 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 class SeleniumTestCase(unittest.TestCase):
 
-    # TODO: start webserer autoamtically
-    # TODO: create user automatically
-
     BASE_URL = "http://127.0.0.1:8000/"
 
     @classmethod
     def setUpClass(cls) -> None:
+
         # setup chrome webdriver
         chrome_service = ChromeService(executable_path=ChromeDriverManager().install())
 
@@ -32,14 +30,9 @@ class SeleniumTestCase(unittest.TestCase):
         # log in
         cls.driver.get(SeleniumTestCase.BASE_URL)
 
-        # maybe log out first
-        if "Logout" in cls.driver.page_source:
-            cls.driver.find_element(By.LINK_TEXT, "Logout").click()
-
-        cls.driver.find_element(By.LINK_TEXT, "Login").click()
-        cls.driver.find_element(By.ID, "id_username").send_keys("test_user")
-        cls.driver.find_element(By.ID, "id_password").send_keys("das_ist_ein_test")
-        cls.driver.find_element(By.ID, "login-button").click()
+        # maybe log out first before logging in
+        SeleniumTestCase.logout(cls)
+        SeleniumTestCase.login(cls, "SeleniumTestUser", "this_is_a_test")
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -48,3 +41,22 @@ class SeleniumTestCase(unittest.TestCase):
 
         # stop webdriver
         cls.driver.quit()
+
+    @staticmethod
+    def logout(cls) -> bool:
+        if "Logout" in cls.driver.page_source:
+            cls.driver.find_element(By.LINK_TEXT, "Logout").click()
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def login(cls, username, password) -> bool:
+        if "Login" in cls.driver.page_source:
+            cls.driver.find_element(By.LINK_TEXT, "Login").click()
+            cls.driver.find_element(By.ID, "id_username").send_keys(username)
+            cls.driver.find_element(By.ID, "id_password").send_keys(password)
+            cls.driver.find_element(By.ID, "login-button").click()
+            return True
+        else:
+            return False
