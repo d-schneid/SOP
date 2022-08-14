@@ -63,7 +63,6 @@ class AlgorithmServicesTests(MediaMixin, django.test.TestCase):
 
     def test_delete_temp_algorithm_wrong_dir(self) -> None:
         path = settings.MEDIA_ROOT / "temp.txt"
-        os.makedirs(path.parent)
         with open(path, "w") as f:
             f.write("Text")
         assert os.path.exists(path)
@@ -74,8 +73,7 @@ class AlgorithmServicesTests(MediaMixin, django.test.TestCase):
     def test_delete_temp_algorithm_keep_dir_when_not_empty(self) -> None:
         path = settings.MEDIA_ROOT / "algorithms" / "temp" / "3" / "temp.txt"
         path2 = settings.MEDIA_ROOT / "algorithms" / "temp" / "3" / "temp2.txt"
-        if not os.path.exists(path.parent):
-            os.makedirs(path.parent)
+        os.makedirs(path.parent)
         with open(path, "w") as f:
             f.write("Text")
         with open(path2, "w") as f:
