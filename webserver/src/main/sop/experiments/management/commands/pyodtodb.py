@@ -17,53 +17,85 @@ from experiments.services.algorithm import convert_param_mapping_to_signature_di
 class PyodAlgorithm:
     file_name: str
     class_name: str
+    display_name: str
     group: Algorithm.AlgorithmGroup
 
 
 PYOD_ALGORITHMS = [
-    PyodAlgorithm("abod.py", "ABOD", Algorithm.AlgorithmGroup.PROBABILISTIC),
-    PyodAlgorithm("anogan.py", "AnoGAN", Algorithm.AlgorithmGroup.NEURAL_NETWORKS),
+    PyodAlgorithm("abod.py", "ABOD", "ABOD", Algorithm.AlgorithmGroup.PROBABILISTIC),
     PyodAlgorithm(
-        "auto_encoder.py", "AutoEncoder", Algorithm.AlgorithmGroup.NEURAL_NETWORKS
+        "anogan.py", "AnoGAN", "AnoGAN", Algorithm.AlgorithmGroup.NEURAL_NETWORKS
     ),
     PyodAlgorithm(
-        "auto_encoder_torch.py", "AutoEncoder", Algorithm.AlgorithmGroup.NEURAL_NETWORKS
+        "auto_encoder.py",
+        "AutoEncoder",
+        "AutoEncoder",
+        Algorithm.AlgorithmGroup.NEURAL_NETWORKS,
     ),
-    PyodAlgorithm("cblof.py", "CBLOF", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
-    PyodAlgorithm("cd.py", "CD", Algorithm.AlgorithmGroup.LINEAR_MODEL),
-    PyodAlgorithm("cof.py", "COF", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
-    PyodAlgorithm("copod.py", "COPOD", Algorithm.AlgorithmGroup.PROBABILISTIC),
-    PyodAlgorithm("deep_svdd.py", "DeepSVDD", Algorithm.AlgorithmGroup.NEURAL_NETWORKS),
-    PyodAlgorithm("ecod.py", "ECOD", Algorithm.AlgorithmGroup.PROBABILISTIC),
+    PyodAlgorithm(
+        "auto_encoder_torch.py",
+        "AutoEncoder",
+        "AutoEncoder (torch)",
+        Algorithm.AlgorithmGroup.NEURAL_NETWORKS,
+    ),
+    PyodAlgorithm(
+        "cblof.py", "CBLOF", "CBLOF", Algorithm.AlgorithmGroup.PROXIMITY_BASED
+    ),
+    PyodAlgorithm("cd.py", "CD", "CD", Algorithm.AlgorithmGroup.LINEAR_MODEL),
+    PyodAlgorithm("cof.py", "COF", "COF", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
+    PyodAlgorithm("copod.py", "COPOD", "COPOD", Algorithm.AlgorithmGroup.PROBABILISTIC),
+    PyodAlgorithm(
+        "deep_svdd.py", "DeepSVDD", "DeepSVDD", Algorithm.AlgorithmGroup.NEURAL_NETWORKS
+    ),
+    PyodAlgorithm("ecod.py", "ECOD", "ECOD", Algorithm.AlgorithmGroup.PROBABILISTIC),
     PyodAlgorithm(
         "feature_bagging.py",
         "FeatureBagging",
+        "FeatureBagging",
         Algorithm.AlgorithmGroup.OUTLIER_ENSEMBLES,
     ),
-    PyodAlgorithm("gmm.py", "GMM", Algorithm.AlgorithmGroup.PROBABILISTIC),
-    PyodAlgorithm("hbos.py", "HBOS", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
-    PyodAlgorithm("iforest.py", "IForest", Algorithm.AlgorithmGroup.OUTLIER_ENSEMBLES),
-    PyodAlgorithm("inne.py", "INNE", Algorithm.AlgorithmGroup.OUTLIER_ENSEMBLES),
-    PyodAlgorithm("kde.py", "KDE", Algorithm.AlgorithmGroup.PROBABILISTIC),
-    PyodAlgorithm("knn.py", "KNN", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
-    PyodAlgorithm("lmdd.py", "LMDD", Algorithm.AlgorithmGroup.LINEAR_MODEL),
-    PyodAlgorithm("loci.py", "LOCI", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
-    PyodAlgorithm("loda.py", "LODA", Algorithm.AlgorithmGroup.OUTLIER_ENSEMBLES),
-    PyodAlgorithm("lof.py", "LOF", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
-    PyodAlgorithm("lscp.py", "LSCP", Algorithm.AlgorithmGroup.OUTLIER_ENSEMBLES),
-    PyodAlgorithm("mad.py", "MAD", Algorithm.AlgorithmGroup.PROBABILISTIC),
-    PyodAlgorithm("mcd.py", "MCD", Algorithm.AlgorithmGroup.LINEAR_MODEL),
-    PyodAlgorithm("mo_gaal.py", "MO_GAAL", Algorithm.AlgorithmGroup.NEURAL_NETWORKS),
-    PyodAlgorithm("ocsvm.py", "OCSVM", Algorithm.AlgorithmGroup.LINEAR_MODEL),
-    PyodAlgorithm("pca.py", "PCA", Algorithm.AlgorithmGroup.LINEAR_MODEL),
-    PyodAlgorithm("rod.py", "ROD", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
-    PyodAlgorithm("sampling.py", "Sampling", Algorithm.AlgorithmGroup.PROBABILISTIC),
-    PyodAlgorithm("so_gaal.py", "SO_GAAL", Algorithm.AlgorithmGroup.NEURAL_NETWORKS),
-    PyodAlgorithm("sod.py", "SOD", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
-    PyodAlgorithm("sos.py", "SOS", Algorithm.AlgorithmGroup.PROBABILISTIC),
-    PyodAlgorithm("suod.py", "SUOD", Algorithm.AlgorithmGroup.OUTLIER_ENSEMBLES),
-    PyodAlgorithm("vae.py", "VAE", Algorithm.AlgorithmGroup.NEURAL_NETWORKS),
-    PyodAlgorithm("xgbod.py", "XGBOD", Algorithm.AlgorithmGroup.OUTLIER_ENSEMBLES),
+    PyodAlgorithm("gmm.py", "GMM", "GMM", Algorithm.AlgorithmGroup.PROBABILISTIC),
+    PyodAlgorithm("hbos.py", "HBOS", "HBOS", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
+    PyodAlgorithm(
+        "iforest.py", "IForest", "IForest", Algorithm.AlgorithmGroup.OUTLIER_ENSEMBLES
+    ),
+    PyodAlgorithm(
+        "inne.py", "INNE", "INNE", Algorithm.AlgorithmGroup.OUTLIER_ENSEMBLES
+    ),
+    PyodAlgorithm("kde.py", "KDE", "KDE", Algorithm.AlgorithmGroup.PROBABILISTIC),
+    PyodAlgorithm("knn.py", "KNN", "KNN", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
+    PyodAlgorithm("lmdd.py", "LMDD", "LMDD", Algorithm.AlgorithmGroup.LINEAR_MODEL),
+    PyodAlgorithm("loci.py", "LOCI", "LOCI", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
+    PyodAlgorithm(
+        "loda.py", "LODA", "LODA", Algorithm.AlgorithmGroup.OUTLIER_ENSEMBLES
+    ),
+    PyodAlgorithm("lof.py", "LOF", "LOF", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
+    PyodAlgorithm(
+        "lscp.py", "LSCP", "LSCP", Algorithm.AlgorithmGroup.OUTLIER_ENSEMBLES
+    ),
+    PyodAlgorithm("mad.py", "MAD", "MAD", Algorithm.AlgorithmGroup.PROBABILISTIC),
+    PyodAlgorithm("mcd.py", "MCD", "MCD", Algorithm.AlgorithmGroup.LINEAR_MODEL),
+    PyodAlgorithm(
+        "mo_gaal.py", "MO_GAAL", "MO_GAAL", Algorithm.AlgorithmGroup.NEURAL_NETWORKS
+    ),
+    PyodAlgorithm("ocsvm.py", "OCSVM", "OCSVM", Algorithm.AlgorithmGroup.LINEAR_MODEL),
+    PyodAlgorithm("pca.py", "PCA", "PCA", Algorithm.AlgorithmGroup.LINEAR_MODEL),
+    PyodAlgorithm("rod.py", "ROD", "ROD", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
+    PyodAlgorithm(
+        "sampling.py", "Sampling", "Sampling", Algorithm.AlgorithmGroup.PROBABILISTIC
+    ),
+    PyodAlgorithm(
+        "so_gaal.py", "SO_GAAL", "SO_GAAL", Algorithm.AlgorithmGroup.NEURAL_NETWORKS
+    ),
+    PyodAlgorithm("sod.py", "SOD", "SOD", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
+    PyodAlgorithm("sos.py", "SOS", "SOS", Algorithm.AlgorithmGroup.PROBABILISTIC),
+    PyodAlgorithm(
+        "suod.py", "SUOD", "SUOD", Algorithm.AlgorithmGroup.OUTLIER_ENSEMBLES
+    ),
+    PyodAlgorithm("vae.py", "VAE", "VAE", Algorithm.AlgorithmGroup.NEURAL_NETWORKS),
+    PyodAlgorithm(
+        "xgbod.py", "XGBOD", "XGBOD", Algorithm.AlgorithmGroup.OUTLIER_ENSEMBLES
+    ),
 ]
 
 
@@ -103,37 +135,44 @@ def fix_base_detector_imports(pyod_models_root: Path):
         shutil.move(abs_path, path)
 
 
-def save_algorithms_in_db(pyod_models_root: Path):
-    # Check algorithms before adding them to the database
-    for pyod_algo in PYOD_ALGORITHMS:
-        # assert filename matches classname
-        assert os.path.splitext(pyod_algo.file_name)[0] == pyod_algo.class_name.lower()
-        # check algorithm for validity
-        errors = AlgorithmLoader.is_algorithm_valid(
-            str(pyod_models_root / pyod_algo.file_name)
-        )
-        assert errors is None, errors
-
-    for pyod_algo in PYOD_ALGORITHMS:
-        path = pyod_models_root / (pyod_algo.class_name.lower() + ".py")
-        mapping = AlgorithmLoader.get_algorithm_parameters(str(path))
-        params_dict = convert_param_mapping_to_signature_dict(mapping)
-        data = {
-            "display_name": f"[PYOD] {pyod_algo.class_name}",
-            "group": pyod_algo.group,
-            "signature": params_dict,
-            "user": None,
-        }
-        algo = Algorithm.objects.create(**data)
-        algo.path.name = str(path.relative_to(settings.MEDIA_ROOT))
-        algo.save()
-
-
 class Command(BaseCommand):
     help = "Adds all pyod algorithms as algorithm models into to database"
 
+    def save_algorithms_in_db(self, pyod_models_root: Path):
+        # Check algorithms before adding them to the database
+        for pyod_algo in PYOD_ALGORITHMS:
+            self.stdout.write(f"Checking {pyod_algo.display_name} ({pyod_algo.file_name}) for validity...", ending="")
+            # assert filename matches classname
+            assert (
+                os.path.splitext(pyod_algo.file_name)[0] == pyod_algo.class_name.lower()
+            )
+            # check algorithm for validity
+            errors = AlgorithmLoader.is_algorithm_valid(
+                str(pyod_models_root / pyod_algo.file_name)
+            )
+            assert errors is None, errors
+            self.stdout.write(self.style.SUCCESS("OK"))
+
+        for pyod_algo in PYOD_ALGORITHMS:
+            self.stdout.write(f"Saving {pyod_algo.display_name} ({pyod_algo.file_name}) into database...", ending="")
+            path = pyod_models_root / (pyod_algo.class_name.lower() + ".py")
+            mapping = AlgorithmLoader.get_algorithm_parameters(str(path))
+            params_dict = convert_param_mapping_to_signature_dict(mapping)
+            data = {
+                "display_name": f"[PYOD] {pyod_algo.display_name}",
+                "group": pyod_algo.group,
+                "signature": params_dict,
+                "user": None,
+            }
+            algo = Algorithm.objects.create(**data)
+            algo.path.name = str(path.relative_to(settings.MEDIA_ROOT))
+            algo.save()
+            self.stdout.write(self.style.SUCCESS("OK"))
+
     def handle(self, *args: Any, **options: Any) -> Optional[str]:
         import pyod
+
+        self.stdout.write("Searching for pyod library path...", ending="")
 
         pyod_path = Path(pyod.__path__[0])
         media_pyod_root = settings.ALGORITHM_ROOT_DIR / "pyod_algorithms"
@@ -142,11 +181,24 @@ class Command(BaseCommand):
                 f"pyod seems to be imported before. {media_pyod_root} exists."
             )
 
+        self.stdout.write(self.style.SUCCESS("OK"))
+
+        self.stdout.write("Copying pyod library to media root...", ending="")
         shutil.copytree(src=pyod_path, dst=media_pyod_root)
+        self.stdout.write(self.style.SUCCESS("OK"))
 
         AlgorithmLoader.set_algorithm_root_dir(str(settings.ALGORITHM_ROOT_DIR))
 
+        self.stdout.write("Rename python files to match class names...", ending="")
         rename_algorithm_files_if_needed(media_pyod_root / "models")
+        self.stdout.write(self.style.SUCCESS("OK"))
+
+        self.stdout.write(
+            "Change import statements for pyod.models.base.BaseDetector...", ending=""
+        )
         fix_base_detector_imports(media_pyod_root / "models")
-        save_algorithms_in_db(media_pyod_root / "models")
+        self.stdout.write(self.style.SUCCESS("OK"))
+
+        self.stdout.write("Saving models to database:")
+        self.save_algorithms_in_db(media_pyod_root / "models")
         return None
