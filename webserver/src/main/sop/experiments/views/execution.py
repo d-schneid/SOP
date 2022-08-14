@@ -273,8 +273,8 @@ def download_execution_result(
     """
     A function view that will download an execution result. This view asserts that the
     execution has results located at the path in the result_path attribute of the
-    execution. Accessing this view with an unfinished execution will result in
-    unexpected behaviour.
+    execution. Accessing this view with an unfinished execution will redirect to the
+    experiment overview.
 
     @param request: The HTTPRequest, this will be given by django.
     @param experiment_pk: The primary key of the experiment of the execution.
