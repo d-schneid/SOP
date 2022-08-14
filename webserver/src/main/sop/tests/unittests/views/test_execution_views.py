@@ -90,6 +90,17 @@ class ExecutionCreateViewTests(
         # self.assertContains(response, "Value must be greater than or equal to 0")
         self.assertIsNone(Execution.objects.first())
 
+    def test_execution_create_view_subspcace_max_greater_than_dimensions(self) -> None:
+        self.data["subspaces_max"] = self.dataset.dimensions_total + 1
+        response = self.send_post()
+
+        self.assertEqual(response.status_code, 200)
+        # Execution was not created
+        self.assertIsNone(Execution.objects.first())
+        self.assertFalse(response.redirect_chain)
+
+        self.assertEqual(len(response.context["messages"]), 1)
+
     def test_execution_create_view_subspace_errors2(self) -> None:
         """
         Test that Subspaces max is greater than or equal to Subspaces min.
