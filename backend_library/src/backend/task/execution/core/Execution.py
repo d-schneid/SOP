@@ -411,4 +411,4 @@ class Execution(JsonSerializable, Task, Schedulable):
         :return: The indices of the data points
         of the cleaned dataset used in this execution
         """
-        return list(DataIO.read_annotated(self._dataset_path, True).row_mapping)
+        return self._row_numbers.tolist()
