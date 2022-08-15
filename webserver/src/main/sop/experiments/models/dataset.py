@@ -99,4 +99,4 @@ class Dataset(models.Model):
         return str(self)
 
     def __str__(self) -> str:
-        return str(self.display_name) + " | " + str(self.user)
+        return str(self.display_name)
