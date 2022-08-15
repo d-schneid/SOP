@@ -89,6 +89,8 @@ class ExperimentCreateView(
         context["form"].fields["dataset"].queryset = Dataset.objects.get_by_user(
             self.request.user
         ).filter(status="FINISHED")
+        # Add algorithm groups, algorithms and datasets to context here, to be able to generate and customize
+        # non-django html forms
         context.update(
             {
                 "algorithm_groups": Algorithm.AlgorithmGroup,
