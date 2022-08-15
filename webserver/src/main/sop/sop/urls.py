@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import path, include
 
 from django.conf.urls.static import static
@@ -22,19 +22,20 @@ from django.conf import settings
 
 
 def home(request):
+    if not request.user.is_authenticated:
+        return redirect("/login/")
     return render(request, "home.html", {})
 
 
 admin.site.site_header = "Subspace Outlier Profiling Administration"
 admin.site.index_title = "Administration of Database Model Instances"
 
-
 urlpatterns = [
-    path("admin/", admin.site.urls),
-    path("", home, name="home"),
-    # path('', include('django.contrib.auth.urls')),
-    path("", include("experiments.urls")),
-    path("", include("authentication.urls")),
-] + static(
+                  path("admin/", admin.site.urls),
+                  path("", home, name="home"),
+                  # path('', include('django.contrib.auth.urls')),
+                  path("", include("experiments.urls")),
+                  path("", include("authentication.urls")),
+              ] + static(
     settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
 )  # !!will not work in production, only in development!!

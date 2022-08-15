@@ -140,7 +140,7 @@ class UrlLoginRequiredTests(DebugSchedulerMixin, django.test.TestCase):
     def test_authentication_redirect_to_login(self) -> None:
         response = self.client.get("/", follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertFalse(response.redirect_chain)
+        self.assertTrue(response.redirect_chain)
         self.assertTemplateUsed("registration/login.html")
 
         response = self.client.get("/login/")

@@ -3,6 +3,6 @@
 {% block content %}
     <! is_authenticated is attribute of django.contrib.auth.urls>
     {% if user.is_authenticated %}
-        <h1>Welcome to Subspace Outlier Profiling!</h1>
+        <h1>Welcome to Subspace Outlier Profiling, {{ user.username }}!</h1>
     {% endif %}
 {% endblock content %}
