@@ -22,10 +22,10 @@
                         {{ form.dataset.errors }}
                         <label for="{{ form.dataset.id_for_label }}">Dataset:</label>
                         <select name="dataset" class="form-control" required id="{{ form.dataset.id_for_label }}">
-                            <option value="" selected>---------</option>
+                            <option value="">---------</option>
                             {% for dataset in datasets %}
                                 <option value="{{ dataset.pk }}"
-                                        {% if not dataset.is_cleaned %}disabled{% endif %}>{{ dataset.get_representation }}
+                                        {% if not dataset.is_cleaned %}disabled{% endif %}{% if form.instance.dataset == dataset %}selected{% endif %}>{{ dataset.get_representation }}
                                 </option>
                             {% endfor %}
 
