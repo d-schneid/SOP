@@ -95,6 +95,7 @@ class ExperimentCreateView(
                 "algorithms": Algorithm.objects.get_by_user_and_public(
                     self.request.user
                 ),
+                "datasets": Dataset.objects.get_by_user(self.request.user),
             }
         )
         return context
@@ -106,8 +107,9 @@ class ExperimentDuplicateView(ExperimentCreateView):
     therefor will behave the same way, except that it provides default values for the
     needed fields that match the original experiments values.
     """
+
     def get_initial(
-        self,
+            self,
     ) -> Dict[str, Any]:
         form: Dict[str, Any] = {}
         if self.request.method == "GET":

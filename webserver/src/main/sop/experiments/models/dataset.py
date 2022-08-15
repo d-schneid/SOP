@@ -94,5 +94,9 @@ class Dataset(models.Model):
         with open(error_file_path, "r") as file:
             return file.read()
 
+    @property
+    def get_representation(self) -> str:
+        return str(self)
+
     def __str__(self) -> str:
         return str(self.display_name) + " | " + str(self.user)

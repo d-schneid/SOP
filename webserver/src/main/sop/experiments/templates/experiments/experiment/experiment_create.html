@@ -21,7 +21,15 @@
                     <div>
                         {{ form.dataset.errors }}
                         <label for="{{ form.dataset.id_for_label }}">Dataset:</label>
-                        {{ form.dataset }}
+                        <select name="dataset" class="form-control" required id="{{ form.dataset.id_for_label }}">
+                            <option value="" selected>---------</option>
+                            {% for dataset in datasets %}
+                                <option value="{{ dataset.pk }}"
+                                        {% if not dataset.is_cleaned %}disabled{% endif %}>{{ dataset.get_representation }}
+                                </option>
+                            {% endfor %}
+
+                        </select>
                     </div>
                     <div class="mt-3">
                         <label>Algorithms:</label>
