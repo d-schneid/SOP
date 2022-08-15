@@ -89,12 +89,15 @@ class ExperimentCreateView(
         context["form"].fields["dataset"].queryset = Dataset.objects.get_by_user(
             self.request.user
         ).filter(status="FINISHED")
+        # Add algorithm groups, algorithms and datasets to context here, to be able to generate and customize
+        # non-django html forms
         context.update(
             {
                 "algorithm_groups": Algorithm.AlgorithmGroup,
                 "algorithms": Algorithm.objects.get_by_user_and_public(
                     self.request.user
                 ),
+                "datasets": Dataset.objects.get_by_user(self.request.user),
             }
         )
         return context
@@ -106,8 +109,9 @@ class ExperimentDuplicateView(ExperimentCreateView):
     therefor will behave the same way, except that it provides default values for the
     needed fields that match the original experiments values.
     """
+
     def get_initial(
-        self,
+            self,
     ) -> Dict[str, Any]:
         form: Dict[str, Any] = {}
         if self.request.method == "GET":
