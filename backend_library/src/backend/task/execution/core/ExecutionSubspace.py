@@ -98,7 +98,7 @@ class ExecutionSubspace(Schedulable):
 
     def __load_subspace_from_dataset(self) -> SharedMemory:
         """
-        Loads the dataset for this subspace into shared_memory
+        Loads the dataset for this subspace into shared_memory.
         :return: the shared memory loaded
         """
         ds_shm: SharedMemory = SharedMemory(self._ds_shm_name)
@@ -109,11 +109,14 @@ class ExecutionSubspace(Schedulable):
         self._subspace.make_subspace_array(ds_arr, ss_shm)
         return ss_shm
 
-    def __execution_element_is_finished(self, error_occurred: bool, aborted: bool = False) -> None:
+    def __execution_element_is_finished(self, error_occurred: bool,
+                                        aborted: bool = False) -> None:
         """
         The ExecutionSubspace gets notified by an ExecutionElement when it finishes by calling this method. \n
         Passes the notification on to the Execution. \n
         :param error_occurred: True if the ExecutionElement finished with an error. Is otherwise False.
+        :param aborted: Whether an element finished by abortion.
+        All calls within this Execution with aborted set, must be executed sequentially
         :return: None
         """
         if not aborted:
@@ -129,6 +132,7 @@ class ExecutionSubspace(Schedulable):
     def __unload_subspace_shared_memory(self, ignore_if_done: bool = False) -> None:
         """
         Unlinks the dataset from the subspace from shared_memory. \n
+        Not thread-safe.
         :return: None
         """
         assert ignore_if_done or self._subspace_shared_memory_name is not None
@@ -136,6 +140,7 @@ class ExecutionSubspace(Schedulable):
             self._subspace_shared_memory_on_main.unlink()
             self._subspace_shared_memory_on_main.close()
             self._subspace_shared_memory_name = None
+            self._subspace_shared_memory_on_main = None
 
     def run_later_on_main(self, statuscode: Optional[int]) -> None:
         if statuscode is None:

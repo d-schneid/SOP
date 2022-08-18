@@ -36,6 +36,7 @@ class Schedulable(ABC):
         Is executed before the do_work function on the main Process.
         This method may or may not be executed on an extra thread of the main Process.
         Should not be to CPU-heavy because of this.
+        Must be thread-safe.
         """
         return None
 
@@ -47,7 +48,7 @@ class Schedulable(ABC):
         b) on an extra thread of the main process
         c) in an extra process, if created after run_before_on_main using fork
 
-        May be stopped by abort calls.
+        May be stopped half-way by abort calls.
         :return: Optionally an integer status provided to the run_later_on_main function
         """
         return None
@@ -56,10 +57,14 @@ class Schedulable(ABC):
         """
         Executed after do_work finished on the main Process.
         This method may or may not be executed on an extra thread of the main Process.
+        May be thread-unsafe for multiple concurrent calls with statuscode=None,
+        must be thread-safe in all other cases.
         :param statuscode: The statuscode provided by do_work,
-        depending on the python implementation,
+        depending on the python implementation and operating system,
         only the last 8/16/32 bit might be transferred.
         If do_work returned None no assumptions about this parameter are to be made.
         This method receives None as input iff the Task was aborted.
+        In that case it all run_later_on_main calls within the same task_id
+        must be executed sequentially.
         """
         return None
