@@ -6,7 +6,6 @@ import zipfile
 import zlib
 
 import numpy as np
-from collections.abc import Iterable
 from backend.DataIO import DataIO
 
 
@@ -46,14 +45,6 @@ class TaskHelper:
         :return: None
         """
         os.makedirs(path, exist_ok=True)
-
-    @staticmethod
-    def iterable_length(iterable: Iterable) -> int:
-        """
-        :param iterable: The iterable whose length is requested
-        :return: Returns the length of the iterable.
-        """
-        return sum(1 for e in iterable)
 
     @staticmethod
     def zip_dir(dir_path: str, zip_path_running: str, zip_path_final: str,

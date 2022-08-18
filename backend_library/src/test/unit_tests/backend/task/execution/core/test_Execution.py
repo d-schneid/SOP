@@ -92,11 +92,15 @@ class UnitTestExecution(unittest.TestCase):
         self.assertEqual(directory_names, self._ex.algorithm_directory_paths)
 
     def test_fill_algorithms_directory_name(self):
-        iterable = self._ex._algorithms.__iter__()
-        self.assertEqual(next(iterable).directory_name_in_execution, self._directory_names_in_execution[0])
-        self.assertEqual(next(iterable).directory_name_in_execution, self._directory_names_in_execution[1])
-        self.assertEqual(next(iterable).directory_name_in_execution, self._directory_names_in_execution[2])
-        self.assertEqual(next(iterable).directory_name_in_execution, self._directory_names_in_execution[3])
+        algos = self._ex._algorithms
+        self.assertEqual(algos[0].directory_name_in_execution,
+                         self._directory_names_in_execution[0])
+        self.assertEqual(algos[1].directory_name_in_execution,
+                         self._directory_names_in_execution[1])
+        self.assertEqual(algos[2].directory_name_in_execution,
+                         self._directory_names_in_execution[2])
+        self.assertEqual(algos[3].directory_name_in_execution,
+                         self._directory_names_in_execution[3])
 
     def test_generate_file_system_structure(self):
         self.assertTrue(os.path.isdir(self._result_path))
