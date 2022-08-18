@@ -5,7 +5,7 @@ import os.path
 import pathlib
 import sys
 from types import ModuleType
-from typing import Dict, Type, Optional
+from typing import Optional
 
 from pyod.models.base import BaseDetector
 
@@ -35,7 +35,7 @@ class AlgorithmLoader:
             sys.path.append(AlgorithmLoader._root_dir)
 
     @staticmethod
-    def get_algorithm_class(path: str) -> Type[BaseDetector]:
+    def get_algorithm_class(path: str) -> type[BaseDetector]:
         """gets the type object of the BaseDetector implementation
         under the given path with the given"""
         assert AlgorithmLoader._root_dir is not None, \
@@ -64,7 +64,7 @@ class AlgorithmLoader:
         return requested_class
 
     @staticmethod
-    def get_algorithm_object(path: str, parameters: Dict[str, object]) -> BaseDetector:
+    def get_algorithm_object(path: str, parameters: dict[str, object]) -> BaseDetector:
         """instantiates an instance of the BaseDetector implementation
         under the given path with the given constructor parameters"""
         return AlgorithmLoader.get_algorithm_class(path)(**parameters)

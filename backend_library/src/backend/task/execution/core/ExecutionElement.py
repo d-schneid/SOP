@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Callable
 from multiprocessing.shared_memory import SharedMemory
-from typing import Callable, Optional
+from typing import Optional
 
 import numpy as np
 

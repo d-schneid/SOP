@@ -1,6 +1,5 @@
 import math
 from abc import ABC, abstractmethod
-from typing import Dict
 
 from backend.JsonSerializable import JsonSerializable
 
@@ -20,7 +19,7 @@ class SubspaceSizeDistribution(JsonSerializable, ABC):
 
     @abstractmethod
     def get_subspace_counts(self, requested_subspace_count: int,
-                            dataset_dimension_count: int) -> Dict[int, int]:
+                            dataset_dimension_count: int) -> dict[int, int]:
         """
         Calculates the number of subspaces to be generated of each size
         :param requested_subspace_count: the number of subspaces,
@@ -33,5 +32,5 @@ class SubspaceSizeDistribution(JsonSerializable, ABC):
         return {}
 
     @abstractmethod
-    def to_json(self) -> Dict[str, object]:
+    def to_json(self) -> dict[str, object]:
         pass

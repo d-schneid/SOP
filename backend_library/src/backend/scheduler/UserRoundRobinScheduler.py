@@ -5,10 +5,11 @@ import multiprocessing
 import sys
 import threading
 from collections import OrderedDict
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from multiprocessing import Condition, Process
 from threading import Thread
-from typing import Callable, Optional, Dict, List, Tuple
+from typing import Optional
 
 from backend.scheduler.Schedulable import Schedulable
 from backend.scheduler.Scheduler import Scheduler
@@ -23,13 +24,13 @@ class UserRoundRobinScheduler(Scheduler):
         super().__init__()
         UserRoundRobinScheduler.__start_by_fork()
         self.__shutdown_ongoing: bool = False
-        self.__on_shutdown_completed: Optional[Callable] = None
+        self.__on_shutdown_completed: Optional[Callable[[], None]] = None
         self.__empty_queue: Condition = Condition()
-        self.__threads: List[Thread] = list()
-        self.__user_queues: OrderedDict[int, List[PrioritizedSchedulable]] \
+        self.__threads: list[Thread] = list()
+        self.__user_queues: OrderedDict[int, list[PrioritizedSchedulable]] \
             = OrderedDict()
         self.__next_queue: int = -1
-        self.__running: Dict[Schedulable, Tuple[Process, bool]] = dict()
+        self.__running: dict[Schedulable, tuple[Process, bool]] = dict()
         for i in range(self.__get_targeted_worker_count()):
             self.__make_worker_thread()
 

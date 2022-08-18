@@ -1,6 +1,5 @@
 import os.path
 import shutil
-from typing import Dict
 
 from django.conf import settings
 from django.urls import reverse
@@ -58,7 +57,7 @@ class MediaMixin(MixinBase):
 
 
 class LoggedInMixin(MixinBase):
-    credentials: Dict[str, str]
+    credentials: dict[str, str]
     user: User
     logged_in: bool = False
 
@@ -76,7 +75,7 @@ class LoggedInMixin(MixinBase):
 
 
 class AdminLoggedInMixin(MixinBase):
-    credentials: Dict[str, str]
+    credentials: dict[str, str]
     user: User
     logged_in: bool = False
 

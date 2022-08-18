@@ -4,12 +4,10 @@ import csv
 import json
 import multiprocessing
 import os
-from collections.abc import Iterable
+from collections.abc import Iterable, Callable
 from multiprocessing import shared_memory
 from multiprocessing.shared_memory import SharedMemory
-from typing import Callable, Optional
-from typing import Dict
-from typing import List
+from typing import Optional
 
 import numpy as np
 
@@ -102,13 +100,13 @@ class Execution(JsonSerializable, Task, Schedulable):
         self._metric_finished: bool = False
 
         # generate subspaces
-        self._subspaces: List[Subspace] = list(self._subspace_generation.generate())
+        self._subspaces: list[Subspace] = list(self._subspace_generation.generate())
         self._subspaces_count = len(self._subspaces)
         self._total_execution_element_count: int = self._subspaces_count * len(
             self._algorithms)
 
         # generate execution_subspaces
-        self._execution_subspaces: List[ExecutionSubspace] = list()
+        self._execution_subspaces: list[ExecutionSubspace] = list()
 
         # shared memory
         self._shared_memory_name: Optional[str] = None
@@ -174,7 +172,7 @@ class Execution(JsonSerializable, Task, Schedulable):
         with open(details_path, 'w') as f:
             json.dump(self.to_json(), f)
 
-    def to_json(self) -> Dict[str, object]:
+    def to_json(self) -> dict[str, object]:
         return {'subspace_generation': self._subspace_generation.to_json(),
                 'algorithms': list(map(lambda x: x.to_json(), self._algorithms))}
 
@@ -372,7 +370,7 @@ class Execution(JsonSerializable, Task, Schedulable):
         return iter(self._algorithms)
 
     @property
-    def algorithm_directory_paths(self) -> List[str]:
+    def algorithm_directory_paths(self) -> list[str]:
         """
         :return: A list which contains all the paths to the folder
         of the selected algorithms (in this Execution). \n
