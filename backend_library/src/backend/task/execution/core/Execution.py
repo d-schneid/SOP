@@ -4,7 +4,7 @@ import csv
 import json
 import multiprocessing
 import os
-from collections.abc import Iterable, Callable
+from collections.abc import Callable
 from multiprocessing import shared_memory
 from multiprocessing.shared_memory import SharedMemory
 from typing import Optional
@@ -37,7 +37,7 @@ class Execution(JsonSerializable, Task, Schedulable):
                  task_progress_callback: Callable[[int, TaskState, float], None],
                  dataset_path: str, result_path: str,
                  subspace_generation: SubspaceGenerationDescription,
-                 algorithms: Iterable[ParameterizedAlgorithm],
+                 algorithms: list[ParameterizedAlgorithm],
                  metric_callback: Callable[[Execution], None],
                  datapoint_count: Optional[int],
                  final_zip_path: str = "", priority: int = 0,
@@ -363,11 +363,11 @@ class Execution(JsonSerializable, Task, Schedulable):
 
     # getter for metric
     @property
-    def algorithms(self) -> Iterable[ParameterizedAlgorithm]:
+    def algorithms(self) -> list[ParameterizedAlgorithm]:
         """
         :return: The algorithm information belonging to this Execution.
         """
-        return iter(self._algorithms)
+        return self._algorithms
 
     @property
     def algorithm_directory_paths(self) -> list[str]:
@@ -382,11 +382,11 @@ class Execution(JsonSerializable, Task, Schedulable):
         return directory_names
 
     @property
-    def subspaces(self) -> Iterable[Subspace]:
+    def subspaces(self) -> list[Subspace]:
         """
         :return: The subspaces belonging to this Execution.
         """
-        return iter(self._subspaces)
+        return self._subspaces
 
     @property
     def zip_result_path(self) -> str:

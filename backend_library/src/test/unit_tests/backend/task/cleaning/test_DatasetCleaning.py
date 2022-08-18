@@ -26,10 +26,10 @@ class UnitTestDatasetCleaning(unittest.TestCase):
     def setUp(self) -> None:
         with open(self._uncleaned_dataset_path, 'w') as uncleaned_csv:
             self._dc: DatasetCleaning = DatasetCleaning(self._user_id, self._task_id,
-                                                                                  self.task_progress_callback,
-                                                                                  "no_uncleaned_dataset",
-                                                                                  self._cleaned_dataset_path, iter([]),
-                                                                                  self._priority)
+                                                        self.task_progress_callback,
+                                                        "no_uncleaned_dataset",
+                                                        self._cleaned_dataset_path, [],
+                                                        self._priority)
 
     def tearDown(self) -> None:
         if os.path.isfile(self._error_path):

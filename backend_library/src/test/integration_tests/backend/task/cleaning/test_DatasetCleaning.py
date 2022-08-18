@@ -33,7 +33,7 @@ class IntegrationTestDatasetCleaning1(unittest.TestCase):
                                                         self.task_progress_callback,
                                                         self._uncleaned_dataset_path,
                                                         self._cleaned_dataset_path,
-                                                        iter([]), self._priority)
+                                                        [], self._priority)
         self._finished_cleaning = False
 
     def tearDown(self) -> None:
@@ -85,7 +85,7 @@ class IntegrationTestDatasetCleaningNoUncleanedDataset(unittest.TestCase):
                 self._user_id, self._task_id,
                 self.task_progress_callback,
                 "no_uncleaned_dataset",
-                self._cleaned_dataset_path, iter([]),
+                self._cleaned_dataset_path, [],
                 self._priority)
 
     def tearDown(self) -> None:

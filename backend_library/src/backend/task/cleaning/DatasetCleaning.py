@@ -1,6 +1,6 @@
 import os
 from abc import ABC
-from collections.abc import Callable, Iterable
+from collections.abc import Callable
 from typing import Optional
 
 import numpy as np
@@ -31,7 +31,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
     def __init__(self, user_id: int, task_id: int,
                  task_progress_callback: Callable[[int, TaskState, float], None],
                  uncleaned_dataset_path: str, cleaned_dataset_path: str,
-                 cleaning_steps: Iterable[DatasetCleaningStep] = None,
+                 cleaning_steps: Optional[list[DatasetCleaningStep]] = None,
                  priority: int = 100,
                  running_dataset_cleaning_path: str = ""):
         """
@@ -63,9 +63,8 @@ class DatasetCleaning(Task, Schedulable, ABC):
                               MinMaxScaler()]  # Default Cleaning-Pipeline
         self._uncleaned_dataset_path: str = uncleaned_dataset_path
         self._cleaned_dataset_path: str = cleaned_dataset_path
-        self._cleaning_steps: Iterable[DatasetCleaningStep] = cleaning_steps
-        self._cleaning_steps_count: int = TaskHelper.iterable_length(
-            self._cleaning_steps)
+        self._cleaning_steps: list[DatasetCleaningStep] = cleaning_steps
+        self._cleaning_steps_count: int = len(self._cleaning_steps)
         self._priority = priority
         if running_dataset_cleaning_path == "":
             self._running_dataset_cleaning_path = uncleaned_dataset_path + ".running"

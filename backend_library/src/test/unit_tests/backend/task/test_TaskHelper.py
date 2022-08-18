@@ -64,11 +64,6 @@ class UnitTestTaskHelper(unittest.TestCase):
         TaskHelper.create_directory(self._test_dir_path)
         self.assertTrue(os.path.isdir(self._test_dir_path))
 
-    def test_iterable_length(self):
-        self.assertEqual(0, TaskHelper.iterable_length(iter([])))
-        self.assertEqual(4, TaskHelper.iterable_length(iter([1, 2, 531, 412])))
-        self.assertEqual(10, TaskHelper.iterable_length(iter([1, 2, 531, 412, -1, 12, 214, 143, 1234, 512])))
-
     # ---- Tests for zip_dir ----
 
     def test_zip_dir_correct(self):

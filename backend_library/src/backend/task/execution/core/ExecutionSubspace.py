@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import multiprocessing
 import os
-from collections.abc import Iterable, Callable
+from collections.abc import Callable
 from multiprocessing.shared_memory import SharedMemory
 from typing import Optional
 
@@ -21,7 +21,7 @@ class ExecutionSubspace(Schedulable):
     """
 
     def __init__(self, user_id: int, task_id: int,
-                 algorithms: Iterable[ParameterizedAlgorithm], subspace: Subspace,
+                 algorithms: list[ParameterizedAlgorithm], subspace: Subspace,
                  result_path: str, ds_on_main: np.ndarray,
                  on_execution_element_finished_callback: Callable[[bool, bool], None],
                  ds_shm_name: str, row_numbers: np.ndarray, priority: int = 5):
@@ -70,7 +70,8 @@ class ExecutionSubspace(Schedulable):
         self._cache_subset_lock = multiprocessing.Lock()
         self._algorithms = algorithms
 
-    def __generate_execution_elements(self, algorithms: Iterable[ParameterizedAlgorithm]) -> None:
+    def __generate_execution_elements(self,
+                                      algorithms: list[ParameterizedAlgorithm]) -> None:
         """
         :param algorithms: All algorithms that are selected for the Execution.
         :return: None
