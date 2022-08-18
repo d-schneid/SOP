@@ -1,4 +1,4 @@
-from typing import Optional, Dict
+from typing import Optional
 
 from django import forms
 
@@ -17,7 +17,7 @@ class AdminAddExperimentForm(forms.ModelForm[Experiment]):
         model = Experiment
         fields = ["display_name", "user", "dataset", "algorithms"]
 
-    def clean(self) -> Optional[Dict[str, object]]:
+    def clean(self) -> Optional[dict[str, object]]:
         """
         Validates the fields of this AdminAddExperimentForm.
         If at least one field is not valid, it shows an appropriate error for the

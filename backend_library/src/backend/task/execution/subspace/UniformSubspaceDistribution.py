@@ -1,6 +1,5 @@
 import math
 from abc import ABC
-from typing import Dict
 
 from backend.task.execution.subspace.SubspaceSizeDistribution \
     import SubspaceSizeDistribution
@@ -22,7 +21,7 @@ class UniformSubspaceDistribution(SubspaceSizeDistribution, ABC):
         self._subspace_size_max: int = subspace_size_max
 
     def get_subspace_counts(self, requested_subspace_count: int,
-                            dataset_dimension_count: int) -> Dict[int, int]:
+                            dataset_dimension_count: int) -> dict[int, int]:
         """
         Calculates how many subspaces there are of each Size
         :param requested_subspace_count: How may subspaces are needed
@@ -37,12 +36,12 @@ class UniformSubspaceDistribution(SubspaceSizeDistribution, ABC):
             math.floor(requested_subspace_count / size_count)
         sizes_with_one_more_subspace: int = \
             (requested_subspace_count % size_count) + self._subspace_size_min
-        result: Dict[int, int] = dict()
+        result: dict[int, int] = dict()
         for i in range(self._subspace_size_min, self._subspace_size_max + 1):
             additional_subspaces = (1 if i < sizes_with_one_more_subspace else 0)
             result[i] = number_of_subspaces_per_size + additional_subspaces
         return result
 
-    def to_json(self) -> Dict[str, object]:
+    def to_json(self) -> dict[str, object]:
         return {"subspace_size_min": self._subspace_size_min,
                 "subspace_size_max": self._subspace_size_max}

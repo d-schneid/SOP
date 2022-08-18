@@ -1,5 +1,3 @@
-from typing import Dict
-
 from backend.JsonSerializable import JsonSerializable
 
 
@@ -21,7 +19,7 @@ class ParameterizedAlgorithm(JsonSerializable, object):
         self._display_name: str = display_name
         self._directory_name_in_execution: str = ""
 
-    def to_json(self) -> Dict[str, object]:
+    def to_json(self) -> dict[str, object]:
         return {'display_name': self._display_name,
                 'directory_name': self._directory_name_in_execution,
                 'hyper_parameter': self._hyper_parameter}

@@ -1,4 +1,5 @@
-from typing import Callable
+from collections.abc import Callable
+from typing import Optional
 
 from backend.scheduler.Schedulable import Schedulable
 from backend.scheduler.Scheduler import Scheduler
@@ -6,6 +7,7 @@ from backend.scheduler.Scheduler import Scheduler
 
 class DebugScheduler(Scheduler):
     """Simple scheduler for testing, does not do any scheduling or parallelization"""
+
     def abort_by_task(self, task_id: int) -> None:
         raise NotImplementedError
 
@@ -15,7 +17,9 @@ class DebugScheduler(Scheduler):
     def hard_shutdown(self) -> None:
         return None
 
-    def graceful_shutdown(self, on_shutdown_completed: Callable) -> None:
+    def graceful_shutdown(self,
+                          on_shutdown_completed: Optional[Callable[[], None]] = None) \
+            -> None:
         raise NotImplementedError
 
     def is_shutting_down(self) -> bool:

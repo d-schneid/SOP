@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import multiprocessing
 import os
-from collections.abc import Iterable
+from collections.abc import Iterable, Callable
 from multiprocessing.shared_memory import SharedMemory
-from typing import Callable
-from typing import List, Optional
+from typing import Optional
 
 import numpy as np
 
@@ -61,7 +60,7 @@ class ExecutionSubspace(Schedulable):
         # further private variables
         self._finished_execution_element_count: int = 0
         self._total_execution_element_count: int = len(self._algorithms)
-        self._execution_elements: List[ExecutionElement] = list()
+        self._execution_elements: list[ExecutionElement] = list()
 
         # shared memory
         self._subspace_shared_memory_name: Optional[str] = None

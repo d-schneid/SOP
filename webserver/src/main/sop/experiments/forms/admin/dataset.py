@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Any, Dict
+from typing import Optional, Any
 
 from backend.DatasetInfo import DatasetInfo
 from django import forms
@@ -23,7 +23,7 @@ class AdminAddDatasetForm(forms.ModelForm[Dataset]):
             "cleaning_progress",
         ]
 
-    def clean(self) -> Optional[Dict[str, Any]]:
+    def clean(self) -> Optional[dict[str, Any]]:
         """
         Validates the dataset file of this AdminAddDatasetForm.
         If this dataset file is not valid, it shows an appropriate error for the
@@ -33,7 +33,8 @@ class AdminAddDatasetForm(forms.ModelForm[Dataset]):
         @return: The clean fields of this AdminAddDatasetForm if the dataset file is
         valid. Otherwise None.
         """
-        dataset: Optional[TemporaryUploadedFile] = self.cleaned_data.get("path_original")
+        dataset: Optional[TemporaryUploadedFile] = self.cleaned_data.get(
+            "path_original")
 
         if dataset is None:
             return self.cleaned_data

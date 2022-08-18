@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, IO, Optional
+from typing import Any, IO, Optional
 
 from django.core.cache import cache
 from django.core.files.uploadhandler import FileUploadHandler
@@ -20,12 +20,12 @@ class UploadProgressCachedHandler(FileUploadHandler):
         self.cache_key: Optional[str] = None
 
     def handle_raw_input(
-        self,
-        input_data: IO[bytes],
-        META: Dict[str, str],
-        content_length: int,
-        boundary: str,
-        encoding: Optional[str] = None,
+            self,
+            input_data: IO[bytes],
+            META: dict[str, str],
+            content_length: int,
+            boundary: str,
+            encoding: Optional[str] = None,
     ) -> None:
         if self.request is None:
             return

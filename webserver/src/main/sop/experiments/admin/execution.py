@@ -1,4 +1,5 @@
-from typing import Optional, Sequence, List
+from collections.abc import Sequence
+from typing import Optional
 
 from django.contrib import admin
 from django.http import HttpRequest
@@ -43,7 +44,7 @@ class ExecutionAdmin(admin.ModelAdmin[Execution]):
     ) -> bool:
         return False
 
-    def get_urls(self) -> List[URLPattern]:
+    def get_urls(self) -> list[URLPattern]:
         """
         Adds custom view for downloading the result file of the associated
         Execution model instance to the URLs.

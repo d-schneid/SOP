@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from threading import Thread
-from typing import Callable
+from typing import Optional
 
 from backend.scheduler.Schedulable import Schedulable
 from backend.scheduler.Scheduler import Scheduler
@@ -19,7 +20,9 @@ class ThreadedScheduler(Scheduler):
     def hard_shutdown(self) -> None:
         pass
 
-    def graceful_shutdown(self, on_shutdown_completed: Callable) -> None:
+    def graceful_shutdown(self,
+                          on_shutdown_completed: Optional[Callable[[], None]] = None) \
+            -> None:
         raise NotImplementedError
 
     def is_shutting_down(self) -> bool:

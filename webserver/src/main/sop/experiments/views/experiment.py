@@ -3,7 +3,7 @@ from __future__ import annotations
 import io
 import zipfile
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from django.contrib import messages
 from django.db import models
@@ -29,7 +29,7 @@ class ExperimentOverview(LoginRequiredMixin, ListView[Experiment]):
     model = Experiment
     template_name = "experiment_overview.html"
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         experiments: ExperimentQuerySet = Experiment.objects.get_by_user(
             self.request.user
@@ -64,7 +64,7 @@ class ExperimentCreateView(
         form.instance.user = self.request.user
 
         # get algorithms
-        algos: List[Algorithm] = [
+        algos: list[Algorithm] = [
             Algorithm.objects.get(pk=key)
             for key in self.request.POST.getlist("check-algo")
         ]
@@ -84,7 +84,7 @@ class ExperimentCreateView(
 
         return response
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["form"].fields["dataset"].queryset = Dataset.objects.get_by_user(
             self.request.user
@@ -112,8 +112,8 @@ class ExperimentDuplicateView(ExperimentCreateView):
 
     def get_initial(
             self,
-    ) -> Dict[str, Any]:
-        form: Dict[str, Any] = {}
+    ) -> dict[str, Any]:
+        form: dict[str, Any] = {}
         if self.request.method == "GET":
             og_experiment_pk = self.kwargs["pk"]
             original = Experiment.objects.get(pk=og_experiment_pk)
@@ -121,7 +121,7 @@ class ExperimentDuplicateView(ExperimentCreateView):
             form["dataset"] = original.dataset
         return form
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
 
         og_experiment_pk = self.kwargs["pk"]

@@ -1,7 +1,7 @@
 import itertools
 import math
 from abc import ABC
-from typing import Iterable, Dict, List, Set
+from collections.abc import Iterable
 
 import numpy as np
 
@@ -34,29 +34,29 @@ class RandomizedSubspaceGeneration(SubspaceGenerationDescription, ABC):
                                                dataset_total_dimension_count), \
             "too many subspaces were requested"
 
-    def to_json(self) -> Dict[str, object]:
+    def to_json(self) -> dict[str, object]:
         return {"size_distr": self.__size_distr.to_json(), "seed": self.__seed,
                 "subspace_amount": self.__subspace_amount,
                 "dataset_dimension_count": self.__ds_dim_count}
 
-    def generate(self) -> List[Subspace]:
+    def generate(self) -> list[Subspace]:
         """
         Generates the subspaces to be used
         :return: a list of subspaces to be used
         """
-        size_counts: Dict[int, int] = self.__size_distr.get_subspace_counts(
+        size_counts: dict[int, int] = self.__size_distr.get_subspace_counts(
             self.__subspace_amount, self.__ds_dim_count)
-        result: List[Subspace] = list()
+        result: list[Subspace] = list()
         for k, v in size_counts.items():
             result.extend(self.__generate_subspaces_of_size(k, v))
         return result
 
-    def __generate_subspace_bits(self, size: int, count: int) -> Set[bytes]:
+    def __generate_subspace_bits(self, size: int, count: int) -> set[bytes]:
         """generates a set of #count bytes objects,
          each of them containing #size ones,
          only the first #self.__ds_dim_count bits will be used.
          Takes exponential time as count approaches comb(self.__ds_dim_count, size)"""
-        result_bytes: Set[bytes] = set()
+        result_bytes: set[bytes] = set()
         current_mask: np.array = np.concatenate(
             (np.repeat(True, size), np.repeat(False, self.__ds_dim_count - size)))
         while len(result_bytes) < count:

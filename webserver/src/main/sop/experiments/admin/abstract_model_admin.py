@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
-from typing import Optional, List, Dict, Type
+from typing import Optional
 
 from django.contrib import admin, messages
 from django.contrib.admin.options import InlineModelAdmin
@@ -25,7 +25,7 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
         abstract = True
 
     @abstractmethod
-    def get_admin_add_form(self) -> Type[ModelForm[Model]]:
+    def get_admin_add_form(self) -> type[ModelForm[Model]]:
         """
         Hook for specifying custom admin add forms.
         @return: The Form class for use in the admin add view. This is used by
@@ -34,7 +34,7 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
         pass
 
     @abstractmethod
-    def get_admin_change_form(self) -> Type[ModelForm[Model]]:
+    def get_admin_change_form(self) -> type[ModelForm[Model]]:
         """
         Hook for specifying custom admin change forms.
         @return: The Form class for use in the admin change view. This is used by
@@ -51,7 +51,7 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
         pass
 
     # override to get current user in form
-    def get_form(self, request: HttpRequest, *args, **kwargs) -> Type[ModelForm[Model]]:
+    def get_form(self, request: HttpRequest, *args, **kwargs) -> type[ModelForm[Model]]:
         form = super().get_form(request, *args, **kwargs)
         form.current_user = request.user  # type: ignore
         return form
@@ -60,7 +60,7 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
     def get_inline_instances(self,
                              request: HttpRequest,
                              obj: Optional[Model] = None
-    ) -> List[InlineModelAdmin]:
+                             ) -> list[InlineModelAdmin]:
         """
         Fetches the inline instances of the given object.
 
@@ -75,8 +75,8 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
     def add_view(self,
                  request: HttpRequest,
                  form_url: str = "",
-                 extra_context: Optional[Dict[str, object]] = None
-    ) -> HttpResponse:
+                 extra_context: Optional[dict[str, object]] = None
+                 ) -> HttpResponse:
         """
         View for the model instance addition page in the admin interface.
         After adding a new model instance, it redirects back to the change list.
@@ -94,8 +94,8 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
                     request: HttpRequest,
                     object_id: str,
                     form_url: str = "",
-                    extra_context: Optional[Dict[str, object]] = None
-    ) -> HttpResponse:
+                    extra_context: Optional[dict[str, object]] = None
+                    ) -> HttpResponse:
         """
         The view for editing a selected object.
         After editing the selected object, it redirects back to the change list.
@@ -115,7 +115,7 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
             self,
             request: HttpRequest,
             object_id: str,
-            extra_context: Optional[Dict[str, object]] = None,
+            extra_context: Optional[dict[str, object]] = None,
     ) -> HttpResponse:
         """
         The view for deleting a selected object. Also checks if the selected object can
