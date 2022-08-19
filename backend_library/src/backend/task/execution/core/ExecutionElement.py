@@ -89,12 +89,7 @@ class ExecutionElement(Schedulable):
         return self._priority
 
     def do_work(self) -> int:
-        """
-        Is called by the Scheduler. \n
-        Will compute and store the result of the ExecutionElement. \n
-        :return: An exitcode provided to run_later_on_main
-        """
-
+        # Will compute and store the result of the ExecutionElement.
         try:
             run_algo_result: np.ndarray = self.__run_algorithm()
             result_to_save: np.ndarray = self.__convert_result_to_csv(run_algo_result)

@@ -64,7 +64,8 @@ class Execution(JsonSerializable, Task, Schedulable):
         that should be processed on the subspaces.
         :param metric_callback: Called after the Execution-computation is complete.
         Carries out the metricizes.
-        :param datapoint_count: Number of datapoints in the dataset, may be specified to accelerate calculation
+        :param datapoint_count: Number of datapoints in the dataset.
+        Should be specified to accelerate calculation
         """
         assert dataset_path.endswith(".csv")
         assert priority >= 0
@@ -77,8 +78,8 @@ class Execution(JsonSerializable, Task, Schedulable):
         self._dataset_path: str = dataset_path
         self._result_path: str = result_path
         self._subspace_generation: SubspaceGenerationDescription = subspace_generation
-        self._algorithms: list = list(algorithms)
-        self._metric_callback: Callable = metric_callback
+        self._algorithms: list[ParameterizedAlgorithm] = list(algorithms)
+        self._metric_callback: Callable[[Execution], None] = metric_callback
 
         # on created logic
         self._execution_element_finished_lock = multiprocessing.Lock()
@@ -100,8 +101,8 @@ class Execution(JsonSerializable, Task, Schedulable):
         self._metric_finished: bool = False
 
         # generate subspaces
-        self._subspaces: list[Subspace] = list(self._subspace_generation.generate())
-        self._subspaces_count = len(self._subspaces)
+        self._subspaces: list[Subspace] = self._subspace_generation.generate()
+        self._subspaces_count: int = len(self._subspaces)
         self._total_execution_element_count: int = self._subspaces_count * len(
             self._algorithms)
 
@@ -116,7 +117,7 @@ class Execution(JsonSerializable, Task, Schedulable):
         self._rownrs_shm_name: Optional[str] = None
         self._rownrs_shm_on_main: Optional[SharedMemory] = None
         self._rownrs_on_main: Optional[np.ndarray] = None
-        self._row_numbers: Optional[np.ndarray]
+        self._row_numbers: Optional[np.ndarray] = None
 
     def __fill_algorithms_directory_name(self) -> None:
         """
@@ -139,14 +140,16 @@ class Execution(JsonSerializable, Task, Schedulable):
                 algorithm.directory_name_in_execution = display_name
                 algorithm_display_name_dict[algorithm.display_name] = 1
             else:
-                algorithm.directory_name_in_execution = display_name + " (" \
-                                                        + str(algorithm_display_name_dict[display_name]) + ")"
+                dir_name = "{0} ({1})".format(display_name,
+                                              algorithm_display_name_dict[display_name])
+                algorithm.directory_name_in_execution = dir_name
                 algorithm_display_name_dict[algorithm.display_name] += 1
 
     # Generates all missing folders of the file system structure of this execution
     def __generate_file_system_structure(self) -> None:
         """
         Creates all necessary directories to store the Execution results. \n
+        Should only be executed once, parallel execution is not allowed
         :return: None
         """
         # if os.path.exists(self.result_path):
@@ -262,7 +265,8 @@ class Execution(JsonSerializable, Task, Schedulable):
         shared_data = np.ndarray(data.shape, data.dtype, shm.buf)
 
         rownrs_shm = shared_memory.SharedMemory(self._rownrs_shm_name, False)
-        rownrs_shared_data = np.ndarray([self._datapoint_count], np.int32, rownrs_shm.buf)
+        rownrs_shared_data = np.ndarray([self._datapoint_count], np.int32,
+                                        rownrs_shm.buf)
 
         shared_data[:] = data[:]
         rownrs_shared_data[:] = dataset.row_mapping[:]
@@ -270,12 +274,15 @@ class Execution(JsonSerializable, Task, Schedulable):
             shm.close()
             rownrs_shm.close()
 
-    def __on_execution_element_finished(self, error: bool, aborted: bool = False) -> None:
+    def __on_execution_element_finished(self, error: bool,
+                                        aborted: bool = False) -> None:
         """
         The Execution gets notified by the corresponding ExecutionSubspace
         when an ExecutionElement finished by calling this method. \n
         :param error: True if the ExecutionElement finished with an error.
         Is otherwise False.
+        :param aborted: True if this execution was aborted.
+        Not thread-safe for multiple calls with this set.
         :return: None
         """
         if not aborted:
@@ -345,7 +352,6 @@ class Execution(JsonSerializable, Task, Schedulable):
             for ess in self._execution_subspaces:
                 Scheduler.get_instance().schedule(ess)
 
-    # Schedulable
     def do_work(self) -> None:
         self.__load_dataset()
 
@@ -409,4 +415,6 @@ class Execution(JsonSerializable, Task, Schedulable):
         :return: The indices of the data points
         of the cleaned dataset used in this execution
         """
+        # safe as per numpy documentation
+        # noinspection PyTypeChecker
         return self._row_numbers.tolist()
