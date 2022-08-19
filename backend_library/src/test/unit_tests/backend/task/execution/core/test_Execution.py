@@ -69,8 +69,10 @@ class UnitTestExecution(unittest.TestCase):
         self.__clear_old_execution_file_structure()
 
         # create Execution
-        self._ex = ex(self._user_id, self._task_id, self.__task_progress_callback, self._dataset_path,
-                      self._result_path, self._subspace_generation, iter(self._algorithms), self.__metric_callback,
+        self._ex = ex(self._user_id, self._task_id, self.__task_progress_callback,
+                      self._dataset_path,
+                      self._result_path, self._subspace_generation, self._algorithms,
+                      self.__metric_callback,
                       self._datapoint_count, self._final_zip_path, self._priority)
 
     def tearDown(self) -> None:
@@ -226,8 +228,10 @@ class UnitTestExecution(unittest.TestCase):
         self._wrong_priority: list[int] = list([-1, -12313, 12431, 5])
         for wrong_priority in self._wrong_priority:
             with self.assertRaises(AssertionError) as context:
-                ex(self._user_id, self._task_id, self.__task_progress_callback, self._dataset_path,
-                   self._result_path, self._subspace_generation, iter(self._algorithms), self.__metric_callback,
+                ex(self._user_id, self._task_id, self.__task_progress_callback,
+                   self._dataset_path,
+                   self._result_path, self._subspace_generation, self._algorithms,
+                   self.__metric_callback,
                    self._datapoint_count, self._final_zip_path, wrong_priority)
 
 
