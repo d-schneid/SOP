@@ -77,7 +77,7 @@ class UnitTestDataIO(unittest.TestCase):
             file.write("a,b,c,d,e\nf,g,h,i,j\nk,l,m,n,o")
 
         with self.assertRaises(ValueError):
-            dataset: np.ndarray = DataIO.read_cleaned_csv(test_file_path)
+            DataIO.read_cleaned_csv(test_file_path)
 
         # TODO
 

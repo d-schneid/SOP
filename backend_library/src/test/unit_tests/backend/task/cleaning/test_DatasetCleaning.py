@@ -1,15 +1,14 @@
 import os
 import unittest
-from unittest import skip
 
 import numpy as np
 
-from backend.task.cleaning.DatasetCleaning import DatasetCleaning
-from backend.task.TaskState import TaskState
-from backend.task.TaskHelper import TaskHelper
 from backend.DataIO import DataIO
 from backend.task.TaskErrorMessages import TaskErrorMessages
-from backend.scheduler.Scheduler import Scheduler
+from backend.task.TaskHelper import TaskHelper
+from backend.task.TaskState import TaskState
+from backend.task.cleaning.DatasetCleaning import DatasetCleaning
+
 
 class UnitTestDatasetCleaning(unittest.TestCase):
     _dir_name: str = os.getcwd()
@@ -24,7 +23,7 @@ class UnitTestDatasetCleaning(unittest.TestCase):
     _error_path: str = TaskHelper.convert_to_error_csv_path(_cleaned_dataset_path)
 
     def setUp(self) -> None:
-        with open(self._uncleaned_dataset_path, 'w') as uncleaned_csv:
+        with open(self._uncleaned_dataset_path, 'w'):
             self._dc: DatasetCleaning = DatasetCleaning(self._user_id, self._task_id,
                                                         self.task_progress_callback,
                                                         "no_uncleaned_dataset",
@@ -45,7 +44,8 @@ class UnitTestDatasetCleaning(unittest.TestCase):
 
         # array not empty
         not_empty: np.ndarray = np.asarray(["I am not empty (:"])
-        self.assertFalse(self._dc._DatasetCleaning__empty_cleaning_result_handler(not_empty))
+        self.assertFalse(
+            self._dc._DatasetCleaning__empty_cleaning_result_handler(not_empty))
         self.assertFalse(os.path.isfile(self._error_path))
 
         # array is empty
@@ -53,23 +53,22 @@ class UnitTestDatasetCleaning(unittest.TestCase):
         self.assertTrue(self._dc._DatasetCleaning__empty_cleaning_result_handler(empty))
         self.assertTrue(os.path.isfile(self._error_path))
         # compare error message
-        self.assertEqual(self._error_message, DataIO.read_uncleaned_csv(self._error_path, has_header=None)[0][0])
+        self.assertEqual(self._error_message,
+                         DataIO.read_uncleaned_csv(self._error_path, has_header=None)[
+                             0][0])
 
         # clean up
         os.remove(self._error_path)
         self.assertFalse(os.path.isfile(self._error_path))
 
-    def task_progress_callback(self, _task_id: int, task_state: TaskState, progress: float) -> None:
-        if task_state.is_finished():
-            self._finished_cleaning = True
-
     def test_load_uncleaned_dataset(self):
         # No uncleaned Dataset -> throw exception
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(AssertionError):
             self._dc._DatasetCleaning__load_uncleaned_dataset()
 
-    def task_progress_callback(self, _task_id: int, task_state: TaskState, progress: float) -> None:
-        None  # empty callback
+    def task_progress_callback(self, _task_id: int, task_state: TaskState,
+                               progress: float) -> None:
+        return None  # empty callback
 
 
 if __name__ == '__main__':

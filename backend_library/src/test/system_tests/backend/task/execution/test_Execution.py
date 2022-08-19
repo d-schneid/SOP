@@ -1,24 +1,19 @@
 import os
 import shutil
 import unittest
-import zipfile
-from unittest import skip
 from unittest.mock import Mock
-
-import numpy as np
 
 from backend.scheduler.DebugScheduler import DebugScheduler
 from backend.scheduler.Scheduler import Scheduler
-from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
 from backend.task.TaskHelper import TaskHelper
 from backend.task.TaskState import TaskState
 from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
+from backend.task.execution.core.Execution import Execution
 from backend.task.execution.subspace.RandomizedSubspaceGeneration import \
     RandomizedSubspaceGeneration as rsg
 from backend.task.execution.subspace.UniformSubspaceDistribution import \
     UniformSubspaceDistribution as usd
-from backend.task.execution.core.Execution import Execution
 
 
 class SystemTest_Execution(unittest.TestCase):

@@ -90,7 +90,7 @@ class UnitTestExecutionSubspace(unittest.TestCase):
         _wrong_user_id: int = -2
         _wrong_task_id: int = -2
 
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(AssertionError):
             self._es_wrong_user_id: ExecutionSubspace = ExecutionSubspace(
                 _wrong_user_id,
                 self._task_id,
@@ -102,7 +102,7 @@ class UnitTestExecutionSubspace(unittest.TestCase):
                 self._ds_shm_name, self._row_numbers
             )
 
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(AssertionError):
             self._es_wrong_task_id: ExecutionSubspace = ExecutionSubspace(
                 self._user_id,
                 _wrong_task_id,
@@ -148,7 +148,7 @@ class UnitTestExecutionSubspace(unittest.TestCase):
         self.assertEqual(self._es._finished_execution_element_count, self._es._total_execution_element_count)
 
         # out of range (more elements finished than elements exists)
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(AssertionError):
             self._es._ExecutionSubspace__execution_element_is_finished(False)
 
         self.assertEqual(self._es._finished_execution_element_count, self._es._total_execution_element_count)

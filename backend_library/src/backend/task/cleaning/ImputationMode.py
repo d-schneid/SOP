@@ -2,13 +2,12 @@ from abc import ABC
 
 import numpy as np
 import pandas as pd
-from scipy import stats
+from sklearn.impute import SimpleImputer
 
 from backend.AnnotatedDataset import AnnotatedDataset
-from backend.task.cleaning.Imputation import Imputation
 from backend.task.cleaning.DatasetCleaningStepExceptionHanding \
     import DatasetCleaningStepExceptionHandling as eh
-from sklearn.impute import SimpleImputer
+from backend.task.cleaning.Imputation import Imputation
 
 
 class ImputationMode(Imputation, ABC):

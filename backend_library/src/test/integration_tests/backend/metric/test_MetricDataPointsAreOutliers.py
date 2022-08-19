@@ -81,8 +81,8 @@ class IntegrationTest_MetricDataPointsAreOutlier(unittest.TestCase):
                                                   self._algorithm_directory_paths)
 
         # Indices amount doesn't match with data points amount -> AssertionError
-        with self.assertRaises(AssertionError) as context:
-            self._not_enough_indices_metric.\
+        with self.assertRaises(AssertionError):
+            self._not_enough_indices_metric. \
                 compute_metric(self._metric_result_path1,
                                self._algorithm_directory_paths)
 
@@ -91,7 +91,7 @@ class IntegrationTest_MetricDataPointsAreOutlier(unittest.TestCase):
 
     def test_wrong_metric_path(self):
         # Path doesn't end with .csv
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(AssertionError):
             self._metric.compute_metric(self._wrong_metric_path,
                                         self._algorithm_directory_paths)
         # clean up

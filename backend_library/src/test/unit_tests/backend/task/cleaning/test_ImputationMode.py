@@ -33,17 +33,17 @@ class UnitTestImputationMode(unittest.TestCase):
                                                    (self._ds.dataset4)).data))
 
         # Raise exception when empty dataset is inputted
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(ValueError):
             self._mode.do_cleaning(self._ds.data_to_annotated
                                    (self._ds.empty_dataset))
 
         # Raise exception when column with only None-values is inputted
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(ValueError):
             self._mode.do_cleaning(self._ds.data_to_annotated(self._ds.dataset1))
 
     def test_wrong_input_datatype(self):
         # 1D dataset not allowed -> Assertion
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(AssertionError):
             self._mode.do_cleaning(self._ds.one_dim_data_annotated)
 
 

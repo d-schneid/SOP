@@ -1,5 +1,4 @@
 import unittest
-import numpy as np
 
 from backend.task.execution.subspace.UniformSubspaceDistribution import \
     UniformSubspaceDistribution

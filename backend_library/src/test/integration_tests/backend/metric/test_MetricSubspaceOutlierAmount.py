@@ -48,8 +48,9 @@ class IntegrationTest_MetricSubspaceOutlierAmount(unittest.TestCase):
 
     def test_wrong_metric_path(self):
         # Path doesn't end with .csv
-        with self.assertRaises(AssertionError) as context:
-            self._metric.compute_metric(self._wrong_metric_path, self._algorithm_directory_paths)
+        with self.assertRaises(AssertionError):
+            self._metric.compute_metric(self._wrong_metric_path,
+                                        self._algorithm_directory_paths)
         # clean up
         self.__clean_up_files()
 

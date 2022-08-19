@@ -201,7 +201,7 @@ class UnitTestExecution(unittest.TestCase):
         self.assertTrue(self._ex._metric_finished)
 
         # out of range (more elements finished than elements exists)
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(AssertionError):
             self._ex._Execution__on_execution_element_finished(True)
 
         # depending on how you look at it, you could not edit the error of Execution when the Exception ist raised
@@ -213,7 +213,7 @@ class UnitTestExecution(unittest.TestCase):
         Scheduler.default_scheduler = None
 
         # Finished file doesn't exist -> schedule this object -> raise TypeError because no scheduler exists
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(AssertionError):
             self._ex.schedule()
 
         file_content: np.ndarray = np.asarray([["I am just a random value :D"]])
@@ -227,7 +227,7 @@ class UnitTestExecution(unittest.TestCase):
     def test_wrong_priority(self):
         self._wrong_priority: list[int] = list([-1, -12313, 12431, 5])
         for wrong_priority in self._wrong_priority:
-            with self.assertRaises(AssertionError) as context:
+            with self.assertRaises(AssertionError):
                 ex(self._user_id, self._task_id, self.__task_progress_callback,
                    self._dataset_path,
                    self._result_path, self._subspace_generation, self._algorithms,
