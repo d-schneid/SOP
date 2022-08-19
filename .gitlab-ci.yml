@@ -93,6 +93,13 @@ default:
     - python3.9 -m pip install -e backend_library/src
     - python3.9 -V
 
+flake:
+  stage: test
+  before_script:
+    - python3.9 -m pip install flake8
+  script:
+    - flake8 --max-line-length 88 --max-complexity 12 --color always --statistics --exclude=webserver/src/main/sop/tests backend_library/src/backend webserver/src/main/sop
+
 django-tests:
   stage: test
   extends: .frontend-base
