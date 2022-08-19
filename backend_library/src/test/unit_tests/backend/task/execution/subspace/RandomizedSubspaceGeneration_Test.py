@@ -19,7 +19,7 @@ class UnitTestRndSubGen(unittest.TestCase):
             ss_gen1 = RandomizedSubspaceGeneration(sz_distr, ds_dim_count, ss_count, sd)
             ss_gen2 = RandomizedSubspaceGeneration(sz_distr, ds_dim_count, ss_count, sd)
             ss_list1 = ss_gen1.generate()
-            ss_list2 = ss_gen1.generate()
+            ss_list2 = ss_gen2.generate()
             self.assertEqual(ss_count, len(ss_list1))
             for i in range(len(ss_list1)):
                 current_ss = ss_list1[i]
