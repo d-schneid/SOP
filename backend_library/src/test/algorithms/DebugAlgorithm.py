@@ -41,7 +41,7 @@ class DebugAlgorithm(BaseDetector):
     def _process_decision_scores(self):
         raise NotImplementedError
 
-    def _get_param_names(cls):
+    def _get_param_names(self):
         raise NotImplementedError
 
     def get_params(self, deep=True):

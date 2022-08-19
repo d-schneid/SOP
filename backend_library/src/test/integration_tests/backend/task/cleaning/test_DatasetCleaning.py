@@ -1,16 +1,14 @@
 import os
 import unittest
-from unittest import skip
 
 import numpy as np
 
-from backend.task.cleaning.DatasetCleaning import DatasetCleaning
-from backend.task.TaskState import TaskState
-from backend.task.TaskHelper import TaskHelper
-from backend.DataIO import DataIO
-from backend.task.TaskErrorMessages import TaskErrorMessages
-from test.DatasetsForTesting import Datasets as ds
 from backend.scheduler.Scheduler import Scheduler
+from backend.task.TaskErrorMessages import TaskErrorMessages
+from backend.task.TaskHelper import TaskHelper
+from backend.task.TaskState import TaskState
+from backend.task.cleaning.DatasetCleaning import DatasetCleaning
+from test.DatasetsForTesting import Datasets as ds
 
 
 class IntegrationTestDatasetCleaning1(unittest.TestCase):
@@ -97,8 +95,8 @@ class IntegrationTestDatasetCleaningNoUncleanedDataset(unittest.TestCase):
 
     def test_load_uncleaned_dataset(self):
         # No uncleaned Dataset -> throw exception
-        with self.assertRaises(AssertionError) as context:
-            self._dc_missing_uncleaned_dataset.\
+        with self.assertRaises(AssertionError):
+            self._dc_missing_uncleaned_dataset. \
                 _DatasetCleaning__load_uncleaned_dataset()
 
     def task_progress_callback(self, _task_id: int, task_state: TaskState,

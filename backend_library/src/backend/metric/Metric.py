@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 
-from backend.task.execution.core.Execution import Execution
 from backend.metric.ExecutionElementMetricHelper \
     import ExecutionElementMetricHelper as eem_helper
 

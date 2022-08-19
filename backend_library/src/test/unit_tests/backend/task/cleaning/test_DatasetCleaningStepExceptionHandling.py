@@ -13,7 +13,7 @@ class UnitTestDatasetCleaningStepExceptionHandling(unittest.TestCase):
 
     def test_check_non_empty_array(self):
         # Raise exception
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(ValueError):
             eh.check_non_empty_array(self._ds.empty_dataset, "")
 
         # Dont raise exception
@@ -24,11 +24,11 @@ class UnitTestDatasetCleaningStepExceptionHandling(unittest.TestCase):
 
     def test_check_non_none_column(self):
         # Raise exception because None-column exists
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(ValueError):
             eh.check_non_none_column(self._ds.none_dataset, "")
 
         # Raise exception because None-column exists
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(ValueError):
             print(self._ds.dataset1)
             eh.check_non_none_column(self._ds.dataset1, "")
 
@@ -39,7 +39,7 @@ class UnitTestDatasetCleaningStepExceptionHandling(unittest.TestCase):
             self.fail("myFunc() raised ExceptionType unexpectedly!")
 
         # Raise exception because no column exists
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(ValueError):
             eh.check_non_none_column(self._ds.empty_dataset, "")
 
         # edge case: Only one row with no None -> No Error

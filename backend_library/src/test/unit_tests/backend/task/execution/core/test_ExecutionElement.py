@@ -62,7 +62,7 @@ class UnitTestExecutionElement(unittest.TestCase):
         _wrong_user_id: int = -2
         _wrong_task_id: int = -2
 
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(AssertionError):
             self._ee_wrong_user_id: ee = ee(_wrong_user_id, self._task_id,
                                             self._subspace,
                                             self._algorithm, self._result_path,
@@ -70,7 +70,7 @@ class UnitTestExecutionElement(unittest.TestCase):
                                             self.__execution_element_is_finished,
                                             self._datapoint_count, self._row_numbers)
 
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(AssertionError):
             self._ee_wrong_task_id: ee = ee(self._user_id, _wrong_task_id,
                                             self._subspace,
                                             self._algorithm, self._result_path,
