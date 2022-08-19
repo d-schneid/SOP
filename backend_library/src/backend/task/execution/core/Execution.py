@@ -4,12 +4,10 @@ import csv
 import json
 import multiprocessing
 import os
-from collections.abc import Iterable
+from collections.abc import Callable
 from multiprocessing import shared_memory
 from multiprocessing.shared_memory import SharedMemory
-from typing import Callable, Optional
-from typing import Dict
-from typing import List
+from typing import Optional
 
 import numpy as np
 
@@ -39,7 +37,7 @@ class Execution(JsonSerializable, Task, Schedulable):
                  task_progress_callback: Callable[[int, TaskState, float], None],
                  dataset_path: str, result_path: str,
                  subspace_generation: SubspaceGenerationDescription,
-                 algorithms: Iterable[ParameterizedAlgorithm],
+                 algorithms: list[ParameterizedAlgorithm],
                  metric_callback: Callable[[Execution], None],
                  datapoint_count: Optional[int],
                  final_zip_path: str = "", priority: int = 0,
@@ -103,13 +101,13 @@ class Execution(JsonSerializable, Task, Schedulable):
         self._metric_finished: bool = False
 
         # generate subspaces
-        self._subspaces: List[Subspace] = list(self._subspace_generation.generate())
+        self._subspaces: list[Subspace] = self._subspace_generation.generate()
         self._subspaces_count: int = len(self._subspaces)
         self._total_execution_element_count: int = self._subspaces_count * len(
             self._algorithms)
 
         # generate execution_subspaces
-        self._execution_subspaces: List[ExecutionSubspace] = list()
+        self._execution_subspaces: list[ExecutionSubspace] = list()
 
         # shared memory
         self._shared_memory_name: Optional[str] = None
@@ -177,7 +175,7 @@ class Execution(JsonSerializable, Task, Schedulable):
         with open(details_path, 'w') as f:
             json.dump(self.to_json(), f)
 
-    def to_json(self) -> Dict[str, object]:
+    def to_json(self) -> dict[str, object]:
         return {'subspace_generation': self._subspace_generation.to_json(),
                 'algorithms': list(map(lambda x: x.to_json(), self._algorithms))}
 
@@ -371,14 +369,14 @@ class Execution(JsonSerializable, Task, Schedulable):
 
     # getter for metric
     @property
-    def algorithms(self) -> Iterable[ParameterizedAlgorithm]:
+    def algorithms(self) -> list[ParameterizedAlgorithm]:
         """
         :return: The algorithm information belonging to this Execution.
         """
-        return iter(self._algorithms)
+        return self._algorithms
 
     @property
-    def algorithm_directory_paths(self) -> List[str]:
+    def algorithm_directory_paths(self) -> list[str]:
         """
         :return: A list which contains all the paths to the folder
         of the selected algorithms (in this Execution). \n
@@ -390,11 +388,11 @@ class Execution(JsonSerializable, Task, Schedulable):
         return directory_names
 
     @property
-    def subspaces(self) -> Iterable[Subspace]:
+    def subspaces(self) -> list[Subspace]:
         """
         :return: The subspaces belonging to this Execution.
         """
-        return iter(self._subspaces)
+        return self._subspaces
 
     @property
     def zip_result_path(self) -> str:

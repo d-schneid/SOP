@@ -5,7 +5,6 @@ import os
 
 import numpy
 import numpy as np
-from typing import List
 
 from backend.DataIO import DataIO
 
@@ -64,7 +63,7 @@ class UnitTestDataIO(unittest.TestCase):
         dataset: np.ndarray = DataIO.read_cleaned_csv(test_file_path, has_header=0)
 
         # validate the values
-        values: List[List[int]] = [[1,2,3,4,5], [6,7,8,9,10]]
+        values: list[list[int]] = [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10]]
 
         for i in range(dataset.shape[0]):
             for k in range(dataset.shape[1]):

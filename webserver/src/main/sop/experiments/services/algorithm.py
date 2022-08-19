@@ -3,7 +3,7 @@ import shutil
 from inspect import Parameter
 from pathlib import Path
 from types import MappingProxyType
-from typing import Dict, Optional
+from typing import Optional
 
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
@@ -59,8 +59,8 @@ def delete_temp_algorithm(temp_file_path: Path) -> None:
 
 
 def convert_param_mapping_to_signature_dict(
-    mapping: MappingProxyType[str, Parameter]
-) -> Dict[str, Optional[HyperparameterTypes]]:
+        mapping: MappingProxyType[str, Parameter]
+) -> dict[str, Optional[HyperparameterTypes]]:
     """
     Converts the parameter mapping given by the backend AlgorithmLoader to a signature
     dictionary that is safe to use (does not contain args, kwargs and 'unsafe'

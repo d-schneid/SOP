@@ -1,8 +1,9 @@
 import multiprocessing
 import threading
 import unittest
+from collections.abc import Callable
 from multiprocessing import Manager
-from typing import Optional, Callable
+from typing import Optional
 
 from backend.scheduler.Schedulable import Schedulable
 from backend.scheduler.Scheduler import Scheduler

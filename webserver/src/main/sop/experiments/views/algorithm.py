@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Optional, Any
 
 from django.contrib import messages
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -36,7 +36,7 @@ class AlgorithmOverview(LoginRequiredMixin, ListView[Algorithm]):
     model = Algorithm
     template_name = "algorithm_overview.html"
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         sorted_list = Algorithm.objects.get_by_user(self.request.user)  # type: ignore
         # Get sort by variable and get sorted set

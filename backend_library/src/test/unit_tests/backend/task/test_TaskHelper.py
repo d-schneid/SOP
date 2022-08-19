@@ -2,10 +2,9 @@ import os
 import shutil
 import unittest
 import zipfile
-from typing import List
 
-from backend.task.TaskHelper import TaskHelper
 from backend.DataIO import DataIO
+from backend.task.TaskHelper import TaskHelper
 
 
 class UnitTestTaskHelper(unittest.TestCase):
@@ -50,10 +49,12 @@ class UnitTestTaskHelper(unittest.TestCase):
         self.assertFalse(os.path.isfile(self._error_path3))
 
     def test_convert_to_error_csv_path(self):
-        strings: List[str] = ["", "PSE IST DIE BESTE ERFINDUNG DER WELT", "...hier ist ein komischer string?!?..."]
+        strings: list[str] = ["", "PSE IST DIE BESTE ERFINDUNG DER WELT",
+                              "...hier ist ein komischer string?!?..."]
 
         for string in strings:
-            self.assertEqual(string + ".error", TaskHelper.convert_to_error_csv_path(string))
+            self.assertEqual(string + ".error",
+                             TaskHelper.convert_to_error_csv_path(string))
 
     def test_create_directory(self):
         TaskHelper.create_directory(self._test_dir_path)
@@ -62,11 +63,6 @@ class UnitTestTaskHelper(unittest.TestCase):
         # Works also when the directory already exists:
         TaskHelper.create_directory(self._test_dir_path)
         self.assertTrue(os.path.isdir(self._test_dir_path))
-
-    def test_iterable_length(self):
-        self.assertEqual(0, TaskHelper.iterable_length(iter([])))
-        self.assertEqual(4, TaskHelper.iterable_length(iter([1, 2, 531, 412])))
-        self.assertEqual(10, TaskHelper.iterable_length(iter([1, 2, 531, 412, -1, 12, 214, 143, 1234, 512])))
 
     # ---- Tests for zip_dir ----
 
@@ -174,7 +170,7 @@ class UnitTestTaskHelper(unittest.TestCase):
         return True
 
     @staticmethod
-    def _create_dirs_and_text_files(abs_path: str, content: List[List[str]]):
+    def _create_dirs_and_text_files(abs_path: str, content: list[list[str]]):
         for dir_name, file_name, file_content in content:
             abs_dir: str = os.path.join(abs_path, dir_name)
 

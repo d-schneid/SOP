@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Callable, Optional
+from collections.abc import Callable
+from typing import Optional
 
 from backend.scheduler.Schedulable import Schedulable
 
@@ -55,7 +56,9 @@ class Scheduler(ABC):
         pass
 
     @abstractmethod
-    def graceful_shutdown(self, on_shutdown_completed: Callable) -> None:  # pragma: no cover
+    def graceful_shutdown(self,
+                          on_shutdown_completed: Optional[Callable[[], None]] = None) \
+            -> None:  # pragma: no cover
         """Waits for active Tasks to finish, no new ones are started after this.
         If called after a tasks run_before_on_main started but before do_work started,
         the task may or may not be aborted.

@@ -1,7 +1,6 @@
 import os
 import shutil
 import unittest
-from typing import List
 
 from backend.task.execution import ResultZipper
 from backend.task import TaskState
@@ -100,7 +99,7 @@ class UnitTestResultZipper(unittest.TestCase):
             file.write(str([task_id, task_state, progress]))
 
     @staticmethod
-    def _create_dirs_and_text_files(abs_path: str, content: List[List[str]]):
+    def _create_dirs_and_text_files(abs_path: str, content: list[list[str]]):
         for dir_name, file_name, file_content in content:
             abs_dir: str = os.path.join(abs_path, dir_name)
 

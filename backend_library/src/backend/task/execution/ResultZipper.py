@@ -1,5 +1,5 @@
 import os
-from typing import Callable
+from collections.abc import Callable
 
 from backend.scheduler.Schedulable import Schedulable
 from backend.task.TaskState import TaskState

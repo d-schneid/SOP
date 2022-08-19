@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Dict, Tuple, List
-
 from django.http import HttpRequest, HttpResponse
 
 from experiments.models import Experiment, Execution
@@ -9,8 +7,8 @@ from experiments.models.algorithm import HyperparameterTypes
 
 
 def get_params_out_of_form(
-    request: HttpRequest, experiment: Experiment
-) -> Tuple[bool, Dict[str, List[str]] | Dict[str, Dict[str, HyperparameterTypes]]]:
+        request: HttpRequest, experiment: Experiment
+) -> tuple[bool, dict[str, list[str]] | dict[str, dict[str, HyperparameterTypes]]]:
     """
     Extracts the hyperparameters specified in the ExecutionCreateForm.
     @param request: The HttpRequest containing the fields of the hyperparameters.
@@ -23,11 +21,11 @@ def get_params_out_of_form(
     a mapping from the hyperparameter form_field which caused an error to an error
     message.
     """
-    dikt: Dict[str, Dict[str, HyperparameterTypes]] = dict()
-    errors: Dict[str, List[str]] = dict()
+    dikt: dict[str, dict[str, HyperparameterTypes]] = dict()
+    errors: dict[str, list[str]] = dict()
 
     for algo in experiment.algorithms.all():
-        algo_dict: Dict[str, HyperparameterTypes] = dict()
+        algo_dict: dict[str, HyperparameterTypes] = dict()
 
         for param_name in algo.get_signature_as_dict().keys():
             form_key = f"{algo.pk}_{param_name}"

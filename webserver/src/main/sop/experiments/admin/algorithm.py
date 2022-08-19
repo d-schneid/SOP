@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Type, Optional, Sequence, List
+from collections.abc import Sequence
+from typing import Optional
 
 from django.contrib import admin
 from django.http import HttpRequest
@@ -31,10 +32,10 @@ class AlgorithmAdmin(AbstractModelAdmin):
     search_fields = ["display_name", "user__username", "group", "description"]
     actions = ["delete_selected"]
 
-    def get_admin_add_form(self) -> Type[AdminAddAlgorithmForm]:
+    def get_admin_add_form(self) -> type[AdminAddAlgorithmForm]:
         return AdminAddAlgorithmForm
 
-    def get_admin_change_form(self) -> Type[AdminChangeAlgorithmForm]:
+    def get_admin_change_form(self) -> type[AdminChangeAlgorithmForm]:
         return AdminChangeAlgorithmForm
 
     def get_model_name(self) -> str:
@@ -50,7 +51,7 @@ class AlgorithmAdmin(AbstractModelAdmin):
         # for adding a new experiment
         return []
 
-    def get_urls(self) -> List[URLPattern]:
+    def get_urls(self) -> list[URLPattern]:
         """
         Adds custom view for downloading the associated algorithm file to the URLs.
         @return: The URLs to be used for this AlgorithmAdmin.
