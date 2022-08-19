@@ -7,7 +7,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db.models.fields.files import FieldFile
 from django.http import HttpResponse
 
-from backend.task.cleaning import DatasetCleaning
+from backend.task.cleaning.DatasetCleaning import DatasetCleaning
 from experiments.callback import DatasetCallbacks
 from experiments.models import Dataset
 
