@@ -8,7 +8,7 @@ from django.urls.resolvers import URLPattern
 from django.utils.html import format_html
 from django.utils.safestring import SafeString
 
-from experiments.models.execution import Execution
+from experiments.models import Execution
 from experiments.views.execution import download_execution_result_admin
 
 
@@ -25,8 +25,8 @@ class ExecutionAdmin(admin.ModelAdmin[Execution]):
     def get_readonly_fields(self,
                             request: HttpRequest,
                             obj: Optional[Execution] = None
-    ) -> Sequence[str]:
-        if not obj is None:
+                            ) -> Sequence[str]:
+        if obj is not None:
             # creation date needs to be returned, otherwise it will not be shown
             # due to field type in execution model
             if obj.has_result:
@@ -41,7 +41,7 @@ class ExecutionAdmin(admin.ModelAdmin[Execution]):
     def has_change_permission(self,
                               request: HttpRequest,
                               obj: Optional[Execution] = None
-    ) -> bool:
+                              ) -> bool:
         return False
 
     def get_urls(self) -> list[URLPattern]:

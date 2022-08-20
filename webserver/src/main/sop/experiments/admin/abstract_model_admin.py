@@ -145,7 +145,7 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
     def delete_selected(self,
                         request: HttpRequest,
                         obj: QuerySet
-    ) -> Optional[TemplateResponse]:
+                        ) -> Optional[TemplateResponse]:
         """
         Default action which deletes the selected objects.
         This action first displays a confirmation page which shows all the deletable

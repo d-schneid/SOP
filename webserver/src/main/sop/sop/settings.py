@@ -52,8 +52,10 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-# We use LocMemCache in development but in CI, testing and production we use PyMemcacheCache.
-# Important to remember if you do something with djangos caching framework and something doesn't work.
+# We use LocMemCache in development
+# but in CI, testing and production we use PyMemcacheCache.
+# Important to remember,
+# if you do something with djangos caching framework and something doesn't work.
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
@@ -102,7 +104,8 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME":
+            "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
@@ -134,7 +137,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-# STATIC_ROOT has not to be set in a development / testing environment (= always, when Debug = True)
+# STATIC_ROOT has not to be set in a development / testing environment
+# (= always, when Debug = True)
 
 STATIC_URL = "static/"
 STATICFILES_DIRS = [

@@ -31,10 +31,12 @@ class AdminAddAlgorithmForm(forms.ModelForm[Algorithm]):
 
         @return: The algorithm file if it is valid. Otherwise None.
         """
-        cleaned_file: TemporaryUploadedFile = self.cleaned_data.get("path")  # type: ignore
+        cleaned_file: TemporaryUploadedFile = self.cleaned_data.get(
+            "path")  # type: ignore
 
         # current user is set in ModelAdmin of Algorithm
-        temp_path: Path = save_temp_algorithm(self.current_user, cleaned_file)  # type: ignore
+        temp_path: Path = save_temp_algorithm(
+            self.current_user, cleaned_file)  # type: ignore
         error: Optional[str] = AlgorithmLoader.is_algorithm_valid(str(temp_path))
         if error is None:
             mapping = AlgorithmLoader.get_algorithm_parameters(str(temp_path))
@@ -46,7 +48,8 @@ class AdminAddAlgorithmForm(forms.ModelForm[Algorithm]):
             self.add_error("path", "This is not a valid algorithm: " + error)
 
         elif error is None:
-            # No need to assign user, admin can decide to which user this algorithm belongs to
+            # No need to assign user,
+            # admin can decide to which user this algorithm belongs to
             return cleaned_file
 
         return None

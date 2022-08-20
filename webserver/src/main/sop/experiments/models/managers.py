@@ -94,7 +94,7 @@ class ExecutionManager(models.Manager["Execution"]):
     """
     @staticmethod
     def mark_running_executions_as_crashed():
-        from experiments.models.execution import Execution, ExecutionStatus
+        from experiments.models.execution import Execution, ExecutionStatus  # noqa F811
         for execution in Execution.objects.all():
             if execution.is_running:
                 execution.status = ExecutionStatus.CRASHED.name

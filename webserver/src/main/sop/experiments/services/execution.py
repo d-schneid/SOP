@@ -44,7 +44,8 @@ def get_params_out_of_form(
             except NameError:
                 errors.update({form_key: ["strings must be wrapped in quotes"]})
 
-        # Add the algorithms specific dictionary to the global dictionary and go on to the next algorithm
+        # Add the algorithms specific dictionary to the global dictionary
+        # and go on to the next algorithm
         dikt.update({str(algo.pk): algo_dict})
 
     if errors:
