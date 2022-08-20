@@ -11,7 +11,8 @@ class Scheduler(ABC):
     """Abstract class for implementing schedulers"""
     _instance: Optional[Scheduler] = None
     default_scheduler: Callable[[], Scheduler] = None
-    """Defines a standard Scheduler to be created if get_instance is called and none exists"""
+    """Defines a standard Scheduler to be created,
+     if get_instance is called and none exists"""
 
     def __init__(self):
         """Ensures that there is only one Scheduler at any point in time"""

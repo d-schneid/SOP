@@ -17,7 +17,8 @@ from backend.task.execution.subspace.Subspace import Subspace
 
 class ExecutionSubspace(Schedulable):
     """
-    Manages the computations of all algorithms of an Execution, that compute their results on the same Subspace.
+    Manages the computations of all algorithms of an Execution,
+    that compute their results on the same Subspace.
     """
 
     def __init__(self, user_id: int, task_id: int,
@@ -27,16 +28,21 @@ class ExecutionSubspace(Schedulable):
                  ds_shm_name: str, row_numbers: np.ndarray, priority: int = 5):
         """
         :param ds_shm_name: name of the shared emory segment containing the full dataset
-        :param user_id: The ID of the user belonging to the ExecutionSubspace. Has to be at least -1.
+        :param user_id: The ID of the user belonging to the ExecutionSubspace.
+        Has to be at least -1.
         :param task_id: The ID of the task. Has to be at least -1.
-        :param algorithms: Contains all algorithms that should be processed on the subspaces.
-        :param subspace: The Subspace whose ExecutionElements are managed by this ExecutionSubspace.
+        :param algorithms: Contains all algorithms that should
+        be processed on the subspaces.
+        :param subspace: The Subspace whose ExecutionElements are managed by this
+        ExecutionSubspace.
         :param result_path: The absolute path where the Execution will store its results
         (ends with the directory name of this specific Execution. f.e. execution1).
         :param ds_on_main: The dataset array, only available on the main process
-        :param on_execution_element_finished_callback: Reports the Execution that a ExecutionElement finished.
+        :param on_execution_element_finished_callback: Reports the Execution
+        that a ExecutionElement finished.
         :param ds_shm_name: the name of the shared memory segment containing the dataset
-        :param row_numbers: the row numbers of the dataset, see AnnotatedDataset.row_mapping
+        :param row_numbers: the row numbers of the dataset,
+        see AnnotatedDataset.row_mapping
         """
         assert priority < 10
         assert priority >= 5
@@ -82,10 +88,11 @@ class ExecutionSubspace(Schedulable):
                              algorithm.directory_name_in_execution),
                 self._subspace.get_subspace_identifier() + ".csv")  # TODO: TEST THIS!
 
-            self._execution_elements.append(
-                ExecutionElement(self._user_id, self._task_id, self._subspace, algorithm, result_path,
-                                 self._ds_on_main.dtype, self._subspace_shared_memory_name,
-                                 self.__execution_element_is_finished, self._ds_on_main.shape[0], self._row_numbers))
+            self._execution_elements.append(ExecutionElement(
+                self._user_id, self._task_id, self._subspace, algorithm, result_path,
+                self._ds_on_main.dtype, self._subspace_shared_memory_name,
+                self.__execution_element_is_finished, self._ds_on_main.shape[0],
+                self._row_numbers))
 
     def __schedule_execution_elements(self) -> None:
         """
@@ -112,18 +119,22 @@ class ExecutionSubspace(Schedulable):
     def __execution_element_is_finished(self, error_occurred: bool,
                                         aborted: bool = False) -> None:
         """
-        The ExecutionSubspace gets notified by an ExecutionElement when it finishes by calling this method. \n
+        The ExecutionSubspace gets notified by an ExecutionElement
+        when it finishes by calling this method. \n
         Passes the notification on to the Execution. \n
-        :param error_occurred: True if the ExecutionElement finished with an error. Is otherwise False.
+        :param error_occurred: True if the ExecutionElement finished with an error.
+        Is otherwise False.
         :param aborted: Whether an element finished by abortion.
         All calls within this Execution with aborted set, must be executed sequentially
         :return: None
         """
         if not aborted:
-            assert self._finished_execution_element_count < self._total_execution_element_count, \
-                "More execution elements finished than existing"
+            assert self._finished_execution_element_count < \
+                   self._total_execution_element_count, \
+                   "More execution elements finished than existing"
             self._finished_execution_element_count += 1
-            if self._finished_execution_element_count >= self._total_execution_element_count:
+            if self._finished_execution_element_count >= \
+                    self._total_execution_element_count:
                 self.__unload_subspace_shared_memory()
         else:
             self.__unload_subspace_shared_memory(True)

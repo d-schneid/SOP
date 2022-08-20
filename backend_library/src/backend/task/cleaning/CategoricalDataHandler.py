@@ -6,7 +6,8 @@ from backend.task.cleaning.DatasetCleaningStep import DatasetCleaningStep
 
 class CategoricalDataHandler(DatasetCleaningStep, ABC):
     """
-    Divides DatasetCleaningStep into the logical part that focuses on handling categorical datasets.
+    Divides DatasetCleaningStep into the logical part
+    that focuses on handling categorical datasets.
     """
 
     @abstractmethod

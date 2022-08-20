@@ -47,9 +47,8 @@ class MetricSubspaceOutlierAmount(Metric):
                         .append(eem_helper.compute_outlier_data_points(path))
 
         # compute metric
-        outlier_data_points: list[int] = \
-            eem_helper.compute_subspace_outlier_amount \
-                (outlier_data_points_divided_in_subspaces)
+        outlier_data_points: list[int] = eem_helper.compute_subspace_outlier_amount(
+            outlier_data_points_divided_in_subspaces)
 
         # convert into result
         metric_result: np.ndarray = df(

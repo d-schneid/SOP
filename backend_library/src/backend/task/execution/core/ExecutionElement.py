@@ -27,15 +27,20 @@ class ExecutionElement(Schedulable):
                  execution_element_is_finished: Callable[[bool, bool], None],
                  datapoint_count: int, row_numbers: np.ndarray, priority: int = 10):
         """
-        :param user_id: The ID of the user belonging to this ExecutionElement. Has to be at least -1.
+        :param user_id: The ID of the user belonging to this ExecutionElement.
+        Has to be at least -1.
         :param task_id: The ID of this task. Has to be at least -1.
         :param subspace: The subspace on which the algorithm should compute its result.
         :param algorithm: The algorithm that should be computed on the subspace.
-        :param result_path: The directory where the result-csv-file of the ExecutionElement-computation will be stored.
-        :param subspace_dtype: The dtype of the values that are stored in the dataset for processing.
+        :param result_path: The directory where the result-csv-file
+        of the ExecutionElement-computation will be stored.
+        :param subspace_dtype: The dtype of the values that are stored in the dataset
+        for processing.
         :param ss_shm_name: The name of the shared memory containing the subspace data
-        :param execution_element_is_finished: Reports the ExecutionSubspace that it finished its execution.
-        :param row_numbers: the row numbers of the dataset, see AnnotatedDataset.row_mapping
+        :param execution_element_is_finished: Reports the ExecutionSubspace
+        that it finished its execution.
+        :param row_numbers: the row numbers of the dataset,
+        see AnnotatedDataset.row_mapping
         """
         assert priority <= 100
         assert priority >= 10
@@ -60,7 +65,8 @@ class ExecutionElement(Schedulable):
 
     def finished_result_exists(self) -> bool:
         """
-        (If the finished result already exists the ExecutionElements doesn't need to be computed again.
+        (If the finished result already exists
+        the ExecutionElements doesn't need to be computed again.
         -> Used for performance improvement.) \n
         :return: True if the finished result exists. Otherwise, return False.
         """
