@@ -7,7 +7,7 @@ import os
 from collections.abc import Callable
 from multiprocessing import shared_memory
 from multiprocessing.shared_memory import SharedMemory
-from typing import Optional
+from typing import Optional, cast
 
 import numpy as np
 
@@ -220,8 +220,8 @@ class Execution(JsonSerializable, Task, Schedulable):
         :return: A float in [0,1] which indicates the progress of the Execution.
         """
         execution_element_progress: float = float(
-            self._finished_execution_element_count) \
-                                            / float(self._total_execution_element_count)
+            self._finished_execution_element_count) / float(
+            self._total_execution_element_count)
         # So all progress is shown (so that the clamping doesn't remove information):
         execution_element_progress *= 0.98
         progress: float = max(0., min(execution_element_progress,
@@ -290,7 +290,7 @@ class Execution(JsonSerializable, Task, Schedulable):
                 self._has_failed_element = True
             assert self._finished_execution_element_count < \
                    self._total_execution_element_count, \
-                "More execution elements finished than existing"
+                   "More execution elements finished than existing"
 
             with self._execution_element_finished_lock:
                 self._finished_execution_element_count += 1
@@ -397,7 +397,8 @@ class Execution(JsonSerializable, Task, Schedulable):
     @property
     def zip_result_path(self) -> str:
         """
-        :return: The absolute path where the ZIP-file of the result of this Execution can be found.
+        :return: The absolute path where the ZIP-file of the result
+        of this Execution can be found.
         """
         return self._final_zip_path
 
@@ -415,6 +416,4 @@ class Execution(JsonSerializable, Task, Schedulable):
         :return: The indices of the data points
         of the cleaned dataset used in this execution
         """
-        # safe as per numpy documentation
-        # noinspection PyTypeChecker
-        return self._row_numbers.tolist()
+        return cast(list[int], self._row_numbers.tolist())

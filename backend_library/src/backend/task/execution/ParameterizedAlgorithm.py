@@ -10,7 +10,8 @@ class ParameterizedAlgorithm(JsonSerializable, object):
     def __init__(self, path: str, hyper_parameter: dict, display_name: str):
         """
         :param path: The absolute path where the algorithm is located.
-        :param hyper_parameter: The hyperparameter of the algorithm with the selected values. Each parameter gets
+        :param hyper_parameter: The hyperparameter of the algorithm
+        with the selected values. Each parameter gets
          his own dictionary entry.
         :param display_name: The name of the algorithm that is shown to the user.
         """
@@ -34,8 +35,8 @@ class ParameterizedAlgorithm(JsonSerializable, object):
     @property
     def hyper_parameter(self) -> dict[str, object]:
         """
-        :return: The hyperparameter of the algorithm with the selected values. Each parameter
-         gets his own dictionary entry.
+        :return: The hyperparameter of the algorithm with the selected values.
+        Each parameter gets his own dictionary entry.
         """
         return self._hyper_parameter
 
@@ -49,16 +50,17 @@ class ParameterizedAlgorithm(JsonSerializable, object):
     @property
     def directory_name_in_execution(self) -> str:
         """
-        :return: The name of the folder where the execution results for all ExecutionElements that computed there
-        result with this algorithm are stored.
+        :return: The name of the folder where the execution results for all
+        ExecutionElements that computed there result with this algorithm are stored.
         """
         return self._directory_name_in_execution
 
     @directory_name_in_execution.setter
     def directory_name_in_execution(self, directory_name_in_execution: str) -> None:
         """
-        :param directory_name_in_execution: The name of the folder where the execution results for all ExecutionElements
-         that computed there result with this algorithm are stored.
+        :param directory_name_in_execution: The name of the folder
+        where the execution results for all ExecutionElements
+        that computed there result with this algorithm are stored.
         :return: None
         """
         self._directory_name_in_execution = directory_name_in_execution

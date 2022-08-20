@@ -12,7 +12,8 @@ class AnnotatedDataset:
     headers: np.ndarray
     """Header line of the dataset"""
     row_mapping: np.ndarray
-    """An array containing a number for each row in data, determining to what original dataset row it belongs"""
+    """An array containing a number for each row in data,
+     determining to what original dataset row it belongs"""
 
     def __init__(self, main_array: np.ndarray, headers: Optional[np.ndarray] = None,
                  row_numbers: Optional[np.ndarray] = None,
