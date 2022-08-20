@@ -44,9 +44,9 @@ class AlgorithmAdmin(AbstractModelAdmin):
     def get_readonly_fields(self,
                             request: HttpRequest,
                             obj: Optional[Algorithm] = None
-    ) -> Sequence[str]:
+                            ) -> Sequence[str]:
         # for editing an existing experiment
-        if not obj is None:
+        if obj is not None:
             return ["signature", "user", "upload_date", "download"]
         # for adding a new experiment
         return []

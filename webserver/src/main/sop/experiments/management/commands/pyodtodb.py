@@ -141,10 +141,13 @@ class Command(BaseCommand):
     def save_algorithms_in_db(self, pyod_models_root: Path):
         # Check algorithms before adding them to the database
         for pyod_algo in PYOD_ALGORITHMS:
-            self.stdout.write(f"Checking {pyod_algo.display_name} ({pyod_algo.file_name}) for validity...", ending="")
+            self.stdout.write(
+                f"Checking {pyod_algo.display_name} ({pyod_algo.file_name})"
+                " for validity...", ending="")
             # assert filename matches classname
             assert (
-                os.path.splitext(pyod_algo.file_name)[0] == pyod_algo.class_name.lower()
+                    os.path.splitext(pyod_algo.file_name)[
+                        0] == pyod_algo.class_name.lower()
             )
             # check algorithm for validity
             errors = AlgorithmLoader.is_algorithm_valid(
@@ -154,7 +157,8 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS("OK"))
 
         for pyod_algo in PYOD_ALGORITHMS:
-            self.stdout.write(f"Saving {pyod_algo.display_name} ({pyod_algo.file_name}) into database...", ending="")
+            self.stdout.write(f"Saving {pyod_algo.display_name} ({pyod_algo.file_name})"
+                              " into database...", ending="")
             path = pyod_models_root / (pyod_algo.class_name.lower() + ".py")
             mapping = AlgorithmLoader.get_algorithm_parameters(str(path))
             params_dict = convert_param_mapping_to_signature_dict(mapping)

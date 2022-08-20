@@ -47,7 +47,8 @@ class AdminAddDatasetForm(forms.ModelForm[Dataset]):
             dataset_valid = DatasetInfo.is_dataset_valid(temp_file_path)
         except UnicodeError as e:
             os.remove(temp_file_path)
-            self.add_error("path_original", "Unicode error in selected dataset: " + e.reason)
+            self.add_error("path_original",
+                           f"Unicode error in selected dataset: {e.reason}")
             assert not os.path.isfile(temp_file_path)
             return None
 
@@ -61,7 +62,8 @@ class AdminAddDatasetForm(forms.ModelForm[Dataset]):
         dataset_path: str = dataset.name
         # and add data to the input (no datapoints / dimensions)
         self.cleaned_data.update({"status": CleaningState.RUNNING.name,
-                                  "path_cleaned__name": generate_path_dataset_cleaned(dataset_path)})
+                                  "path_cleaned__name":
+                                      generate_path_dataset_cleaned(dataset_path)})
 
         os.remove(temp_file_path)
         assert not os.path.isfile(temp_file_path)

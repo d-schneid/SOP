@@ -165,7 +165,8 @@ class ExecutionCreateView(
         if subspaces_max > experiment.dataset.dimensions_total:
             messages.error(
                 self.request,
-                f"Subspaces Max has to be smaller than or equal to the dataset dimension count: {experiment.dataset.dimensions_total}.",
+                "Subspaces Max has to be smaller than or equal to the dataset"
+                f" dimension count: {experiment.dataset.dimensions_total}.",
             )
             error = True
         elif 0 <= subspaces_max <= experiment.dataset.dimensions_total:
@@ -191,7 +192,8 @@ class ExecutionCreateView(
 
         # Get subspace_generation_seed out of form and do sanity checks
         seed: Optional[int] = form.cleaned_data.get("subspace_generation_seed")
-        # If the seed was not specified, it will be set to a random seed during model creation
+        # If the seed was not specified,
+        # it will be set to a random seed during model creation
         if seed:
             if seed < 0:
                 messages.error(

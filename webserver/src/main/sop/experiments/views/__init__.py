@@ -1,4 +1,4 @@
-from experiments.views.algorithm import (
+from experiments.views.algorithm import (  # noqa F401
     AlgorithmOverview,
     AlgorithmUploadView,
     AlgorithmDeleteView,

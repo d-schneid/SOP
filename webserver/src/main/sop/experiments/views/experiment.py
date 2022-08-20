@@ -71,7 +71,7 @@ class ExperimentCreateView(
 
         # If no algos are selected, display error
         if len(algos) == 0:
-            messages.error(self.request, f"Please select at least one algorithm!")
+            messages.error(self.request, "Please select at least one algorithm!")
             return super().form_invalid(form)
 
         response: HttpResponse = super().form_valid(form)
@@ -89,7 +89,8 @@ class ExperimentCreateView(
         context["form"].fields["dataset"].queryset = Dataset.objects.get_by_user(
             self.request.user
         ).filter(status="FINISHED")
-        # Add algorithm groups, algorithms and datasets to context here, to be able to generate and customize
+        # Add algorithm groups,
+        # algorithms and datasets to context here, to be able to generate and customize
         # non-django html forms
         context.update(
             {

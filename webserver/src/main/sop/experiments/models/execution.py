@@ -75,7 +75,8 @@ class Execution(models.Model):
     subspace_generation_seed = models.PositiveBigIntegerField(blank=True)
     algorithm_parameters = models.JSONField()
     result_path = models.FileField()
-    objects: ExecutionManager = ExecutionManager.from_queryset(ExecutionQuerySet)()  # type: ignore
+    objects: ExecutionManager = ExecutionManager.from_queryset(
+        ExecutionQuerySet)()  # type: ignore
 
     def save(self, *args: Any, **kwargs: Any) -> None:
         """

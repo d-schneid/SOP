@@ -47,6 +47,7 @@ def execution_callback(
 
     execution.save()
 
+
 def generate_datapoints_metric(metric_dir: Path, be: BackendExecution):
     assert os.path.isdir(metric_dir)
     metric_result_path = metric_dir / "datapoints_metric.csv"
