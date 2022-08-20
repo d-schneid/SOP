@@ -13,19 +13,33 @@ from webdriver_manager.chrome import ChromeDriverManager
 class SeleniumTestCase(unittest.TestCase):
 
     BASE_URL = "http://127.0.0.1:8000/"
+
     STANDARD_USERNAME_USER = "SeleniumTestUser"
     STANDARD_PASSWORD_USER = "this_is_a_test"
     STANDARD_USERNAME_ADMIN = "SeleniumTestAdmin"
     STANDARD_PASSWORD_ADMIN = "this_is_a_test"
 
+    MEDIA_DIR_PATH = os.path.join("tests", "systemtests", "media")
+    SELENIUM_SCREENSHOTS_PATH = os.path.join(
+        MEDIA_DIR_PATH, "selenium_error_screenshots"
+    )
+
     @classmethod
     def setUpClass(cls) -> None:
+        # create a media dir for misc. files
+        if not os.path.isdir(SeleniumTestCase.SELENIUM_SCREENSHOTS_PATH):
+            os.makedirs(SeleniumTestCase.SELENIUM_SCREENSHOTS_PATH)
 
         # setup chrome webdriver
         chrome_service = ChromeService(executable_path=ChromeDriverManager().install())
 
         chrome_options = ChromeOptions()
-        chrome_options.headless = True
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--window-size=2560,1440")
+        chrome_options.add_argument("--start-maximized")
+
+        print(chrome_options.arguments)
+        print(chrome_options.capabilities)
 
         cls.driver: selenium.webdriver.Chrome = selenium.webdriver.Chrome(
             service=chrome_service, options=chrome_options
@@ -44,6 +58,29 @@ class SeleniumTestCase(unittest.TestCase):
         SeleniumTestCase.logout(self)
 
     def tearDown(self) -> None:
+        # if the test failed, take a screenshot
+        result = self.defaultTestResult()
+        self._feedErrorsToResult(result, self._outcome.errors)
+
+        # check if an error has occurred
+        if result.errors:
+            type = "ERROR"
+
+        # or a failure
+        elif result.failures:
+            type = "FAILURE"
+
+        else:
+            type = None
+
+        if type is not None:
+            screenshot_path = os.path.join(
+                SeleniumTestCase.SELENIUM_SCREENSHOTS_PATH,
+                "selenium_{type}_{method_name}.png",
+            ).format(method_name=self._testMethodName, type=type)
+
+            self.driver.save_screenshot(screenshot_path)
+
         # try to log out
         SeleniumTestCase.logout(self)
 
