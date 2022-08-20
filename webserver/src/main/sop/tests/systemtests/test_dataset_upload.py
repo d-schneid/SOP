@@ -6,7 +6,6 @@ from selenium.webdriver.common.by import By
 
 
 class DatasetUploadTests(SeleniumTestCase):
-
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()
@@ -24,7 +23,11 @@ class DatasetUploadTests(SeleniumTestCase):
 
     def test_standard_site(self):
         # login
-        SeleniumTestCase.login(self, SeleniumTestCase.STANDARD_USERNAME_USER, SeleniumTestCase.STANDARD_PASSWORD_USER)
+        SeleniumTestCase.login(
+            self,
+            SeleniumTestCase.STANDARD_USERNAME_USER,
+            SeleniumTestCase.STANDARD_PASSWORD_USER,
+        )
 
         # check, if links to subpages are in the generated site
         self.assertIn("/experiment/overview", self.driver.page_source)
@@ -41,13 +44,17 @@ class DatasetUploadTests(SeleniumTestCase):
 
     def test_valid_dataset_upload(self):
         # login
-        SeleniumTestCase.login(self, SeleniumTestCase.STANDARD_USERNAME_USER, SeleniumTestCase.STANDARD_PASSWORD_USER)
+        SeleniumTestCase.login(
+            self,
+            SeleniumTestCase.STANDARD_USERNAME_USER,
+            SeleniumTestCase.STANDARD_PASSWORD_USER,
+        )
 
         valid_dataset_path = os.path.join("tests", "sample_datasets", "canada.csv")
 
         dataset_name = "Test Dataset: Canada"
-        dataset_description = "This is the Canada Dataset, used for automated tests with Selenium."
+        dataset_description = (
+            "This is the Canada Dataset, used for automated tests with Selenium."
+        )
 
         self.upload_dataset(valid_dataset_path, dataset_name, dataset_description)
-
-

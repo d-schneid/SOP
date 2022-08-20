@@ -28,8 +28,7 @@ class SeleniumTestCase(unittest.TestCase):
         chrome_options.headless = True
 
         cls.driver: selenium.webdriver.Chrome = selenium.webdriver.Chrome(
-            service=chrome_service,
-            options=chrome_options
+            service=chrome_service, options=chrome_options
         )
 
     @classmethod
@@ -67,14 +66,21 @@ class SeleniumTestCase(unittest.TestCase):
         else:
             return False
 
-    def upload_dataset(self, dataset_path: str, dataset_name: str, dataset_description: str):
+    def upload_dataset(
+        self, dataset_path: str, dataset_name: str, dataset_description: str
+    ):
         assert os.path.isfile(dataset_path)
 
         self.driver.find_element(By.LINK_TEXT, "Datasets").click()
-        self.assertRegex(self.driver.current_url, SeleniumTestCase.BASE_URL + "dataset/overview/sort-by=[a-zA-Z_]+/")
+        self.assertRegex(
+            self.driver.current_url,
+            SeleniumTestCase.BASE_URL + "dataset/overview/sort-by=[a-zA-Z_]+/",
+        )
 
         self.driver.find_element(By.LINK_TEXT, "Upload dataset").click()
-        self.assertEqual(self.driver.current_url, SeleniumTestCase.BASE_URL + "dataset/upload/")
+        self.assertEqual(
+            self.driver.current_url, SeleniumTestCase.BASE_URL + "dataset/upload/"
+        )
 
         self.driver.find_element(By.ID, "id_display_name").send_keys(dataset_name)
         self.driver.find_element(By.ID, "id_description").send_keys(dataset_description)
@@ -84,7 +90,10 @@ class SeleniumTestCase(unittest.TestCase):
 
         # assert the upload worked
         page_source = self.driver.page_source  # get page source instantly
-        self.assertRegex(self.driver.current_url, SeleniumTestCase.BASE_URL + "dataset/overview/sort-by=[a-zA-Z_]+/")
+        self.assertRegex(
+            self.driver.current_url,
+            SeleniumTestCase.BASE_URL + "dataset/overview/sort-by=[a-zA-Z_]+/",
+        )
         self.assertIn(dataset_name, page_source)
         self.assertIn(dataset_description, page_source)
 
