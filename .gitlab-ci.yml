@@ -97,10 +97,11 @@ flake:
   stage: test
   needs: []
   before_script:
-    - python3.9 -m pip install flake8
-    - python3.9 -m pip install flake8-assertive
+    - python3.9 -m pip install flake8 flake8-assertive
   script:
     - flake8 --color always .
+    - echo looking for forbidden windows line endings...
+    - grep -IUrPl --exclude-dir=.git --exclude-dir=venv* '\r$' 1>&2
 
 django-tests:
   stage: test
