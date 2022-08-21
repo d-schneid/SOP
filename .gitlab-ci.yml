@@ -101,6 +101,7 @@ flake:
     - flake8 --max-line-length 88 --max-complexity 12 --color always --statistics --exclude=webserver/src/main/sop/tests backend_library/src/backend webserver/src/main/sop
 
 django-tests:
+  needs: []
   stage: test
   extends: .frontend-base
   coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
