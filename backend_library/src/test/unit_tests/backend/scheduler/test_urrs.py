@@ -28,7 +28,7 @@ class PriorityTests(unittest.TestCase):
 
     def test_priority1(self):
         sched = UserRoundRobinSchedulerMock()
-        self.assertEqual(None, sched.next_sched())  # add assertion here
+        self.assertIsNone(sched.next_sched())  # add assertion here
         a = TestSched(-1, -1, 1)
         sched.schedule(a)
         b = TestSched(-1, -1, 0)
@@ -38,7 +38,7 @@ class PriorityTests(unittest.TestCase):
         self.assertEqual(c, sched.next_sched())
         self.assertEqual(a, sched.next_sched())
         self.assertEqual(b, sched.next_sched())
-        self.assertEqual(None, sched.next_sched())
+        self.assertIsNone(sched.next_sched())
 
     def test_priority2(self):
         sched = UserRoundRobinSchedulerMock()

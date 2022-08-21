@@ -26,12 +26,12 @@ class IntegrationTestDatasetCleaning1(unittest.TestCase):
     _error_path: str = TaskHelper.convert_to_error_csv_path(_cleaned_dataset_path)
 
     def setUp(self) -> None:
-        with open(self._uncleaned_dataset_path, 'w') as uncleaned_csv:
-            self._dc: DatasetCleaning = DatasetCleaning(self._user_id, self._task_id,
-                                                        self.task_progress_callback,
-                                                        self._uncleaned_dataset_path,
-                                                        self._cleaned_dataset_path,
-                                                        [], self._priority)
+        with open(self._uncleaned_dataset_path, 'w'):
+            pass
+        self._dc: DatasetCleaning = DatasetCleaning(
+            self._user_id, self._task_id, self.task_progress_callback,
+            self._uncleaned_dataset_path, self._cleaned_dataset_path, [],
+            self._priority)
         self._finished_cleaning = False
 
     def tearDown(self) -> None:
@@ -56,9 +56,10 @@ class IntegrationTestDatasetCleaning1(unittest.TestCase):
         self.assertFalse(self._finished_cleaning)
 
         # Cleaned file does exist -> cleaning is finished
-        with open(self._cleaned_dataset_path, 'w') as cleaned_csv:
-            self._dc.schedule()
-            self.assertTrue(self._finished_cleaning)
+        with open(self._cleaned_dataset_path, 'w'):
+            pass
+        self._dc.schedule()
+        self.assertTrue(self._finished_cleaning)
         os.remove(self._cleaned_dataset_path)
 
     def task_progress_callback(self, _task_id: int, task_state: TaskState,
@@ -78,13 +79,11 @@ class IntegrationTestDatasetCleaningNoUncleanedDataset(unittest.TestCase):
     _priority: int = 9999
 
     def setUp(self) -> None:
-        with open(self._uncleaned_dataset_path, 'w') as uncleaned_csv:
-            self._dc_missing_uncleaned_dataset: DatasetCleaning = DatasetCleaning(
-                self._user_id, self._task_id,
-                self.task_progress_callback,
-                "no_uncleaned_dataset",
-                self._cleaned_dataset_path, [],
-                self._priority)
+        with open(self._uncleaned_dataset_path, 'w'):
+            pass
+        self._dc_missing_uncleaned_dataset: DatasetCleaning = DatasetCleaning(
+                self._user_id, self._task_id, self.task_progress_callback,
+                "no_uncleaned_dataset", self._cleaned_dataset_path, [], self._priority)
 
     def tearDown(self) -> None:
         if os.path.isfile(self._uncleaned_dataset_path):
@@ -129,19 +128,19 @@ class IntegrationTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
     def task_progress_callback(self, _task_id: int, task_state: TaskState,
                                progress: float) -> None:
         self.assertTrue(task_state.is_running())
-        self.assertTrue(progress >= 0)
-        self.assertTrue(progress < 1)  # Is smaller than one in run_pipeline
+        self.assertGreaterEqual(progress, 0)
+        self.assertLess(progress, 1)  # Is smaller than one in run_pipeline
 
     def setUp(self) -> None:
         self._ds = ds()
 
         self.__clean_created_files_and_directories()
-        with open(self._uncleaned_dataset_path, 'w') as uncleaned_csv:
-            self._dc: DatasetCleaning = DatasetCleaning(self._user_id, self._task_id,
-                                                        self.task_progress_callback,
-                                                        self._uncleaned_dataset_path,
-                                                        self._cleaned_dataset_path,
-                                                        None, self._priority)
+        with open(self._uncleaned_dataset_path, 'w'):
+            pass
+        self._dc: DatasetCleaning = DatasetCleaning(
+            self._user_id, self._task_id, self.task_progress_callback,
+            self._uncleaned_dataset_path, self._cleaned_dataset_path, None,
+            self._priority)
 
     def __clean_created_files_and_directories(self):
         if os.path.isfile(self._cleaned_dataset_path):

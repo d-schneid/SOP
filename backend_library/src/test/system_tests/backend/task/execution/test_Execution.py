@@ -21,7 +21,7 @@ class SystemTest_Execution(unittest.TestCase):
     _task_id: int = 1553
 
     _dataset_path: str = os.path.join(os.getcwd(),
-                                      "test/datasets"+
+                                      "test/datasets" +
                                       "/canada_climate_cleaned_to_compare.csv")
 
     _dir_name: str = os.getcwd()
@@ -185,7 +185,7 @@ class SystemTest_Execution(unittest.TestCase):
             self._execution_finished = True
 
         # update progress
-        self.assertTrue(progress >= self._last_progress_report)
+        self.assertGreaterEqual(progress, self._last_progress_report)
         self._last_progress_report = progress
 
     def __metric_callback(self, execution: Execution) -> None:

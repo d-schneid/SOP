@@ -5,25 +5,25 @@ from backend.task.TaskState import TaskState
 
 class UnitTestTaskState(unittest.TestCase):
     def test_is_finished(self):
-        self.assertEqual(TaskState.WAITING.is_finished(), False)
-        self.assertEqual(TaskState.RUNNING.is_finished(), False)
-        self.assertEqual(TaskState.RUNNING_WITH_ERROR.is_finished(), False)
-        self.assertEqual(TaskState.FINISHED.is_finished(), True)
-        self.assertEqual(TaskState.FINISHED_WITH_ERROR.is_finished(), True)
+        self.assertFalse(TaskState.WAITING.is_finished())
+        self.assertFalse(TaskState.RUNNING.is_finished())
+        self.assertFalse(TaskState.RUNNING_WITH_ERROR.is_finished())
+        self.assertTrue(TaskState.FINISHED.is_finished())
+        self.assertTrue(TaskState.FINISHED_WITH_ERROR.is_finished())
 
     def test_error_occurred(self):
-        self.assertEqual(TaskState.WAITING.error_occurred(), False)
-        self.assertEqual(TaskState.RUNNING.error_occurred(), False)
-        self.assertEqual(TaskState.RUNNING_WITH_ERROR.error_occurred(), True)
-        self.assertEqual(TaskState.FINISHED.error_occurred(), False)
-        self.assertEqual(TaskState.FINISHED_WITH_ERROR.error_occurred(), True)
+        self.assertFalse(TaskState.WAITING.error_occurred())
+        self.assertFalse(TaskState.RUNNING.error_occurred())
+        self.assertTrue(TaskState.RUNNING_WITH_ERROR.error_occurred())
+        self.assertFalse(TaskState.FINISHED.error_occurred())
+        self.assertTrue(TaskState.FINISHED_WITH_ERROR.error_occurred())
 
     def test_is_running(self):
-        self.assertEqual(TaskState.WAITING.is_running(), False)
-        self.assertEqual(TaskState.RUNNING.is_running(), True)
-        self.assertEqual(TaskState.RUNNING_WITH_ERROR.is_running(), True)
-        self.assertEqual(TaskState.FINISHED.is_running(), False)
-        self.assertEqual(TaskState.FINISHED_WITH_ERROR.is_running(), False)
+        self.assertFalse(TaskState.WAITING.is_running())
+        self.assertTrue(TaskState.RUNNING.is_running())
+        self.assertTrue(TaskState.RUNNING_WITH_ERROR.is_running())
+        self.assertFalse(TaskState.FINISHED.is_running())
+        self.assertFalse(TaskState.FINISHED_WITH_ERROR.is_running())
 
 
 if __name__ == '__main__':

@@ -50,7 +50,7 @@ class UnitTestResultZipper(unittest.TestCase):
 
         # check, if the callback-function worked
         with open(UnitTestResultZipper._callback_file_path) as file:
-            self.assertTrue(file.read() == str([task_id, TaskState.TaskState.FINISHED, 1]))
+            self.assertEqual(file.read(), str([task_id, TaskState.TaskState.FINISHED, 1]))
 
     def test_bad_args(self):
         dir_missing: str = os.path.join(UnitTestResultZipper._test_dir_path, "dir-not-existing")
@@ -106,6 +106,7 @@ class UnitTestResultZipper(unittest.TestCase):
             os.makedirs(abs_dir)
             with open(os.path.join(abs_dir, file_name), "w") as fh:
                 fh.write(file_content)
+
 
 if __name__ == '__main__':
     unittest.main()

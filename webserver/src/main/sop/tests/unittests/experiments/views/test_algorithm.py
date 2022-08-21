@@ -7,6 +7,7 @@ from django.urls import reverse_lazy
 from experiments.models import Algorithm
 from experiments.views.algorithm import download_algorithm
 
+
 class DatasetViewTests(django.test.TestCase):
     def test_download_algorithm(self) -> None:
         content = "Line 1\nLine 2\nLast Line"

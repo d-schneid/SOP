@@ -95,10 +95,13 @@ default:
 
 flake:
   stage: test
+  needs: []
   before_script:
-    - python3.9 -m pip install flake8
+    - python3.9 -m pip install flake8 flake8-assertive
   script:
-    - flake8 --max-line-length 88 --max-complexity 12 --color always --statistics --exclude=webserver/src/main/sop/tests backend_library/src/backend webserver/src/main/sop
+    - flake8 --color always .
+    - echo looking for forbidden windows line endings...
+    - '! grep -IUrPl --exclude-dir=.git --exclude-dir=venv* "\r$" 1>&2'
 
 django-tests:
   stage: test

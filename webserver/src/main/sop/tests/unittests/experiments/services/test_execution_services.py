@@ -71,7 +71,7 @@ class ExecutionServiceTests(django.test.TestCase):
         self.request.POST["8_param3"] = "hello"
         success, return_dict = get_params_out_of_form(self.request, self.experiment)
         self.assertFalse(success)
-        self.assertTrue(len(return_dict.keys()) == 2)
+        self.assertEqual(len(return_dict.keys()), 2)
         self.assertListEqual(
             return_dict.get("4_param1"), ["strings must be wrapped in quotes"]
         )
@@ -84,7 +84,7 @@ class ExecutionServiceTests(django.test.TestCase):
         self.request.POST["8_param4"] = "['hello', 3, 'World'"
         success, return_dict = get_params_out_of_form(self.request, self.experiment)
         self.assertFalse(success)
-        self.assertTrue(len(return_dict.keys()) == 2)
+        self.assertEqual(len(return_dict.keys()), 2)
         self.assertIsNotNone(return_dict.get("8_param4"))
         self.assertIsNotNone(return_dict.get("8_param1"))
 
