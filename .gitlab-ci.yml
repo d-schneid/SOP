@@ -104,6 +104,7 @@ flake:
     - '! grep -IUrPl --exclude-dir=.git --exclude-dir=venv* "\r$" 1>&2'
 
 django-tests:
+  needs: []
   stage: test
   extends: .frontend-base
   coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
