@@ -4,6 +4,7 @@ import math
 import multiprocessing
 import sys
 import threading
+from logging import info, debug, critical
 from collections import OrderedDict
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -31,7 +32,9 @@ class UserRoundRobinScheduler(Scheduler):
             = OrderedDict()
         self.__next_queue: int = -1
         self.__running: dict[Schedulable, tuple[Process, bool]] = dict()
-        for i in range(self.__get_targeted_worker_count()):
+        count = self.__get_targeted_worker_count()
+        debug(f"starting urrs with {count} workers")
+        for i in range(count):
             self.__make_worker_thread()
 
     @staticmethod
@@ -82,6 +85,7 @@ class UserRoundRobinScheduler(Scheduler):
                         pass
 
     def hard_shutdown(self) -> None:
+        critical("hard shutdown of urrs requested")
         with self.__empty_queue:
             self.__on_shutdown_completed = None
             self.__shutdown_ongoing = True
@@ -141,6 +145,7 @@ class UserRoundRobinScheduler(Scheduler):
                 p = Process(target=UserRoundRobinScheduler.__process_main,
                             args=(self, next_sched,), daemon=True)
                 self.__running[next_sched] = (p, False)
+            debug(f"preparing to run {next_sched}")
             next_sched.run_before_on_main()
             with self.__empty_queue:
                 if self.__shutdown_ongoing:
@@ -150,11 +155,13 @@ class UserRoundRobinScheduler(Scheduler):
                 if self.__running[next_sched][1]:
                     next_sched.run_later_on_main(None)
                     continue
+                info(f"{next_sched} will now be started")
                 p.start()
             p.join()
+            debug(f"running cleanup for {next_sched}")
             next_sched.run_later_on_main(
                 None if self.__running[next_sched][1] else p.exitcode)
-
+            debug(f"done with {next_sched}, looking for new tasks")
         self.__handle_shutdown()
 
     def __handle_shutdown(self) -> None:
