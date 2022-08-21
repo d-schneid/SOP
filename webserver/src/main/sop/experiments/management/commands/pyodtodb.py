@@ -145,10 +145,9 @@ class Command(BaseCommand):
                 f"Checking {pyod_algo.display_name} ({pyod_algo.file_name})"
                 " for validity...", ending="")
             # assert filename matches classname
-            assert (
-                    os.path.splitext(pyod_algo.file_name)[
-                        0] == pyod_algo.class_name.lower()
-            )
+            assert (os.path.splitext(pyod_algo.file_name)[
+                        0] == pyod_algo.class_name.lower())
+
             # check algorithm for validity
             errors = AlgorithmLoader.is_algorithm_valid(
                 str(pyod_models_root / pyod_algo.file_name)

@@ -93,7 +93,7 @@ class UnitTestDataIO(unittest.TestCase):
     def test_write_csv(self):
         test_file_path: str = os.path.join(UnitTestDataIO._test_dir_path, "test_file_path")
 
-        array: np.array =  np.array([[1,2,3,4,5], [6,7,8,9,10]])
+        array: np.array = np.array([[1,2,3,4,5], [6,7,8,9,10]])
         nd_array: np.ndarray = np.ndarray(shape=(2,5), dtype=int, buffer=array)
 
         DataIO.write_csv(test_file_path, nd_array, has_header=True)

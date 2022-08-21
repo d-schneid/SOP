@@ -9,6 +9,7 @@ from django.db.models.functions import Lower
 from authentication.models import User
 
 if TYPE_CHECKING:
+    # must be done this way to avoid circular import issues
     from experiments.models import (  # noqa: F401
         Algorithm,
         Dataset,
@@ -94,6 +95,7 @@ class ExecutionManager(models.Manager["Execution"]):
     """
     @staticmethod
     def mark_running_executions_as_crashed():
+        # must be done this way to avoid circular import issues
         from experiments.models.execution import Execution, ExecutionStatus  # noqa F811
         for execution in Execution.objects.all():
             if execution.is_running:

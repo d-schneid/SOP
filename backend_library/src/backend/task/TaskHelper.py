@@ -80,7 +80,7 @@ class TaskHelper:
         speed and compression.
         """
         assert (0 <= compression_level <= 9) or (
-                    compression_level == zlib.Z_DEFAULT_COMPRESSION)
+            compression_level == zlib.Z_DEFAULT_COMPRESSION)
         assert not os.path.isfile(zip_path_running)
         assert not os.path.isfile(zip_path_final)
         assert os.path.isdir(dir_path)

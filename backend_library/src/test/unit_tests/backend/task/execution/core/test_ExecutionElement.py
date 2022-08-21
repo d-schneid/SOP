@@ -47,7 +47,6 @@ class UnitTestExecutionElement(unittest.TestCase):
     def tearDown(self) -> None:
         if os.path.isfile(self._result_path):
             os.remove(self._result_path)
-        _ee = None
 
     def __get_subspace_data_for_processing_callback(self) -> SharedMemory:
         pass

@@ -107,5 +107,6 @@ class UnitTestResultZipper(unittest.TestCase):
             with open(os.path.join(abs_dir, file_name), "w") as fh:
                 fh.write(file_content)
 
+
 if __name__ == '__main__':
     unittest.main()

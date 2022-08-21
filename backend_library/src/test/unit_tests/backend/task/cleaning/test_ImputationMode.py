@@ -20,7 +20,6 @@ class UnitTestImputationMode(unittest.TestCase):
                                                   (self._ds.dataset7)).data)
 
         # No missing values -> Dont do anything
-        cleaned_dataset3: np.ndarray = np.array([[-1, 2], [-1, 2], [-1, 2], [-1, 2]])
         self.assertTrue(np.array_equal(self._ds.dataset3,
                                        self._mode.
                                        do_cleaning(self._ds.data_to_annotated
