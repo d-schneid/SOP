@@ -43,11 +43,11 @@ class UnitTestDatasetCleaningStepExceptionHandling(unittest.TestCase):
             eh.check_non_none_column(self._ds.empty_dataset, "")
 
         # edge case: Only one row with no None -> No Error
-        self.assertEqual(eh.check_non_none_column(np.asarray([1, 14, 15]), "ERROR"), None)
+        self.assertIsNone(eh.check_non_none_column(np.asarray([1, 14, 15]), "ERROR"))
 
         # edge case: Only one row with None values -> Exception!
         try:
-            self.assertEqual(eh.check_non_none_column(np.asarray([None, 1, None, None, 14, 15, None]), "ERROR"), None)
+            self.assertIsNone(eh.check_non_none_column(np.asarray([None, 1, None, None, 14, 15, None]), "ERROR"))
         except ValueError:
             self.fail("myFunc() raised ExceptionType unexpectedly!")
 

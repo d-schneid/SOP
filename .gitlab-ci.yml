@@ -98,6 +98,7 @@ flake:
   needs: []
   before_script:
     - python3.9 -m pip install flake8
+    - python3.9 -m pip install flake8-assertive
   script:
     - flake8 --color always .
 

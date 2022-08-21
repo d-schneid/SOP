@@ -128,8 +128,8 @@ class IntegrationTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
     def task_progress_callback(self, _task_id: int, task_state: TaskState,
                                progress: float) -> None:
         self.assertTrue(task_state.is_running())
-        self.assertTrue(progress >= 0)
-        self.assertTrue(progress < 1)  # Is smaller than one in run_pipeline
+        self.assertGreaterEqual(progress, 0)
+        self.assertLess(progress, 1)  # Is smaller than one in run_pipeline
 
     def setUp(self) -> None:
         self._ds = ds()

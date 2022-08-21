@@ -185,7 +185,7 @@ class SystemTest_Execution(unittest.TestCase):
             self._execution_finished = True
 
         # update progress
-        self.assertTrue(progress >= self._last_progress_report)
+        self.assertGreaterEqual(progress, self._last_progress_report)
         self._last_progress_report = progress
 
     def __metric_callback(self, execution: Execution) -> None:

@@ -172,16 +172,16 @@ class UnitTestExecution(unittest.TestCase):
                     break
 
     def test_on_execution_element_finished_error_occurred_logic(self):
-        self.assertEqual(False, self._ex._has_failed_element)
+        self.assertFalse(self._ex._has_failed_element)
 
         self._ex._Execution__on_execution_element_finished(False)
-        self.assertEqual(False, self._ex._has_failed_element)
+        self.assertFalse(self._ex._has_failed_element)
 
         self._ex._Execution__on_execution_element_finished(True)
-        self.assertEqual(True, self._ex._has_failed_element)
+        self.assertTrue(self._ex._has_failed_element)
 
         self._ex._Execution__on_execution_element_finished(False)
-        self.assertEqual(True, self._ex._has_failed_element)
+        self.assertTrue(self._ex._has_failed_element)
 
     def test_on_execution_element_finished_finished_elements_logic(self):
         self._ex._Execution__unload_dataset = Mock(return_value=None)
@@ -196,7 +196,7 @@ class UnitTestExecution(unittest.TestCase):
         self.assertEqual(self._ex._total_execution_element_count,
                          self._ex._finished_execution_element_count)
 
-        self.assertEqual(False, self._ex._has_failed_element)
+        self.assertFalse(self._ex._has_failed_element)
         self.assertTrue(self._ex._metric_finished)
 
         # out of range (more elements finished than elements exists)
@@ -205,7 +205,7 @@ class UnitTestExecution(unittest.TestCase):
 
         # depending on how you look at it, you could not edit the error of Execution when the Exception ist raised
         # (but here we are applying it)
-        self.assertEqual(True, self._ex._has_failed_element)
+        self.assertTrue(self._ex._has_failed_element)
 
     def test_schedule_already_finished(self):
         Scheduler._instance = None
