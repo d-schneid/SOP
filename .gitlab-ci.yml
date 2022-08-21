@@ -101,7 +101,7 @@ flake:
   script:
     - flake8 --color always .
     - echo looking for forbidden windows line endings...
-    - grep -IUrPl --exclude-dir=.git --exclude-dir=venv* '\r$' 1>&2
+    - '! grep -IUrPl --exclude-dir=.git --exclude-dir=venv* "\r$" 1>&2'
 
 django-tests:
   stage: test
