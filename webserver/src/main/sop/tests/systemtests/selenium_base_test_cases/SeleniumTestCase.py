@@ -1,5 +1,7 @@
 import os
+import shutil
 import unittest
+from bs4 import BeautifulSoup
 
 import selenium
 from selenium.webdriver.chrome.service import Service as ChromeService
@@ -20,15 +22,15 @@ class SeleniumTestCase(unittest.TestCase):
     STANDARD_PASSWORD_ADMIN = "this_is_a_test"
 
     MEDIA_DIR_PATH = os.path.join("tests", "systemtests", "media")
-    SELENIUM_SCREENSHOTS_PATH = os.path.join(
-        MEDIA_DIR_PATH, "selenium_error_screenshots"
+    SELENIUM_ERROR_PATH = os.path.join(
+        MEDIA_DIR_PATH, "selenium_err_artefacts"
     )
 
     @classmethod
     def setUpClass(cls) -> None:
         # create a media dir for misc. files
-        if not os.path.isdir(SeleniumTestCase.SELENIUM_SCREENSHOTS_PATH):
-            os.makedirs(SeleniumTestCase.SELENIUM_SCREENSHOTS_PATH)
+        if not os.path.isdir(SeleniumTestCase.SELENIUM_ERROR_PATH):
+            os.makedirs(SeleniumTestCase.SELENIUM_ERROR_PATH)
 
         # setup chrome webdriver
         chrome_service = ChromeService(executable_path=ChromeDriverManager().install())
@@ -58,7 +60,7 @@ class SeleniumTestCase(unittest.TestCase):
         SeleniumTestCase.logout(self)
 
     def tearDown(self) -> None:
-        # if the test failed, take a screenshot
+        # if the test failed, take a screenshot and save the page source
         result = self.defaultTestResult()
         self._feedErrorsToResult(result, self._outcome.errors)
 
@@ -73,13 +75,45 @@ class SeleniumTestCase(unittest.TestCase):
         else:
             type = None
 
+        # if there is and error, take a screenshot and save the page source
         if type is not None:
+            # screenshot
             screenshot_path = os.path.join(
-                SeleniumTestCase.SELENIUM_SCREENSHOTS_PATH,
-                "selenium_{type}_{method_name}.png",
+                SeleniumTestCase.SELENIUM_ERROR_PATH,
+                "selenium_screenshot_{type}_{method_name}.png",
             ).format(method_name=self._testMethodName, type=type)
 
             self.driver.save_screenshot(screenshot_path)
+
+            # save page source (original and pretty version)
+            page_source_path_base = os.path.join(
+                SeleniumTestCase.SELENIUM_ERROR_PATH,
+                "selenium_page_source_{type}_{method_name}.html",
+            ).format(method_name=self._testMethodName, type=type)
+
+            base_source_parts = page_source_path_base.split(".")
+
+            # save original
+            page_source_path_org = (
+                base_source_parts[0] + "_org." + base_source_parts[1]
+            )
+            print(page_source_path_org)
+
+            with open(page_source_path_org, "w") as file:
+                file.write(self.driver.page_source)
+
+            # save prettified version
+            page_source_path_pretty = (
+                base_source_parts[0]
+                + "_pretty."
+                + base_source_parts[1]
+            )
+
+            pretty_source = BeautifulSoup(
+                self.driver.page_source, "html.parser"
+            ).prettify()
+            with open(page_source_path_pretty, "w") as file:
+                file.write(pretty_source)
 
         # try to log out
         SeleniumTestCase.logout(self)
