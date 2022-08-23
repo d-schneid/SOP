@@ -70,8 +70,9 @@ class TestHelper:
         list2_copy = list2.copy()  # copy lists to not destroy the original lists
 
         for element in list1:
-            if not list2_copy.remove(element):
-                print(element + " is not in list2")  # TODO remove when fixed
+            if element in list2_copy:
+                list2_copy.remove(element)
+            else:
                 return False  # at least one element from list1 is not in list2
         return True
 
