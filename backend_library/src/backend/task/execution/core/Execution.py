@@ -173,8 +173,9 @@ class Execution(JsonSerializable, Task, Schedulable):
 
         details_path: str = os.path.join(self._result_path, 'details.json')
 
-        with open(details_path, 'w') as f:
-            json.dump(self.to_json(), f)
+        if not os.path.exists(details_path):
+            with open(details_path, 'w') as f:
+                json.dump(self.to_json(), f)
 
     def to_json(self) -> dict[str, object]:
         return {'subspace_generation': self._subspace_generation.to_json(),
