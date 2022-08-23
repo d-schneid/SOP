@@ -24,7 +24,7 @@ class UnitTestImputationMode(unittest.TestCase):
                                        self._mode.
                                        do_cleaning(self._ds.data_to_annotated
                                                    (self._ds.dataset3)).data))
-        print("passed2")
+
         # No missing values -> Dont do anything
         self.assertTrue(np.array_equal(self._ds.dataset4,
                                        self._mode.
