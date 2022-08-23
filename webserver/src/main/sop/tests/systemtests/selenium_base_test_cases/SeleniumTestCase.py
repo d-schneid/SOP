@@ -1,5 +1,4 @@
 import os
-import shutil
 import unittest
 from bs4 import BeautifulSoup
 
@@ -39,9 +38,6 @@ class SeleniumTestCase(unittest.TestCase):
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--window-size=2560,1440")
         chrome_options.add_argument("--start-maximized")
-
-        print(chrome_options.arguments)
-        print(chrome_options.capabilities)
 
         cls.driver: selenium.webdriver.Chrome = selenium.webdriver.Chrome(
             service=chrome_service, options=chrome_options
