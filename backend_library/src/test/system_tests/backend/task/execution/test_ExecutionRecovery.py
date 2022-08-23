@@ -26,6 +26,8 @@ class SystemTest_ExecutionRecovery(unittest.TestCase):
 
     _dir_name: str = os.getcwd()
 
+    _original_execution_to_recover_path: str = "./test/system_tests/backend/task/" \
+                                               "execution/execution_to_recover"
     _result_path: str = "./test/system_tests/backend/task/" \
                         "execution/execution_recovered_folder_system_test1"
     _zipped_result_path: str = _result_path + ".zip"
@@ -77,6 +79,11 @@ class SystemTest_ExecutionRecovery(unittest.TestCase):
         Scheduler._instance = None
         DebugScheduler()
 
+        # Copy execution to recover to not overwrite the original!!!
+        if os.path.isdir(self._result_path):
+            shutil.rmtree(self._result_path)
+        shutil.copytree(self._original_execution_to_recover_path, self._result_path)
+
         # Delete all folders and files of the old execution structure:
         # BEFORE creating the new execution!
         self.__clear_old_execution_file_structure()
@@ -97,7 +104,7 @@ class SystemTest_ExecutionRecovery(unittest.TestCase):
                              self._final_zip_path,
                              zip_running_path=self._zipped_result_path)
 
-    def test_schedule_callbacks(self):
+    def test_recover_execution(self):
         # Test if all the callbacks where initialized correctly
         self.assertFalse(self._started_running)
         self.assertFalse(self._metric_was_called)
@@ -117,16 +124,16 @@ class SystemTest_ExecutionRecovery(unittest.TestCase):
         self.__clear_old_execution_file_structure()
 
     def __clear_old_execution_file_structure(self):
-        #if os.path.isdir(self._result_path):
+        # if os.path.isdir(self._result_path):
         #    shutil.rmtree(self._result_path)
 
-        #if os.path.exists(self._zipped_result_path):
+        # if os.path.exists(self._zipped_result_path):
         #    os.remove(self._zipped_result_path)
 
-        #if os.path.exists(self._final_zip_path):
+        # if os.path.exists(self._final_zip_path):
         #    shutil.rmtree(self._final_zip_path)
 
-        #if os.path.exists(self._running_path):
+        # if os.path.exists(self._running_path):
         #    shutil.rmtree(self._running_path)
         pass
 
