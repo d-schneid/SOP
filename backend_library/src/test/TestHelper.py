@@ -71,6 +71,7 @@ class TestHelper:
 
         for element in list1:
             if not list2_copy.remove(element):
+                print(element + " is not in list2")  # TODO remove when fixed
                 return False  # at least one element from list1 is not in list2
         return True
 
