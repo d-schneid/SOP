@@ -155,10 +155,11 @@ class Execution(JsonSerializable, Task, Schedulable):
         # if os.path.exists(self.result_path):
         if not os.path.isdir(self._result_path):
             TaskHelper.create_directory(self._result_path)
-            for algorithm in self._algorithms:
-                algorithm_directory_path: str = \
-                    os.path.join(self._result_path,
-                                 algorithm.directory_name_in_execution)
+        for algorithm in self._algorithms:
+            algorithm_directory_path: str = \
+                os.path.join(self._result_path,
+                             algorithm.directory_name_in_execution)
+            if not os.path.isdir(algorithm_directory_path):
                 TaskHelper.create_directory(algorithm_directory_path)
 
     def __generate_execution_details_in_filesystem(self) -> None:
