@@ -32,6 +32,7 @@ class SystemTest_ExecutionRecovery(unittest.TestCase):
                         "execution/recover_test/execution_recovered_folder_system_test1"
     _zipped_result_path: str = _result_path + ".zip"
     _details_path: str = os.path.join(_result_path, 'details.json')
+    _metric_path: str = _result_path + "/metric"
 
     # subspace generation
     _subspace_size_min: int = 1
@@ -133,8 +134,8 @@ class SystemTest_ExecutionRecovery(unittest.TestCase):
         self.__clear_old_execution_file_structure()
 
     def __clear_old_execution_file_structure(self):
-        if os.path.isdir(self._zipped_result_path):
-            shutil.rmtree(self._zipped_result_path)
+        if os.path.isfile(self._zipped_result_path):
+            os.remove(self._final_zip_path)
 
     def __task_progress_callback(self, task_id: int,
                                  task_state: TaskState, progress: float) -> None:
