@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import csv
 import json
 import multiprocessing
 import os
@@ -238,8 +237,8 @@ class Execution(JsonSerializable, Task, Schedulable):
 
     def run_before_on_main(self) -> None:
         if self._datapoint_count is None:
-            reader = csv.reader(self._dataset_path)
-            self._datapoint_count = sum(1 for _ in reader) - 1
+            self._datapoint_count = DataIO.read_annotated(
+                self._dataset_path, True).data.shape[0]
         ds_dim_count = self._subspaces[0].get_dataset_dimension_count()
         entry_count = self._datapoint_count * ds_dim_count
         dtype = np.dtype('f4')
