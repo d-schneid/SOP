@@ -1,3 +1,4 @@
+import datetime
 import os
 from time import sleep
 
@@ -169,7 +170,8 @@ class UserStoriesTest(SeleniumTestCase):
         sleep(5)  # TODO: extract the status (s. sankasten für prototyp)
 
         # upload own algorithm
-        algo_name = "Dr. Metas algorithm"
+        #  generate a unique name
+        algo_name = "Dr. Metas algorithm - " + str(datetime.datetime.now())
         algo_description = "Provided by Dr. Meta, for my friend Charlie"
         algo_path = os.path.join("tests", "sample_algorithms", "SampleAlgoKnn.py")
         assert os.path.isfile(algo_path)
@@ -198,6 +200,9 @@ class UserStoriesTest(SeleniumTestCase):
             self.driver.current_url,
             SeleniumTestCase.BASE_URL + "algorithm/overview/sort-by=[a-zA-Z_]+/",
         )
+
+        # wait for algorithm to be checked
+        sleep(5)  # TODO: extract the status
 
         # create new experiment with own algorithm
         exp_name = "Charlies experiment"
@@ -228,8 +233,12 @@ class UserStoriesTest(SeleniumTestCase):
         self.driver.find_element(
             By.CSS_SELECTOR, "#group_Proximity-Based > .flex-grow-1"
         ).click()
-        self.driver.find_element(By.ID, "check-algo-3").click()  # own uploaded algo
-        # TODO
+
+        sleep(0.5)  # TODO: wait for unfolding of group
+
+        for algo in self.driver.find_elements(By.NAME, "check-algo"):
+            if algo.accessible_name == algo_name:
+                algo.click()
 
         self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
         self.assertRegex(
@@ -244,16 +253,39 @@ class UserStoriesTest(SeleniumTestCase):
             SeleniumTestCase.BASE_URL + "experiment/[0-9]+/execution/create/",
         )
 
+        # enter subspace data
         self.driver.find_element(By.ID, "id_subspace_amount").send_keys("2")
         self.driver.find_element(By.ID, "id_subspaces_min").send_keys("5")
         self.driver.find_element(By.ID, "id_subspaces_max").send_keys("8")
         self.driver.find_element(By.ID, "id_subspace_generation_seed").send_keys("1")
 
-        self.driver.find_element(By.ID, "36_contamination").send_keys("0.2")
-        self.driver.find_element(By.ID, "36_n_neighbors").send_keys("7")
-        self.driver.find_element(By.ID, "36_leaf_size").send_keys("20")
+        # change option for the specific algorithm
+        all_labels = self.driver.find_elements(
+            By.XPATH,
+            "//div[text() = '" + algo_name + "']/parent::*/parent::*/descendant::label",
+        )
 
-        self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
+        for label in all_labels:
+            if "contamination =" == label.text:
+                input_element = self.driver.find_element(
+                    By.ID, label.get_dom_attribute("for")
+                )
+                input_element.clear()
+                input_element.send_keys("0.2")
+            elif "n_neighbors =" == label.text:
+                input_element = self.driver.find_element(
+                    By.ID, label.get_dom_attribute("for")
+                )
+                input_element.clear()
+                input_element.send_keys("7")
+            elif "leaf_size =" == label.text:
+                input_element = self.driver.find_element(
+                    By.ID, label.get_dom_attribute("for")
+                )
+                input_element.clear()
+                input_element.send_keys("20")
+
+        self.driver.find_element(By.XPATH, "//input[@type='submit']").click()
         self.assertRegex(
             self.driver.current_url,
             SeleniumTestCase.BASE_URL + "experiment/overview/sort-by=[a-zA-Z_]+/",
