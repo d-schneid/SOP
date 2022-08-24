@@ -414,7 +414,7 @@ class Execution(JsonSerializable, Task, Schedulable):
 
     @property
     def dataset_indices(self) -> list[int]:
-        """ TODO: test this
+        """
         :return: The indices of the data points
         of the cleaned dataset used in this execution
         """
