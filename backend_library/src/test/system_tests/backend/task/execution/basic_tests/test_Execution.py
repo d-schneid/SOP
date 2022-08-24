@@ -27,7 +27,7 @@ class SystemTest_Execution(unittest.TestCase):
     _dir_name: str = os.getcwd()
 
     _result_path: str = "./test/system_tests/backend/task/" \
-                        "execution/execution_folder_system_test1"
+                        "execution/basic_tests/execution_folder_system_test1"
     _zipped_result_path: str = _result_path + ".zip"
     _details_path: str = os.path.join(_result_path, 'details.json')
 
@@ -128,6 +128,7 @@ class SystemTest_Execution(unittest.TestCase):
                 self._ex.schedule()
         finally:
             self._ex._execution_subspaces[0].run_later_on_main(None)
+        self.__clear_old_execution_file_structure()
 
     def test_schedule_result_folder_already_exists(self):
         """
@@ -161,6 +162,8 @@ class SystemTest_Execution(unittest.TestCase):
         self.assertEqual(1, self._last_progress_report)
 
         # Clean up
+        if os.path.exists(_test_folder):
+            os.rmdir(_test_folder)
         self.__clear_old_execution_file_structure()
 
     def __clear_old_execution_file_structure(self):
