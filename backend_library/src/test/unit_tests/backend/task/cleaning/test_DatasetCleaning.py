@@ -15,7 +15,8 @@ from backend.task.cleaning.DatasetCleaning import DatasetCleaning
 class UnitTestDatasetCleaning(unittest.TestCase):
     _dir_name: str = os.getcwd()
     _uncleaned_dataset_path: str = os.path.join(_dir_name, "uncleaned_dataset.csv")
-    _cleaned_dataset_path: str = os.path.join(_dir_name, "cleaned_dataset.csv")
+    _cleaned_dataset_path: str = "./test/unit_tests/backend/task/" \
+                                 "cleaning/cleaned_dataset_unit_test.csv"
 
     _user_id: int = -1
     _task_id: int = -1
@@ -100,10 +101,11 @@ class UnitTestDatasetCleaning(unittest.TestCase):
         self.assertTrue(self._finished_with_error)
 
     def test_not_correctly_cleaned_result(self):
+        error_message_to_display: str = "I am not convertable into float32 :("
         self._dc._DatasetCleaning__load_uncleaned_dataset = Mock(return_value=None)
         self._dc._DatasetCleaning__run_cleaning_pipeline = \
             Mock(return_value=AnnotatedDataset(
-                np.asarray([["I am not convertable into float32 :("]]), None, None,
+                np.asarray([[error_message_to_display]]), None, None,
                 generate_headers=True, generate_row_numbers=True))
 
         self.assertFalse(self._finished_with_error)
@@ -112,9 +114,34 @@ class UnitTestDatasetCleaning(unittest.TestCase):
 
         self.assertTrue(self._finished_with_error)
 
+        # check error file message
+        error_file_path: str = \
+            TaskHelper.convert_to_error_csv_path(self._cleaned_dataset_path)
+        written_error_message: np.ndarray = \
+            DataIO.read_uncleaned_csv(error_file_path, None)
+        np.testing.assert_array_equal(
+            written_error_message,
+            np.asarray([["Error: Cleaning result contained values that "
+                         "were not float32: could not convert string to float: "
+                         "'I am not convertable into float32 :('"]]))
+
+        # cleanup
+        os.remove(TaskHelper.convert_to_error_csv_path(self._cleaned_dataset_path))
+
+    def test_delete_old_error_file(self):
+        error_file_path: str = TaskHelper.convert_to_error_csv_path(
+            self._cleaned_dataset_path)
+        DataIO.write_csv(
+            error_file_path,
+            np.asarray([["I am an old error. Now they want to delete me?! :("]]))
+        self.assertTrue(os.path.isfile(error_file_path))
+
+        self._dc._DatasetCleaning__delete_old_error_file()
+
+        self.assertFalse(os.path.isfile(error_file_path))
+
     def task_progress_callback(self, _task_id: int, task_state: TaskState,
                                progress: float) -> None:
-        print("TaskState: " + str(task_state))
         if task_state == TaskState.FINISHED_WITH_ERROR:
             self._finished_with_error = True
 
