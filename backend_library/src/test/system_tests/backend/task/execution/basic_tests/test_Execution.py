@@ -67,7 +67,7 @@ class SystemTest_Execution(unittest.TestCase):
 
     # dataset indices
     _dataset_indices_to_compare_path: str = "./test/system_tests/backend/task/" \
-                        "execution/basic_tests/dataset_indices_to_compare.csv"
+                                            "execution/basic_tests/dataset_indices_to_compare.csv"
 
     def setUp(self) -> None:
         # Scheduler
@@ -86,13 +86,14 @@ class SystemTest_Execution(unittest.TestCase):
         AlgorithmLoader.set_algorithm_root_dir(self._root_dir)
 
         # create Execution
-        self._ex = Execution(self._user_id, self._task_id,
-                             self.__task_progress_callback, self._dataset_path,
-                             self._result_path, self._subspace_generation,
-                             self._algorithms,
-                             self.__metric_callback, 29221,
-                             self._final_zip_path,
-                             zip_running_path=self._zipped_result_path)
+        self._ex: Execution = Execution(self._user_id, self._task_id,
+                                        self.__task_progress_callback,
+                                        self._dataset_path,
+                                        self._result_path, self._subspace_generation,
+                                        self._algorithms,
+                                        self.__metric_callback, 29221,
+                                        self._final_zip_path,
+                                        zip_running_path=self._zipped_result_path)
 
     def test_schedule_callbacks(self):
         # Test if all the callbacks where initialized correctly
@@ -185,6 +186,33 @@ class SystemTest_Execution(unittest.TestCase):
         np.testing.assert_array_equal(to_compare_with,
                                       np.asarray([self._ex.dataset_indices])
                                       .transpose())
+
+        # Clean up
+        self.__clear_old_execution_file_structure()
+
+    def test_dont_input_datapoint_count(self):
+        """
+        datapoint_count isn't inputted in constructor and has to be filled while running
+        the execution
+        """
+        # run execution to fill row_mapping variable in Execution
+        ex_without_datapoint_count: Execution = Execution(self._user_id, self._task_id,
+                                                          self.__task_progress_callback,
+                                                          self._dataset_path,
+                                                          self._result_path,
+                                                          self._subspace_generation,
+                                                          self._algorithms,
+                                                          self.__metric_callback, None,
+                                                          self._final_zip_path,
+                                                          zip_running_path=self
+                                                          ._zipped_result_path)
+        self.assertIsNone(ex_without_datapoint_count._datapoint_count)
+
+        # start execution
+        ex_without_datapoint_count.schedule()
+
+        # check if datapoints are inputted correctly
+        self.assertEqual(29221, ex_without_datapoint_count._datapoint_count)
 
         # Clean up
         self.__clear_old_execution_file_structure()
