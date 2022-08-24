@@ -153,6 +153,16 @@ class UnitTestDatasetCleaning(unittest.TestCase):
             self._dc._DatasetCleaning__run_cleaning_pipeline(
                 Datasets().empty_annotated_dataset))
 
+    def test_run_cleaning_pipeline_cleaning_step_result_empty(self):
+        self._dc._DatasetCleaning__empty_cleaning_result_handler = \
+            Mock(return_value=True)
+        self.assertIsNone(
+            self._dc._DatasetCleaning__run_cleaning_pipeline(
+                Datasets().empty_annotated_dataset))
+
+    def test_run_cleaning_pipeline_cleaning_step_has_error(self):
+        #TODO
+        pass
 
 if __name__ == '__main__':
     unittest.main()
