@@ -4,6 +4,7 @@ from unittest.mock import Mock
 
 import numpy as np
 
+from backend.AnnotatedDataset import AnnotatedDataset
 from backend.DataIO import DataIO
 from backend.task.TaskErrorMessages import TaskErrorMessages
 from backend.task.TaskHelper import TaskHelper
@@ -98,8 +99,22 @@ class UnitTestDatasetCleaning(unittest.TestCase):
 
         self.assertTrue(self._finished_with_error)
 
+    def test_not_correctly_cleaned_result(self):
+        self._dc._DatasetCleaning__load_uncleaned_dataset = Mock(return_value=None)
+        self._dc._DatasetCleaning__run_cleaning_pipeline = \
+            Mock(return_value=AnnotatedDataset(
+                np.asarray([["I am not convertable into float32 :("]]), None, None,
+                generate_headers=True, generate_row_numbers=True))
+
+        self.assertFalse(self._finished_with_error)
+
+        self._dc.do_work()
+
+        self.assertTrue(self._finished_with_error)
+
     def task_progress_callback(self, _task_id: int, task_state: TaskState,
                                progress: float) -> None:
+        print("TaskState: " + str(task_state))
         if task_state == TaskState.FINISHED_WITH_ERROR:
             self._finished_with_error = True
 
