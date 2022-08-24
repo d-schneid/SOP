@@ -13,7 +13,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_cast_to_float32_error(self):
         self.assertEqual("Error: Cleaning result contained values "
-                         "that were not float32: \n",
+                         "that were not float32: ",
                          self._taskErrorMessages.cast_to_float32_error)
 
 
