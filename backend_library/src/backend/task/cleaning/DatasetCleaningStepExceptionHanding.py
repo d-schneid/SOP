@@ -16,12 +16,7 @@ class DatasetCleaningStepExceptionHandling:
         (error_root: error_message)
         :return: Throws an ValueError exception if the inputted dataset is empty
         """
-        try:
-            if dataset_to_check.size == 0:
-                raise ValueError(error_root +
-                                 ": input array is empty. Needs at least one row, "
-                                 "one column and an entry")
-        except pd.errors.EmptyDataError:
+        if dataset_to_check.size == 0:
             raise ValueError(error_root +
                              ": input array is empty. Needs at least one row, "
                              "one column and an entry")
