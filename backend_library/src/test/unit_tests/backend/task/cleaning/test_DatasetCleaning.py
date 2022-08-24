@@ -66,6 +66,25 @@ class UnitTestDatasetCleaning(unittest.TestCase):
         with self.assertRaises(AssertionError):
             self._dc._DatasetCleaning__load_uncleaned_dataset()
 
+    def test_create_with_nonempty_running_path(self):
+        running_dataset_cleaning_path: str = "I.Am.Running"
+        with open(self._uncleaned_dataset_path, 'w'):
+            self._dc: DatasetCleaning = \
+                DatasetCleaning(self._user_id, self._task_id,
+                                self.task_progress_callback,
+                                "no_uncleaned_dataset",
+                                self._cleaned_dataset_path, [],
+                                self._priority,
+                                running_dataset_cleaning_path=
+                                running_dataset_cleaning_path)
+        self.assertEqual(self._dc._running_dataset_cleaning_path,
+                         running_dataset_cleaning_path)
+
+    def test_properties(self):
+        self.assertEqual(self._dc._user_id, self._user_id)
+        self.assertEqual(self._dc._task_id, self._task_id)
+        self.assertEqual(self._dc._priority, self._priority)
+
     def task_progress_callback(self, _task_id: int, task_state: TaskState,
                                progress: float) -> None:
         return None  # empty callback
