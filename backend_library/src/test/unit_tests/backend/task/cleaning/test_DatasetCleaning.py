@@ -11,6 +11,8 @@ from backend.task.TaskHelper import TaskHelper
 from backend.task.TaskState import TaskState
 from backend.task.cleaning.DatasetCleaning import DatasetCleaning
 from test.DatasetsForTesting import Datasets
+from test.unit_tests.backend.task.cleaning.DatasetCleaningStepThatAlwaysRaisesException import \
+    DatasetCleaningStepThatAlwaysRaisesException
 
 
 class UnitTestDatasetCleaning(unittest.TestCase):
@@ -27,6 +29,8 @@ class UnitTestDatasetCleaning(unittest.TestCase):
     _error_path: str = TaskHelper.convert_to_error_csv_path(_cleaned_dataset_path)
 
     _empty_dataset_path: str = "./test/datasets/empty_dataset.csv"
+
+    _ds = Datasets()
 
     def setUp(self) -> None:
         self._finished_with_error: bool = False
@@ -151,18 +155,36 @@ class UnitTestDatasetCleaning(unittest.TestCase):
     def test_run_cleaning_pipeline_on_empty_dataset(self):
         self.assertIsNone(
             self._dc._DatasetCleaning__run_cleaning_pipeline(
-                Datasets().empty_annotated_dataset))
+                self._ds.empty_annotated_dataset))
 
     def test_run_cleaning_pipeline_cleaning_step_result_empty(self):
         self._dc._DatasetCleaning__empty_cleaning_result_handler = \
             Mock(return_value=True)
         self.assertIsNone(
             self._dc._DatasetCleaning__run_cleaning_pipeline(
-                Datasets().empty_annotated_dataset))
+                self._ds.empty_annotated_dataset))
 
     def test_run_cleaning_pipeline_cleaning_step_has_error(self):
-        #TODO
-        pass
+        error_file_path: str = TaskHelper.convert_to_error_csv_path(
+            self._cleaned_dataset_path)
+        self.assertFalse(os.path.isfile(error_file_path))
+
+        dc_failing: DatasetCleaning \
+            = DatasetCleaning(self._user_id, self._task_id,
+                              self.task_progress_callback,
+                              "no_uncleaned_dataset",
+                              self._cleaned_dataset_path,
+                              [DatasetCleaningStepThatAlwaysRaisesException],
+                              self._priority)
+        self.assertIsNone(
+            dc_failing._DatasetCleaning__run_cleaning_pipeline(
+                self._ds.data_to_annotated(self._ds.dataset0)))
+        # An error file should have been created:
+        self.assertTrue(os.path.isfile(error_file_path))
+
+        # clean up
+        os.remove(error_file_path)
+
 
 if __name__ == '__main__':
     unittest.main()
