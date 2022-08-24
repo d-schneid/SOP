@@ -3,6 +3,10 @@ import shutil
 import unittest
 from unittest.mock import Mock
 
+import numpy as np
+import pandas as pd
+
+from backend.DataIO import DataIO
 from backend.scheduler.DebugScheduler import DebugScheduler
 from backend.scheduler.Scheduler import Scheduler
 from backend.task.TaskHelper import TaskHelper
@@ -60,6 +64,10 @@ class SystemTest_Execution(unittest.TestCase):
 
     _running_path = _result_path + ".I_am_running"
     _final_zip_path = _result_path + ".zip"
+
+    # dataset indices
+    _dataset_indices_to_compare_path: str = "./test/system_tests/backend/task/" \
+                        "execution/basic_tests/dataset_indices_to_compare.csv"
 
     def setUp(self) -> None:
         # Scheduler
@@ -159,6 +167,21 @@ class SystemTest_Execution(unittest.TestCase):
         self.assertFalse(self._metric_was_called)
         self.assertTrue(self._execution_finished)
         self.assertEqual(1, self._last_progress_report)
+
+        # Clean up
+        self.__clear_old_execution_file_structure()
+
+    def test_dataset_indices(self):
+        # run execution to fill row_mapping variable in Execution
+        self._ex.schedule()
+
+        # compare dataset_indices
+        to_compare_with: np.ndarray = \
+            pd.read_csv(self._dataset_indices_to_compare_path,
+                        dtype=int, header=None).to_numpy()
+        np.testing.assert_array_equal(to_compare_with,
+                                      np.asarray([self._ex.dataset_indices])
+                                      .transpose())
 
         # Clean up
         self.__clear_old_execution_file_structure()

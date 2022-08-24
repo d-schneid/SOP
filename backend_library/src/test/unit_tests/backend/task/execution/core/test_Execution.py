@@ -56,6 +56,8 @@ class UnitTestExecution(unittest.TestCase):
 
     _final_zip_path = _result_path + "final.zip"
 
+    #
+
     def __task_progress_callback(self, task_id: int, task_state: TaskState, progress: float) -> None:
         # Empty callback
         pass
