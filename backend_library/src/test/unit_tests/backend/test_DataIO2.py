@@ -26,6 +26,12 @@ class UnitTestDataIO2(unittest.TestCase):
     # save write
     _save_write_path: str = "./test/datasets/save_write.csv"
 
+    # save_convert_to_float 1D
+    _to_convert_1D: np.ndarray = np.asarray([1, "2", "21.315", "Cannot be converted :(",
+                                            "", 42, "25"])
+    _converted_1D: np.ndarray = np.asarray([1.0, 2.0, 21.315, "Cannot be converted :(",
+                                            "", 42.0, 25.0])
+
     def setUp(self) -> None:
         # cleanup
         self.cleanup_after_test()
@@ -71,6 +77,11 @@ class UnitTestDataIO2(unittest.TestCase):
 
         # cleanup
         self.cleanup_after_test()
+
+    def test_save_convert_to_float_one_dim(self):
+        converted: np.ndarray = \
+            self._dataIO._DataIO__save_convert_to_float(self._to_convert_1D)
+        np.testing.assert_array_equal(self._converted_1D, converted)
 
     def cleanup_after_test(self):
         if os.path.isfile(self._save_write_path):
