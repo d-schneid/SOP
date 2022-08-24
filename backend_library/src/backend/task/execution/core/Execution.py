@@ -4,6 +4,7 @@ import csv
 import json
 import multiprocessing
 import os
+import shutil
 from collections.abc import Callable
 from multiprocessing import shared_memory
 from multiprocessing.shared_memory import SharedMemory
@@ -172,10 +173,12 @@ class Execution(JsonSerializable, Task, Schedulable):
         assert os.path.isdir(self._result_path)
 
         details_path: str = os.path.join(self._result_path, 'details.json')
+        running_path: str = details_path + ".running"
 
-        if not os.path.exists(details_path):
-            with open(details_path, 'w') as f:
+        if not os.path.exists(running_path):
+            with open(running_path, 'w') as f:
                 json.dump(self.to_json(), f)
+        shutil.move(running_path, details_path)
 
     def to_json(self) -> dict[str, object]:
         return {'subspace_generation': self._subspace_generation.to_json(),
@@ -414,7 +417,7 @@ class Execution(JsonSerializable, Task, Schedulable):
 
     @property
     def dataset_indices(self) -> list[int]:
-        """ TODO: test this
+        """
         :return: The indices of the data points
         of the cleaned dataset used in this execution
         """

@@ -1,9 +1,11 @@
 import os
 import shutil
 import unittest
+from unittest.mock import Mock
 
 from backend.scheduler.DebugScheduler import DebugScheduler
 from backend.scheduler.Scheduler import Scheduler
+from backend.task.TaskHelper import TaskHelper
 from backend.task.TaskState import TaskState
 from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
@@ -12,10 +14,9 @@ from backend.task.execution.subspace.RandomizedSubspaceGeneration import \
     RandomizedSubspaceGeneration as rsg
 from backend.task.execution.subspace.UniformSubspaceDistribution import \
     UniformSubspaceDistribution as usd
-from test.TestHelper import TestHelper
 
 
-class SystemTest_ExecutionRecovery(unittest.TestCase):
+class SystemTest_Execution(unittest.TestCase):
     _user_id: int = 214
     _task_id: int = 1553
 
@@ -25,18 +26,15 @@ class SystemTest_ExecutionRecovery(unittest.TestCase):
 
     _dir_name: str = os.getcwd()
 
-    _original_execution_to_recover_path: str = "./test/system_tests/backend/task/" \
-                                               "execution/recover_test" \
-                                               "/execution_to_recover"
     _result_path: str = "./test/system_tests/backend/task/" \
-                        "execution/recover_test/execution_recovered_folder_system_test1"
+                        "execution/basic_tests/execution_folder_system_test1"
     _zipped_result_path: str = _result_path + ".zip"
     _details_path: str = os.path.join(_result_path, 'details.json')
 
     # subspace generation
     _subspace_size_min: int = 1
     _subspace_size_max: int = 5
-    _subspace_amount = 10
+    _subspace_amount = 4
     _subspace_seed = 42
     _data_dimensions_count: int = 26
     _subspace_generation: rsg = rsg(usd(_subspace_size_min, _subspace_size_max),
@@ -58,36 +56,15 @@ class SystemTest_ExecutionRecovery(unittest.TestCase):
         list([ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[0]),
               ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[1]),
               ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[2]),
-              ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[3]),
-              ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[3]),
-              ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[3]),
-              ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[3]),
-              ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[3]),
-              ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[3]),
-              ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[3]),
-              ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[3]),
-              ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[3]),
-              ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[3]),
-              ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[3]),
               ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[3])])
 
     _running_path = _result_path + ".I_am_running"
     _final_zip_path = _result_path + ".zip"
 
-    # precomputed result
-    _precomputed_result_path: str = "./test/system_tests/backend/task/" \
-                                    "execution/recover_test" \
-                                    "/execution_recovered_to_compare.zip"
-
     def setUp(self) -> None:
         # Scheduler
         Scheduler._instance = None
         DebugScheduler()
-
-        # Copy execution to recover to not overwrite the original!!!
-        if os.path.isdir(self._result_path):
-            shutil.rmtree(self._result_path)
-        shutil.copytree(self._original_execution_to_recover_path, self._result_path)
 
         # Delete all folders and files of the old execution structure:
         # BEFORE creating the new execution!
@@ -109,7 +86,7 @@ class SystemTest_ExecutionRecovery(unittest.TestCase):
                              self._final_zip_path,
                              zip_running_path=self._zipped_result_path)
 
-    def test_recover_execution(self):
+    def test_schedule_callbacks(self):
         # Test if all the callbacks where initialized correctly
         self.assertFalse(self._started_running)
         self.assertFalse(self._metric_was_called)
@@ -118,10 +95,6 @@ class SystemTest_ExecutionRecovery(unittest.TestCase):
 
         # perform the Execution
         self._ex.schedule()
-
-        # check if the result is correct (equals to the precomputed)
-        self.assertTrue(TestHelper.is_same_execution_result_zip
-                        (self._precomputed_result_path, self._zipped_result_path))
 
         # Test if all the callbacks where performed
         self.assertTrue(self._started_running)
@@ -132,9 +105,79 @@ class SystemTest_ExecutionRecovery(unittest.TestCase):
         # Clean up
         self.__clear_old_execution_file_structure()
 
+    def test_schedule_result_folder(self):
+        # The result folder does not exist yet
+        self.assertFalse(os.path.exists(self._final_zip_path))
+
+        # perform the Execution
+        self._ex.schedule()
+
+        # check if only the result folder exists (and is zipped)
+        self.assertFalse(os.path.isdir(self._result_path))
+        self.assertFalse(os.path.isdir(self._running_path))
+        self.assertTrue(os.path.exists(self._final_zip_path))
+
+        # Clean up
+        self.__clear_old_execution_file_structure()
+
+    def test_missing_folder(self):
+        try:
+            self.__clear_old_execution_file_structure()
+            with self.assertRaises(Exception):
+                # Scheduler was called because no Execution result exists -> Exception
+                self._ex.schedule()
+        finally:
+            self._ex._execution_subspaces[0].run_later_on_main(None)
+        self.__clear_old_execution_file_structure()
+
+    def test_schedule_result_folder_already_exists(self):
+        """
+        Do not perform the Execution when its result already exist
+        """
+        self.__clear_old_execution_file_structure()
+        self._ex._Execution__unload_dataset = Mock(side_effect
+                                                   =Exception("Scheduler was called -> "
+                                                              "Execution was started"))
+        # Create the result of Execution by hand
+        _test_folder: str = self._result_path + "_test_folder"
+        if os.path.exists(_test_folder):
+            os.rmdir(_test_folder)
+        os.mkdir(_test_folder)
+
+        TaskHelper.zip_dir(_test_folder, self._running_path, self._zipped_result_path)
+        self.assertTrue(os.path.exists(self._final_zip_path))
+
+        # check if only the result folder exists (and is zipped)
+        self.assertFalse(os.path.isdir(self._result_path))
+        self.assertFalse(os.path.isdir(self._running_path))
+        self.assertTrue(os.path.exists(self._final_zip_path))
+
+        self._ex.schedule()  # No Exception -> Execution wasn't scheduled
+        # -> Execution was correctly skipped
+
+        # Check callback result
+        self.assertFalse(self._started_running)
+        self.assertFalse(self._metric_was_called)
+        self.assertTrue(self._execution_finished)
+        self.assertEqual(1, self._last_progress_report)
+
+        # Clean up
+        if os.path.exists(_test_folder):
+            os.rmdir(_test_folder)
+        self.__clear_old_execution_file_structure()
+
     def __clear_old_execution_file_structure(self):
-        if os.path.isfile(self._zipped_result_path):
-            os.remove(self._final_zip_path)
+        if os.path.isdir(self._result_path):
+            shutil.rmtree(self._result_path)
+
+        if os.path.exists(self._zipped_result_path):
+            os.remove(self._zipped_result_path)
+
+        if os.path.exists(self._final_zip_path):
+            shutil.rmtree(self._final_zip_path)
+
+        if os.path.exists(self._running_path):
+            shutil.rmtree(self._running_path)
 
     def __task_progress_callback(self, task_id: int,
                                  task_state: TaskState, progress: float) -> None:
