@@ -98,23 +98,21 @@ class UserStoriesTest(SeleniumTestCase):
         ).click()
 
         # add algorithms
+        algo_name_kde = "[PYOD] KDE"
+        algo_name_knn = "[PYOD] KNN"
+
         self.driver.find_element(
             By.CSS_SELECTOR, "#group_Probabilistic > .flex-grow-1"
         ).click()
-        # self.driver.find_element(By.ID, "check-algo-16").click()  # KDE
-        self.driver.find_element(
-            By.CSS_SELECTOR, "#collapse_Probabilistic .list-group-item:nth-child(5)"
-        ).click()
-        # TODO
-
         self.driver.find_element(
             By.CSS_SELECTOR, "#group_Proximity-Based > .flex-grow-1"
         ).click()
-        # self.driver.find_element(By.ID, "check-algo-17").click()  # KNN
-        self.driver.find_element(
-            By.CSS_SELECTOR, "#collapse_Proximity-Based .list-group-item:nth-child(4)"
-        ).click()
-        # TODO
+
+        sleep(0.5)  # TODO: wait for unfolding of groups
+
+        for algo in self.driver.find_elements(By.NAME, "check-algo"):
+            if algo.accessible_name in [algo_name_kde, algo_name_knn]:
+                algo.click()
 
         self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
         self.assertRegex(
@@ -129,17 +127,60 @@ class UserStoriesTest(SeleniumTestCase):
             SeleniumTestCase.BASE_URL + "experiment/[0-9]+/execution/create/",
         )
 
+        # add subspace options
         self.driver.find_element(By.ID, "id_subspace_amount").send_keys("2")
         self.driver.find_element(By.ID, "id_subspaces_min").send_keys("5")
         self.driver.find_element(By.ID, "id_subspaces_max").send_keys("8")
         self.driver.find_element(By.ID, "id_subspace_generation_seed").send_keys("1")
 
-        self.driver.find_element(By.ID, "16_contamination").send_keys("0.2")
-        self.driver.find_element(By.ID, "17_contamination").send_keys("0.3")
-        self.driver.find_element(By.ID, "17_n_neighbors").send_keys("7")
-        self.driver.find_element(By.ID, "17_leaf_size").send_keys("20")
+        # change algorithm parameters
+        all_labels_kde = self.driver.find_elements(
+            By.XPATH,
+            "//div[text() = '" + algo_name_kde + "']/parent::*/parent::*/descendant::label",
+        )
+        all_labels_knn = self.driver.find_elements(
+            By.XPATH,
+            "//div[text() = '" + algo_name_knn + "']/parent::*/parent::*/descendant::label",
+        )
 
-        self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
+        # kde options
+        for label in all_labels_kde:
+            if "contamination =" == label.text:
+                input_element = self.driver.find_element(
+                    By.ID, label.get_dom_attribute("for")
+                )
+                input_element.clear()
+                input_element.send_keys("0.2")
+            elif "leaf_size =" == label.text:
+                input_element = self.driver.find_element(
+                    By.ID, label.get_dom_attribute("for")
+                )
+                input_element.clear()
+                input_element.send_keys("10")
+
+        # knn options
+        for label in all_labels_knn:
+            if "contamination =" == label.text:
+                input_element = self.driver.find_element(
+                    By.ID, label.get_dom_attribute("for")
+                )
+                input_element.clear()
+                input_element.send_keys("0.3")
+            elif "n_neighbors =" == label.text:
+                input_element = self.driver.find_element(
+                    By.ID, label.get_dom_attribute("for")
+                )
+                input_element.clear()
+                input_element.send_keys("3")
+            elif "leaf_size =" == label.text:
+                input_element = self.driver.find_element(
+                    By.ID, label.get_dom_attribute("for")
+                )
+                input_element.clear()
+                input_element.send_keys("20")
+
+
+        self.driver.find_element(By.XPATH, "//input[@type='submit']").click()
         self.assertRegex(
             self.driver.current_url,
             SeleniumTestCase.BASE_URL + "experiment/overview/sort-by=[a-zA-Z_]+/",
@@ -239,6 +280,7 @@ class UserStoriesTest(SeleniumTestCase):
         for algo in self.driver.find_elements(By.NAME, "check-algo"):
             if algo.accessible_name == algo_name:
                 algo.click()
+                break
 
         self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
         self.assertRegex(
