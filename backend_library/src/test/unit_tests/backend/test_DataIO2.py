@@ -2,7 +2,6 @@ import os.path
 import unittest
 
 import numpy as np
-from pandas.errors import EmptyDataError
 
 from backend.AnnotatedDataset import AnnotatedDataset
 from backend.DataIO import DataIO
