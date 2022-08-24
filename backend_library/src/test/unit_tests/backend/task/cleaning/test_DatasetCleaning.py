@@ -1,5 +1,6 @@
 import os
 import unittest
+from unittest.mock import Mock
 
 import numpy as np
 
@@ -23,6 +24,8 @@ class UnitTestDatasetCleaning(unittest.TestCase):
     _error_path: str = TaskHelper.convert_to_error_csv_path(_cleaned_dataset_path)
 
     def setUp(self) -> None:
+        self._finished_with_error: bool = False
+
         with open(self._uncleaned_dataset_path, 'w'):
             self._dc: DatasetCleaning = DatasetCleaning(self._user_id, self._task_id,
                                                         self.task_progress_callback,
@@ -85,9 +88,20 @@ class UnitTestDatasetCleaning(unittest.TestCase):
         self.assertEqual(self._dc._task_id, self._task_id)
         self.assertEqual(self._dc._priority, self._priority)
 
+    def test_invalid_cleaning_result(self):
+        self.assertFalse(self._finished_with_error)
+
+        self._dc._DatasetCleaning__load_uncleaned_dataset = Mock(return_value=None)
+        self._dc._DatasetCleaning__run_cleaning_pipeline = Mock(return_value=None)
+
+        self._dc.do_work()
+
+        self.assertTrue(self._finished_with_error)
+
     def task_progress_callback(self, _task_id: int, task_state: TaskState,
                                progress: float) -> None:
-        return None  # empty callback
+        if task_state == TaskState.FINISHED_WITH_ERROR:
+            self._finished_with_error = True
 
 
 if __name__ == '__main__':
