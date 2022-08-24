@@ -3,6 +3,7 @@ import unittest
 import numpy as np
 from unittest.mock import Mock
 
+from backend.task.TaskHelper import TaskHelper
 from backend.task.execution.core.ExecutionElement import ExecutionElement as ee
 from backend.task.execution.subspace.Subspace import Subspace
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
@@ -20,7 +21,8 @@ class UnitTestExecutionElement(unittest.TestCase):
     _datapoint_count: int = 1
 
     _dir_name: str = os.getcwd()
-    _result_path: str = os.path.join(_dir_name, "ee_result_path.csv")
+    _result_path: str = "./test/unit_tests/backend/task/" \
+                        "execution/core/execution_element_unit_test_result.csv"
 
     _row_numbers = np.array([0])
 
@@ -35,11 +37,13 @@ class UnitTestExecutionElement(unittest.TestCase):
         self._ee: ee = ee(self._user_id, self._task_id, self._subspace, self._algorithm,
                           self._result_path,
                           self._subspace_dtype, self._subspace_shared_memory_name,
-                          self.__execution_element_is_finished1, self._datapoint_count, self._row_numbers,
+                          self.__execution_element_is_finished1, self._datapoint_count,
+                          self._row_numbers,
                           self._priority)
 
         # mock Execution Element for do_work()
-        self._ee._ExecutionElement__run_algorithm = Mock(return_value=np.asarray([["algorithm result"]]))
+        self._ee._ExecutionElement__run_algorithm = Mock(
+            return_value=np.asarray([["algorithm result"]]))
         self._ee._ExecutionElement__convert_result_to_csv = Mock(
             return_value=np.asarray([["converted algorithm result"]]))
         self._ee1_is_finished: bool = False
@@ -51,7 +55,8 @@ class UnitTestExecutionElement(unittest.TestCase):
     def __get_subspace_data_for_processing_callback(self) -> SharedMemory:
         pass
 
-    def __execution_element_is_finished1(self, error_occurred: bool, aborted: bool = False) -> None:
+    def __execution_element_is_finished1(self, error_occurred: bool,
+                                         aborted: bool = False) -> None:
         self._ee1_is_finished = True
 
     def __execution_element_is_finished(self, error_occurred: bool) -> None:
@@ -84,27 +89,45 @@ class UnitTestExecutionElement(unittest.TestCase):
 
     def test_finished_result_exists(self):
         self.assertFalse(self._ee.finished_result_exists())
-        DataIO.write_csv(self._result_path, np.asarray([["I am the execution element result"]]))
+        DataIO.write_csv(self._result_path,
+                         np.asarray([["I am the execution element result"]]))
         self.assertTrue(self._ee.finished_result_exists())
         os.remove(self._result_path)
         self.assertFalse(self._ee.finished_result_exists())
 
     def test_do_work_failed(self):
-        self._ee_faulty: ee = ee(self._user_id, self._task_id, self._subspace, self._algorithm,
+        error_file_path: str = TaskHelper.convert_to_error_csv_path(self._result_path)
+        if os.path.isfile(error_file_path):
+            os.remove(error_file_path)
+
+        self._ee_faulty: ee = ee(self._user_id, self._task_id, self._subspace,
+                                 self._algorithm,
                                  self._result_path,
-                                 self._subspace_dtype, self._subspace_shared_memory_name,
-                                 self.__execution_element_is_finished1, self._datapoint_count, self._row_numbers)
+                                 self._subspace_dtype,
+                                 self._subspace_shared_memory_name,
+                                 self.__execution_element_is_finished1,
+                                 self._datapoint_count, self._row_numbers)
 
         # mock Execution Element for do_work()
-        self._ee._ExecutionElement__run_algorithm = Mock(side_effect
-                                                         =Exception("I am going to throw an evil exception"))
+        error_message_to_display: str = "ERROR I am going to throw an evil exception"
+        self._ee._ExecutionElement__run_algorithm = Mock(
+                        side_effect=Exception(error_message_to_display))
 
         # Method that should be tested
         statuscode = self._ee.do_work()
+
+        # Test the results
         self.assertEqual(-1, statuscode)
-        self._ee.run_later_on_main(statuscode)
+        self.assertTrue(os.path.isfile(error_file_path))
+        written_error_message: np.ndarray = \
+            DataIO.read_uncleaned_csv(error_file_path, None)
+
+        np.testing.assert_array_equal(written_error_message,
+                                      np.asarray([[error_message_to_display]]))
 
         # clean up
+        self._ee.run_later_on_main(statuscode)
+
         self.assertFalse(os.path.isfile(self._result_path))
         self.assertFalse(self._ee.finished_result_exists())
 
@@ -115,7 +138,8 @@ class UnitTestExecutionElement(unittest.TestCase):
                 ee(self._user_id, self._task_id, self._subspace, self._algorithm,
                    self._result_path,
                    self._subspace_dtype, self._subspace_shared_memory_name,
-                   self.__execution_element_is_finished1, 1, self._row_numbers, wrong_priority)
+                   self.__execution_element_is_finished1, 1, self._row_numbers,
+                   wrong_priority)
 
 
 if __name__ == '__main__':
