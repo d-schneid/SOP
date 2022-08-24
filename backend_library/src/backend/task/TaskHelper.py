@@ -26,10 +26,9 @@ class TaskHelper:
         assert error_message != ""
 
         error_file_path: str = TaskHelper.convert_to_error_csv_path(path)
-        error_message: str = error_message
 
-        to_save: np.ndarray = np.asarray([error_message], object)
-        DataIO.write_csv(error_file_path, to_save)
+        to_save: np.ndarray = np.asarray([[error_message]], str)
+        DataIO.save_write_csv(error_file_path + ".running", error_file_path, to_save)
 
     @staticmethod
     def convert_to_error_csv_path(path: str) -> str:
