@@ -7,8 +7,6 @@ class TestHelper:
     @staticmethod
     def is_same_execution_result_zip(execution_result_zip_path1: str,
                                      execution_result_zip_path2: str) -> bool:
-        is_same_execution_result: bool = False
-
         # unzip the zip files
         unzipped_path1: str = execution_result_zip_path1 + "_unzipped"
         unzipped_path2: str = execution_result_zip_path2 + "_unzipped"
