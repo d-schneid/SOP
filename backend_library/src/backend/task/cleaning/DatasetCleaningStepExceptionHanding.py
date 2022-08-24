@@ -46,7 +46,7 @@ class DatasetCleaningStepExceptionHandling:
                 if is_none_array.all():
                     raise ValueError(error_root + ": None-column exists")
         # edge case handling: one row only
-            else:
-                for idx in range(0, dataset_to_check.shape[0]):
-                    if str(type(dataset_to_check[idx])) == '<class \'NoneType\'>':
-                        raise ValueError(error_root + ": None-column exists")
+        else:
+            for idx in range(0, dataset_to_check.shape[0]):
+                if str(type(dataset_to_check[idx])) == '<class \'NoneType\'>':
+                    raise ValueError(error_root + ": None-column exists")
