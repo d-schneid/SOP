@@ -51,6 +51,19 @@ class UnitTestRowMissingValuesRemover(unittest.TestCase):
         with self.assertRaises(AssertionError):
             self._row_remover.do_cleaning(self._ds.one_dim_data_annotated)
 
+    def test_wrong_axis(self):
+        # only axis 0 or 1 allowed
+        with self.assertRaises(ValueError):
+            RowOrColumnMissingValuesRemover(axis=-1)
+        with self.assertRaises(ValueError):
+            RowOrColumnMissingValuesRemover(axis=-10000)
+        with self.assertRaises(ValueError):
+            RowOrColumnMissingValuesRemover(axis=2)
+        with self.assertRaises(ValueError):
+            RowOrColumnMissingValuesRemover(axis=3)
+        with self.assertRaises(ValueError):
+            RowOrColumnMissingValuesRemover(axis=100000)
+
 
 class UnitTestColumnMissingValuesRemover(unittest.TestCase):
     _ds: ds = ds()
