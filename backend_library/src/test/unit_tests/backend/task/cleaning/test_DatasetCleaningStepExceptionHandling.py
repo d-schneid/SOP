@@ -48,8 +48,8 @@ class UnitTestDatasetCleaningStepExceptionHandling(unittest.TestCase):
 
         # edge case: Only one row with None values -> Exception!
         with self.assertRaises(ValueError) as message:
-            eh.check_non_none_column \
-                (np.asarray([None, 1, None, None, 14, 15, None]), "root")
+            eh.check_non_none_column(np.asarray([None, 1, None, None, 14, 15, None]),
+                                     "root")
             self.assertEqual(message, "root: None-column exists")
 
 
