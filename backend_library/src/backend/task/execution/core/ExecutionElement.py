@@ -99,7 +99,8 @@ class ExecutionElement(Schedulable):
         try:
             run_algo_result: np.ndarray = self.__run_algorithm()
             result_to_save: np.ndarray = self.__convert_result_to_csv(run_algo_result)
-            DataIO.write_csv(self._result_path, result_to_save, add_index_column=False)
+            DataIO.save_write_csv(self._result_path + ".running", self._result_path,
+                                  result_to_save, add_index_column=False)
         except Exception as e:
             error_message = str(e)
             if error_message == "":

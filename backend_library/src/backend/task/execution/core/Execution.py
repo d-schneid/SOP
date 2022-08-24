@@ -155,10 +155,11 @@ class Execution(JsonSerializable, Task, Schedulable):
         # if os.path.exists(self.result_path):
         if not os.path.isdir(self._result_path):
             TaskHelper.create_directory(self._result_path)
-            for algorithm in self._algorithms:
-                algorithm_directory_path: str = \
-                    os.path.join(self._result_path,
-                                 algorithm.directory_name_in_execution)
+        for algorithm in self._algorithms:
+            algorithm_directory_path: str = \
+                os.path.join(self._result_path,
+                             algorithm.directory_name_in_execution)
+            if not os.path.isdir(algorithm_directory_path):
                 TaskHelper.create_directory(algorithm_directory_path)
 
     def __generate_execution_details_in_filesystem(self) -> None:
@@ -172,8 +173,9 @@ class Execution(JsonSerializable, Task, Schedulable):
 
         details_path: str = os.path.join(self._result_path, 'details.json')
 
-        with open(details_path, 'w') as f:
-            json.dump(self.to_json(), f)
+        if not os.path.exists(details_path):
+            with open(details_path, 'w') as f:
+                json.dump(self.to_json(), f)
 
     def to_json(self) -> dict[str, object]:
         return {'subspace_generation': self._subspace_generation.to_json(),
