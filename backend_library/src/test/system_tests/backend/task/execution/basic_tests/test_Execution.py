@@ -6,7 +6,6 @@ from unittest.mock import Mock
 import numpy as np
 import pandas as pd
 
-from backend.DataIO import DataIO
 from backend.scheduler.DebugScheduler import DebugScheduler
 from backend.scheduler.Scheduler import Scheduler
 from backend.task.TaskHelper import TaskHelper
