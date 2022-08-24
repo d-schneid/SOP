@@ -216,6 +216,48 @@ class SystemTest_Execution(unittest.TestCase):
         # Clean up
         self.__clear_old_execution_file_structure()
 
+    def test_dataset_indices(self):
+        # run execution to fill row_mapping variable in Execution
+        self._ex.schedule()
+
+        # compare dataset_indices
+        to_compare_with: np.ndarray = \
+            pd.read_csv(self._dataset_indices_to_compare_path,
+                        dtype=int, header=None).to_numpy()
+        np.testing.assert_array_equal(to_compare_with,
+                                      np.asarray([self._ex.dataset_indices])
+                                      .transpose())
+
+        # Clean up
+        self.__clear_old_execution_file_structure()
+
+    def test_dont_input_datapoint_count(self):
+        """
+        datapoint_count isn't inputted in constructor and has to be filled while running
+        the execution
+        """
+        # run execution to fill row_mapping variable in Execution
+        ex_without_datapoint_count: Execution = Execution(self._user_id, self._task_id,
+                                                          self.__task_progress_callback,
+                                                          self._dataset_path,
+                                                          self._result_path,
+                                                          self._subspace_generation,
+                                                          self._algorithms,
+                                                          self.__metric_callback, None,
+                                                          self._final_zip_path,
+                                                          zip_running_path=self
+                                                          ._zipped_result_path)
+        self.assertIsNone(ex_without_datapoint_count._datapoint_count)
+
+        # start execution
+        ex_without_datapoint_count.schedule()
+
+        # check if datapoints are inputted correctly
+        self.assertEqual(29221, ex_without_datapoint_count._datapoint_count)
+
+        # Clean up
+        self.__clear_old_execution_file_structure()
+
     def __clear_old_execution_file_structure(self):
         if os.path.isdir(self._result_path):
             shutil.rmtree(self._result_path)
