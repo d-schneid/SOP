@@ -1,12 +1,12 @@
 import os
 import shutil
 import unittest
+from unittest import skip
 from unittest.mock import Mock
 
 import numpy as np
 import pandas as pd
 
-from backend.DataIO import DataIO
 from backend.scheduler.DebugScheduler import DebugScheduler
 from backend.scheduler.Scheduler import Scheduler
 from backend.task.TaskHelper import TaskHelper
@@ -187,6 +187,7 @@ class SystemTest_Execution(unittest.TestCase):
         # Clean up
         self.__clear_old_execution_file_structure()
 
+    @skip
     def test_dont_input_datapoint_count(self):
         """
         datapoint_count isn't inputted in constructor and has to be filled while running
