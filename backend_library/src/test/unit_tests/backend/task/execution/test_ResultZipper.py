@@ -40,6 +40,7 @@ class UnitTestResultZipper(unittest.TestCase):
         # check the properties
         self.assertEqual(result_zipper.task_id, task_id)
         self.assertEqual(result_zipper.user_id, user_id)
+        self.assertEqual(result_zipper.priority, 50)
 
         # call the do_work method
         result_zipper.do_work()
