@@ -10,6 +10,7 @@ from backend.task.TaskErrorMessages import TaskErrorMessages
 from backend.task.TaskHelper import TaskHelper
 from backend.task.TaskState import TaskState
 from backend.task.cleaning.DatasetCleaning import DatasetCleaning
+from test.DatasetsForTesting import Datasets
 
 
 class UnitTestDatasetCleaning(unittest.TestCase):
@@ -24,6 +25,8 @@ class UnitTestDatasetCleaning(unittest.TestCase):
 
     _error_message: str = TaskErrorMessages().cleaning_result_empty
     _error_path: str = TaskHelper.convert_to_error_csv_path(_cleaned_dataset_path)
+
+    _empty_dataset_path: str = "./test/datasets/empty_dataset.csv"
 
     def setUp(self) -> None:
         self._finished_with_error: bool = False
@@ -144,6 +147,11 @@ class UnitTestDatasetCleaning(unittest.TestCase):
                                progress: float) -> None:
         if task_state == TaskState.FINISHED_WITH_ERROR:
             self._finished_with_error = True
+
+    def test_run_cleaning_pipeline_on_empty_dataset(self):
+        self.assertIsNone(
+            self._dc._DatasetCleaning__run_cleaning_pipeline(
+                Datasets().empty_annotated_dataset))
 
 
 if __name__ == '__main__':
