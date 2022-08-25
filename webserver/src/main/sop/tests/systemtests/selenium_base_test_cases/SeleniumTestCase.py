@@ -1,6 +1,7 @@
 import os
-import unittest
 from bs4 import BeautifulSoup
+
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
 import selenium
 from selenium.webdriver.chrome.service import Service as ChromeService
@@ -11,9 +12,7 @@ from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
 
-class SeleniumTestCase(unittest.TestCase):
-
-    BASE_URL = "http://127.0.0.1:8000/"
+class SeleniumTestCase(StaticLiveServerTestCase):
 
     STANDARD_USERNAME_USER = "SeleniumTestUser"
     STANDARD_PASSWORD_USER = "this_is_a_test"
@@ -27,6 +26,8 @@ class SeleniumTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
+        super().setUpClass()
+
         # create a media dir for misc. files
         if not os.path.isdir(SeleniumTestCase.SELENIUM_ERROR_PATH):
             os.makedirs(SeleniumTestCase.SELENIUM_ERROR_PATH)
@@ -43,7 +44,7 @@ class SeleniumTestCase(unittest.TestCase):
             service=chrome_service, options=chrome_options
         )
 
-        # wait, if an element is not found
+        # setting: wait, if an element is not found
         cls.driver.implicitly_wait(30)
 
     @classmethod
@@ -51,9 +52,11 @@ class SeleniumTestCase(unittest.TestCase):
         # stop webdriver
         cls.driver.quit()
 
+        super().tearDownClass()
+
     def setUp(self) -> None:
         # get base url
-        self.driver.get(SeleniumTestCase.BASE_URL)
+        self.driver.get(self.get_base_url())
 
         # try to log out
         SeleniumTestCase.logout(self)
@@ -117,6 +120,9 @@ class SeleniumTestCase(unittest.TestCase):
         # try to log out
         SeleniumTestCase.logout(self)
 
+    def get_base_url(self) -> str:
+        return self.live_server_url
+
     @staticmethod
     def logout(cls) -> bool:
         if "Logout" in cls.driver.page_source:
@@ -144,12 +150,12 @@ class SeleniumTestCase(unittest.TestCase):
         self.driver.find_element(By.LINK_TEXT, "Datasets").click()
         self.assertRegex(
             self.driver.current_url,
-            SeleniumTestCase.BASE_URL + "dataset/overview/sort-by=[a-zA-Z_]+/",
+            self.get_base_url() + "dataset/overview/sort-by=[a-zA-Z_]+/",
         )
 
         self.driver.find_element(By.LINK_TEXT, "Upload dataset").click()
         self.assertEqual(
-            self.driver.current_url, SeleniumTestCase.BASE_URL + "dataset/upload/"
+            self.driver.current_url, self.get_base_url() + "dataset/upload/"
         )
 
         self.driver.find_element(By.ID, "id_display_name").send_keys(dataset_name)
@@ -162,7 +168,7 @@ class SeleniumTestCase(unittest.TestCase):
         page_source = self.driver.page_source  # get page source instantly
         self.assertRegex(
             self.driver.current_url,
-            SeleniumTestCase.BASE_URL + "dataset/overview/sort-by=[a-zA-Z_]+/",
+            self.get_base_url() + "dataset/overview/sort-by=[a-zA-Z_]+/",
         )
         self.assertIn(dataset_name, page_source)
         self.assertIn(dataset_description, page_source)

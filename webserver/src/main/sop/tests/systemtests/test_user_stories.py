@@ -29,20 +29,20 @@ class UserStoriesTest(SeleniumTestCase):
 
         # Alice (= Admin) creates a user account for Bob
         SeleniumTestCase.login(self, "SeleniumTestAdmin", "this_is_a_test")
-        self.assertEqual(self.driver.current_url, SeleniumTestCase.BASE_URL)
+        self.assertEqual(self.driver.current_url, self.get_base_url())
 
         self.driver.find_element(By.LINK_TEXT, "Admin").click()
-        self.assertEqual(self.driver.current_url, SeleniumTestCase.BASE_URL + "admin/")
+        self.assertEqual(self.driver.current_url, self.get_base_url() + "admin/")
 
         self.driver.find_element(By.LINK_TEXT, "Users").click()
         self.assertEqual(
-            SeleniumTestCase.BASE_URL + "admin/authentication/user/",
+            self.get_base_url() + "admin/authentication/user/",
             self.driver.current_url,
         )
 
         self.driver.find_element(By.CSS_SELECTOR, "li > .addlink").click()
         self.assertEqual(
-            SeleniumTestCase.BASE_URL + "admin/authentication/user/add/",
+            self.get_base_url() + "admin/authentication/user/add/",
             self.driver.current_url,
         )
 
@@ -52,18 +52,18 @@ class UserStoriesTest(SeleniumTestCase):
         self.driver.find_element(By.NAME, "_save").click()
         self.assertRegex(
             self.driver.current_url,
-            SeleniumTestCase.BASE_URL + "admin/authentication/user/[0-9]+/change/",
+            self.get_base_url() + "admin/authentication/user/[0-9]+/change/",
         )
 
         # Alice logs herself out
         self.driver.find_element(By.CSS_SELECTOR, "a:nth-child(4)").click()
-        self.assertEqual(self.driver.current_url, SeleniumTestCase.BASE_URL + "login/")
+        self.assertEqual(self.driver.current_url, self.get_base_url() + "login/")
 
         # now Bob can log in
         self.driver.find_element(By.ID, "id_username").send_keys(bob_username)
         self.driver.find_element(By.ID, "id_password").send_keys(bob_password)
         self.driver.find_element(By.ID, "login-button").click()
-        self.assertEqual(self.driver.current_url, SeleniumTestCase.BASE_URL)
+        self.assertEqual(self.driver.current_url, self.get_base_url())
 
         # Bob uploads his dataset
         valid_dataset_path = os.path.join("tests", "sample_datasets", "canada.csv")
@@ -81,12 +81,12 @@ class UserStoriesTest(SeleniumTestCase):
         self.driver.find_element(By.LINK_TEXT, "Experiments").click()
         self.assertRegex(
             self.driver.current_url,
-            SeleniumTestCase.BASE_URL + "experiment/overview/sort-by=[a-zA-Z_]+/",
+            self.get_base_url() + "experiment/overview/sort-by=[a-zA-Z_]+/",
         )
 
         self.driver.find_element(By.LINK_TEXT, "Create experiment").click()
         self.assertEqual(
-            self.driver.current_url, SeleniumTestCase.BASE_URL + "experiment/create/"
+            self.driver.current_url, self.get_base_url() + "experiment/create/"
         )
 
         self.driver.find_element(By.ID, "id_display_name").send_keys(
@@ -117,14 +117,14 @@ class UserStoriesTest(SeleniumTestCase):
         self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
         self.assertRegex(
             self.driver.current_url,
-            SeleniumTestCase.BASE_URL + "experiment/overview/sort-by=[a-zA-Z_]+/",
+            self.get_base_url() + "experiment/overview/sort-by=[a-zA-Z_]+/",
         )
 
         # Bob creates an execution within his new experiment
         self.driver.find_element(By.LINK_TEXT, "New Execution").click()
         self.assertRegex(
             self.driver.current_url,
-            SeleniumTestCase.BASE_URL + "experiment/[0-9]+/execution/create/",
+            self.get_base_url() + "experiment/[0-9]+/execution/create/",
         )
 
         # add subspace options
@@ -183,7 +183,7 @@ class UserStoriesTest(SeleniumTestCase):
         self.driver.find_element(By.XPATH, "//input[@type='submit']").click()
         self.assertRegex(
             self.driver.current_url,
-            SeleniumTestCase.BASE_URL + "experiment/overview/sort-by=[a-zA-Z_]+/",
+            self.get_base_url() + "experiment/overview/sort-by=[a-zA-Z_]+/",
         )
 
         # TODO: wait for finish & download result & check
@@ -196,7 +196,7 @@ class UserStoriesTest(SeleniumTestCase):
             SeleniumTestCase.STANDARD_USERNAME_USER,
             SeleniumTestCase.STANDARD_PASSWORD_USER,
         )
-        self.assertEqual(self.driver.current_url, SeleniumTestCase.BASE_URL)
+        self.assertEqual(self.driver.current_url, self.get_base_url())
 
         # upload own dataset
         valid_dataset_path = os.path.join("tests", "sample_datasets", "canada.csv")
@@ -220,12 +220,12 @@ class UserStoriesTest(SeleniumTestCase):
         self.driver.find_element(By.LINK_TEXT, "Algorithms").click()
         self.assertRegex(
             self.driver.current_url,
-            SeleniumTestCase.BASE_URL + "algorithm/overview/sort-by=[a-zA-Z_]+/",
+            self.get_base_url() + "algorithm/overview/sort-by=[a-zA-Z_]+/",
         )
 
         self.driver.find_element(By.LINK_TEXT, "Upload algorithm").click()
         self.assertEqual(
-            self.driver.current_url, SeleniumTestCase.BASE_URL + "algorithm/upload/"
+            self.driver.current_url, self.get_base_url() + "algorithm/upload/"
         )
 
         self.driver.find_element(By.ID, "id_display_name").send_keys(algo_name)
@@ -239,7 +239,7 @@ class UserStoriesTest(SeleniumTestCase):
         self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
         self.assertRegex(
             self.driver.current_url,
-            SeleniumTestCase.BASE_URL + "algorithm/overview/sort-by=[a-zA-Z_]+/",
+            self.get_base_url() + "algorithm/overview/sort-by=[a-zA-Z_]+/",
         )
 
         # wait for algorithm to be checked
@@ -251,12 +251,12 @@ class UserStoriesTest(SeleniumTestCase):
         self.driver.find_element(By.LINK_TEXT, "Experiments").click()
         self.assertRegex(
             self.driver.current_url,
-            SeleniumTestCase.BASE_URL + "experiment/overview/sort-by=[a-zA-Z_]+/",
+            self.get_base_url() + "experiment/overview/sort-by=[a-zA-Z_]+/",
         )
 
         self.driver.find_element(By.LINK_TEXT, "Create experiment").click()
         self.assertEqual(
-            self.driver.current_url, SeleniumTestCase.BASE_URL + "experiment/create/"
+            self.driver.current_url, self.get_base_url() + "experiment/create/"
         )
 
         self.driver.find_element(By.ID, "id_display_name").send_keys(exp_name)
@@ -285,14 +285,14 @@ class UserStoriesTest(SeleniumTestCase):
         self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
         self.assertRegex(
             self.driver.current_url,
-            SeleniumTestCase.BASE_URL + "experiment/overview/sort-by=[a-zA-Z_]+/",
+            self.get_base_url() + "experiment/overview/sort-by=[a-zA-Z_]+/",
         )
 
         # create new execution
         self.driver.find_element(By.LINK_TEXT, "New Execution").click()
         self.assertRegex(
             self.driver.current_url,
-            SeleniumTestCase.BASE_URL + "experiment/[0-9]+/execution/create/",
+            self.get_base_url() + "experiment/[0-9]+/execution/create/",
         )
 
         # enter subspace data
@@ -330,7 +330,7 @@ class UserStoriesTest(SeleniumTestCase):
         self.driver.find_element(By.XPATH, "//input[@type='submit']").click()
         self.assertRegex(
             self.driver.current_url,
-            SeleniumTestCase.BASE_URL + "experiment/overview/sort-by=[a-zA-Z_]+/",
+            self.get_base_url() + "experiment/overview/sort-by=[a-zA-Z_]+/",
         )
 
         # TODO: wait for finish & download result & check
