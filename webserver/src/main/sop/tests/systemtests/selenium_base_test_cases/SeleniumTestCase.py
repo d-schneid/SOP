@@ -1,7 +1,10 @@
+import datetime
 import os
 from bs4 import BeautifulSoup
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+
+from authentication.models import User
 
 import selenium
 from selenium.webdriver.chrome.service import Service as ChromeService
@@ -14,19 +17,47 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 class SeleniumTestCase(StaticLiveServerTestCase):
 
-    STANDARD_USERNAME_USER = "SeleniumTestUser"
-    STANDARD_PASSWORD_USER = "this_is_a_test"
-    STANDARD_USERNAME_ADMIN = "SeleniumTestAdmin"
-    STANDARD_PASSWORD_ADMIN = "this_is_a_test"
+    STANDARD_USERNAME_USER = None
+    STANDARD_PASSWORD_USER = None
+    STANDARD_USERNAME_ADMIN = None
+    STANDARD_PASSWORD_ADMIN = None
 
     MEDIA_DIR_PATH = os.path.join("tests", "systemtests", "media")
     SELENIUM_ERROR_PATH = os.path.join(
         MEDIA_DIR_PATH, "selenium_err_artefacts"
     )
 
+    _BASE_USERNAME_USER = "SeleniumTestUser"
+    _BASE_USERNAME_ADMIN = "SeleniumTestAdmin"
+    _BASE_PASSWORD = "this_is_a_test"
+
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()
+
+        # add users to the database
+        #  generate a unique username
+        SeleniumTestCase.STANDARD_USERNAME_USER = SeleniumTestCase._BASE_USERNAME_USER + str(datetime.datetime.now())
+        SeleniumTestCase.STANDARD_USERNAME_ADMIN = SeleniumTestCase._BASE_USERNAME_ADMIN + str(datetime.datetime.now())
+        assert not User.objects.filter(username=SeleniumTestCase.STANDARD_USERNAME_USER).exists()
+        assert not User.objects.filter(username=SeleniumTestCase.STANDARD_USERNAME_ADMIN).exists()
+
+        # set passwords
+        SeleniumTestCase.STANDARD_PASSWORD_USER = SeleniumTestCase._BASE_PASSWORD
+        SeleniumTestCase.STANDARD_USERNAME_ADMIN = SeleniumTestCase._BASE_PASSWORD
+
+        #  add them
+        User.objects.create_user(
+            username=SeleniumTestCase.STANDARD_USERNAME_USER,
+            password=SeleniumTestCase.STANDARD_PASSWORD_USER
+        )
+        user_admin = User.objects.create_user(
+            username=SeleniumTestCase.STANDARD_USERNAME_ADMIN,
+            password=SeleniumTestCase.STANDARD_PASSWORD_ADMIN
+        )
+        user_admin.is_staff = True
+        user_admin.is_admin = True
+        user_admin.save()
 
         # create a media dir for misc. files
         if not os.path.isdir(SeleniumTestCase.SELENIUM_ERROR_PATH):
