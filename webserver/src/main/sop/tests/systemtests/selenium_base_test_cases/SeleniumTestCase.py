@@ -23,8 +23,53 @@ from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
 
-class SeleniumTestCase(StaticLiveServerTestCase):
+def _add_users_to_db():
+    #  generate a unique username
+    SeleniumTestCase.STANDARD_USERNAME_USER = SeleniumTestCase._BASE_USERNAME_USER + str(
+        datetime.datetime.now())
+    SeleniumTestCase.STANDARD_USERNAME_ADMIN = SeleniumTestCase._BASE_USERNAME_ADMIN + str(
+        datetime.datetime.now())
+    assert not User.objects.filter(
+        username=SeleniumTestCase.STANDARD_USERNAME_USER).exists()
+    assert not User.objects.filter(
+        username=SeleniumTestCase.STANDARD_USERNAME_ADMIN).exists()
 
+    # set passwords
+    SeleniumTestCase.STANDARD_PASSWORD_USER = SeleniumTestCase._BASE_PASSWORD
+    SeleniumTestCase.STANDARD_PASSWORD_ADMIN = SeleniumTestCase._BASE_PASSWORD
+
+    #  add them
+    User.objects.create_user(
+        username=SeleniumTestCase.STANDARD_USERNAME_USER,
+        password=SeleniumTestCase.STANDARD_PASSWORD_USER
+    )
+    user_admin = User.objects.create_user(
+        username=SeleniumTestCase.STANDARD_USERNAME_ADMIN,
+        password=SeleniumTestCase.STANDARD_PASSWORD_ADMIN
+    )
+    user_admin.is_staff = True
+    user_admin.is_admin = True
+    user_admin.save()
+
+
+def _add_pyod_algos_to_db():
+    # code was taken from pyodtodb command
+    #  the command itself was not used directly as it was not possible without
+    #  bigger restructuring of the production code
+    pyod_path = Path(pyod.__path__[0])
+    assert not os.path.exists(SeleniumTestCase._PYOD_AGLO_ROOT)
+
+    shutil.copytree(src=pyod_path, dst=SeleniumTestCase._PYOD_AGLO_ROOT)
+
+    AlgorithmLoader.set_algorithm_root_dir(str(settings.ALGORITHM_ROOT_DIR))
+
+    pyodtodb.rename_algorithm_files_if_needed(
+        SeleniumTestCase._PYOD_AGLO_ROOT / "models")
+    pyodtodb.fix_base_detector_imports(SeleniumTestCase._PYOD_AGLO_ROOT / "models")
+    pyodtodb.save_algorithms_in_db(SeleniumTestCase._PYOD_AGLO_ROOT / "models")
+
+
+class SeleniumTestCase(StaticLiveServerTestCase):
     STANDARD_USERNAME_USER: str
     STANDARD_PASSWORD_USER: str
     STANDARD_USERNAME_ADMIN: str
@@ -44,42 +89,6 @@ class SeleniumTestCase(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()
-
-        # add users to the database
-        #  generate a unique username
-        SeleniumTestCase.STANDARD_USERNAME_USER = SeleniumTestCase._BASE_USERNAME_USER + str(datetime.datetime.now())
-        SeleniumTestCase.STANDARD_USERNAME_ADMIN = SeleniumTestCase._BASE_USERNAME_ADMIN + str(datetime.datetime.now())
-        assert not User.objects.filter(username=SeleniumTestCase.STANDARD_USERNAME_USER).exists()
-        assert not User.objects.filter(username=SeleniumTestCase.STANDARD_USERNAME_ADMIN).exists()
-
-        # set passwords
-        SeleniumTestCase.STANDARD_PASSWORD_USER = SeleniumTestCase._BASE_PASSWORD
-        SeleniumTestCase.STANDARD_PASSWORD_ADMIN = SeleniumTestCase._BASE_PASSWORD
-
-        #  add them
-        User.objects.create_user(
-            username=SeleniumTestCase.STANDARD_USERNAME_USER,
-            password=SeleniumTestCase.STANDARD_PASSWORD_USER
-        )
-        user_admin = User.objects.create_user(
-            username=SeleniumTestCase.STANDARD_USERNAME_ADMIN,
-            password=SeleniumTestCase.STANDARD_PASSWORD_ADMIN
-        )
-        user_admin.is_staff = True
-        user_admin.is_admin = True
-        user_admin.save()
-
-        # add pyod-algos to the database (Code used from pyodtodb command)
-        pyod_path = Path(pyod.__path__[0])
-        assert not os.path.exists(SeleniumTestCase._PYOD_AGLO_ROOT)
-
-        shutil.copytree(src=pyod_path, dst=SeleniumTestCase._PYOD_AGLO_ROOT)
-
-        AlgorithmLoader.set_algorithm_root_dir(str(settings.ALGORITHM_ROOT_DIR))
-
-        pyodtodb.rename_algorithm_files_if_needed(SeleniumTestCase._PYOD_AGLO_ROOT / "models")
-        pyodtodb.fix_base_detector_imports(SeleniumTestCase._PYOD_AGLO_ROOT / "models")
-        pyodtodb.save_algorithms_in_db(SeleniumTestCase._PYOD_AGLO_ROOT / "models")
 
         # create a media dir for misc. files
         if not os.path.isdir(SeleniumTestCase.SELENIUM_ERROR_PATH):
@@ -105,12 +114,15 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         # stop webdriver
         cls.driver.quit()
 
-        # delete dir of pyod algos
-        shutil.rmtree(path=SeleniumTestCase._PYOD_AGLO_ROOT, ignore_errors=True)
-
         super().tearDownClass()
 
     def setUp(self) -> None:
+        # add users to db
+        _add_users_to_db()
+
+        # import pyod algos
+        _add_pyod_algos_to_db()
+
         # get base url
         self.driver.get(self.get_base_url())
 
@@ -118,6 +130,9 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         SeleniumTestCase.logout(self)
 
     def tearDown(self) -> None:
+        # delete dir of pyod algos
+        shutil.rmtree(path=SeleniumTestCase._PYOD_AGLO_ROOT, ignore_errors=True)
+
         # if the test failed, take a screenshot and save the page source
         result = self.defaultTestResult()
         self._feedErrorsToResult(result, self._outcome.errors)
@@ -125,11 +140,9 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         # check if an error has occurred
         if result.errors:
             type = "ERROR"
-
         # or a failure
         elif result.failures:
             type = "FAILURE"
-
         else:
             type = None
 
@@ -153,7 +166,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
 
             # save original
             page_source_path_org = (
-                base_source_parts[0] + "_org." + base_source_parts[1]
+                    base_source_parts[0] + "_org." + base_source_parts[1]
             )
 
             with open(page_source_path_org, "w") as file:
@@ -161,9 +174,9 @@ class SeleniumTestCase(StaticLiveServerTestCase):
 
             # save prettified version
             page_source_path_pretty = (
-                base_source_parts[0]
-                + "_pretty."
-                + base_source_parts[1]
+                    base_source_parts[0]
+                    + "_pretty."
+                    + base_source_parts[1]
             )
 
             pretty_source = BeautifulSoup(
@@ -192,7 +205,8 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "login-button").click()
 
         # assert that the login worked
-        self.assertTrue(self.driver.current_url in [self.get_base_url(), self.get_base_url() + "/"])
+        self.assertTrue(
+            self.driver.current_url in [self.get_base_url(), self.get_base_url() + "/"])
 
         # check, if links to subpages are in the generated site
         self.assertIn("/experiment/overview", self.driver.page_source)
@@ -204,7 +218,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         self.assertIn("/logout", self.driver.page_source)
 
     def upload_dataset(
-        self, dataset_path: str, dataset_name: str, dataset_description: str
+            self, dataset_path: str, dataset_name: str, dataset_description: str
     ):
         assert os.path.isfile(dataset_path)
 
