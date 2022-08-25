@@ -155,7 +155,6 @@ class SeleniumTestCase(StaticLiveServerTestCase):
             page_source_path_org = (
                 base_source_parts[0] + "_org." + base_source_parts[1]
             )
-            print(page_source_path_org)
 
             with open(page_source_path_org, "w") as file:
                 file.write(self.driver.page_source)
@@ -191,6 +190,18 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_username").send_keys(username)
         self.driver.find_element(By.ID, "id_password").send_keys(password)
         self.driver.find_element(By.ID, "login-button").click()
+
+        # assert that the login worked
+        self.assertTrue(self.driver.current_url in [self.get_base_url(), self.get_base_url() + "/"])
+
+        # check, if links to subpages are in the generated site
+        self.assertIn("/experiment/overview", self.driver.page_source)
+        self.assertIn("/dataset/overview", self.driver.page_source)
+        self.assertIn("/algorithm/overview", self.driver.page_source)
+
+        # logout should be accessible
+        self.assertIn("Logout", self.driver.page_source)
+        self.assertIn("/logout", self.driver.page_source)
 
     def upload_dataset(
         self, dataset_path: str, dataset_name: str, dataset_description: str

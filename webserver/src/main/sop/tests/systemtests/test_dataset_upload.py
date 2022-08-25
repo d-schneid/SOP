@@ -11,15 +11,6 @@ class DatasetUploadTests(SeleniumTestCase):
             SeleniumTestCase.STANDARD_PASSWORD_USER,
         )
 
-        # check, if links to subpages are in the generated site
-        self.assertIn("/experiment/overview", self.driver.page_source)
-        self.assertIn("/dataset/overview", self.driver.page_source)
-        self.assertIn("/algorithm/overview", self.driver.page_source)
-
-        # logout should be accessible
-        self.assertIn("Logout", self.driver.page_source)
-        self.assertIn("/logout", self.driver.page_source)
-
         # for the standard user, admin should not be visible
         self.assertNotIn("Admin", self.driver.page_source)
         self.assertNotIn("/admin/login", self.driver.page_source)

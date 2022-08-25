@@ -29,7 +29,6 @@ class UserStoriesTest(SeleniumTestCase):
 
         # Alice (= Admin) creates a user account for Bob
         self.login(SeleniumTestCase.STANDARD_USERNAME_ADMIN, SeleniumTestCase.STANDARD_PASSWORD_ADMIN)
-        self.assertEqual(self.driver.current_url, self.get_base_url())
 
         self.driver.find_element(By.LINK_TEXT, "Admin").click()
         self.assertEqual(self.driver.current_url, self.get_base_url() + "admin/")
@@ -61,7 +60,6 @@ class UserStoriesTest(SeleniumTestCase):
 
         # now Bob can log in
         self.login(bob_username, bob_password)
-        self.assertEqual(self.driver.current_url, self.get_base_url())
 
         # Bob uploads his dataset
         valid_dataset_path = os.path.join("tests", "sample_datasets", "canada.csv")
@@ -193,7 +191,6 @@ class UserStoriesTest(SeleniumTestCase):
             SeleniumTestCase.STANDARD_USERNAME_USER,
             SeleniumTestCase.STANDARD_PASSWORD_USER,
         )
-        self.assertEqual(self.driver.current_url, self.get_base_url())
 
         # upload own dataset
         valid_dataset_path = os.path.join("tests", "sample_datasets", "canada.csv")
