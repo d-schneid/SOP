@@ -43,6 +43,9 @@ class SeleniumTestCase(unittest.TestCase):
             service=chrome_service, options=chrome_options
         )
 
+        # wait, if an element is not found
+        cls.driver.implicitly_wait(30)
+
     @classmethod
     def tearDownClass(cls) -> None:
         # stop webdriver
