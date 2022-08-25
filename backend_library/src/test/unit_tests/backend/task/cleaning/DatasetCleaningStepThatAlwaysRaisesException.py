@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 
 from backend.AnnotatedDataset import AnnotatedDataset
 from backend.task.cleaning.DatasetCleaningStep import DatasetCleaningStep
