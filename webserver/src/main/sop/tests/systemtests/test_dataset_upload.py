@@ -2,25 +2,8 @@ import os.path
 
 from tests.systemtests.selenium_base_test_cases.SeleniumTestCase import SeleniumTestCase
 
-from selenium.webdriver.common.by import By
-
 
 class DatasetUploadTests(SeleniumTestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        super().setUpClass()
-        SeleniumTestCase.login(cls, "SeleniumTestUser", "this_is_a_test")
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        super().tearDownClass()
-
-    def setUp(self) -> None:
-        super().setUp()
-
-    def tearDown(self) -> None:
-        super().tearDown()
-
     def test_standard_site(self):
         # login
         SeleniumTestCase.login(
