@@ -131,6 +131,45 @@ class UnitTestExecutionElement(unittest.TestCase):
         self.assertFalse(os.path.isfile(self._result_path))
         self.assertFalse(self._ee.finished_result_exists())
 
+    def test_do_work_failed_with_empty_error_message(self):
+        error_file_path: str = TaskHelper.convert_to_error_csv_path(
+            self._result_path)
+        if os.path.isfile(error_file_path):
+            os.remove(error_file_path)
+
+        self._ee_faulty: ee = ee(self._user_id, self._task_id, self._subspace,
+                                 self._algorithm,
+                                 self._result_path,
+                                 self._subspace_dtype,
+                                 self._subspace_shared_memory_name,
+                                 self.__execution_element_is_finished1,
+                                 self._datapoint_count, self._row_numbers)
+
+        # mock Execution Element for do_work()
+        error_message_to_display: str = ""
+        self._ee._ExecutionElement__run_algorithm = Mock(
+                        side_effect=Exception(error_message_to_display))
+
+        # Method that should be tested
+        statuscode = self._ee.do_work()
+
+        # Test the results
+        self.assertEqual(-1, statuscode)
+        self.assertTrue(os.path.isfile(error_file_path))
+        written_error_message: np.ndarray = \
+            DataIO.read_uncleaned_csv(error_file_path, None)
+
+        automatic_error_message: str = \
+            "Error occurred while processing the ExecutionElement"
+        np.testing.assert_array_equal(written_error_message,
+                                      np.asarray([[automatic_error_message]]))
+
+        # clean up
+        self._ee.run_later_on_main(statuscode)
+
+        self.assertFalse(os.path.isfile(self._result_path))
+        self.assertFalse(self._ee.finished_result_exists())
+
     def test_wrong_priority(self):
         self._wrong_priority: list[int] = list([0, 4, -1, 9, -12313, 12431, 101, 102])
         for wrong_priority in self._wrong_priority:
