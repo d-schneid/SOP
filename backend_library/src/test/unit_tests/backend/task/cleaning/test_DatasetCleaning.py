@@ -11,6 +11,7 @@ from backend.task.TaskHelper import TaskHelper
 from backend.task.TaskState import TaskState
 from backend.task.cleaning.DatasetCleaning import DatasetCleaning
 from test.DatasetsForTesting import Datasets
+from test.unit_tests.backend.task.cleaning import DatasetCleaningStepEmptyResult
 from test.unit_tests.backend.task.cleaning.DatasetCleaningStepThatAlwaysRaisesException import \
     DatasetCleaningStepThatAlwaysRaisesException
 
@@ -175,6 +176,27 @@ class UnitTestDatasetCleaning(unittest.TestCase):
                               "no_uncleaned_dataset",
                               self._cleaned_dataset_path,
                               [DatasetCleaningStepThatAlwaysRaisesException],
+                              self._priority)
+        self.assertIsNone(
+            dc_failing._DatasetCleaning__run_cleaning_pipeline(
+                self._ds.data_to_annotated(self._ds.dataset0)))
+        # An error file should have been created:
+        self.assertTrue(os.path.isfile(error_file_path))
+
+        # clean up
+        os.remove(error_file_path)
+
+    def test_run_cleaning_pipeline_cleaning_step_result_is_empty(self):
+        error_file_path: str = TaskHelper.convert_to_error_csv_path(
+            self._cleaned_dataset_path)
+        self.assertFalse(os.path.isfile(error_file_path))
+
+        dc_failing: DatasetCleaning \
+            = DatasetCleaning(self._user_id, self._task_id,
+                              self.task_progress_callback,
+                              "no_uncleaned_dataset",
+                              self._cleaned_dataset_path,
+                              [DatasetCleaningStepEmptyResult],
                               self._priority)
         self.assertIsNone(
             dc_failing._DatasetCleaning__run_cleaning_pipeline(
