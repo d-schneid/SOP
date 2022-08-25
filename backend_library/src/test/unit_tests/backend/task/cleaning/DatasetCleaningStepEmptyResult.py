@@ -5,7 +5,7 @@ from backend.task.cleaning.DatasetCleaningStep import DatasetCleaningStep
 from test.DatasetsForTesting import Datasets
 
 
-class DatasetCleaningStepThatAlwaysRaisesException(DatasetCleaningStep, ABC):
+class DatasetCleaningStepEmptyResult(DatasetCleaningStep, ABC):
     """
     Every cleaning_step of the cleaning_pipeline has to implement this abstract class.
     """

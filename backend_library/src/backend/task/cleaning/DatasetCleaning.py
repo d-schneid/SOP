@@ -190,6 +190,8 @@ class DatasetCleaning(Task, Schedulable, ABC):
                 return None
 
             # Exception handling
+            if len(self._cleaning_steps) == 1:
+                print("I am here")
             if self.__empty_cleaning_result_handler(csv_to_clean.data):  # csv is empty
                 return None
 

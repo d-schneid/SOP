@@ -11,7 +11,8 @@ from backend.task.TaskHelper import TaskHelper
 from backend.task.TaskState import TaskState
 from backend.task.cleaning.DatasetCleaning import DatasetCleaning
 from test.DatasetsForTesting import Datasets
-from test.unit_tests.backend.task.cleaning import DatasetCleaningStepEmptyResult
+from test.unit_tests.backend.task.cleaning.DatasetCleaningStepEmptyResult \
+    import DatasetCleaningStepEmptyResult
 from test.unit_tests.backend.task.cleaning.DatasetCleaningStepThatAlwaysRaisesException import \
     DatasetCleaningStepThatAlwaysRaisesException
 
