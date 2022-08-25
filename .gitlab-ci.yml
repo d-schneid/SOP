@@ -109,7 +109,7 @@ django-tests:
   extends: .frontend-base
   coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
   script:
-    - python3.9 -m pip install requirements_test.txt
+    - python3.9 -m pip install -r requirements_test.txt
     - source venv3.9/bin/activate
 
     # We skip pyodtodb django admin command tests because it needs way to big python dependencies
