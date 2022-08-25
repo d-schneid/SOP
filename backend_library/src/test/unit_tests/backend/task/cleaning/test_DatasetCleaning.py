@@ -93,9 +93,9 @@ class UnitTestDatasetCleaning(unittest.TestCase):
                          running_dataset_cleaning_path)
 
     def test_properties(self):
-        self.assertEqual(self._dc._user_id, self._user_id)
-        self.assertEqual(self._dc._task_id, self._task_id)
-        self.assertEqual(self._dc._priority, self._priority)
+        self.assertEqual(self._dc.user_id, self._user_id)
+        self.assertEqual(self._dc.task_id, self._task_id)
+        self.assertEqual(self._dc.priority, self._priority)
 
     def test_invalid_cleaning_result(self):
         self.assertFalse(self._finished_with_error)
