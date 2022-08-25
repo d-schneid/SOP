@@ -1,10 +1,18 @@
 import datetime
 import os
+import shutil
+from pathlib import Path
+
+import pyod
 from bs4 import BeautifulSoup
+from django.conf import settings
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
 from authentication.models import User
+from backend.task.execution.AlgorithmLoader import AlgorithmLoader
+
+from experiments.management.commands import pyodtodb
 
 import selenium
 from selenium.webdriver.chrome.service import Service as ChromeService
@@ -17,15 +25,17 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 class SeleniumTestCase(StaticLiveServerTestCase):
 
-    STANDARD_USERNAME_USER = None
-    STANDARD_PASSWORD_USER = None
-    STANDARD_USERNAME_ADMIN = None
-    STANDARD_PASSWORD_ADMIN = None
+    STANDARD_USERNAME_USER: str
+    STANDARD_PASSWORD_USER: str
+    STANDARD_USERNAME_ADMIN: str
+    STANDARD_PASSWORD_ADMIN: str
 
     MEDIA_DIR_PATH = os.path.join("tests", "systemtests", "media")
     SELENIUM_ERROR_PATH = os.path.join(
         MEDIA_DIR_PATH, "selenium_err_artefacts"
     )
+
+    _PYOD_AGLO_ROOT = settings.ALGORITHM_ROOT_DIR / "pyod_algorithms"
 
     _BASE_USERNAME_USER = "SeleniumTestUser"
     _BASE_USERNAME_ADMIN = "SeleniumTestAdmin"
@@ -44,7 +54,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
 
         # set passwords
         SeleniumTestCase.STANDARD_PASSWORD_USER = SeleniumTestCase._BASE_PASSWORD
-        SeleniumTestCase.STANDARD_USERNAME_ADMIN = SeleniumTestCase._BASE_PASSWORD
+        SeleniumTestCase.STANDARD_PASSWORD_ADMIN = SeleniumTestCase._BASE_PASSWORD
 
         #  add them
         User.objects.create_user(
@@ -58,6 +68,18 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         user_admin.is_staff = True
         user_admin.is_admin = True
         user_admin.save()
+
+        # add pyod-algos to the database (Code used from pyodtodb command)
+        pyod_path = Path(pyod.__path__[0])
+        assert not os.path.exists(SeleniumTestCase._PYOD_AGLO_ROOT)
+
+        shutil.copytree(src=pyod_path, dst=SeleniumTestCase._PYOD_AGLO_ROOT)
+
+        AlgorithmLoader.set_algorithm_root_dir(str(settings.ALGORITHM_ROOT_DIR))
+
+        pyodtodb.rename_algorithm_files_if_needed(SeleniumTestCase._PYOD_AGLO_ROOT / "models")
+        pyodtodb.fix_base_detector_imports(SeleniumTestCase._PYOD_AGLO_ROOT / "models")
+        pyodtodb.save_algorithms_in_db(SeleniumTestCase._PYOD_AGLO_ROOT / "models")
 
         # create a media dir for misc. files
         if not os.path.isdir(SeleniumTestCase.SELENIUM_ERROR_PATH):
@@ -82,6 +104,9 @@ class SeleniumTestCase(StaticLiveServerTestCase):
     def tearDownClass(cls) -> None:
         # stop webdriver
         cls.driver.quit()
+
+        # delete dir of pyod algos
+        shutil.rmtree(path=SeleniumTestCase._PYOD_AGLO_ROOT, ignore_errors=True)
 
         super().tearDownClass()
 
