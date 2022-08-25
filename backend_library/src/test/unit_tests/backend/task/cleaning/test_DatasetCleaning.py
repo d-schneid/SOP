@@ -176,7 +176,7 @@ class UnitTestDatasetCleaning(unittest.TestCase):
                               self.task_progress_callback,
                               "no_uncleaned_dataset",
                               self._cleaned_dataset_path,
-                              [DatasetCleaningStepThatAlwaysRaisesException],
+                              [DatasetCleaningStepThatAlwaysRaisesException()],
                               self._priority)
         self.assertIsNone(
             dc_failing._DatasetCleaning__run_cleaning_pipeline(
@@ -197,7 +197,7 @@ class UnitTestDatasetCleaning(unittest.TestCase):
                               self.task_progress_callback,
                               "no_uncleaned_dataset",
                               self._cleaned_dataset_path,
-                              [DatasetCleaningStepEmptyResult],
+                              [DatasetCleaningStepEmptyResult()],
                               self._priority)
         self.assertIsNone(
             dc_failing._DatasetCleaning__run_cleaning_pipeline(

@@ -186,12 +186,12 @@ class DatasetCleaning(Task, Schedulable, ABC):
                 if cleaning_step is not None:
                     csv_to_clean = cleaning_step.do_cleaning(csv_to_clean)
             except Exception as e:  # catch all exceptions
+                if str(e) == "":
+                    e = "Error: " + str(cleaning_step) + " resulted in an error"
                 TaskHelper.save_error_csv(self._cleaned_dataset_path, str(e))
                 return None
 
             # Exception handling
-            if len(self._cleaning_steps) == 1:
-                print("I am here")
             if self.__empty_cleaning_result_handler(csv_to_clean.data):  # csv is empty
                 return None
 
