@@ -1,3 +1,4 @@
+import copy
 import datetime
 import os
 import shutil
@@ -11,7 +12,6 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
 from authentication.models import User
 from backend.task.execution.AlgorithmLoader import AlgorithmLoader
-
 from experiments.management.commands import pyodtodb
 
 import selenium
@@ -56,17 +56,27 @@ def _add_pyod_algos_to_db():
     # code was taken from pyodtodb command
     #  the command itself was not used directly as it was not possible without
     #  bigger restructuring of the production code
-    pyod_path = Path(pyod.__path__[0])
-    assert not os.path.exists(SeleniumTestCase._PYOD_AGLO_ROOT)
 
-    shutil.copytree(src=pyod_path, dst=SeleniumTestCase._PYOD_AGLO_ROOT)
+    # add a new attribute, which is a deepcopy of the attribute PYOD_ALGORITHMS
+    # so the original values are saved
+    # (and the original attribute can be reset, s. below)
+    # as the renaming will not work otherwise (after the first time)
+    setattr(pyodtodb, "ORG_PYOD_DATA", copy.deepcopy(pyodtodb.PYOD_ALGORITHMS))
+
+    pyod_path = Path(pyod.__path__[0])
+    assert not os.path.exists(SeleniumTestCase.PYOD_AGLO_ROOT)
+
+    shutil.copytree(src=pyod_path, dst=SeleniumTestCase.PYOD_AGLO_ROOT)
 
     AlgorithmLoader.set_algorithm_root_dir(str(settings.ALGORITHM_ROOT_DIR))
 
     pyodtodb.rename_algorithm_files_if_needed(
-        SeleniumTestCase._PYOD_AGLO_ROOT / "models")
-    pyodtodb.fix_base_detector_imports(SeleniumTestCase._PYOD_AGLO_ROOT / "models")
-    pyodtodb.save_algorithms_in_db(SeleniumTestCase._PYOD_AGLO_ROOT / "models")
+        SeleniumTestCase.PYOD_AGLO_ROOT / "models")
+    pyodtodb.fix_base_detector_imports(SeleniumTestCase.PYOD_AGLO_ROOT / "models")
+    pyodtodb.save_algorithms_in_db(SeleniumTestCase.PYOD_AGLO_ROOT / "models")
+
+    # reset the orignal attribute
+    pyodtodb.PYOD_ALGORITHMS = pyodtodb.ORG_PYOD_DATA
 
 
 class SeleniumTestCase(StaticLiveServerTestCase):
@@ -79,8 +89,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
     SELENIUM_ERROR_PATH = os.path.join(
         MEDIA_DIR_PATH, "selenium_err_artefacts"
     )
-
-    _PYOD_AGLO_ROOT = settings.ALGORITHM_ROOT_DIR / "pyod_algorithms"
+    PYOD_AGLO_ROOT = settings.ALGORITHM_ROOT_DIR / "pyod_algorithms"
 
     _BASE_USERNAME_USER = "SeleniumTestUser"
     _BASE_USERNAME_ADMIN = "SeleniumTestAdmin"
@@ -131,7 +140,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
 
     def tearDown(self) -> None:
         # delete dir of pyod algos
-        shutil.rmtree(path=SeleniumTestCase._PYOD_AGLO_ROOT, ignore_errors=True)
+        shutil.rmtree(path=SeleniumTestCase.PYOD_AGLO_ROOT)
 
         # if the test failed, take a screenshot and save the page source
         result = self.defaultTestResult()
@@ -139,28 +148,28 @@ class SeleniumTestCase(StaticLiveServerTestCase):
 
         # check if an error has occurred
         if result.errors:
-            type = "ERROR"
+            err_type = "ERROR"
         # or a failure
         elif result.failures:
-            type = "FAILURE"
+            err_type = "FAILURE"
         else:
-            type = None
+            err_type = None
 
         # if there is and error, take a screenshot and save the page source
-        if type is not None:
+        if err_type is not None:
             # screenshot
             screenshot_path = os.path.join(
                 SeleniumTestCase.SELENIUM_ERROR_PATH,
-                "selenium_screenshot_{type}_{method_name}.png",
-            ).format(method_name=self._testMethodName, type=type)
+                "selenium_screenshot_{err_type}_{method_name}.png",
+            ).format(method_name=self._testMethodName, err_type=err_type)
 
             self.driver.save_screenshot(screenshot_path)
 
             # save page source (original and pretty version)
             page_source_path_base = os.path.join(
                 SeleniumTestCase.SELENIUM_ERROR_PATH,
-                "selenium_page_source_{type}_{method_name}.html",
-            ).format(method_name=self._testMethodName, type=type)
+                "selenium_page_source_{err_type}_{method_name}.html",
+            ).format(method_name=self._testMethodName, err_type=err_type)
 
             base_source_parts = page_source_path_base.split(".")
 
