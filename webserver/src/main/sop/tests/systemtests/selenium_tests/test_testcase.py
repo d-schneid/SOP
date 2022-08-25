@@ -151,11 +151,19 @@ class TestTestcase1(DebugSchedulerMixin, MediaMixin, StaticLiveServerTestCase):
         # Execution Creation
         self.driver.find_element(By.LINK_TEXT, "New Execution").click()
         self.driver.find_element(By.ID, "id_subspaces_min").click()
-        self.driver.find_element(By.ID, "id_subspaces_min").send_keys(self.vars["min_sub"])
-        self.driver.find_element(By.ID, "id_subspaces_max").send_keys(self.vars["max_sub"])
-        self.driver.find_element(By.ID, "id_subspace_amount").send_keys(self.vars["sub_amount"])
+        self.driver.find_element(By.ID, "id_subspaces_min").send_keys(
+            self.vars["min_sub"]
+        )
+        self.driver.find_element(By.ID, "id_subspaces_max").send_keys(
+            self.vars["max_sub"]
+        )
+        self.driver.find_element(By.ID, "id_subspace_amount").send_keys(
+            self.vars["sub_amount"]
+        )
         self.driver.find_element(By.ID, "id_subspace_generation_seed").click()
-        self.driver.find_element(By.ID, "id_subspace_generation_seed").send_keys(self.vars["seed"])
+        self.driver.find_element(By.ID, "id_subspace_generation_seed").send_keys(
+            self.vars["seed"]
+        )
         self.driver.find_element(By.CSS_SELECTOR, ".btn-success").click()
         self.driver.find_element(By.LINK_TEXT, "Datasets").click()
 
