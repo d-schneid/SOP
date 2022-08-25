@@ -6,8 +6,7 @@ from tests.systemtests.selenium_base_test_cases.SeleniumTestCase import Selenium
 class DatasetUploadTests(SeleniumTestCase):
     def test_standard_site(self):
         # login
-        SeleniumTestCase.login(
-            self,
+        self.login(
             SeleniumTestCase.STANDARD_USERNAME_USER,
             SeleniumTestCase.STANDARD_PASSWORD_USER,
         )
@@ -27,8 +26,7 @@ class DatasetUploadTests(SeleniumTestCase):
 
     def test_valid_dataset_upload(self):
         # login
-        SeleniumTestCase.login(
-            self,
+        self.login(
             SeleniumTestCase.STANDARD_USERNAME_USER,
             SeleniumTestCase.STANDARD_PASSWORD_USER,
         )

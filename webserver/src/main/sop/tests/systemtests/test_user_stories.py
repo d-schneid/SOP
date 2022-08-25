@@ -28,7 +28,7 @@ class UserStoriesTest(SeleniumTestCase):
         bob_password = "this_is_the_secure_password_of_bob"
 
         # Alice (= Admin) creates a user account for Bob
-        SeleniumTestCase.login(self, "SeleniumTestAdmin", "this_is_a_test")
+        self.login(SeleniumTestCase.STANDARD_USERNAME_ADMIN, SeleniumTestCase.STANDARD_PASSWORD_ADMIN)
         self.assertEqual(self.driver.current_url, self.get_base_url())
 
         self.driver.find_element(By.LINK_TEXT, "Admin").click()
@@ -60,9 +60,7 @@ class UserStoriesTest(SeleniumTestCase):
         self.assertEqual(self.driver.current_url, self.get_base_url() + "login/")
 
         # now Bob can log in
-        self.driver.find_element(By.ID, "id_username").send_keys(bob_username)
-        self.driver.find_element(By.ID, "id_password").send_keys(bob_password)
-        self.driver.find_element(By.ID, "login-button").click()
+        self.login(bob_username, bob_password)
         self.assertEqual(self.driver.current_url, self.get_base_url())
 
         # Bob uploads his dataset
@@ -191,8 +189,7 @@ class UserStoriesTest(SeleniumTestCase):
 
     def test_user_story_charlie(self):
         # login
-        SeleniumTestCase.login(
-            self,
+        self.login(
             SeleniumTestCase.STANDARD_USERNAME_USER,
             SeleniumTestCase.STANDARD_PASSWORD_USER,
         )

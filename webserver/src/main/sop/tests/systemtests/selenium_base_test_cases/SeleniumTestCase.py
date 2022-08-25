@@ -179,24 +179,18 @@ class SeleniumTestCase(StaticLiveServerTestCase):
     def get_base_url(self) -> str:
         return self.live_server_url
 
-    @staticmethod
-    def logout(cls) -> bool:
-        if "Logout" in cls.driver.page_source:
-            cls.driver.find_element(By.LINK_TEXT, "Logout").click()
+    def logout(self) -> bool:
+        if "Logout" in self.driver.page_source:
+            self.driver.find_element(By.LINK_TEXT, "Logout").click()
             return True
         else:
             return False
 
-    @staticmethod
-    def login(cls, username, password) -> bool:
-        if "Login" in cls.driver.page_source:
-            cls.driver.find_element(By.LINK_TEXT, "Login").click()
-            cls.driver.find_element(By.ID, "id_username").send_keys(username)
-            cls.driver.find_element(By.ID, "id_password").send_keys(password)
-            cls.driver.find_element(By.ID, "login-button").click()
-            return True
-        else:
-            return False
+    def login(self, username, password):
+        self.driver.find_element(By.LINK_TEXT, "Login").click()
+        self.driver.find_element(By.ID, "id_username").send_keys(username)
+        self.driver.find_element(By.ID, "id_password").send_keys(password)
+        self.driver.find_element(By.ID, "login-button").click()
 
     def upload_dataset(
         self, dataset_path: str, dataset_name: str, dataset_description: str
