@@ -100,7 +100,6 @@ class ExecutionElement(Schedulable):
     def do_work(self) -> int:
         # Will compute and store the result of the ExecutionElement.
         try:
-            debug(f"{self} will now start running the algorithm on {self._ss_shm_name}")
             run_algo_result: np.ndarray = self.__run_algorithm()
             result_to_save: np.ndarray = self.__convert_result_to_csv(run_algo_result)
             DataIO.write_csv(self._result_path, result_to_save, add_index_column=False)
@@ -128,7 +127,11 @@ class ExecutionElement(Schedulable):
                             dtype=self._subspace_dtype, buffer=ss_shm.buf)
         algo = AlgorithmLoader.get_algorithm_object(self._algorithm.path,
                                                     self._algorithm.hyper_parameter)
+        debug(f"{self} will now call the fit function on the algorithm "
+              f"with {self._ss_shm_name} as data source")
         algo.fit(ss_arr, None)
+        debug(f"{self} will now call the decision_function of the algorithm "
+              f"with {self._ss_shm_name} as data source")
         results = algo.decision_function(ss_arr)
         ss_shm.close()
         return results
