@@ -3,6 +3,7 @@ from __future__ import annotations
 import multiprocessing
 import os
 from collections.abc import Callable
+from logging import debug
 from multiprocessing.shared_memory import SharedMemory
 from typing import Optional
 
@@ -76,6 +77,8 @@ class ExecutionSubspace(Schedulable):
         self._cache_subset_lock = multiprocessing.Lock()
         self._algorithms = algorithms
 
+        debug(f"{self} created")
+
     def __generate_execution_elements(self,
                                       algorithms: list[ParameterizedAlgorithm]) -> None:
         """
@@ -114,6 +117,7 @@ class ExecutionSubspace(Schedulable):
                             dtype=self._ds_on_main.dtype, buffer=ds_shm.buf)
         ss_shm = SharedMemory(self._subspace_shared_memory_name, False)
         self._subspace.make_subspace_array(ds_arr, ss_shm)
+        debug(f"{self} loaded subspace from dataset {ds_shm.name} to {ss_shm.name}")
         return ss_shm
 
     def __execution_element_is_finished(self, error_occurred: bool,
@@ -180,3 +184,8 @@ class ExecutionSubspace(Schedulable):
 
     def do_work(self) -> None:
         self.__load_subspace_from_dataset()
+
+    def __str__(self):
+        return f"ExecutionSubspace with taskid {self.task_id} and" \
+               f" {len(self._algorithms)} algos" \
+               f" and subspace-id {self._subspace.get_subspace_identifier()}"

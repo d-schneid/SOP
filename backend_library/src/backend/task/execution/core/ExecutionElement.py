@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from collections.abc import Callable
+from logging import debug, info, warning
 from multiprocessing.shared_memory import SharedMemory
 from typing import Optional
 
@@ -63,6 +64,8 @@ class ExecutionElement(Schedulable):
         self._ss_shm_name: str = ss_shm_name
         self._execution_element_is_finished = execution_element_is_finished
 
+        debug(f"{self} created")
+
     def finished_result_exists(self) -> bool:
         """
         (If the finished result already exists
@@ -101,8 +104,10 @@ class ExecutionElement(Schedulable):
             result_to_save: np.ndarray = self.__convert_result_to_csv(run_algo_result)
             DataIO.save_write_csv(self._result_path + ".running", self._result_path,
                                   result_to_save, add_index_column=False)
+            info(f"{self} has successfully written the algorithm results to the file")
         except Exception as e:
             error_message = str(e)
+            warning(f"{self} errored with {e}")
             if error_message == "":
                 error_message = "Error occurred while processing the ExecutionElement"
             TaskHelper.save_error_csv(self._result_path, error_message)
@@ -123,8 +128,13 @@ class ExecutionElement(Schedulable):
                             dtype=self._subspace_dtype, buffer=ss_shm.buf)
         algo = AlgorithmLoader.get_algorithm_object(self._algorithm.path,
                                                     self._algorithm.hyper_parameter)
+        debug(f"{self} will now call the fit function on the algorithm "
+              f"with {self._ss_shm_name} as data source")
         algo.fit(ss_arr, None)
+        debug(f"{self} will now call the decision_function of the algorithm "
+              f"with {self._ss_shm_name} as data source")
         results = algo.decision_function(ss_arr)
+        info(f"{self} has successfully executed the algorithm")
         ss_shm.close()
         return results
 
@@ -142,3 +152,8 @@ class ExecutionElement(Schedulable):
 
     def run_later_on_main(self, statuscode: Optional[int]) -> None:
         self._execution_element_is_finished(statuscode != 0, statuscode is None)
+
+    def __str__(self):
+        return f"ExecutionElement with taskid {self.task_id} running" \
+               f" {self._algorithm.directory_name_in_execution} on subspace-id" \
+               f" {self._subspace.get_subspace_identifier()}"
