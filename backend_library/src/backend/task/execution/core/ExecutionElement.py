@@ -102,8 +102,10 @@ class ExecutionElement(Schedulable):
         try:
             run_algo_result: np.ndarray = self.__run_algorithm()
             result_to_save: np.ndarray = self.__convert_result_to_csv(run_algo_result)
-            DataIO.write_csv(self._result_path, result_to_save, add_index_column=False)
-            info(f"{self} has successfully executed the algorithm")
+            DataIO.save_write_csv(self._result_path + ".running", self._result_path,
+                                  result_to_save, add_index_column=False)
+            info(f"{self} has successfully and written the algorithm results to the file")
+>>>>>>> backend_library/src/backend/task/execution/core/ExecutionElement.py
         except Exception as e:
             error_message = str(e)
             warning(f"{self} errored with {e}")
@@ -133,6 +135,7 @@ class ExecutionElement(Schedulable):
         debug(f"{self} will now call the decision_function of the algorithm "
               f"with {self._ss_shm_name} as data source")
         results = algo.decision_function(ss_arr)
+        info(f"{self} has successfully executed the algorithm")
         ss_shm.close()
         return results
 

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import csv
 import json
 import multiprocessing
 import os
+import shutil
 from collections.abc import Callable
 from logging import debug
 from multiprocessing import shared_memory
@@ -158,10 +158,11 @@ class Execution(JsonSerializable, Task, Schedulable):
         # if os.path.exists(self.result_path):
         if not os.path.isdir(self._result_path):
             TaskHelper.create_directory(self._result_path)
-            for algorithm in self._algorithms:
-                algorithm_directory_path: str = \
-                    os.path.join(self._result_path,
-                                 algorithm.directory_name_in_execution)
+        for algorithm in self._algorithms:
+            algorithm_directory_path: str = \
+                os.path.join(self._result_path,
+                             algorithm.directory_name_in_execution)
+            if not os.path.isdir(algorithm_directory_path):
                 TaskHelper.create_directory(algorithm_directory_path)
 
     def __generate_execution_details_in_filesystem(self) -> None:
@@ -174,9 +175,12 @@ class Execution(JsonSerializable, Task, Schedulable):
         assert os.path.isdir(self._result_path)
 
         details_path: str = os.path.join(self._result_path, 'details.json')
+        running_path: str = details_path + ".running"
 
-        with open(details_path, 'w') as f:
-            json.dump(self.to_json(), f)
+        if not os.path.exists(running_path):
+            with open(running_path, 'w') as f:
+                json.dump(self.to_json(), f)
+        shutil.move(running_path, details_path)
 
     def to_json(self) -> dict[str, object]:
         return {'subspace_generation': self._subspace_generation.to_json(),
@@ -236,8 +240,8 @@ class Execution(JsonSerializable, Task, Schedulable):
 
     def run_before_on_main(self) -> None:
         if self._datapoint_count is None:
-            reader = csv.reader(self._dataset_path)
-            self._datapoint_count = sum(1 for _ in reader) - 1
+            self._datapoint_count = DataIO.read_annotated(
+                self._dataset_path, True).data.shape[0]
         ds_dim_count = self._subspaces[0].get_dataset_dimension_count()
         entry_count = self._datapoint_count * ds_dim_count
         dtype = np.dtype('f4')
@@ -417,7 +421,7 @@ class Execution(JsonSerializable, Task, Schedulable):
 
     @property
     def dataset_indices(self) -> list[int]:
-        """ TODO: test this
+        """
         :return: The indices of the data points
         of the cleaned dataset used in this execution
         """
