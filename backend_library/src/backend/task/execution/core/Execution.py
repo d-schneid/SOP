@@ -5,6 +5,7 @@ import multiprocessing
 import os
 import shutil
 from collections.abc import Callable
+from logging import debug
 from multiprocessing import shared_memory
 from multiprocessing.shared_memory import SharedMemory
 from typing import Optional, cast
@@ -118,6 +119,8 @@ class Execution(JsonSerializable, Task, Schedulable):
         self._rownrs_shm_on_main: Optional[SharedMemory] = None
         self._rownrs_on_main: Optional[np.ndarray] = None
         self._row_numbers: Optional[np.ndarray] = None
+
+        debug(f"{self} created")
 
     def __fill_algorithms_directory_name(self) -> None:
         """
@@ -278,6 +281,8 @@ class Execution(JsonSerializable, Task, Schedulable):
             shm.close()
             rownrs_shm.close()
 
+        debug(f"Loaded dataset for {self} to {shm.name}")
+
     def __on_execution_element_finished(self, error: bool,
                                         aborted: bool = False) -> None:
         """
@@ -421,3 +426,7 @@ class Execution(JsonSerializable, Task, Schedulable):
         of the cleaned dataset used in this execution
         """
         return cast(list[int], self._row_numbers.tolist())
+
+    def __str__(self):
+        return f"Execution {self.task_id} with {len(self.algorithms)} algorithms" \
+               f" and {len(self._subspaces)}"
