@@ -1,6 +1,8 @@
 import copy
 import datetime
+from enum import Enum
 import os
+import re
 import shutil
 from pathlib import Path
 
@@ -85,6 +87,37 @@ def _add_pyod_algos_to_db():
 
 
 class SeleniumTestCase(StaticLiveServerTestCase):
+    class UrlsSuffixRegex(Enum):
+        _ignore_ = [
+            "_pattern_overview",
+            "_pattern_create",
+            "_pattern_upload",
+            "_admin_base",
+            "_admin_authentication",
+            "_admin_authentication_user",
+        ]
+
+        _pattern_overview: str = "{topic}/overview/sort\-by=[A-Za-z_]+"
+        _pattern_create: str = "{topic}/create"
+        _pattern_upload: str = "{topic}/upload"
+        _admin_base: str = "admin"
+        _admin_authentication: str = _admin_base + "/authentication"
+        _admin_authentication_user: str = _admin_authentication + "/user"
+
+        LOGIN = "login"
+        HOMEPAGE = ""
+        DATASET_OVERVIEW = _pattern_overview.format(topic="dataset")
+        EXPERIMENT_OVERVIEW = _pattern_overview.format(topic="experiment")
+        EXPERIMENT_CREATE = _pattern_create.format(topic="experiment")
+        EXECUTION_CREATE = "experiment/[0-9]+/execution/create"
+        ALGORITHM_OVERVIEW = _pattern_overview.format(topic="algorithm")
+        ALGORITHM_UPLOAD = _pattern_upload.format(topic="algorithm")
+        DATASET_UPLOAD = _pattern_upload.format(topic="dataset")
+        ADMIN_BASE = _admin_base
+        ADMIN_AUTHENTICATION_USER = _admin_authentication_user
+        ADMIN_AUTHENTICATION_USER_ADD = _admin_authentication_user + "/add"
+        ADMIN_AUTHENTICATION_USER_CHANGE = _admin_authentication_user + "/[0-9]+/change"
+
     STANDARD_USERNAME_USER: str
     STANDARD_PASSWORD_USER: str
     STANDARD_USERNAME_ADMIN: str
@@ -196,6 +229,8 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         # try to log out
         SeleniumTestCase.logout(self)
 
+    # ------------ Helper Methods -----------------
+
     def get_base_url(self) -> str:
         return self.live_server_url
 
@@ -213,9 +248,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "login-button").click()
 
         # assert that the login worked
-        self.assertTrue(
-            self.driver.current_url in [self.get_base_url(), self.get_base_url() + "/"]
-        )
+        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.HOMEPAGE)
 
         # check, if links to subpages are in the generated site
         self.assertIn("/experiment/overview", self.driver.page_source)
@@ -232,15 +265,10 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         assert os.path.isfile(dataset_path)
 
         self.driver.find_element(By.LINK_TEXT, "Datasets").click()
-        self.assertRegex(
-            self.driver.current_url,
-            self.get_base_url() + "dataset/overview/sort-by=[a-zA-Z_]+/",
-        )
+        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.DATASET_OVERVIEW)
 
         self.driver.find_element(By.LINK_TEXT, "Upload dataset").click()
-        self.assertEqual(
-            self.driver.current_url, self.get_base_url() + "dataset/upload/"
-        )
+        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.DATASET_UPLOAD)
 
         self.driver.find_element(By.ID, "id_display_name").send_keys(dataset_name)
         self.driver.find_element(By.ID, "id_description").send_keys(dataset_description)
@@ -250,11 +278,25 @@ class SeleniumTestCase(StaticLiveServerTestCase):
 
         # assert the upload worked
         page_source = self.driver.page_source  # get page source instantly
-        self.assertRegex(
-            self.driver.current_url,
-            self.get_base_url() + "dataset/overview/sort-by=[a-zA-Z_]+/",
-        )
+        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.DATASET_OVERVIEW)
         self.assertIn(dataset_name, page_source)
         self.assertIn(dataset_description, page_source)
 
         # TODO: check maybe visibility of buttons depending on cleaning state
+
+    # -------------- Additional asserts -----------
+
+    def assertUrlMatches(self, url_suffix_regex: UrlsSuffixRegex):
+        prefix_slash: str = "/?"
+        suffix_slash: str = "/?"
+
+        if url_suffix_regex.value == "":
+            url_suffix_regex_pattern = prefix_slash
+        else:
+            url_suffix_regex_pattern = (
+                prefix_slash + url_suffix_regex.value + suffix_slash
+            )
+
+        url_pattern_full = re.escape(self.get_base_url()) + url_suffix_regex_pattern
+
+        self.assertRegex(self.driver.current_url, url_pattern_full)
