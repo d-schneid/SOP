@@ -54,7 +54,7 @@ def _add_users_to_db():
         password=SeleniumTestCase.STANDARD_PASSWORD_ADMIN,
     )
     user_admin.is_staff = True
-    user_admin.is_admin = True
+    user_admin.is_superuser = True
     user_admin.save()
 
 
