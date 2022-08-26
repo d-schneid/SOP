@@ -71,7 +71,7 @@ class SystemTest_CleaningAndExecuting(unittest.TestCase):
         self.assertTrue(os.path.isfile(self._zipped_result_path))
 
         # cleanup
-        self.__cleanup_old_files(self)
+        self.__cleanup_old_files()
 
     # callbacks ########################################################################
     def __cleaning_task__progress_callback(self, task_id: int,
@@ -84,15 +84,16 @@ class SystemTest_CleaningAndExecuting(unittest.TestCase):
 
     def __metric_callback(self, execution: Execution):
         metric_folder_path: str = execution.result_path + "/metric"
-        metric1_result_path: str = execution.result_path + "/metric1.csv"
-        metric2_result_path: str = execution.result_path + "/metric2.csv"
+        metric1_result_path: str = metric_folder_path + "/metric1.csv"
+        metric2_result_path: str = metric_folder_path + "/metric2.csv"
 
         metric1: MetricDataPointsAreOutliers = \
             MetricDataPointsAreOutliers(self._ex.dataset_indices)
         metric2: MetricSubspaceOutlierAmount = \
             MetricSubspaceOutlierAmount()
 
-        os.mkdir(metric_folder_path)
+        if os.path.isdir(metric_folder_path):
+            os.mkdir(metric_folder_path)
 
         metric1.compute_metric(metric1_result_path, self._ex.algorithm_directory_paths)
         metric2.compute_metric(metric2_result_path, self._ex.algorithm_directory_paths)
