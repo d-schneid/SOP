@@ -104,8 +104,7 @@ class ExecutionElement(Schedulable):
             result_to_save: np.ndarray = self.__convert_result_to_csv(run_algo_result)
             DataIO.save_write_csv(self._result_path + ".running", self._result_path,
                                   result_to_save, add_index_column=False)
-            info(f"{self} has successfully and written the algorithm results to the file")
->>>>>>> backend_library/src/backend/task/execution/core/ExecutionElement.py
+            info(f"{self} has successfully written the algorithm results to the file")
         except Exception as e:
             error_message = str(e)
             warning(f"{self} errored with {e}")
