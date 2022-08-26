@@ -8,6 +8,7 @@ from backend.scheduler.Scheduler import Scheduler
 from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
 from backend.task.TaskState import TaskState
 from backend.task.cleaning.DatasetCleaning import DatasetCleaning
+from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 from backend.task.execution.subspace.RandomizedSubspaceGeneration import \
     RandomizedSubspaceGeneration as rsg
@@ -30,6 +31,11 @@ class SystemTest_CleaningAndExecuting(unittest.TestCase):
         # Scheduler
         Scheduler._instance = None
         self._rr_scheduler: DebugScheduler = DebugScheduler()
+
+        # Setup Algorithms
+        alg_root_directory: str = "./test"
+        algorithm_loader: AlgorithmLoader = AlgorithmLoader()
+        algorithm_loader.set_algorithm_root_dir(alg_root_directory)
 
         # Setup
         self.__setup_cleaning()
@@ -142,7 +148,7 @@ class SystemTest_CleaningAndExecuting(unittest.TestCase):
              'metric_params': None, 'n_jobs': 1}
 
         debug_algorithm_path: str = "./test/algorithms/DebugAlgorithm.py"
-        knn_algorithm_path: str = "./test/algorithms/DebugAlgorithm.py"
+        knn_algorithm_path: str = "./test/algorithms/knn.py"
 
         self._algorithms: list[ParameterizedAlgorithm] = \
             list([ParameterizedAlgorithm(debug_algorithm_path, hyper_parameter,
