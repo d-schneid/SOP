@@ -26,7 +26,7 @@ class PriorityTests(unittest.TestCase):
     def setUp(self) -> None:
         Scheduler._instance = None
 
-    def test_priority1(self):
+    def test_priorities(self):
         sched = UserRoundRobinSchedulerMock()
         self.assertIsNone(sched.next_sched())  # add assertion here
         a = TestSched(-1, -1, 1)
@@ -40,7 +40,7 @@ class PriorityTests(unittest.TestCase):
         self.assertEqual(b, sched.next_sched())
         self.assertIsNone(sched.next_sched())
 
-    def test_priority2(self):
+    def test_round_robin_scheduling(self):
         sched = UserRoundRobinSchedulerMock()
 
         sched.schedule(TestSched(0, -1, 2))
@@ -62,12 +62,8 @@ class UnitTestUrrs(unittest.TestCase):
         Scheduler.get_instance().hard_shutdown()
         Scheduler._instance = None
 
-    def test_exec(self):
+    def test_abort_by_task(self):
         urrs = UserRoundRobinScheduler()
-        tr = multiprocessing.Event()
-
-        urrs.schedule(TestSched(-1, -1, 0, None, tr))
-        self.assertTrue(tr.wait(timeout))
         ts = multiprocessing.Event()
         tbc = manager.Value('b', False)
         wait_for_sub = multiprocessing.Event()
@@ -80,7 +76,13 @@ class UnitTestUrrs(unittest.TestCase):
         self.assertTrue(ts.wait(timeout))
         self.assertFalse(tbc.value)
 
-    def test_exec2(self):
+    def test_basic_exec(self):
+        urrs = UserRoundRobinScheduler()
+        tr = multiprocessing.Event()
+        urrs.schedule(TestSched(-1, -1, 0, None, tr))
+        self.assertTrue(tr.wait(timeout))
+
+    def test_multi_abort_by_user(self):
         urrs = UserRoundRobinScheduler()
         ts = multiprocessing.Event()
         tbc = manager.Value('b', False)
@@ -97,7 +99,7 @@ class UnitTestUrrs(unittest.TestCase):
         self.assertTrue(ts.wait(timeout))
         self.assertFalse(tbc.value)
 
-    def test_exec3(self):
+    def test_graceful_shutdown(self):
         urrs = UserRoundRobinScheduler()
         ts = multiprocessing.Event()
         ts_by_shutdown = multiprocessing.Event()
