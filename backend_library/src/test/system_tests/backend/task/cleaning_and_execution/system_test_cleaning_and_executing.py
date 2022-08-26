@@ -98,7 +98,7 @@ class SystemTest_CleaningAndExecuting(unittest.TestCase):
         metric2: MetricSubspaceOutlierAmount = \
             MetricSubspaceOutlierAmount()
 
-        if os.path.isdir(metric_folder_path):
+        if not os.path.isdir(metric_folder_path):
             os.mkdir(metric_folder_path)
 
         metric1.compute_metric(metric1_result_path, self._ex.algorithm_directory_paths)
