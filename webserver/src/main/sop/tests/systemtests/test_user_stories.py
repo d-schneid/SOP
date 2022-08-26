@@ -28,7 +28,10 @@ class UserStoriesTest(SeleniumTestCase):
         bob_password = "this_is_the_secure_password_of_bob"
 
         # Alice (= Admin) creates a user account for Bob
-        self.login(SeleniumTestCase.STANDARD_USERNAME_ADMIN, SeleniumTestCase.STANDARD_PASSWORD_ADMIN)
+        self.login(
+            SeleniumTestCase.STANDARD_USERNAME_ADMIN,
+            SeleniumTestCase.STANDARD_PASSWORD_ADMIN,
+        )
 
         self.driver.find_element(By.LINK_TEXT, "Admin").click()
         self.assertEqual(self.driver.current_url, self.get_base_url() + "admin/")
@@ -132,11 +135,15 @@ class UserStoriesTest(SeleniumTestCase):
         # change algorithm parameters
         all_labels_kde = self.driver.find_elements(
             By.XPATH,
-            "//div[text() = '" + algo_name_kde + "']/parent::*/parent::*/descendant::label",
+            "//div[text() = '"
+            + algo_name_kde
+            + "']/parent::*/parent::*/descendant::label",
         )
         all_labels_knn = self.driver.find_elements(
             By.XPATH,
-            "//div[text() = '" + algo_name_knn + "']/parent::*/parent::*/descendant::label",
+            "//div[text() = '"
+            + algo_name_knn
+            + "']/parent::*/parent::*/descendant::label",
         )
 
         # kde options
@@ -174,7 +181,6 @@ class UserStoriesTest(SeleniumTestCase):
                 )
                 input_element.clear()
                 input_element.send_keys("20")
-
 
         self.driver.find_element(By.XPATH, "//input[@type='submit']").click()
         self.assertRegex(

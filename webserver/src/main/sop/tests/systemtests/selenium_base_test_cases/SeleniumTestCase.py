@@ -25,14 +25,18 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 def _add_users_to_db():
     #  generate a unique username
-    SeleniumTestCase.STANDARD_USERNAME_USER = SeleniumTestCase._BASE_USERNAME_USER + str(
-        datetime.datetime.now())
-    SeleniumTestCase.STANDARD_USERNAME_ADMIN = SeleniumTestCase._BASE_USERNAME_ADMIN + str(
-        datetime.datetime.now())
+    SeleniumTestCase.STANDARD_USERNAME_USER = (
+        SeleniumTestCase._BASE_USERNAME_USER + str(datetime.datetime.now())
+    )
+    SeleniumTestCase.STANDARD_USERNAME_ADMIN = (
+        SeleniumTestCase._BASE_USERNAME_ADMIN + str(datetime.datetime.now())
+    )
     assert not User.objects.filter(
-        username=SeleniumTestCase.STANDARD_USERNAME_USER).exists()
+        username=SeleniumTestCase.STANDARD_USERNAME_USER
+    ).exists()
     assert not User.objects.filter(
-        username=SeleniumTestCase.STANDARD_USERNAME_ADMIN).exists()
+        username=SeleniumTestCase.STANDARD_USERNAME_ADMIN
+    ).exists()
 
     # set passwords
     SeleniumTestCase.STANDARD_PASSWORD_USER = SeleniumTestCase._BASE_PASSWORD
@@ -41,11 +45,11 @@ def _add_users_to_db():
     #  add them
     User.objects.create_user(
         username=SeleniumTestCase.STANDARD_USERNAME_USER,
-        password=SeleniumTestCase.STANDARD_PASSWORD_USER
+        password=SeleniumTestCase.STANDARD_PASSWORD_USER,
     )
     user_admin = User.objects.create_user(
         username=SeleniumTestCase.STANDARD_USERNAME_ADMIN,
-        password=SeleniumTestCase.STANDARD_PASSWORD_ADMIN
+        password=SeleniumTestCase.STANDARD_PASSWORD_ADMIN,
     )
     user_admin.is_staff = True
     user_admin.is_admin = True
@@ -71,11 +75,12 @@ def _add_pyod_algos_to_db():
     AlgorithmLoader.set_algorithm_root_dir(str(settings.ALGORITHM_ROOT_DIR))
 
     pyodtodb.rename_algorithm_files_if_needed(
-        SeleniumTestCase.PYOD_AGLO_ROOT / "models")
+        SeleniumTestCase.PYOD_AGLO_ROOT / "models"
+    )
     pyodtodb.fix_base_detector_imports(SeleniumTestCase.PYOD_AGLO_ROOT / "models")
     pyodtodb.save_algorithms_in_db(SeleniumTestCase.PYOD_AGLO_ROOT / "models")
 
-    # reset the orignal attribute
+    # reset the original attribute
     pyodtodb.PYOD_ALGORITHMS = pyodtodb.ORG_PYOD_DATA
 
 
@@ -86,9 +91,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
     STANDARD_PASSWORD_ADMIN: str
 
     MEDIA_DIR_PATH = os.path.join("tests", "systemtests", "media")
-    SELENIUM_ERROR_PATH = os.path.join(
-        MEDIA_DIR_PATH, "selenium_err_artefacts"
-    )
+    SELENIUM_ERROR_PATH = os.path.join(MEDIA_DIR_PATH, "selenium_err_artefacts")
     PYOD_AGLO_ROOT = settings.ALGORITHM_ROOT_DIR / "pyod_algorithms"
 
     _BASE_USERNAME_USER = "SeleniumTestUser"
@@ -174,18 +177,14 @@ class SeleniumTestCase(StaticLiveServerTestCase):
             base_source_parts = page_source_path_base.split(".")
 
             # save original
-            page_source_path_org = (
-                    base_source_parts[0] + "_org." + base_source_parts[1]
-            )
+            page_source_path_org = base_source_parts[0] + "_org." + base_source_parts[1]
 
             with open(page_source_path_org, "w") as file:
                 file.write(self.driver.page_source)
 
             # save prettified version
             page_source_path_pretty = (
-                    base_source_parts[0]
-                    + "_pretty."
-                    + base_source_parts[1]
+                base_source_parts[0] + "_pretty." + base_source_parts[1]
             )
 
             pretty_source = BeautifulSoup(
@@ -215,7 +214,8 @@ class SeleniumTestCase(StaticLiveServerTestCase):
 
         # assert that the login worked
         self.assertTrue(
-            self.driver.current_url in [self.get_base_url(), self.get_base_url() + "/"])
+            self.driver.current_url in [self.get_base_url(), self.get_base_url() + "/"]
+        )
 
         # check, if links to subpages are in the generated site
         self.assertIn("/experiment/overview", self.driver.page_source)
@@ -227,7 +227,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         self.assertIn("/logout", self.driver.page_source)
 
     def upload_dataset(
-            self, dataset_path: str, dataset_name: str, dataset_description: str
+        self, dataset_path: str, dataset_name: str, dataset_description: str
     ):
         assert os.path.isfile(dataset_path)
 
