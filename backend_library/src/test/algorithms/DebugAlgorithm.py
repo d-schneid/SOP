@@ -10,12 +10,13 @@ class DebugAlgorithm(BaseDetector):
         :param algorithm_result: The result that will be outputted by calling decision_function()
         """
         self._algorithm_result: int = algorithm_result
+        self.decision_scores_ = None
 
     def decision_function(self, X: np.ndarray):
         return np.repeat(self._algorithm_result, X.shape[0])
 
     def fit(self, X, y=None):
-        pass
+        self.decision_scores_ = np.repeat(self._algorithm_result, X.shape[0])
 
     def fit_predict(self, X, y=None):
         raise NotImplementedError

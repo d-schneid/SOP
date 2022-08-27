@@ -131,9 +131,8 @@ class ExecutionElement(Schedulable):
         debug(f"{self} will now call the fit function on the algorithm "
               f"with {self._ss_shm_name} as data source")
         algo.fit(ss_arr, None)
-        debug(f"{self} will now call the decision_function of the algorithm "
-              f"with {self._ss_shm_name} as data source")
-        results = algo.decision_function(ss_arr)
+        debug(f"{self} will now load the decision_scores_ of the algorithm")
+        results = algo.decision_scores_
         info(f"{self} has successfully executed the algorithm")
         ss_shm.close()
         return results
