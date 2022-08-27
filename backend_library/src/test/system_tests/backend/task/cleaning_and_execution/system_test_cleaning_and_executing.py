@@ -1,4 +1,3 @@
-import multiprocessing
 import os
 import unittest
 
@@ -6,7 +5,6 @@ from backend.metric.MetricDataPointsAreOutliers import MetricDataPointsAreOutlie
 from backend.metric.MetricSubspaceOutlierAmount import MetricSubspaceOutlierAmount
 from backend.scheduler.DebugScheduler import DebugScheduler
 from backend.scheduler.Scheduler import Scheduler
-from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
 from backend.task.TaskState import TaskState
 from backend.task.cleaning.DatasetCleaning import DatasetCleaning
 from backend.task.execution.AlgorithmLoader import AlgorithmLoader
