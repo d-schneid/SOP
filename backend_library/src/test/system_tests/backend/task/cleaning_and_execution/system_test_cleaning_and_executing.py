@@ -1,20 +1,23 @@
 import os
 import unittest
+from multiprocessing import Event
 
 from backend.metric.MetricDataPointsAreOutliers import MetricDataPointsAreOutliers
 from backend.metric.MetricSubspaceOutlierAmount import MetricSubspaceOutlierAmount
-from backend.scheduler.DebugScheduler import DebugScheduler
 from backend.scheduler.Scheduler import Scheduler
+from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
 from backend.task.TaskState import TaskState
 from backend.task.cleaning.DatasetCleaning import DatasetCleaning
 from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
+from backend.task.execution.core.Execution import Execution
 from backend.task.execution.subspace.RandomizedSubspaceGeneration import \
     RandomizedSubspaceGeneration as rsg
 from backend.task.execution.subspace.UniformSubspaceDistribution import \
     UniformSubspaceDistribution as usd
-from backend.task.execution.core.Execution import Execution
 from test.TestHelper import TestHelper
+
+timeout = 720
 
 
 class SystemTest_CleaningAndExecuting(unittest.TestCase):
@@ -35,7 +38,7 @@ class SystemTest_CleaningAndExecuting(unittest.TestCase):
     def setUp(self) -> None:
         # Scheduler
         Scheduler._instance = None
-        self._rr_scheduler: DebugScheduler = DebugScheduler()
+        self._rr_scheduler: Scheduler = UserRoundRobinScheduler()
 
         # Setup Algorithms
         alg_root_directory: str = "./test"
@@ -72,16 +75,16 @@ class SystemTest_CleaningAndExecuting(unittest.TestCase):
 
         self._dc.schedule()
 
+        self.assertTrue(self._cleaning_finished.wait(timeout))
         self.assertTrue(os.path.isfile(self._cleaned_dataset_path))
-        self.assertTrue(self._cleaning_finished)
 
         # Do the Execution # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
         self.assertFalse(os.path.isfile(self._zipped_result_path))
 
         self._ex.schedule()
 
+        self.assertTrue(self._execution_finished.wait(timeout))
         self.assertTrue(os.path.isfile(self._zipped_result_path))
-        self.assertTrue(self._execution_finished)
         self.assertTrue(TestHelper.is_same_execution_result_zip(
             self._execution_result_folder_precomputed_path, self._zipped_result_path))
 
@@ -92,12 +95,12 @@ class SystemTest_CleaningAndExecuting(unittest.TestCase):
     def __cleaning_task__progress_callback(self, task_id: int,
                                            task_state: TaskState, progress: float):
         if task_state.is_finished():
-            self._cleaning_finished = True
+            self._cleaning_finished.set()
 
     def __execution_task_progress_callback(self, task_id: int,
                                            task_state: TaskState, progress: float):
         if task_state.is_finished():
-            self._execution_finished = True
+            self._execution_finished.set()
 
     def __metric_callback(self, execution: Execution):
         metric_folder_path: str = execution.result_path + "/metric"
@@ -170,13 +173,13 @@ class SystemTest_CleaningAndExecuting(unittest.TestCase):
         self._running_path = self._result_path + ".I_am_running"
         self._final_zip_path = self._result_path + ".zip"
 
-        self._execution_finished: bool = False
+        self._execution_finished: Event = Event()
 
     def __setup_cleaning(self):
         # DatasetCleaning setup ########################################################
         self._uncleaned_dataset_path: str = \
             "./test/datasets/canada_climate_uncleaned.csv"
-        self._cleaning_finished: bool = False
+        self._cleaning_finished: Event = Event()
 
 
 if __name__ == '__main__':
