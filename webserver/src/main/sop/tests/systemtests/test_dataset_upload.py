@@ -22,7 +22,9 @@ class DatasetUploadTests(SeleniumTestCase):
             SeleniumTestCase.STANDARD_PASSWORD_USER,
         )
 
-        valid_dataset_path = os.path.join("tests", "sample_datasets", "canada.csv")
+        valid_dataset_path = os.path.join(
+            "tests", "sample_datasets", "canada_testing.csv"
+        )
 
         dataset_name = "Test Dataset: Canada"
         dataset_description = (
