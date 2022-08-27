@@ -5,6 +5,7 @@ import os
 import re
 import shutil
 from pathlib import Path
+from time import sleep
 
 import pyod
 from bs4 import BeautifulSoup
@@ -15,6 +16,8 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from authentication.models import User
 from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from experiments.management.commands import pyodtodb
+
+from tests.generic import MediaMixin
 
 import selenium
 from selenium.webdriver.chrome.service import Service as ChromeService
@@ -28,10 +31,10 @@ from webdriver_manager.chrome import ChromeDriverManager
 def _add_users_to_db():
     #  generate a unique username
     SeleniumTestCase.STANDARD_USERNAME_USER = (
-        SeleniumTestCase._BASE_USERNAME_USER + str(datetime.datetime.now())
+        SeleniumTestCase._BASE_USERNAME_USER
     )
     SeleniumTestCase.STANDARD_USERNAME_ADMIN = (
-        SeleniumTestCase._BASE_USERNAME_ADMIN + str(datetime.datetime.now())
+        SeleniumTestCase._BASE_USERNAME_ADMIN
     )
     assert not User.objects.filter(
         username=SeleniumTestCase.STANDARD_USERNAME_USER
@@ -86,7 +89,7 @@ def _add_pyod_algos_to_db():
     pyodtodb.PYOD_ALGORITHMS = pyodtodb.ORG_PYOD_DATA
 
 
-class SeleniumTestCase(StaticLiveServerTestCase):
+class SeleniumTestCase(StaticLiveServerTestCase, MediaMixin):
     class UrlsSuffixRegex(Enum):
         _ignore_ = [
             "_pattern_overview",
@@ -283,6 +286,28 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         self.assertIn(dataset_description, page_source)
 
         # TODO: check maybe visibility of buttons depending on cleaning state
+        # TODO: check directly in the database, if the dataset was added correctly
+
+    def wait_until_dataset_cleaned(self, dataset_name: str):
+
+        start_time = datetime.datetime.now()  # TODO: debug
+
+        while True:
+            sleep(1)
+            dataset_div = self.driver.find_element(
+                By.XPATH,
+                "//a[normalize-space(text()) = '" +
+                dataset_name +
+                "']/parent::*/following-sibling::a"
+            )
+            if dataset_div.text == "cleaned":
+                break
+
+            print("Dataset: " + dataset_name + ", Status: "
+                  + dataset_div.text + " | Time: "
+                  + str(datetime.datetime.now() - start_time)
+                  + " | " + self.driver.current_url
+                  )  # TODO: debug
 
     # -------------- Additional asserts -----------
 
