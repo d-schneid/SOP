@@ -72,7 +72,9 @@ class TestHelper:
                 list2_copy.remove(element)
             else:
                 return False  # at least one element from list1 is not in list2
-        return True
+        if len(list2_copy) == 0:
+            return True
+        return False
 
     @staticmethod
     def __cleanup_unzipped_files(unzipped_path1: str, unzipped_path2):

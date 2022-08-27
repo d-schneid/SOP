@@ -15,6 +15,7 @@ from backend.task.execution.subspace.RandomizedSubspaceGeneration import \
 from backend.task.execution.subspace.UniformSubspaceDistribution import \
     UniformSubspaceDistribution as usd
 from backend.task.execution.core.Execution import Execution
+from test.TestHelper import TestHelper
 
 
 class SystemTest_CleaningAndExecuting(unittest.TestCase):
@@ -26,6 +27,11 @@ class SystemTest_CleaningAndExecuting(unittest.TestCase):
 
     _user_id: int = 214
     _task_id: int = 1553
+
+    # precomputed
+    _execution_result_folder_precomputed_path: str = \
+        "./test/system_tests/backend/task/cleaning_and_execution/" \
+        "execution_result_folder_precomputed.zip"
 
     def setUp(self) -> None:
         # Scheduler
@@ -75,6 +81,8 @@ class SystemTest_CleaningAndExecuting(unittest.TestCase):
         self._ex.schedule()
 
         self.assertTrue(os.path.isfile(self._zipped_result_path))
+        self.assertTrue(TestHelper.is_same_execution_result_zip(
+            self._execution_result_folder_precomputed_path, self._zipped_result_path))
 
         # cleanup
         self.__cleanup_old_files()
