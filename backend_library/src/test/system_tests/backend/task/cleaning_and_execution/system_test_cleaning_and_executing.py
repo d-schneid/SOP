@@ -1,3 +1,4 @@
+import multiprocessing
 import os
 import unittest
 
@@ -74,6 +75,7 @@ class SystemTest_CleaningAndExecuting(unittest.TestCase):
         self._dc.schedule()
 
         self.assertTrue(os.path.isfile(self._cleaned_dataset_path))
+        self.assertTrue(self._cleaning_finished)
 
         # Do the Execution # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
         self.assertFalse(os.path.isfile(self._zipped_result_path))
@@ -81,6 +83,7 @@ class SystemTest_CleaningAndExecuting(unittest.TestCase):
         self._ex.schedule()
 
         self.assertTrue(os.path.isfile(self._zipped_result_path))
+        self.assertTrue(self._execution_finished)
         self.assertTrue(TestHelper.is_same_execution_result_zip(
             self._execution_result_folder_precomputed_path, self._zipped_result_path))
 
@@ -90,11 +93,13 @@ class SystemTest_CleaningAndExecuting(unittest.TestCase):
     # callbacks ########################################################################
     def __cleaning_task__progress_callback(self, task_id: int,
                                            task_state: TaskState, progress: float):
-        pass
+        if task_state.is_finished():
+            self._cleaning_finished = True
 
     def __execution_task_progress_callback(self, task_id: int,
                                            task_state: TaskState, progress: float):
-        pass
+        if task_state.is_finished():
+            self._execution_finished = True
 
     def __metric_callback(self, execution: Execution):
         metric_folder_path: str = execution.result_path + "/metric"
@@ -167,10 +172,13 @@ class SystemTest_CleaningAndExecuting(unittest.TestCase):
         self._running_path = self._result_path + ".I_am_running"
         self._final_zip_path = self._result_path + ".zip"
 
+        self._execution_finished: bool = False
+
     def __setup_cleaning(self):
         # DatasetCleaning setup ########################################################
         self._uncleaned_dataset_path: str = \
             "./test/datasets/canada_climate_uncleaned.csv"
+        self._cleaning_finished: bool = False
 
 
 if __name__ == '__main__':
