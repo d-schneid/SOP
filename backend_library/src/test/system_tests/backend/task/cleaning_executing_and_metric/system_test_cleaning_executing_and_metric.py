@@ -1,4 +1,5 @@
 import os
+import shutil
 import unittest
 from multiprocessing import Event
 
@@ -20,11 +21,11 @@ from test.TestHelper import TestHelper
 timeout = 720
 
 
-class SystemTest_CleaningAndExecuting(unittest.TestCase):
+class SystemTest_CleaningExecutingAndMetric(unittest.TestCase):
     # for Cleaning and Execution #######################################################
 
     _cleaned_dataset_path: str = "./test/system_tests/backend/task/" \
-                                 "cleaning_and_execution/" \
+                                 "cleaning_executing_and_metric/" \
                                  "cleaned_dataset_for_execution.csv"
 
     _user_id: int = 214
@@ -32,7 +33,7 @@ class SystemTest_CleaningAndExecuting(unittest.TestCase):
 
     # precomputed
     _execution_result_folder_precomputed_path: str = \
-        "./test/system_tests/backend/task/cleaning_and_execution/" \
+        "./test/system_tests/backend/task/cleaning_executing_and_metric/" \
         "execution_result_folder_precomputed.zip"
 
     def setUp(self) -> None:
@@ -69,7 +70,7 @@ class SystemTest_CleaningAndExecuting(unittest.TestCase):
                                         self._final_zip_path,
                                         zip_running_path=self._zipped_result_path)
 
-    def test_cleaning_and_execution(self):
+    def test_cleaning_execution_and_metric(self):
         # Do the DatasetCleaning # # # # # # # # # # # # # # # # # # # # # # # # # # # #
         self.assertFalse(os.path.isfile(self._cleaned_dataset_path))
 
@@ -85,8 +86,13 @@ class SystemTest_CleaningAndExecuting(unittest.TestCase):
 
         self.assertTrue(self._execution_finished.wait(timeout))
         self.assertTrue(os.path.isfile(self._zipped_result_path))
+
+        a_knn_execution_element_result_path: str = "/KNN/AAQAA.csv"
+        metric_result1_path: str = "/metric/metric1.csv"
+
         self.assertTrue(TestHelper.is_same_execution_result_zip(
-            self._execution_result_folder_precomputed_path, self._zipped_result_path))
+            self._execution_result_folder_precomputed_path, self._zipped_result_path,
+            list([a_knn_execution_element_result_path, metric_result1_path])))
 
         # cleanup
         self.__cleanup_old_files()
@@ -124,17 +130,21 @@ class SystemTest_CleaningAndExecuting(unittest.TestCase):
         if os.path.isfile(self._cleaned_dataset_path):
             os.remove(self._cleaned_dataset_path)
         # Execution
-        if os.path.isfile(self._result_path):
-            os.remove(self._result_path)
+        if os.path.isdir(self._result_path):
+            shutil.rmtree(self._result_path)
         if os.path.isfile(self._zipped_result_path):
             os.remove(self._zipped_result_path)
+        if os.path.isfile(self._zipped_result_path + "_unzipped"):
+            os.remove(self._zipped_result_path + "_unzipped")
+        if os.path.isfile(self._execution_result_folder_precomputed_path + "_unzipped"):
+            os.remove(self._execution_result_folder_precomputed_path + "_unzipped")
 
     # setup ############################################################################
     def __setup_execution(self):
         # Execution setup ##############################################################
 
         self._result_path: str = "./test/system_tests/backend/task/" \
-                                 "cleaning_and_execution/execution_result_folder"
+                                 "cleaning_executing_and_metric/execution_result_folder"
         self._zipped_result_path: str = self._result_path + ".zip"
         self._details_path: str = os.path.join(self._result_path, 'details.json')
 
