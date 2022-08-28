@@ -5,6 +5,7 @@ import django.test
 from django.urls import reverse
 
 from experiments.models.dataset import Dataset, CleaningState
+from experiments.models.experiment import Experiment
 from tests.generic import AdminLoggedInMixin, MediaMixin, DebugSchedulerMixin
 
 
@@ -181,3 +182,50 @@ class DatasetAdminTests(
             response,
             "Unicode error in selected dataset",
         )
+
+    def test_admin_delete_dataset_of_experiment(self):
+        self.assertTrue(Dataset.objects.exists())
+        self.exp = Experiment.objects.create(
+            display_name="Test Exp", dataset=self.dataset_finished, user=self.admin
+        )
+        url = reverse("admin:experiments_dataset_delete",
+                      args=(self.dataset_finished.pk,))
+        response = self.client.post(url, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "This dataset cannot be deleted, since it is "
+                                      "used in at least one experiment (see below)")
+        self.assertTrue(Dataset.objects.exists())
+        self.assertEqual(
+            "experiments_dataset_delete", response.resolver_match.url_name
+        )
+
+    def test_admin_uncleaned_dataset_change_view(self):
+        self.dataset_uncleaned = Dataset.objects.create(
+            display_name="dataset_uncleaned_1",
+            description="This is a description.",
+            user=self.admin,
+            status=CleaningState.RUNNING.name,
+        )
+        url = reverse(
+            "admin:experiments_dataset_change", args=(self.dataset_uncleaned.pk,)
+        )
+        response = self.client.get(url, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.dataset_uncleaned.display_name)
+        self.assertContains(response, self.dataset_uncleaned.description)
+        self.assertContains(response, "Uncleaned dataset")
+        self.assertNotContains(response, "Cleaned dataset")
+
+    def test_dataset_change_display_name(self):
+        url = reverse(
+            "admin:experiments_dataset_change", args=(self.dataset_finished.pk,)
+        )
+        response = self.client.post(url, {"display_name": "xyzeeeyy"}, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            "experiments_dataset_change", response.resolver_match.url_name
+        )
+        self.assertContains(response, "xyzeeeyy")
+        self.assertTrue("xyzeeeyy", self.dataset_finished.display_name)
