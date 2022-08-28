@@ -6,6 +6,7 @@ import re
 import shutil
 from pathlib import Path
 from time import sleep
+from typing import List
 
 import pyod
 from bs4 import BeautifulSoup
@@ -24,6 +25,9 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
+
 
 from webdriver_manager.chrome import ChromeDriverManager
 
@@ -290,34 +294,65 @@ class SeleniumTestCase(StaticLiveServerTestCase, MediaMixin):
         self.assertIn(dataset_name, page_source)
         self.assertIn(dataset_description, page_source)
 
+        # TODO: select the correct div so that asserts are also valid
+        #  with more than one dataset uploaded
         # TODO: check maybe visibility of buttons depending on cleaning state
         # TODO: check directly in the database, if the dataset was added correctly
 
-    def wait_until_dataset_cleaned(self, dataset_name: str):
+    def create_experiment(
+        self,
+        experiment_name: str,
+        dataset_name: str,
+        username: str,
+        list_algos: List[str],
+    ):
 
-        start_time = datetime.datetime.now()  # TODO: debug
+        self.driver.find_element(By.LINK_TEXT, "Experiments").click()
+        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXPERIMENT_OVERVIEW)
 
-        while True:
-            sleep(1)
-            dataset_div = self.driver.find_element(
-                By.XPATH,
-                "//a[normalize-space(text()) = '"
-                + dataset_name
-                + "']/parent::*/following-sibling::a",
+        self.driver.find_element(By.LINK_TEXT, "Create experiment").click()
+        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXPERIMENT_CREATE)
+
+        # select dataset
+        self.driver.find_element(By.ID, "id_display_name").send_keys(experiment_name)
+        dropdown = self.driver.find_element(By.ID, "id_dataset")
+        dropdown.find_element(
+            By.XPATH,
+            "//option[. = '" + dataset_name + " | " + username + "']",
+        ).click()
+
+        # add algorithms
+        # therefore, first open all flex-grow-elements
+        # (so that algorithms can be selected from them)
+        self.driver.find_element(By.XPATH, "//div[@id='group_Probabilistic']/div")
+        self.driver.find_element(By.XPATH, "//div[@id='group_LinearModel']/div")
+        self.driver.find_element(By.XPATH, "//div[@id='group_Proximity-Based']/div")
+        self.driver.find_element(By.XPATH, "//div[@id='group_OutlierEnsembles']/div")
+        self.driver.find_element(By.XPATH, "//div[@id='group_NeuralNetworks']/div")
+        self.driver.find_element(By.XPATH, "//div[@id='group_Combination']/div")
+        self.driver.find_element(By.XPATH, "//div[@id='group_Other']/div")
+
+        for current_algo in list_algos:
+            algo_element = self.driver.find_element(
+                By.XPATH, "//span[contains(.,'" + current_algo + "')]/parent::*"
             )
-            if dataset_div.text == "cleaned":
-                break
+            WebDriverWait(self.driver, 30).until(
+                EC.element_to_be_clickable(algo_element)
+            )
+            algo_element.click()
 
-            print(
-                "Dataset: "
-                + dataset_name
-                + ", Status: "
-                + dataset_div.text
-                + " | Time: "
-                + str(datetime.datetime.now() - start_time)
-                + " | "
-                + self.driver.current_url
-            )  # TODO: debug
+        self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
+
+        page_source = self.driver.page_source
+        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXPERIMENT_OVERVIEW)
+        self.assertIn(experiment_name, page_source)
+        self.assertIn(dataset_name, page_source)
+        for algo in list_algos:
+            self.assertIn(algo, page_source)
+
+        # TODO: select the correct div so that asserts are also valid
+        #  with more than one experiment created
+        # TODO: check directly in the database, if the dataset was added correctly
 
     def upload_algorithm(
         self,
@@ -351,8 +386,36 @@ class SeleniumTestCase(StaticLiveServerTestCase, MediaMixin):
         self.assertIn(algo_name, page_source)
         self.assertIn(algo_description, page_source)
 
+        # TODO: select the correct div so that asserts are also valid
+        #  with more than one algo uploaded
         # TODO: check info displayed on the page
         # TODO: check directly in the database, if the dataset was added correctly
+
+    def wait_until_dataset_cleaned(self, dataset_name: str):
+
+        start_time = datetime.datetime.now()  # TODO: debug
+
+        while True:
+            sleep(1)
+            dataset_div = self.driver.find_element(
+                By.XPATH,
+                "//a[normalize-space(text()) = '"
+                + dataset_name
+                + "']/parent::*/following-sibling::a",
+            )
+            if dataset_div.text == "cleaned":
+                break
+
+            print(
+                "Dataset: "
+                + dataset_name
+                + ", Status: "
+                + dataset_div.text
+                + " | Time: "
+                + str(datetime.datetime.now() - start_time)
+                + " | "
+                + self.driver.current_url
+            )  # TODO: debug
 
     # -------------- Additional asserts -----------
 
