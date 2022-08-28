@@ -1,4 +1,5 @@
 import os
+from unittest import skip
 
 import django.test
 from django.urls import reverse
@@ -151,4 +152,32 @@ class DatasetAdminTests(
         self.assertContains(
             response,
             "Select a valid choice. That choice is not one of the available choices.",
+        )
+
+    @skip("Test with invalid dataset, dataset validation does not work so we need to"
+          "fix that asap")
+    def test_add_dataset_unicode_error(self):
+        file_path: str = os.path.join("tests", "sample_datasets", "unicode_error.csv")
+        assert os.path.isfile(file_path)
+
+        url = reverse("admin:experiments_dataset_add")
+
+        with open(file_path, "r") as file:
+            data = {
+                "display_name": "dataset_add_1",
+                "description": "This is a description.",
+                "user": self.admin.pk,
+                "path_original": file,
+                "has_header": True,
+            }
+            response = self.client.post(url, data, follow=True)
+
+        assert data is not None
+        assert response is not None
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual("experiments_dataset_add", response.resolver_match.url_name)
+        self.assertContains(
+            response,
+            "Unicode error in selected dataset",
         )
