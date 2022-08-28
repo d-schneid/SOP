@@ -1,10 +1,8 @@
-import datetime
 import os
-from time import sleep
-
-from tests.systemtests.selenium_base_test_cases.SeleniumTestCase import SeleniumTestCase
 
 from selenium.webdriver.common.by import By
+
+from tests.systemtests.selenium_base_test_cases.SeleniumTestCase import SeleniumTestCase
 
 
 class UserStoriesTest(SeleniumTestCase):
@@ -34,9 +32,7 @@ class UserStoriesTest(SeleniumTestCase):
         )
 
         self.driver.find_element(By.LINK_TEXT, "Admin").click()
-        self.assertUrlMatches(
-            SeleniumTestCase.UrlsSuffixRegex.ADMIN_BASE
-        )
+        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.ADMIN_BASE)
 
         self.driver.find_element(By.LINK_TEXT, "Users").click()
         self.assertUrlMatches(
@@ -52,7 +48,9 @@ class UserStoriesTest(SeleniumTestCase):
         self.driver.find_element(By.ID, "id_password1").send_keys(bob_password)
         self.driver.find_element(By.ID, "id_password2").send_keys(bob_password)
         self.driver.find_element(By.NAME, "_save").click()
-        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.ADMIN_AUTHENTICATION_USER_CHANGE)
+        self.assertUrlMatches(
+            SeleniumTestCase.UrlsSuffixRegex.ADMIN_AUTHENTICATION_USER_CHANGE
+        )
 
         # Alice logs herself out
         self.driver.find_element(By.CSS_SELECTOR, "a:nth-child(4)").click()
@@ -62,51 +60,29 @@ class UserStoriesTest(SeleniumTestCase):
         self.login(bob_username, bob_password)
 
         # Bob uploads his dataset
-        valid_dataset_path = os.path.join("tests", "sample_datasets", "canada.csv")
+        valid_dataset_path = os.path.join(
+            "tests", "sample_datasets", "canada_testing.csv"
+        )
         dataset_name = "Bobs Canada Dataset"
         dataset_description = (
             "This is the Canada Dataset, which Bob uses for testint SOP."
         )
 
         self.upload_dataset(valid_dataset_path, dataset_name, dataset_description)
+        self.upload_dataset(valid_dataset_path, "Dataset 2", "Descriptin 2")
 
         # wait for the dataset to be cleaned
-        sleep(5)  # TODO: extract the status (s. sankasten für prototyp)
+        self.wait_until_dataset_cleaned(dataset_name)
 
         # Bob creates an Experiment with his new Dataset
-        self.driver.find_element(By.LINK_TEXT, "Experiments").click()
-        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXPERIMENT_OVERVIEW)
+        experiment_name = "Bobs Erstes Experiment"
 
-        self.driver.find_element(By.LINK_TEXT, "Create experiment").click()
-        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXPERIMENT_CREATE)
-
-        self.driver.find_element(By.ID, "id_display_name").send_keys(
-            "Bobs Erstes Experiment"
+        self.create_experiment(
+            experiment_name=experiment_name,
+            dataset_name=dataset_name,
+            username=bob_username,
+            list_algos=["[PYOD] KDE", "[PYOD] KNN"],
         )
-        dropdown = self.driver.find_element(By.ID, "id_dataset")
-        dropdown.find_element(
-            By.XPATH, "//option[. = '" + dataset_name + " | " + bob_username + "']"
-        ).click()
-
-        # add algorithms
-        algo_name_kde = "[PYOD] KDE"
-        algo_name_knn = "[PYOD] KNN"
-
-        self.driver.find_element(
-            By.CSS_SELECTOR, "#group_Probabilistic > .flex-grow-1"
-        ).click()
-        self.driver.find_element(
-            By.CSS_SELECTOR, "#group_Proximity-Based > .flex-grow-1"
-        ).click()
-
-        sleep(0.5)  # TODO: wait for unfolding of groups
-
-        for algo in self.driver.find_elements(By.NAME, "check-algo"):
-            if algo.accessible_name in [algo_name_kde, algo_name_knn]:
-                algo.click()
-
-        self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
-        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXPERIMENT_OVERVIEW)
 
         # Bob creates an execution within his new experiment
         self.driver.find_element(By.LINK_TEXT, "New Execution").click()
@@ -182,80 +158,40 @@ class UserStoriesTest(SeleniumTestCase):
         )
 
         # upload own dataset
-        valid_dataset_path = os.path.join("tests", "sample_datasets", "canada.csv")
+        valid_dataset_path = os.path.join(
+            "tests", "sample_datasets", "canada_testing.csv"
+        )
         dataset_name = "Charlies Canada Dataset"
         dataset_description = (
             "This is the Canada Dataset, which Chralie uses for testint SOP."
         )
 
         self.upload_dataset(valid_dataset_path, dataset_name, dataset_description)
+        self.upload_dataset(valid_dataset_path, "Dataset 2", "Descriptin 2")  # TODO
 
         # wait for the dataset to be cleaned
-        sleep(5)  # TODO: extract the status (s. sankasten für prototyp)
+        self.wait_until_dataset_cleaned(dataset_name)
 
         # upload own algorithm
-        #  generate a unique name
-        algo_name = "Dr. Metas algorithm - " + str(datetime.datetime.now())
-        algo_description = "Provided by Dr. Meta, for my friend Charlie"
-        algo_path = os.path.join("tests", "sample_algorithms", "SampleAlgoKnn.py")
-        assert os.path.isfile(algo_path)
+        algo_name = "Dr. Metas algorithm"
 
-        self.driver.find_element(By.LINK_TEXT, "Algorithms").click()
-        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.ALGORITHM_OVERVIEW)
-
-        self.driver.find_element(By.LINK_TEXT, "Upload algorithm").click()
-        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.ALGORITHM_UPLOAD)
-
-        self.driver.find_element(By.ID, "id_display_name").send_keys(algo_name)
-        self.driver.find_element(By.ID, "id_description").send_keys(algo_description)
-        self.driver.find_element(By.ID, "id_group")
-        dropdown = self.driver.find_element(By.ID, "id_group")
-        dropdown.find_element(By.XPATH, "//option[. = 'Proximity Based']").click()
-        absolute_path = os.path.join(os.getcwd(), algo_path)
-        self.driver.find_element(By.ID, "id_path").send_keys(absolute_path)
-
-        self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
-        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.ALGORITHM_OVERVIEW)
-
-        # wait for algorithm to be checked
-        sleep(5)  # TODO: extract the status
+        self.upload_algorithm(
+            algo_name=algo_name,
+            algo_description="Provided by Dr. Meta, for my friend Charlie",
+            algo_group=SeleniumTestCase.AlgoGroup.PROXIMITY_BASED,
+            algo_path=os.path.join("tests", "sample_algorithms", "SampleAlgoKnn.py"),
+        )
 
         # create new experiment with own algorithm
-        exp_name = "Charlies experiment"
-
-        self.driver.find_element(By.LINK_TEXT, "Experiments").click()
-        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXPERIMENT_OVERVIEW)
-
-        self.driver.find_element(By.LINK_TEXT, "Create experiment").click()
-        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXPERIMENT_CREATE)
-
-        self.driver.find_element(By.ID, "id_display_name").send_keys(exp_name)
-        dropdown = self.driver.find_element(By.ID, "id_dataset")
-        dropdown.find_element(
-            By.XPATH,
-            "//option[. = '"
-            + dataset_name
-            + " | "
-            + SeleniumTestCase.STANDARD_USERNAME_USER
-            + "']",
-        ).click()
-
-        # add own algorithm
-        self.driver.find_element(
-            By.CSS_SELECTOR, "#group_Proximity-Based > .flex-grow-1"
-        ).click()
-
-        sleep(0.5)  # TODO: wait for unfolding of group
-
-        for algo in self.driver.find_elements(By.NAME, "check-algo"):
-            if algo.accessible_name == algo_name:
-                algo.click()
-                break
-
-        self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
-        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXPERIMENT_OVERVIEW)
+        self.create_experiment(
+            experiment_name="Charlies experiment",
+            dataset_name=dataset_name,
+            username=SeleniumTestCase.STANDARD_USERNAME_USER,
+            list_algos=[algo_name],
+        )
 
         # create new execution
+        # TODO: not safe for more than 1 experiment!
         self.driver.find_element(By.LINK_TEXT, "New Execution").click()
         self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXECUTION_CREATE)
 
