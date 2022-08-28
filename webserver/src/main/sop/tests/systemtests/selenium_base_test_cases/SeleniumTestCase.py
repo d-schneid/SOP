@@ -30,12 +30,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 def _add_users_to_db():
     #  generate a unique username
-    SeleniumTestCase.STANDARD_USERNAME_USER = (
-        SeleniumTestCase._BASE_USERNAME_USER
-    )
-    SeleniumTestCase.STANDARD_USERNAME_ADMIN = (
-        SeleniumTestCase._BASE_USERNAME_ADMIN
-    )
+    SeleniumTestCase.STANDARD_USERNAME_USER = SeleniumTestCase._BASE_USERNAME_USER
+    SeleniumTestCase.STANDARD_USERNAME_ADMIN = SeleniumTestCase._BASE_USERNAME_ADMIN
     assert not User.objects.filter(
         username=SeleniumTestCase.STANDARD_USERNAME_USER
     ).exists()
@@ -120,6 +116,15 @@ class SeleniumTestCase(StaticLiveServerTestCase, MediaMixin):
         ADMIN_AUTHENTICATION_USER = _admin_authentication_user
         ADMIN_AUTHENTICATION_USER_ADD = _admin_authentication_user + "/add"
         ADMIN_AUTHENTICATION_USER_CHANGE = _admin_authentication_user + "/[0-9]+/change"
+
+    class AlgoGroup(Enum):
+        PROBABILISTIC = "Probabilistic"
+        LINEAR_MODEL = "Linear Model"
+        PROXIMITY_BASED = "Proximity Based"
+        OUTLIER_ENSEMBLES = "Outlier Ensembles"
+        NEURONAL_NETWORKS = "Neural Networks"
+        COMBINATION = "Combination"
+        OTHER = "Other"
 
     STANDARD_USERNAME_USER: str
     STANDARD_PASSWORD_USER: str
@@ -296,18 +301,58 @@ class SeleniumTestCase(StaticLiveServerTestCase, MediaMixin):
             sleep(1)
             dataset_div = self.driver.find_element(
                 By.XPATH,
-                "//a[normalize-space(text()) = '" +
-                dataset_name +
-                "']/parent::*/following-sibling::a"
+                "//a[normalize-space(text()) = '"
+                + dataset_name
+                + "']/parent::*/following-sibling::a",
             )
             if dataset_div.text == "cleaned":
                 break
 
-            print("Dataset: " + dataset_name + ", Status: "
-                  + dataset_div.text + " | Time: "
-                  + str(datetime.datetime.now() - start_time)
-                  + " | " + self.driver.current_url
-                  )  # TODO: debug
+            print(
+                "Dataset: "
+                + dataset_name
+                + ", Status: "
+                + dataset_div.text
+                + " | Time: "
+                + str(datetime.datetime.now() - start_time)
+                + " | "
+                + self.driver.current_url
+            )  # TODO: debug
+
+    def upload_algorithm(
+        self,
+        algo_name: str,
+        algo_description: str,
+        algo_group: AlgoGroup,
+        algo_path: str,
+    ):
+        assert os.path.isfile(algo_path)
+
+        self.driver.find_element(By.LINK_TEXT, "Algorithms").click()
+        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.ALGORITHM_OVERVIEW)
+
+        self.driver.find_element(By.LINK_TEXT, "Upload algorithm").click()
+        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.ALGORITHM_UPLOAD)
+
+        self.driver.find_element(By.ID, "id_display_name").send_keys(algo_name)
+        self.driver.find_element(By.ID, "id_description").send_keys(algo_description)
+        self.driver.find_element(By.ID, "id_group")
+        dropdown = self.driver.find_element(By.ID, "id_group")
+        dropdown.find_element(
+            By.XPATH, "//option[normalize-space(text()) = '" + algo_group.value + "']"
+        ).click()
+        absolute_path = os.path.join(os.getcwd(), algo_path)
+        self.driver.find_element(By.ID, "id_path").send_keys(absolute_path)
+
+        self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
+
+        page_source = self.driver.current_url
+        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.ALGORITHM_OVERVIEW)
+        self.assertIn(algo_name, page_source)
+        self.assertIn(algo_description, page_source)
+
+        # TODO: check info displayed on the page
+        # TODO: check directly in the database, if the dataset was added correctly
 
     # -------------- Additional asserts -----------
 
