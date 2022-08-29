@@ -216,16 +216,3 @@ class DatasetAdminTests(
         self.assertContains(response, self.dataset_uncleaned.description)
         self.assertContains(response, "Uncleaned dataset")
         self.assertNotContains(response, "Cleaned dataset")
-
-    def test_dataset_change_display_name(self):
-        url = reverse(
-            "admin:experiments_dataset_change", args=(self.dataset_finished.pk,)
-        )
-        response = self.client.post(url, {"display_name": "xyzeeeyy"}, follow=True)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            "experiments_dataset_change", response.resolver_match.url_name
-        )
-        self.assertContains(response, "xyzeeeyy")
-        self.assertTrue("xyzeeeyy", self.dataset_finished.display_name)
