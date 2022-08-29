@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 from unittest.mock import patch, MagicMock
 
 import django.test
@@ -18,7 +18,7 @@ class ExecutionCreateViewTests(
     algo1: Algorithm
     algo2: Algorithm
     exp: Experiment
-    data: Dict[str, Any]
+    data: dict[str, Any]
 
     @classmethod
     def setUpTestData(cls) -> None:
@@ -192,7 +192,7 @@ class ExecutionDuplicateViewTests(LoggedInMixin, django.test.TestCase):
     algo1: Algorithm
     algo2: Algorithm
     exp: Experiment
-    data: Dict[str, Any]
+    data: dict[str, Any]
     execution: Execution
 
     @classmethod

@@ -4,12 +4,12 @@ import math
 import multiprocessing
 import sys
 import threading
-import time
 from collections import OrderedDict
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from multiprocessing import Condition, Process
 from threading import Thread
-from typing import Callable, Optional, Dict, List, Tuple
+from typing import Optional
 
 from backend.scheduler.Schedulable import Schedulable
 from backend.scheduler.Scheduler import Scheduler
@@ -24,13 +24,13 @@ class UserRoundRobinScheduler(Scheduler):
         super().__init__()
         UserRoundRobinScheduler.__start_by_fork()
         self.__shutdown_ongoing: bool = False
-        self.__on_shutdown_completed: Optional[Callable] = None
+        self.__on_shutdown_completed: Optional[Callable[[], None]] = None
         self.__empty_queue: Condition = Condition()
-        self.__threads: List[Thread] = list()
-        self.__user_queues: OrderedDict[int, List[PrioritizedSchedulable]] \
+        self.__threads: list[Thread] = list()
+        self.__user_queues: OrderedDict[int, list[PrioritizedSchedulable]] \
             = OrderedDict()
         self.__next_queue: int = -1
-        self.__running: Dict[Schedulable, Tuple[Process, bool]] = dict()
+        self.__running: dict[Schedulable, tuple[Process, bool]] = dict()
         for i in range(self.__get_targeted_worker_count()):
             self.__make_worker_thread()
 
@@ -48,7 +48,7 @@ class UserRoundRobinScheduler(Scheduler):
         """Creates a new supervisor thread"""
         t = Thread(
             target=UserRoundRobinScheduler.__thread_main,
-            args=(self,))
+            args=(self,), daemon=True)
         self.__threads.append(t)
         t.start()
 
@@ -66,12 +66,15 @@ class UserRoundRobinScheduler(Scheduler):
                 while i < len(q):
                     if selector(q[i].schedulable):
                         # there is no way to delete nicely from python heapqs
+                        q[i].schedulable.run_later_on_main(None)
                         q[i] = q[-1]
                         q.pop()
+                        heapq.heapify(q)
                     else:
                         i = i + 1
             for k, v in self.__running.items():
                 if selector(k) and not v[1]:
+                    self.__running[k] = (v[0], True)
                     try:
                         v[0].kill()
                     except AttributeError:
@@ -79,17 +82,10 @@ class UserRoundRobinScheduler(Scheduler):
                         pass
 
     def hard_shutdown(self) -> None:
-        self.__on_shutdown_completed = None
-        self.__shutdown_ongoing = True
         with self.__empty_queue:
-            for k, v in self.__running.items():
-                if not v[1]:
-                    self.__running[k] = (v[0], True)
-                    try:
-                        v[0].kill()
-                    except AttributeError:
-                        # Has just stopped, ignore
-                        pass
+            self.__on_shutdown_completed = None
+            self.__shutdown_ongoing = True
+            self.__abort(lambda _: True)
             self.__empty_queue.notify_all()
 
     def graceful_shutdown(self,
@@ -147,10 +143,17 @@ class UserRoundRobinScheduler(Scheduler):
                 self.__running[next_sched] = (p, False)
             next_sched.run_before_on_main()
             with self.__empty_queue:
+                if self.__shutdown_ongoing:
+                    next_sched.run_later_on_main(None)
+                    self.__handle_shutdown()
+                    return
+                if self.__running[next_sched][1]:
+                    next_sched.run_later_on_main(None)
+                    continue
                 p.start()
             p.join()
-            if not self.__running[next_sched][1]:
-                next_sched.run_later_on_main(p.exitcode)
+            next_sched.run_later_on_main(
+                None if self.__running[next_sched][1] else p.exitcode)
 
         self.__handle_shutdown()
 

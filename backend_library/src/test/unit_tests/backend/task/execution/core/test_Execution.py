@@ -56,6 +56,8 @@ class UnitTestExecution(unittest.TestCase):
 
     _final_zip_path = _result_path + "final.zip"
 
+    #
+
     def __task_progress_callback(self, task_id: int, task_state: TaskState, progress: float) -> None:
         # Empty callback
         pass
@@ -69,8 +71,10 @@ class UnitTestExecution(unittest.TestCase):
         self.__clear_old_execution_file_structure()
 
         # create Execution
-        self._ex = ex(self._user_id, self._task_id, self.__task_progress_callback, self._dataset_path,
-                      self._result_path, self._subspace_generation, iter(self._algorithms), self.__metric_callback,
+        self._ex = ex(self._user_id, self._task_id, self.__task_progress_callback,
+                      self._dataset_path,
+                      self._result_path, self._subspace_generation, self._algorithms,
+                      self.__metric_callback,
                       self._datapoint_count, self._final_zip_path, self._priority)
 
     def tearDown(self) -> None:
@@ -85,18 +89,21 @@ class UnitTestExecution(unittest.TestCase):
         self.assertEqual(self._user_id, self._ex.user_id)
         self.assertEqual(self._task_id, self._ex.task_id)
 
-
         directory_names: list[str] = list()
         for algorithm in self._algorithms:
             directory_names.append(os.path.join(self._result_path, algorithm.directory_name_in_execution))
         self.assertEqual(directory_names, self._ex.algorithm_directory_paths)
 
     def test_fill_algorithms_directory_name(self):
-        iterable = self._ex._algorithms.__iter__()
-        self.assertEqual(next(iterable).directory_name_in_execution, self._directory_names_in_execution[0])
-        self.assertEqual(next(iterable).directory_name_in_execution, self._directory_names_in_execution[1])
-        self.assertEqual(next(iterable).directory_name_in_execution, self._directory_names_in_execution[2])
-        self.assertEqual(next(iterable).directory_name_in_execution, self._directory_names_in_execution[3])
+        algos = self._ex._algorithms
+        self.assertEqual(algos[0].directory_name_in_execution,
+                         self._directory_names_in_execution[0])
+        self.assertEqual(algos[1].directory_name_in_execution,
+                         self._directory_names_in_execution[1])
+        self.assertEqual(algos[2].directory_name_in_execution,
+                         self._directory_names_in_execution[2])
+        self.assertEqual(algos[3].directory_name_in_execution,
+                         self._directory_names_in_execution[3])
 
     def test_generate_file_system_structure(self):
         self.assertTrue(os.path.isdir(self._result_path))
@@ -167,16 +174,16 @@ class UnitTestExecution(unittest.TestCase):
                     break
 
     def test_on_execution_element_finished_error_occurred_logic(self):
-        self.assertEqual(False, self._ex._has_failed_element)
+        self.assertFalse(self._ex._has_failed_element)
 
         self._ex._Execution__on_execution_element_finished(False)
-        self.assertEqual(False, self._ex._has_failed_element)
+        self.assertFalse(self._ex._has_failed_element)
 
         self._ex._Execution__on_execution_element_finished(True)
-        self.assertEqual(True, self._ex._has_failed_element)
+        self.assertTrue(self._ex._has_failed_element)
 
         self._ex._Execution__on_execution_element_finished(False)
-        self.assertEqual(True, self._ex._has_failed_element)
+        self.assertTrue(self._ex._has_failed_element)
 
     def test_on_execution_element_finished_finished_elements_logic(self):
         self._ex._Execution__unload_dataset = Mock(return_value=None)
@@ -191,23 +198,23 @@ class UnitTestExecution(unittest.TestCase):
         self.assertEqual(self._ex._total_execution_element_count,
                          self._ex._finished_execution_element_count)
 
-        self.assertEqual(False, self._ex._has_failed_element)
+        self.assertFalse(self._ex._has_failed_element)
         self.assertTrue(self._ex._metric_finished)
 
         # out of range (more elements finished than elements exists)
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(AssertionError):
             self._ex._Execution__on_execution_element_finished(True)
 
         # depending on how you look at it, you could not edit the error of Execution when the Exception ist raised
         # (but here we are applying it)
-        self.assertEqual(True, self._ex._has_failed_element)
+        self.assertTrue(self._ex._has_failed_element)
 
     def test_schedule_already_finished(self):
         Scheduler._instance = None
         Scheduler.default_scheduler = None
 
         # Finished file doesn't exist -> schedule this object -> raise TypeError because no scheduler exists
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(AssertionError):
             self._ex.schedule()
 
         file_content: np.ndarray = np.asarray([["I am just a random value :D"]])
@@ -221,9 +228,11 @@ class UnitTestExecution(unittest.TestCase):
     def test_wrong_priority(self):
         self._wrong_priority: list[int] = list([-1, -12313, 12431, 5])
         for wrong_priority in self._wrong_priority:
-            with self.assertRaises(AssertionError) as context:
-                ex(self._user_id, self._task_id, self.__task_progress_callback, self._dataset_path,
-                   self._result_path, self._subspace_generation, iter(self._algorithms), self.__metric_callback,
+            with self.assertRaises(AssertionError):
+                ex(self._user_id, self._task_id, self.__task_progress_callback,
+                   self._dataset_path,
+                   self._result_path, self._subspace_generation, self._algorithms,
+                   self.__metric_callback,
                    self._datapoint_count, self._final_zip_path, wrong_priority)
 
 

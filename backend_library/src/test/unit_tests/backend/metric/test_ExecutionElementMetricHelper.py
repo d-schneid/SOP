@@ -243,7 +243,7 @@ class UnitTest_ExecutionElementMetricHelper_ComputeOutlierDataPoints(unittest.Te
 
     def test_compute_outlier_data_points(self):
         # invalid path
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(AssertionError):
             ExecutionElementMetricHelper.compute_outlier_data_points(
                 self._execution_element_result_wrong_path)
 

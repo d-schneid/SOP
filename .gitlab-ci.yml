@@ -37,6 +37,7 @@ stages:
 
 variables:
   # DJANGO_CONFIG: "test"
+  DOCKER_DRIVER: overlay2
   MYSQL_DATABASE: "db_name"
   MYSQL_ROOT_PASSWORD: "dbpass"
   MYSQL_USER: "username"
@@ -68,7 +69,7 @@ default:
     - python3.9 -m pip install --upgrade pip
     - python3.9 -m pip install -r requirements.txt
     - python3.9 -m pip install coverage
-    - python3.9 -m pip install -e backend_library/src
+    - python3.9 -m pip install backend_library/src
     - python3.9 -V
 
 .frontend-base:
@@ -80,9 +81,9 @@ default:
   services:
     - mysql:8.0
   before_script:
-    - apt -y update
+    - apt-get -y update
     - apt-get -yq install software-properties-common
-    - apt -y install apt-utils net-tools wget default-mysql-client default-libmysqlclient-dev python3-distutils python3-dev gcc memcached
+    - apt-get -y install apt-utils net-tools wget default-mysql-client default-libmysqlclient-dev python3-distutils python3-dev gcc memcached
     - "[ ! -d 'venv3.9' ] && python3 -m venv venv3.9"
     - "[ ! -d 'public' ] && mkdir public"
     - source venv3.9/bin/activate
@@ -92,30 +93,37 @@ default:
     - python3.9 -m pip install -e backend_library/src
     - python3.9 -V
 
-migrations:
-  stage: build
-  extends: .frontend-base
+flake:
+  stage: test
+  needs: []
+  before_script:
+    - python3.9 -m pip install flake8 flake8-assertive
   script:
-    - source venv3.9/bin/activate
-    - cd webserver/src/main/sop
-    - python3.9 manage.py makemigrations --settings=sop.settings_ci
-    # - python3 manage.py makemigrations myapp
-    - python3.9 manage.py migrate --settings=sop.settings_ci
-    - python3.9 manage.py showmigrations --settings=sop.settings_ci
-    - python3.9 manage.py check --settings=sop.settings_ci
-
+    - flake8 --color always .
+    - echo looking for forbidden windows line endings...
+    - '! grep -IUrPl --exclude-dir=.git --exclude-dir=venv* "\r$" 1>&2'
 
 django-tests:
+  needs: []
   stage: test
   extends: .frontend-base
   coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
   script:
-    - python3.9 -m pip install requirements_test.txt
+    - python3.9 -m pip install -r requirements_test.txt
     - source venv3.9/bin/activate
+
     # We skip pyodtodb django admin command tests because it needs way to big python dependencies
     # - pip3 install -r requirements_pyod_algorithms.txt
+
     - which python3.9
     - cd webserver/src/main/sop
+
+    # make migrations and migrate, so the db is ready for the tests
+    - python3.9 manage.py makemigrations --settings=sop.settings_ci
+    - python3.9 manage.py migrate --settings=sop.settings_ci
+    - python3.9 manage.py showmigrations --settings=sop.settings_ci
+    - python3.9 manage.py check --settings=sop.settings_ci
+
     - pip3 install django_coverage_plugin
     - "echo '[run]\nplugins = django_coverage_plugin' > .coveragerc"
     - memcached -d -u root
@@ -147,17 +155,15 @@ backend-tests:
 
 
 backend-docs:
-  inherit:
-    default: false
   image: python:3.9-slim-bullseye
+  allow_failure: true
   only:
     - main
   stage: build
-  before_script:
-    - pip install pdoc
-    - apt update
-    - apt -y install zip
   script:
+    - pip install pdoc
+    - apt-get update
+    - apt-get -y install zip
     - which python3.9
     - cd backend_library/src
     - python3.9 -m pdoc ./backend -o docs
@@ -167,9 +173,32 @@ backend-docs:
     paths:
       - public/backend-docs.zip
 
+deploy-docs:
+  inherit:
+    default: false
+  needs: 
+    - backend-docs
+  image: debian:latest
+  stage: deploy
+  only:
+    - main
+  before_script:
+    - apt -y update
+    - apt -y install openssh-client
+  script:
+    - chmod og= $ID_RSA
+    - echo "Pulling docs..."
+    - >-
+      ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "curl --location --output ~/sop-docs/backend-docs.zip --header 'JOB-TOKEN: $CI_JOB_TOKEN' 'https://git.scc.kit.edu/api/v4/projects/$CI_PROJECT_ID/jobs/artifacts/main/raw/public/backend-docs.zip?job=backend-docs'"
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "./deploy-docs.sh"
+
+
 publish-build:
   inherit:
     default: false
+  needs:
+    - backend-tests
+    - django-tests
   stage: publish
   only:
     - main
@@ -184,7 +213,9 @@ publish-build:
 
 
 deploy-badges:
-  needs: [ "backend-tests", "django-tests" ]
+  needs: 
+    - backend-tests
+    - django-tests
   inherit:
     default: false
   stage: deploy
@@ -197,6 +228,8 @@ deploy-badges:
     - ''
 
 deploy-app:
+  needs:
+    - publish-build
   inherit:
     default: false
   stage: deploy
@@ -206,8 +239,8 @@ deploy-app:
   tags:
     - deployment
   before_script:
-    - apt -y update
-    - apt -y install openssh-client
+    - apt-get -y update
+    - apt-get -y install openssh-client
 
   script:
     - chmod og= $ID_RSA

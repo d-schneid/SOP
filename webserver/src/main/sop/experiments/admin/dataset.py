@@ -1,4 +1,5 @@
-from typing import Type, Optional, Sequence, List, Any
+from collections.abc import Sequence
+from typing import Optional
 
 from django.contrib import admin
 from django.http import HttpRequest
@@ -38,10 +39,10 @@ class DatasetAdmin(AbstractModelAdmin):
     search_fields = ["display_name"]
     actions = ["delete_selected"]
 
-    def get_admin_add_form(self) -> Type[AdminAddDatasetForm]:
+    def get_admin_add_form(self) -> type[AdminAddDatasetForm]:
         return AdminAddDatasetForm
 
-    def get_admin_change_form(self) -> Type[AdminChangeDatasetForm]:
+    def get_admin_change_form(self) -> type[AdminChangeDatasetForm]:
         return AdminChangeDatasetForm
 
     def get_model_name(self) -> str:
@@ -50,9 +51,9 @@ class DatasetAdmin(AbstractModelAdmin):
     def get_readonly_fields(self,
                             request: HttpRequest,
                             obj: Optional[Dataset] = None
-    ) -> Sequence[str]:
+                            ) -> Sequence[str]:
         # for editing an existing experiment
-        if not obj is None:
+        if obj is not None:
             readonly_fields = [
                 "dimensions_total",
                 "datapoints_total",
@@ -88,11 +89,13 @@ class DatasetAdmin(AbstractModelAdmin):
         @param change: True if the given dataset model instance shall be changed. False
         if the given dataset model instance shall be added to the database.
         """
-        # start the dataset cleaning, if it is adding the model (not if it is changing the model)
+        # start the dataset cleaning,
+        # if it is adding the model (not if it is changing the model)
 
         if change is not None and change is True:
 
-            # if it is only changing the model, just save it without starting the dataset cleaning
+            # if it is only changing the model,
+            # just save it without starting the dataset cleaning
             # (as it is not possible to change the dataset in the admin view)
             super().save_model(request, obj, form, change)
 
@@ -109,7 +112,7 @@ class DatasetAdmin(AbstractModelAdmin):
             # now, start the cleaning
             schedule_backend(obj)
 
-    def get_urls(self) -> List[URLPattern]:
+    def get_urls(self) -> list[URLPattern]:
         """
         Adds custom view for downloading the associated dataset files to the URLs.
         @return: The URLs to be used for this DatasetAdmin.

@@ -53,10 +53,10 @@ class ExecutionAdminTests(AdminLoggedInMixin, django.test.TestCase):
         self.execution_admin = ExecutionAdmin(Execution, self.site)
 
     def test_execution_admin_add_permission(self):
-        self.assertEqual(self.execution_admin.has_add_permission(request), False)
+        self.assertFalse(self.execution_admin.has_add_permission(request))
 
     def test_execution_admin_change_permission(self):
-        self.assertEqual(self.execution_admin.has_change_permission(request), False)
+        self.assertFalse(self.execution_admin.has_change_permission(request))
 
     def test_execution_admin_changelist_view(self):
         url = reverse("admin:experiments_execution_changelist")

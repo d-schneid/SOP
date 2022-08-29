@@ -1,5 +1,5 @@
 import json
-from typing import Optional, Dict, Any, List
+from typing import Optional, Any
 
 import django.test
 from django.http import HttpResponse
@@ -89,7 +89,7 @@ class ExperimentOverviewTests(LoggedInMixin, django.test.TestCase):
 class ExperimentCreateViewTests(LoggedInMixin, MediaMixin, django.test.TestCase):
     name: str
     dataset: Dataset
-    algorithms: List[Algorithm]
+    algorithms: list[Algorithm]
 
     @classmethod
     def setUpTestData(cls):
@@ -162,7 +162,7 @@ class ExperimentCreateViewTests(LoggedInMixin, MediaMixin, django.test.TestCase)
 class ExperimentEditViewTests(LoggedInMixin, django.test.TestCase):
     name: str
     dataset: Dataset
-    algorithms: List[Algorithm]
+    algorithms: list[Algorithm]
     experiment: Experiment
 
     @classmethod
@@ -281,7 +281,7 @@ class ExperimentDuplicateViewTests(LoggedInMixin, django.test.TestCase):
     algo1: Algorithm
     algo2: Algorithm
     exp: Experiment
-    data: Dict[str, Any]
+    data: dict[str, Any]
 
     @classmethod
     def setUpTestData(cls) -> None:

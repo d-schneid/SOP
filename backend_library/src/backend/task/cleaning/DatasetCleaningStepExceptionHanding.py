@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-from backend.DatasetInfo import DatasetInfo
 
 
 class DatasetCleaningStepExceptionHandling:
@@ -17,12 +16,7 @@ class DatasetCleaningStepExceptionHandling:
         (error_root: error_message)
         :return: Throws an ValueError exception if the inputted dataset is empty
         """
-        try:
-            if dataset_to_check.size == 0:
-                raise ValueError(error_root +
-                                 ": input array is empty. Needs at least one row, "
-                                 "one column and an entry")
-        except pd.errors.EmptyDataError:
+        if dataset_to_check.size == 0:
             raise ValueError(error_root +
                              ": input array is empty. Needs at least one row, "
                              "one column and an entry")
@@ -47,7 +41,7 @@ class DatasetCleaningStepExceptionHandling:
                 if is_none_array.all():
                     raise ValueError(error_root + ": None-column exists")
         # edge case handling: one row only
-            else:
-                for idx in range(0, dataset_to_check.shape[0]):
-                    if str(type(dataset_to_check[idx])) == '<class \'NoneType\'>':
-                        raise ValueError(error_root + ": None-column exists")
+        else:
+            for idx in range(0, dataset_to_check.shape[0]):
+                if str(type(dataset_to_check[idx])) == '<class \'NoneType\'>':
+                    raise ValueError(error_root + ": None-column exists")

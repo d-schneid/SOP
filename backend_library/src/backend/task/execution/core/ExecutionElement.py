@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Callable
 from multiprocessing.shared_memory import SharedMemory
-from typing import Callable
+from typing import Optional
 
 import numpy as np
 
@@ -23,18 +24,23 @@ class ExecutionElement(Schedulable):
     def __init__(self, user_id: int, task_id: int, subspace: Subspace,
                  algorithm: ParameterizedAlgorithm, result_path: str,
                  subspace_dtype: np.dtype, ss_shm_name: str,
-                 execution_element_is_finished: Callable[[bool], None],
+                 execution_element_is_finished: Callable[[bool, bool], None],
                  datapoint_count: int, row_numbers: np.ndarray, priority: int = 10):
         """
-        :param user_id: The ID of the user belonging to this ExecutionElement. Has to be at least -1.
+        :param user_id: The ID of the user belonging to this ExecutionElement.
+        Has to be at least -1.
         :param task_id: The ID of this task. Has to be at least -1.
         :param subspace: The subspace on which the algorithm should compute its result.
         :param algorithm: The algorithm that should be computed on the subspace.
-        :param result_path: The directory where the result-csv-file of the ExecutionElement-computation will be stored.
-        :param subspace_dtype: The dtype of the values that are stored in the dataset for processing.
+        :param result_path: The directory where the result-csv-file
+        of the ExecutionElement-computation will be stored.
+        :param subspace_dtype: The dtype of the values that are stored in the dataset
+        for processing.
         :param ss_shm_name: The name of the shared memory containing the subspace data
-        :param execution_element_is_finished: Reports the ExecutionSubspace that it finished its execution.
-        :param row_numbers: the row numbers of the dataset, see AnnotatedDataset.row_mapping
+        :param execution_element_is_finished: Reports the ExecutionSubspace
+        that it finished its execution.
+        :param row_numbers: the row numbers of the dataset,
+        see AnnotatedDataset.row_mapping
         """
         assert priority <= 100
         assert priority >= 10
@@ -59,7 +65,8 @@ class ExecutionElement(Schedulable):
 
     def finished_result_exists(self) -> bool:
         """
-        (If the finished result already exists the ExecutionElements doesn't need to be computed again.
+        (If the finished result already exists
+        the ExecutionElements doesn't need to be computed again.
         -> Used for performance improvement.) \n
         :return: True if the finished result exists. Otherwise, return False.
         """
@@ -88,16 +95,12 @@ class ExecutionElement(Schedulable):
         return self._priority
 
     def do_work(self) -> int:
-        """
-        Is called by the Scheduler. \n
-        Will compute and store the result of the ExecutionElement. \n
-        :return: An exitcode provided to run_later_on_main
-        """
-
+        # Will compute and store the result of the ExecutionElement.
         try:
             run_algo_result: np.ndarray = self.__run_algorithm()
             result_to_save: np.ndarray = self.__convert_result_to_csv(run_algo_result)
-            DataIO.write_csv(self._result_path, result_to_save, add_index_column=False)
+            DataIO.save_write_csv(self._result_path + ".running", self._result_path,
+                                  result_to_save, add_index_column=False)
         except Exception as e:
             error_message = str(e)
             if error_message == "":
@@ -137,5 +140,5 @@ class ExecutionElement(Schedulable):
         rows_data = np.concatenate((rows, data), 1)
         return rows_data
 
-    def run_later_on_main(self, statuscode: int) -> None:
-        self._execution_element_is_finished(statuscode != 0)
+    def run_later_on_main(self, statuscode: Optional[int]) -> None:
+        self._execution_element_is_finished(statuscode != 0, statuscode is None)

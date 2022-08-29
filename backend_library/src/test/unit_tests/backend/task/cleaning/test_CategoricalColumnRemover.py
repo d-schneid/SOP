@@ -45,12 +45,12 @@ class UnitTestCategoricalColumnRemover(unittest.TestCase):
                                      (self._ds.none_dataset)).data.shape)
 
         # Raise exception when empty dataset is inputted
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(ValueError):
             self._categorical_handler.do_cleaning(self._ds.empty_annotated_dataset)
 
     def test_wrong_input_datatype(self):
         # 1D dataset not allowed -> Assertion
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(AssertionError):
             self._categorical_handler.do_cleaning(self._ds.one_dim_data_annotated)
 
 

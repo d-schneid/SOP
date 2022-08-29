@@ -25,15 +25,13 @@ class ExperimentInlineTests(AdminLoggedInMixin, django.test.TestCase):
 
     def test_experiment_inline_add_permission(self):
         algorithm = Algorithm.objects.create(signature="")
-        self.assertEqual(
-            self.experiment_inline.has_add_permission(request, algorithm), False
-        )
+        self.assertFalse(self.experiment_inline.has_add_permission(request, algorithm))
 
     def test_experiment_inline_change_permission(self):
-        self.assertEqual(self.experiment_inline.has_change_permission(request), False)
+        self.assertFalse(self.experiment_inline.has_change_permission(request))
 
     def test_experiment_inline_delete_permission(self):
-        self.assertEqual(self.experiment_inline.has_change_permission(request), False)
+        self.assertFalse(self.experiment_inline.has_change_permission(request))
 
     def test_experiment_inline_template(self):
         self.assertEqual(

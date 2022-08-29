@@ -1,5 +1,3 @@
-from typing import Dict
-
 from django.test import TestCase
 from django.urls import reverse
 
@@ -36,7 +34,7 @@ class LoggedInTestCase(DebugSchedulerTestCase):
     running the tests.
     """
 
-    credentials: Dict[str, str]
+    credentials: dict[str, str]
     user: User
 
     @classmethod
@@ -56,7 +54,7 @@ class AdminLoggedInTestCase(DebugSchedulerTestCase):
     before running the tests.
     """
 
-    credentials: Dict[str, str]
+    credentials: dict[str, str]
     admin: User
 
     @classmethod

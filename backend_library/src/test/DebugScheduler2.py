@@ -1,4 +1,5 @@
-from typing import Callable, Type
+from collections.abc import Callable
+from typing import Optional
 
 from backend.scheduler.Schedulable import Schedulable
 from backend.scheduler.Scheduler import Scheduler
@@ -8,6 +9,7 @@ class DebugScheduler2(Scheduler):
     """
     Placeholder for a Scheduler that doesn't even start the Schedulables when calling schedule()
     """
+
     def __init__(self):
         Scheduler.__init__(self)
         self._called_scheduler_amount = 0
@@ -21,7 +23,9 @@ class DebugScheduler2(Scheduler):
     def hard_shutdown(self) -> None:
         return None
 
-    def graceful_shutdown(self, on_shutdown_completed: Callable) -> None:
+    def graceful_shutdown(self,
+                          on_shutdown_completed: Optional[Callable[[], None]] = None) \
+            -> None:
         raise NotImplementedError
 
     def is_shutting_down(self) -> bool:

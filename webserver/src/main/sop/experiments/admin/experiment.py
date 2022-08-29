@@ -1,4 +1,5 @@
-from typing import Sequence, Optional, Dict
+from collections.abc import Sequence
+from typing import Optional
 
 from django.contrib import admin
 from django.http import HttpRequest, HttpResponse
@@ -23,7 +24,7 @@ class ExperimentAdmin(admin.ModelAdmin[Experiment]):
     def get_readonly_fields(self,
                             request: HttpRequest,
                             obj: Optional[Experiment] = None
-    ) -> Sequence[str]:
+                            ) -> Sequence[str]:
         # for editing an existing experiment
         if not (obj is None):
             return ["user", "dataset", "algorithms", "creation_date"]
@@ -34,8 +35,8 @@ class ExperimentAdmin(admin.ModelAdmin[Experiment]):
     def add_view(self,
                  request: HttpRequest,
                  form_url: str = "",
-                 extra_context: Optional[Dict[str, object]] = None
-    ) -> HttpResponse:
+                 extra_context: Optional[dict[str, object]] = None
+                 ) -> HttpResponse:
         """
         View for the experiment model instance addition page in the admin interface.
         After adding a new experiment model instance, it redirects back to the change

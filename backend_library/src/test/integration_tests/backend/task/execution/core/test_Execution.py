@@ -1,19 +1,16 @@
 import os.path
 import shutil
 import unittest
-from unittest import skip
 
-from backend.task.execution.core.Execution import Execution as ex
+from backend.scheduler.DebugScheduler import DebugScheduler
+from backend.scheduler.Scheduler import Scheduler
 from backend.task.TaskState import TaskState
-from backend.task.TaskHelper import TaskHelper
+from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
+from backend.task.execution.core.Execution import Execution as ex
 from backend.task.execution.subspace.RandomizedSubspaceGeneration import \
     RandomizedSubspaceGeneration as rsg
 from backend.task.execution.subspace.UniformSubspaceDistribution import \
     UniformSubspaceDistribution as usd
-from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
-
-from backend.scheduler.DebugScheduler import DebugScheduler
-from backend.scheduler.Scheduler import Scheduler
 
 
 class IntegrationTestExecutionResultZipping(unittest.TestCase):
@@ -66,7 +63,7 @@ class IntegrationTestExecutionResultZipping(unittest.TestCase):
         self._ex = ex(self._user_id, self._task_id, self.__task_progress_callback,
                       self._dataset_path,
                       self._result_path, self._subspace_generation,
-                      iter(self._algorithms), self.__metric_callback, 29222)
+                      self._algorithms, self.__metric_callback, 29222)
 
     def tearDown(self) -> None:
         self.__clear_old_execution_file_structure()

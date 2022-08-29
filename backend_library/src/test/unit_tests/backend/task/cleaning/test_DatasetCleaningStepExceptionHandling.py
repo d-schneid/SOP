@@ -8,13 +8,14 @@ from test.DatasetsForTesting import Datasets as ds
 
 
 class UnitTestDatasetCleaningStepExceptionHandling(unittest.TestCase):
-
     _ds: ds = ds()
 
     def test_check_non_empty_array(self):
         # Raise exception
-        with self.assertRaises(ValueError) as context:
-            eh.check_non_empty_array(self._ds.empty_dataset, "")
+        with self.assertRaises(ValueError) as message:
+            eh.check_non_empty_array(self._ds.empty_dataset, "root")
+            self.assertEqual(message, "root: input array is empty. "
+                                      "Needs at least one row, one column and an entry")
 
         # Dont raise exception
         try:
@@ -24,11 +25,11 @@ class UnitTestDatasetCleaningStepExceptionHandling(unittest.TestCase):
 
     def test_check_non_none_column(self):
         # Raise exception because None-column exists
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(ValueError):
             eh.check_non_none_column(self._ds.none_dataset, "")
 
         # Raise exception because None-column exists
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(ValueError):
             print(self._ds.dataset1)
             eh.check_non_none_column(self._ds.dataset1, "")
 
@@ -39,17 +40,17 @@ class UnitTestDatasetCleaningStepExceptionHandling(unittest.TestCase):
             self.fail("myFunc() raised ExceptionType unexpectedly!")
 
         # Raise exception because no column exists
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(ValueError):
             eh.check_non_none_column(self._ds.empty_dataset, "")
 
         # edge case: Only one row with no None -> No Error
-        self.assertEqual(eh.check_non_none_column(np.asarray([1, 14, 15]), "ERROR"), None)
+        self.assertIsNone(eh.check_non_none_column(np.asarray([1, 14, 15]), "ERROR"))
 
         # edge case: Only one row with None values -> Exception!
-        try:
-            self.assertEqual(eh.check_non_none_column(np.asarray([None, 1, None, None, 14, 15, None]), "ERROR"), None)
-        except ValueError:
-            self.fail("myFunc() raised ExceptionType unexpectedly!")
+        with self.assertRaises(ValueError) as message:
+            eh.check_non_none_column(np.asarray([None, 1, None, None, 14, 15, None]),
+                                     "root")
+            self.assertEqual(message, "root: None-column exists")
 
 
 if __name__ == '__main__':

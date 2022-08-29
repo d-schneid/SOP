@@ -1,7 +1,6 @@
 import os
 import shutil
 import unittest
-from typing import List
 
 from backend.task.execution import ResultZipper
 from backend.task import TaskState
@@ -41,6 +40,7 @@ class UnitTestResultZipper(unittest.TestCase):
         # check the properties
         self.assertEqual(result_zipper.task_id, task_id)
         self.assertEqual(result_zipper.user_id, user_id)
+        self.assertEqual(result_zipper.priority, 50)
 
         # call the do_work method
         result_zipper.do_work()
@@ -51,7 +51,7 @@ class UnitTestResultZipper(unittest.TestCase):
 
         # check, if the callback-function worked
         with open(UnitTestResultZipper._callback_file_path) as file:
-            self.assertTrue(file.read() == str([task_id, TaskState.TaskState.FINISHED, 1]))
+            self.assertEqual(file.read(), str([task_id, TaskState.TaskState.FINISHED, 1]))
 
     def test_bad_args(self):
         dir_missing: str = os.path.join(UnitTestResultZipper._test_dir_path, "dir-not-existing")
@@ -100,13 +100,14 @@ class UnitTestResultZipper(unittest.TestCase):
             file.write(str([task_id, task_state, progress]))
 
     @staticmethod
-    def _create_dirs_and_text_files(abs_path: str, content: List[List[str]]):
+    def _create_dirs_and_text_files(abs_path: str, content: list[list[str]]):
         for dir_name, file_name, file_content in content:
             abs_dir: str = os.path.join(abs_path, dir_name)
 
             os.makedirs(abs_dir)
             with open(os.path.join(abs_dir, file_name), "w") as fh:
                 fh.write(file_content)
+
 
 if __name__ == '__main__':
     unittest.main()

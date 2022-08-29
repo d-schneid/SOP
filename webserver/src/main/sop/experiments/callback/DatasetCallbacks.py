@@ -31,8 +31,10 @@ def cleaning_callback(
         else:
             dataset.status = CleaningState.FINISHED.name
 
-            dataset.datapoints_total = DatasetInfo.get_dataset_datapoint_amount(dataset.path_cleaned.path)
-            dataset.dimensions_total = DatasetInfo.get_dataset_dimension(dataset.path_cleaned.path)
+            dataset.datapoints_total = DatasetInfo.get_dataset_datapoint_amount(
+                dataset.path_cleaned.path)
+            dataset.dimensions_total = DatasetInfo.get_dataset_dimension(
+                dataset.path_cleaned.path)
 
             # check for the cleaned file to exist
             assert os.path.exists(dataset.path_cleaned.path)

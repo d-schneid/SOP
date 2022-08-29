@@ -28,7 +28,7 @@ class DatasetInfo:
 
         # 1 dim less when the dataset has row_mapping
         if has_row_mapping:
-            dataset_dimension = max(0, dataset_dimension-1)
+            dataset_dimension = max(0, dataset_dimension - 1)
 
         return dataset_dimension
 
@@ -50,7 +50,7 @@ class DatasetInfo:
 
         datapoint_amount: int = df_first_column.shape[0]
         if has_header:
-            datapoint_amount = max(0, datapoint_amount-1)
+            datapoint_amount = max(0, datapoint_amount - 1)
 
         return datapoint_amount
 

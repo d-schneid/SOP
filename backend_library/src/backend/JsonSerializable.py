@@ -9,7 +9,8 @@ class JsonSerializable(abc.ABC):
     @abc.abstractmethod
     def to_json(self) -> object:
         """
-        Returns a simple object (often a dict) containing all important information about this object
+        Returns a simple object (often a dict) containing all important information
+        about this object
         :return:  an object that can be serialized using json.dump
         """
         pass

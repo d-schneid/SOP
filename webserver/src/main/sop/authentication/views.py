@@ -1,7 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.views import LoginView as DjangoLoginView
 from django.contrib.auth.views import LogoutView as DjangoLogoutView
-from django.forms import Form
 from django.http import HttpResponse, HttpRequest
 
 from authentication.forms import LoginForm
@@ -19,8 +18,10 @@ class LoginView(DjangoLoginView):
 
         # Check is form is invalid and set error messages
         if not form.is_valid():
-            error_text = ' '.join(
-                [error_message for error in form.errors.values() for error_message in error])
+            errors = []
+            for error in form.errors.values():
+                errors.extend(error)
+            error_text = ' '.join(errors)
 
             messages.error(request, f"Invalid Login: {error_text}")
         return super().post(request, *args, **kwargs)

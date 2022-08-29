@@ -23,5 +23,6 @@ class UnitTestScheduler(unittest.TestCase):
     def tearDown(self) -> None:
         self.setUp()
 
+
 if __name__ == '__main__':
     unittest.main()

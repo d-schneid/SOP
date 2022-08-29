@@ -1,15 +1,13 @@
 from __future__ import annotations
 
-import csv
 import json
 import multiprocessing
 import os
-from collections.abc import Iterable
+import shutil
+from collections.abc import Callable
 from multiprocessing import shared_memory
 from multiprocessing.shared_memory import SharedMemory
-from typing import Callable, Optional
-from typing import Dict
-from typing import List
+from typing import Optional, cast
 
 import numpy as np
 
@@ -22,7 +20,7 @@ from backend.task.TaskHelper import TaskHelper
 from backend.task.TaskState import TaskState
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 from backend.task.execution.ResultZipper import ResultZipper
-from backend.task.execution.core import ExecutionSubspace
+from backend.task.execution.core.ExecutionSubspace import ExecutionSubspace
 from backend.task.execution.subspace.Subspace import Subspace
 from backend.task.execution.subspace.SubspaceGenerationDescription import \
     SubspaceGenerationDescription
@@ -39,7 +37,7 @@ class Execution(JsonSerializable, Task, Schedulable):
                  task_progress_callback: Callable[[int, TaskState, float], None],
                  dataset_path: str, result_path: str,
                  subspace_generation: SubspaceGenerationDescription,
-                 algorithms: Iterable[ParameterizedAlgorithm],
+                 algorithms: list[ParameterizedAlgorithm],
                  metric_callback: Callable[[Execution], None],
                  datapoint_count: Optional[int],
                  final_zip_path: str = "", priority: int = 0,
@@ -66,7 +64,8 @@ class Execution(JsonSerializable, Task, Schedulable):
         that should be processed on the subspaces.
         :param metric_callback: Called after the Execution-computation is complete.
         Carries out the metricizes.
-        :param datapoint_count: Number of datapoints in the dataset, may be specified to accelerate calculation
+        :param datapoint_count: Number of datapoints in the dataset.
+        Should be specified to accelerate calculation
         """
         assert dataset_path.endswith(".csv")
         assert priority >= 0
@@ -79,8 +78,8 @@ class Execution(JsonSerializable, Task, Schedulable):
         self._dataset_path: str = dataset_path
         self._result_path: str = result_path
         self._subspace_generation: SubspaceGenerationDescription = subspace_generation
-        self._algorithms: list = list(algorithms)
-        self._metric_callback: Callable = metric_callback
+        self._algorithms: list[ParameterizedAlgorithm] = list(algorithms)
+        self._metric_callback: Callable[[Execution], None] = metric_callback
 
         # on created logic
         self._execution_element_finished_lock = multiprocessing.Lock()
@@ -102,13 +101,13 @@ class Execution(JsonSerializable, Task, Schedulable):
         self._metric_finished: bool = False
 
         # generate subspaces
-        self._subspaces: List[Subspace] = list(self._subspace_generation.generate())
-        self._subspaces_count = len(self._subspaces)
+        self._subspaces: list[Subspace] = self._subspace_generation.generate()
+        self._subspaces_count: int = len(self._subspaces)
         self._total_execution_element_count: int = self._subspaces_count * len(
             self._algorithms)
 
         # generate execution_subspaces
-        self._execution_subspaces: List[ExecutionSubspace] = list()
+        self._execution_subspaces: list[ExecutionSubspace] = list()
 
         # shared memory
         self._shared_memory_name: Optional[str] = None
@@ -118,7 +117,7 @@ class Execution(JsonSerializable, Task, Schedulable):
         self._rownrs_shm_name: Optional[str] = None
         self._rownrs_shm_on_main: Optional[SharedMemory] = None
         self._rownrs_on_main: Optional[np.ndarray] = None
-        self._row_numbers: Optional[np.ndarray]
+        self._row_numbers: Optional[np.ndarray] = None
 
     def __fill_algorithms_directory_name(self) -> None:
         """
@@ -141,23 +140,26 @@ class Execution(JsonSerializable, Task, Schedulable):
                 algorithm.directory_name_in_execution = display_name
                 algorithm_display_name_dict[algorithm.display_name] = 1
             else:
-                algorithm.directory_name_in_execution = display_name + " (" \
-                                + str(algorithm_display_name_dict[display_name]) + ")"
+                dir_name = "{0} ({1})".format(display_name,
+                                              algorithm_display_name_dict[display_name])
+                algorithm.directory_name_in_execution = dir_name
                 algorithm_display_name_dict[algorithm.display_name] += 1
 
     # Generates all missing folders of the file system structure of this execution
     def __generate_file_system_structure(self) -> None:
         """
         Creates all necessary directories to store the Execution results. \n
+        Should only be executed once, parallel execution is not allowed
         :return: None
         """
         # if os.path.exists(self.result_path):
         if not os.path.isdir(self._result_path):
             TaskHelper.create_directory(self._result_path)
-            for algorithm in self._algorithms:
-                algorithm_directory_path: str = \
-                    os.path.join(self._result_path,
-                                 algorithm.directory_name_in_execution)
+        for algorithm in self._algorithms:
+            algorithm_directory_path: str = \
+                os.path.join(self._result_path,
+                             algorithm.directory_name_in_execution)
+            if not os.path.isdir(algorithm_directory_path):
                 TaskHelper.create_directory(algorithm_directory_path)
 
     def __generate_execution_details_in_filesystem(self) -> None:
@@ -170,11 +172,14 @@ class Execution(JsonSerializable, Task, Schedulable):
         assert os.path.isdir(self._result_path)
 
         details_path: str = os.path.join(self._result_path, 'details.json')
+        running_path: str = details_path + ".running"
 
-        with open(details_path, 'w') as f:
-            json.dump(self.to_json(), f)
+        if not os.path.exists(running_path):
+            with open(running_path, 'w') as f:
+                json.dump(self.to_json(), f)
+        shutil.move(running_path, details_path)
 
-    def to_json(self) -> Dict[str, object]:
+    def to_json(self) -> dict[str, object]:
         return {'subspace_generation': self._subspace_generation.to_json(),
                 'algorithms': list(map(lambda x: x.to_json(), self._algorithms))}
 
@@ -185,7 +190,6 @@ class Execution(JsonSerializable, Task, Schedulable):
         """
         for subspace in self._subspaces:
             self._execution_subspaces.append(
-                ExecutionSubspace.
                 ExecutionSubspace(self._user_id, self._task_id, self._algorithms,
                                   subspace, self._result_path, self._dataset_on_main,
                                   self.__on_execution_element_finished,
@@ -220,8 +224,8 @@ class Execution(JsonSerializable, Task, Schedulable):
         :return: A float in [0,1] which indicates the progress of the Execution.
         """
         execution_element_progress: float = float(
-            self._finished_execution_element_count) \
-                                            / float(self._total_execution_element_count)
+            self._finished_execution_element_count) / float(
+            self._total_execution_element_count)
         # So all progress is shown (so that the clamping doesn't remove information):
         execution_element_progress *= 0.98
         progress: float = max(0., min(execution_element_progress,
@@ -233,8 +237,8 @@ class Execution(JsonSerializable, Task, Schedulable):
 
     def run_before_on_main(self) -> None:
         if self._datapoint_count is None:
-            reader = csv.reader(self._dataset_path)
-            self._datapoint_count = sum(1 for _ in reader) - 1
+            self._datapoint_count = DataIO.read_annotated(
+                self._dataset_path, True).data.shape[0]
         ds_dim_count = self._subspaces[0].get_dataset_dimension_count()
         entry_count = self._datapoint_count * ds_dim_count
         dtype = np.dtype('f4')
@@ -265,38 +269,45 @@ class Execution(JsonSerializable, Task, Schedulable):
         shared_data = np.ndarray(data.shape, data.dtype, shm.buf)
 
         rownrs_shm = shared_memory.SharedMemory(self._rownrs_shm_name, False)
-        rownrs_shared_data = np.ndarray([self._datapoint_count], np.int32, rownrs_shm.buf)
+        rownrs_shared_data = np.ndarray([self._datapoint_count], np.int32,
+                                        rownrs_shm.buf)
 
         shared_data[:] = data[:]
         rownrs_shared_data[:] = dataset.row_mapping[:]
-        if (type(multiprocessing.current_process()) == multiprocessing.Process):
+        if type(multiprocessing.current_process()) == multiprocessing.Process:
             shm.close()
             rownrs_shm.close()
 
-    def __on_execution_element_finished(self, error: bool) -> None:
+    def __on_execution_element_finished(self, error: bool,
+                                        aborted: bool = False) -> None:
         """
         The Execution gets notified by the corresponding ExecutionSubspace
         when an ExecutionElement finished by calling this method. \n
         :param error: True if the ExecutionElement finished with an error.
         Is otherwise False.
+        :param aborted: True if this execution was aborted.
+        Not thread-safe for multiple calls with this set.
         :return: None
         """
-        if not self._has_failed_element and error:
-            self._has_failed_element = True
-        assert self._finished_execution_element_count < \
-               self._total_execution_element_count, \
-            "More execution elements finished than existing"
+        if not aborted:
+            if not self._has_failed_element and error:
+                self._has_failed_element = True
+            assert self._finished_execution_element_count < \
+                   self._total_execution_element_count, \
+                   "More execution elements finished than existing"
 
-        with self._execution_element_finished_lock:
-            self._finished_execution_element_count += 1
-            self.__run_progress_callback()
-            if self._finished_execution_element_count == \
-                    self._total_execution_element_count:
-                self.__unload_dataset()
-                self._metric_callback(self)
-                self._metric_finished = True
+            with self._execution_element_finished_lock:
+                self._finished_execution_element_count += 1
                 self.__run_progress_callback()
-                self.__schedule_result_zipping()
+                if self._finished_execution_element_count == \
+                        self._total_execution_element_count:
+                    self.__unload_dataset()
+                    self._metric_callback(self)
+                    self._metric_finished = True
+                    self.__run_progress_callback()
+                    self.__schedule_result_zipping()
+        else:
+            self.__unload_dataset(True)
 
     def __run_progress_callback(self):
         """Executes the task progress callback with the appropriate parameters"""
@@ -304,16 +315,17 @@ class Execution(JsonSerializable, Task, Schedulable):
             TaskState.RUNNING
         self._task_progress_callback(self.task_id, state, self.__compute_progress())
 
-    def __unload_dataset(self) -> None:
+    def __unload_dataset(self, ignore_if_done: bool = False) -> None:
         """
         Unloads the cleaned dataset from shared_memory. \n
         :return: None
         """
-        assert self._shared_memory_name is not None, \
+        assert ignore_if_done or self._shared_memory_name is not None, \
             "If there is no shared memory currently loaded it can not be unloaded"
-        self._shared_memory_on_main.unlink()
-        self._shared_memory_on_main.close()
-        self._shared_memory_name = None
+        if self._shared_memory_name is not None:
+            self._shared_memory_on_main.unlink()
+            self._shared_memory_on_main.close()
+            self._shared_memory_name = None
 
     def __schedule_result_zipping(self) -> None:
         """
@@ -329,18 +341,21 @@ class Execution(JsonSerializable, Task, Schedulable):
         scheduler: Scheduler = Scheduler.get_instance()
         scheduler.schedule(result_zipper)
 
-    def run_later_on_main(self, statuscode: int):
+    def run_later_on_main(self, statuscode: Optional[int]):
         self._row_numbers = np.copy(self._rownrs_on_main)
-        self._rownrs_shm_on_main.close()
-        self._rownrs_shm_on_main.unlink()
-        self._rownrs_shm_name = None
-        self._rownrs_on_main = None
-        self._rownrs_shm_on_main = None
-        self.__generate_execution_subspaces()
-        for ess in self._execution_subspaces:
-            Scheduler.get_instance().schedule(ess)
+        if self._rownrs_shm_name is not None:
+            self._rownrs_shm_on_main.close()
+            self._rownrs_shm_on_main.unlink()
+            self._rownrs_shm_name = None
+            self._rownrs_on_main = None
+            self._rownrs_shm_on_main = None
+        if statuscode is None:
+            self.__unload_dataset(True)
+        else:
+            self.__generate_execution_subspaces()
+            for ess in self._execution_subspaces:
+                Scheduler.get_instance().schedule(ess)
 
-    # Schedulable
     def do_work(self) -> None:
         self.__load_dataset()
 
@@ -358,14 +373,14 @@ class Execution(JsonSerializable, Task, Schedulable):
 
     # getter for metric
     @property
-    def algorithms(self) -> Iterable[ParameterizedAlgorithm]:
+    def algorithms(self) -> list[ParameterizedAlgorithm]:
         """
         :return: The algorithm information belonging to this Execution.
         """
-        return iter(self._algorithms)
+        return self._algorithms
 
     @property
-    def algorithm_directory_paths(self) -> List[str]:
+    def algorithm_directory_paths(self) -> list[str]:
         """
         :return: A list which contains all the paths to the folder
         of the selected algorithms (in this Execution). \n
@@ -377,16 +392,17 @@ class Execution(JsonSerializable, Task, Schedulable):
         return directory_names
 
     @property
-    def subspaces(self) -> Iterable[Subspace]:
+    def subspaces(self) -> list[Subspace]:
         """
         :return: The subspaces belonging to this Execution.
         """
-        return iter(self._subspaces)
+        return self._subspaces
 
     @property
     def zip_result_path(self) -> str:
         """
-        :return: The absolute path where the ZIP-file of the result of this Execution can be found.
+        :return: The absolute path where the ZIP-file of the result
+        of this Execution can be found.
         """
         return self._final_zip_path
 
@@ -400,8 +416,8 @@ class Execution(JsonSerializable, Task, Schedulable):
 
     @property
     def dataset_indices(self) -> list[int]:
-        """ TODO: test this
+        """
         :return: The indices of the data points
         of the cleaned dataset used in this execution
         """
-        return list(DataIO.read_annotated(self._dataset_path, True).row_mapping)
+        return cast(list[int], self._row_numbers.tolist())

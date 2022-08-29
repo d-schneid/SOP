@@ -14,7 +14,7 @@ class UnitTestRowMissingValuesRemover(unittest.TestCase):
 
     def test_empty_array(self):
         # Raise exception when empty dataset is inputted
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(ValueError):
             self._row_remover.do_cleaning(self._ds.empty_annotated_dataset)
 
     def test_none_row_remove(self):
@@ -43,13 +43,26 @@ class UnitTestRowMissingValuesRemover(unittest.TestCase):
                          .data.size)
 
         # Empty array -> throw exception
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(ValueError):
             self._row_remover.do_cleaning(self._ds.empty_annotated_dataset)
 
     def test_wrong_input_datatype(self):
         # 1D dataset not allowed -> Assertion
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(AssertionError):
             self._row_remover.do_cleaning(self._ds.one_dim_data_annotated)
+
+    def test_wrong_axis(self):
+        # only axis 0 or 1 allowed
+        with self.assertRaises(ValueError):
+            RowOrColumnMissingValuesRemover(axis=-1)
+        with self.assertRaises(ValueError):
+            RowOrColumnMissingValuesRemover(axis=-10000)
+        with self.assertRaises(ValueError):
+            RowOrColumnMissingValuesRemover(axis=2)
+        with self.assertRaises(ValueError):
+            RowOrColumnMissingValuesRemover(axis=3)
+        with self.assertRaises(ValueError):
+            RowOrColumnMissingValuesRemover(axis=100000)
 
 
 class UnitTestColumnMissingValuesRemover(unittest.TestCase):
@@ -84,7 +97,7 @@ class UnitTestColumnMissingValuesRemover(unittest.TestCase):
                          .data.size)
 
         # Empty array -> throw exception
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(ValueError):
             self._column_remover.do_cleaning(self._ds.empty_annotated_dataset)
 
 

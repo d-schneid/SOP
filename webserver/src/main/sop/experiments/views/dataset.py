@@ -84,8 +84,8 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
         form.instance.user = self.request.user
         form.instance.status = CleaningState.RUNNING.name
 
-        # call the super().form_valid() before creating the DatasetCleaning, as the primary key is needed
-        # to create the DatasetCleaning
+        # call the super().form_valid() before creating the DatasetCleaning,
+        # as the primary key is needed to create the DatasetCleaning
         response = super(DatasetUploadView, self).form_valid(form)
         assert form.instance.pk is not None
 

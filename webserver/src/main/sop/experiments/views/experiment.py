@@ -3,7 +3,7 @@ from __future__ import annotations
 import io
 import zipfile
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from django.contrib import messages
 from django.db import models
@@ -29,7 +29,7 @@ class ExperimentOverview(LoginRequiredMixin, ListView[Experiment]):
     model = Experiment
     template_name = "experiment_overview.html"
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         experiments: ExperimentQuerySet = Experiment.objects.get_by_user(
             self.request.user
@@ -64,14 +64,14 @@ class ExperimentCreateView(
         form.instance.user = self.request.user
 
         # get algorithms
-        algos: List[Algorithm] = [
+        algos: list[Algorithm] = [
             Algorithm.objects.get(pk=key)
             for key in self.request.POST.getlist("check-algo")
         ]
 
         # If no algos are selected, display error
         if len(algos) == 0:
-            messages.error(self.request, f"Please select at least one algorithm!")
+            messages.error(self.request, "Please select at least one algorithm!")
             return super().form_invalid(form)
 
         response: HttpResponse = super().form_valid(form)
@@ -84,17 +84,21 @@ class ExperimentCreateView(
 
         return response
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["form"].fields["dataset"].queryset = Dataset.objects.get_by_user(
             self.request.user
         ).filter(status="FINISHED")
+        # Add algorithm groups,
+        # algorithms and datasets to context here, to be able to generate and customize
+        # non-django html forms
         context.update(
             {
                 "algorithm_groups": Algorithm.AlgorithmGroup,
                 "algorithms": Algorithm.objects.get_by_user_and_public(
                     self.request.user
                 ),
+                "datasets": Dataset.objects.get_by_user(self.request.user),
             }
         )
         return context
@@ -106,10 +110,11 @@ class ExperimentDuplicateView(ExperimentCreateView):
     therefor will behave the same way, except that it provides default values for the
     needed fields that match the original experiments values.
     """
+
     def get_initial(
-        self,
-    ) -> Dict[str, Any]:
-        form: Dict[str, Any] = {}
+            self,
+    ) -> dict[str, Any]:
+        form: dict[str, Any] = {}
         if self.request.method == "GET":
             og_experiment_pk = self.kwargs["pk"]
             original = Experiment.objects.get(pk=og_experiment_pk)
@@ -117,7 +122,7 @@ class ExperimentDuplicateView(ExperimentCreateView):
             form["dataset"] = original.dataset
         return form
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
 
         og_experiment_pk = self.kwargs["pk"]

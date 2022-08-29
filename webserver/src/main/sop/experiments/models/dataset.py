@@ -100,5 +100,9 @@ class Dataset(models.Model):
         else:
             return "Internal Error: The error message could not be read."
 
+    @property
+    def get_representation(self) -> str:
+        return str(self)
+
     def __str__(self) -> str:
-        return str(self.display_name) + " | " + str(self.user)
+        return str(self.display_name)

@@ -144,14 +144,14 @@ class ExecutionElementMetricHelper:
         return subspace_outlier_amount
 
     @staticmethod
-    def convert_paths_into_subspace_identifier \
-                    (paths_to_convert: list[str]) -> list[str]:
+    def convert_paths_into_subspace_identifier(
+            paths_to_convert: list[str]) -> list[str]:
         """
         Converts the inserted path to the name of the file:
         in this case the Subspace Identifier. \n
         :param paths_to_convert: The paths that should be converted.
         :return: A list containing the subspace identifier for each inserted path.
-            (Removes duplicate subspace identifier)
+        (Removes duplicate subspace identifier)
         """
         subspace_identifier_dict: dict = {}
 

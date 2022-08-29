@@ -7,7 +7,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db.models.fields.files import FieldFile
 from django.http import HttpResponse
 
-from backend.task.cleaning import DatasetCleaning
+from backend.task.cleaning.DatasetCleaning import DatasetCleaning
 from experiments.callback import DatasetCallbacks
 from experiments.models import Dataset
 
@@ -55,7 +55,8 @@ def schedule_backend(dataset: Dataset) -> None:
 
     # set and save the missing datafield entry for the cleaned csv file
     # name is the path relative to the media root dir --> use name, not path
-    dataset.path_cleaned.name = generate_path_dataset_cleaned(dataset.path_original.name)
+    dataset.path_cleaned.name = generate_path_dataset_cleaned(
+        dataset.path_original.name)
     dataset.save()
 
     # create DatasetCleaning object
@@ -84,4 +85,3 @@ def get_download_response(file: FieldFile, download_name: str) -> HttpResponse:
     response["Content-Type"] = "text/plain"
     response["Content-Disposition"] = f"attachment; filename={download_name}"
     return response
-

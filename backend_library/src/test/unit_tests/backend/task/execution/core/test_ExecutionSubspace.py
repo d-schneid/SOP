@@ -83,14 +83,15 @@ class UnitTestExecutionSubspace(unittest.TestCase):
     def __on_execution_element_finished(self, error: bool) -> None:
         pass
 
-    def __on_execution_element_finished1(self, error: bool) -> None:
+    def __on_execution_element_finished1(self, error: bool, aborted: bool = False) \
+            -> None:
         self._execution_elements_finished1 += 1
 
     def test_dont_create_execution_element_with_wrong_user_id_or_task_id(self):
         _wrong_user_id: int = -2
         _wrong_task_id: int = -2
 
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(AssertionError):
             self._es_wrong_user_id: ExecutionSubspace = ExecutionSubspace(
                 _wrong_user_id,
                 self._task_id,
@@ -102,7 +103,7 @@ class UnitTestExecutionSubspace(unittest.TestCase):
                 self._ds_shm_name, self._row_numbers
             )
 
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(AssertionError):
             self._es_wrong_task_id: ExecutionSubspace = ExecutionSubspace(
                 self._user_id,
                 _wrong_task_id,
@@ -120,7 +121,8 @@ class UnitTestExecutionSubspace(unittest.TestCase):
         self.assertEqual(self._priority, self._es.priority)
 
     def test_generate_execution_elements(self):
-        # The method will be called on creation of ExecutionSubspace (in constructor -> just test outcome)
+        # The method will be called on creation of ExecutionSubspace (in constructor
+        # -> just test outcome)
         self.assertEqual(len(self._algorithms), len(self._es._execution_elements))
         _execution_elements: list[ExecutionElement] = list(self._es._execution_elements)
         _algorithms_count_in_execution_elements: int = 0
@@ -134,24 +136,47 @@ class UnitTestExecutionSubspace(unittest.TestCase):
         self.assertEqual(_algorithms_count_in_execution_elements, len(self._algorithms))
 
     def test_schedule_execution_elements(self):
+        # (create a new Execution in the actual test
+        # so that the lines are seen as covered)
+
+        # Setup
+        Scheduler._instance = None
+        self._debug_scheduler: DebugScheduler2 = DebugScheduler2()
+
+        self.__clear_old_execution_file_structure()
+        self._es: ExecutionSubspace = ExecutionSubspace(
+            self._user_id, self._task_id,
+            self._algorithms,
+            self._subspace,
+            self._result_path,
+            self._ds,
+            self.__on_execution_element_finished1,
+            self._ds_shm_name, self._row_numbers
+        )
+        self._es.run_later_on_main(0)
+
+        # Test if right amount of execution elements are created
         self.assertEqual(
             self._debug_scheduler.called_scheduler_amount, len(self._algorithms)
         )
 
     def test_execution_element_is_finished(self):
-        self._es._ExecutionSubspace__unload_subspace_shared_memory = Mock(return_value=None)
+        self._es._ExecutionSubspace__unload_subspace_shared_memory = \
+            Mock(return_value=None)
 
         # normal logic -> count up _finished_execution_element_count
         for element in range(0, self._es._total_execution_element_count):
             self.assertEqual(self._es._finished_execution_element_count, element)
             self._es._ExecutionSubspace__execution_element_is_finished(False)
-        self.assertEqual(self._es._finished_execution_element_count, self._es._total_execution_element_count)
+        self.assertEqual(self._es._finished_execution_element_count,
+                         self._es._total_execution_element_count)
 
         # out of range (more elements finished than elements exists)
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(AssertionError):
             self._es._ExecutionSubspace__execution_element_is_finished(False)
 
-        self.assertEqual(self._es._finished_execution_element_count, self._es._total_execution_element_count)
+        self.assertEqual(self._es._finished_execution_element_count,
+                         self._es._total_execution_element_count)
 
     def __clear_old_execution_file_structure(self):
 
