@@ -178,6 +178,10 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         super().tearDownClass()
 
     def setUp(self) -> None:
+        # delete old dirs
+        if os.path.isdir(settings.MEDIA_ROOT):
+            shutil.rmtree(settings.MEDIA_ROOT)
+        assert not os.path.isdir(settings.MEDIA_ROOT)
 
         super().setUp()
 
@@ -249,6 +253,11 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         SeleniumTestCase.logout(self)
 
         super().tearDown()
+
+        # delete old dirs
+        if os.path.isdir(settings.MEDIA_ROOT):
+            shutil.rmtree(settings.MEDIA_ROOT)
+        assert not os.path.isdir(settings.MEDIA_ROOT)
 
     # ------------ Helper Methods -----------------
 
