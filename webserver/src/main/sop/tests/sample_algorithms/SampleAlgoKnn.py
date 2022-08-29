@@ -3,6 +3,7 @@
 """
 # Author: Yue Zhao <zhaoy@cmu.edu>
 # License: BSD 2 clause
+# This was copied form the PyOd project: https://pyod.readthedocs.io/en/latest/
 from __future__ import division
 from __future__ import print_function
 
