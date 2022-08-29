@@ -106,7 +106,8 @@ class SystemTest_ExecutionResultContents(unittest.TestCase):
         self._ex.schedule()
         # check if the result is correct (equals to the expected)
         self.assertTrue(TestHelper.is_same_execution_result_zip
-                        (self._expected_execution_result, self._zipped_result_path))
+                        (self._expected_execution_result, self._zipped_result_path,
+                         list()))
 
         # Test if all the callbacks where performed
         self.assertTrue(self._started_running)

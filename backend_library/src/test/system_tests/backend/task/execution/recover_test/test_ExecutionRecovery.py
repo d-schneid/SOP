@@ -121,7 +121,8 @@ class SystemTest_ExecutionRecovery(unittest.TestCase):
 
         # check if the result is correct (equals to the precomputed)
         self.assertTrue(TestHelper.is_same_execution_result_zip
-                        (self._precomputed_result_path, self._zipped_result_path))
+                        (self._precomputed_result_path, self._zipped_result_path,
+                         list()))
 
         # Test if all the callbacks where performed
         self.assertTrue(self._started_running)

@@ -2,11 +2,21 @@ import os
 import shutil
 import zipfile
 
+import numpy as np
+
+from backend.DataIO import DataIO
+
 
 class TestHelper:
     @staticmethod
     def is_same_execution_result_zip(execution_result_zip_path1: str,
-                                     execution_result_zip_path2: str) -> bool:
+                                     execution_result_zip_path2: str,
+                                     csv_to_compare_paths:
+                                     list[str]) -> bool:
+        """
+        :param csv_to_compare_paths: Paths are RELATIVE to the result_zip_path.
+        The csv files that should be compared. (Is the content the same in both zips)
+        """
         # unzip the zip files
         unzipped_path1: str = execution_result_zip_path1 + "_unzipped"
         unzipped_path2: str = execution_result_zip_path2 + "_unzipped"
@@ -19,7 +29,7 @@ class TestHelper:
         execution2_content: (list[str], list[str]) = TestHelper \
             .__get_files_and_dirs_in_dir(unzipped_path2)
 
-        # compare files
+        # compare files (same files)
         if len(execution1_content[0]) != len(execution2_content[0]) or \
                 len(execution1_content[1]) != len(execution2_content[1]):
             TestHelper.__cleanup_unzipped_files(unzipped_path1, unzipped_path2)
@@ -32,13 +42,31 @@ class TestHelper:
             TestHelper.__cleanup_unzipped_files(unzipped_path1, unzipped_path2)
             return False
 
+        # compare file content
+        for csv_to_compare_path in csv_to_compare_paths:
+            if not TestHelper.compare_csv_in_zipped_result(
+                    unzipped_path1 + "/execution_result_folder" + csv_to_compare_path,
+                    unzipped_path2 + "/execution_result_folder" + csv_to_compare_path):
+                return False
+
         # delete unzipped_files
         TestHelper.__cleanup_unzipped_files(unzipped_path1, unzipped_path2)
 
         return True
 
     @staticmethod
+    def compare_csv_in_zipped_result(csv1_path: str, csv2_path: str) -> bool:
+        assert os.path.isfile(csv1_path)
+        assert os.path.isfile(csv2_path)
+        csv1: np.ndarray = DataIO.read_uncleaned_csv(csv1_path)
+        csv2: np.ndarray = DataIO.read_uncleaned_csv(csv2_path)
+
+        return np.array_equal(csv1, csv2)
+
+    @staticmethod
     def __unzip(path_to_zip_file: str, directory_to_extract_to: str):
+        assert os.path.isfile(path_to_zip_file)
+
         with zipfile.ZipFile(path_to_zip_file, 'r') as zip_ref:
             zip_ref.extractall(directory_to_extract_to)
 
@@ -72,7 +100,9 @@ class TestHelper:
                 list2_copy.remove(element)
             else:
                 return False  # at least one element from list1 is not in list2
-        return True
+        if len(list2_copy) == 0:
+            return True
+        return False
 
     @staticmethod
     def __cleanup_unzipped_files(unzipped_path1: str, unzipped_path2):
