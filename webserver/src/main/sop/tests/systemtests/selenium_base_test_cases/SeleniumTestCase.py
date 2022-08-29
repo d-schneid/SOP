@@ -6,7 +6,7 @@ import re
 import shutil
 from pathlib import Path
 from time import sleep
-from typing import List
+from typing import List, Union
 
 import pyod
 from bs4 import BeautifulSoup
@@ -18,9 +18,9 @@ from authentication.models import User
 from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from experiments.management.commands import pyodtodb
 
-from tests.generic import MediaMixin
-
 import selenium
+from selenium.webdriver.firefox.service import Service as FirefoxService
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 
@@ -28,8 +28,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
-
 from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.firefox import GeckoDriverManager
 
 
 def _add_users_to_db():
@@ -143,6 +143,12 @@ class SeleniumTestCase(StaticLiveServerTestCase):
     SELENIUM_ERROR_PATH = os.path.join(MEDIA_DIR_PATH, "selenium_err_artefacts")
     PYOD_AGLO_ROOT = settings.ALGORITHM_ROOT_DIR / "pyod_algorithms"
 
+    BROWSER_VALUE_CONF_FILEPATH = os.path.join(
+        settings.BASE_DIR, "selenium_browser.conf"
+    )
+    BROWSER_VALUE_FIREFOX = "firefox"
+    BROWSER_VALUE_CHROME = "chrome"
+
     _BASE_USERNAME_USER = "SeleniumTestUser"
     _BASE_USERNAME_ADMIN = "SeleniumTestAdmin"
     _BASE_PASSWORD = "this_is_a_test"
@@ -155,16 +161,54 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         if not os.path.isdir(SeleniumTestCase.SELENIUM_ERROR_PATH):
             os.makedirs(SeleniumTestCase.SELENIUM_ERROR_PATH)
 
-        # setup chrome webdriver
-        chrome_service = ChromeService(executable_path=ChromeDriverManager().install())
+        # read the selenium_browser.conf-file for settings (if available)
+        browser_var = None
+        if os.path.isfile(SeleniumTestCase.BROWSER_VALUE_CONF_FILEPATH):
+            with open(SeleniumTestCase.BROWSER_VALUE_CONF_FILEPATH, "r") as file:
+                browser_var = file.read()
+        else:
+            browser_var = SeleniumTestCase.BROWSER_VALUE_FIREFOX
 
-        chrome_options = ChromeOptions()
-        chrome_options.add_argument("--headless")
-        chrome_options.add_argument("--window-size=2560,1440")
-        chrome_options.add_argument("--start-maximized")
+        # TODO debug
+        print("Browser var: " + browser_var)
 
+        # Setup the browser (Chrome or Firefox)
+        # the standard browser used is the Firefox browser
+        browser_options: Union[ChromeOptions, FirefoxOptions, None] = None
+        browser_service: Union[ChromeService, FirefoxService, None] = None
+
+        if browser_var == SeleniumTestCase.BROWSER_VALUE_CHROME:
+            # setup chrome webdriver
+            print("Chrome Browser is used for Selenium Test Cases")
+
+            browser_service = ChromeService(
+                executable_path=ChromeDriverManager().install()
+            )
+
+            browser_options = ChromeOptions()
+
+        else:
+            # setup firefox webdriver
+            print("Firefox Browser is used for Selenium Test Cases")
+
+            browser_service = FirefoxService(
+                executable_path=GeckoDriverManager().install()
+            )
+
+            browser_options = FirefoxOptions()
+
+        # assert both object have been set
+        assert browser_options is not None
+        assert browser_service is not None
+
+        # add arguments to the options (must be available for both browsers)
+        browser_options.add_argument("--headless")
+        browser_options.add_argument("--window-size=2560,1440")
+        browser_options.add_argument("--start-maximized")
+
+        # create driver object
         cls.driver: selenium.webdriver.Chrome = selenium.webdriver.Chrome(
-            service=chrome_service, options=chrome_options
+            service=browser_service, options=browser_options
         )
 
         # setting: wait, if an element is not found
@@ -352,7 +396,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
             "//div[@id='group_OutlierEnsembles']/div",
             "//div[@id='group_NeuralNetworks']/div",
             "//div[@id='group_Combination']/div",
-            "//div[@id='group_Other']/div"
+            "//div[@id='group_Other']/div",
         ]
 
         for group_xpath in group_xpath_list:
