@@ -69,19 +69,20 @@ class UserStoriesTest(SeleniumTestCase):
         )
 
         self.upload_dataset(valid_dataset_path, dataset_name, dataset_description)
-        self.upload_dataset(valid_dataset_path, "Dataset 2", "Descriptin 2")
 
         # wait for the dataset to be cleaned
         self.wait_until_dataset_cleaned(dataset_name)
 
         # Bob creates an Experiment with his new Dataset
         experiment_name = "Bobs Erstes Experiment"
+        algo_name_kde = "[PYOD] KDE"
+        algo_name_knn = "[PYOD] KNN"
 
         self.create_experiment(
             experiment_name=experiment_name,
             dataset_name=dataset_name,
             username=bob_username,
-            list_algos=["[PYOD] KDE", "[PYOD] KNN"],
+            list_algos=[algo_name_kde, algo_name_knn],
         )
 
         # Bob creates an execution within his new experiment
@@ -167,7 +168,6 @@ class UserStoriesTest(SeleniumTestCase):
         )
 
         self.upload_dataset(valid_dataset_path, dataset_name, dataset_description)
-        self.upload_dataset(valid_dataset_path, "Dataset 2", "Descriptin 2")  # TODO
 
         # wait for the dataset to be cleaned
         self.wait_until_dataset_cleaned(dataset_name)
@@ -183,8 +183,10 @@ class UserStoriesTest(SeleniumTestCase):
         )
 
         # create new experiment with own algorithm
+        experiment_name = "Charlies experiment"
+
         self.create_experiment(
-            experiment_name="Charlies experiment",
+            experiment_name=experiment_name,
             dataset_name=dataset_name,
             username=SeleniumTestCase.STANDARD_USERNAME_USER,
             list_algos=[algo_name],
