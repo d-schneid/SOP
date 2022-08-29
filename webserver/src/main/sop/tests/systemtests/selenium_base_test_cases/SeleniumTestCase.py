@@ -73,6 +73,10 @@ def _add_pyod_algos_to_db():
     setattr(pyodtodb, "ORG_PYOD_DATA", copy.deepcopy(pyodtodb.PYOD_ALGORITHMS))
 
     pyod_path = Path(pyod.__path__[0])
+
+    if os.path.isdir(SeleniumTestCase.PYOD_AGLO_ROOT):
+        shutil.rmtree(SeleniumTestCase.PYOD_AGLO_ROOT)
+
     assert not os.path.exists(SeleniumTestCase.PYOD_AGLO_ROOT)
 
     shutil.copytree(src=pyod_path, dst=SeleniumTestCase.PYOD_AGLO_ROOT)
@@ -89,7 +93,7 @@ def _add_pyod_algos_to_db():
     pyodtodb.PYOD_ALGORITHMS = pyodtodb.ORG_PYOD_DATA
 
 
-class SeleniumTestCase(StaticLiveServerTestCase, MediaMixin):
+class SeleniumTestCase(StaticLiveServerTestCase):
     class UrlsSuffixRegex(Enum):
         _ignore_ = [
             "_pattern_overview",
@@ -174,6 +178,9 @@ class SeleniumTestCase(StaticLiveServerTestCase, MediaMixin):
         super().tearDownClass()
 
     def setUp(self) -> None:
+
+        super().setUp()
+
         # add users to db
         _add_users_to_db()
 
@@ -241,6 +248,8 @@ class SeleniumTestCase(StaticLiveServerTestCase, MediaMixin):
         # try to log out
         SeleniumTestCase.logout(self)
 
+        super().tearDown()
+
     # ------------ Helper Methods -----------------
 
     def get_base_url(self) -> str:
@@ -286,6 +295,7 @@ class SeleniumTestCase(StaticLiveServerTestCase, MediaMixin):
         self.driver.find_element(By.ID, "id_description").send_keys(dataset_description)
         absolute_path = os.path.join(os.getcwd(), dataset_path)
         self.driver.find_element(By.ID, "id_path_original").send_keys(absolute_path)
+
         self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
 
         # assert the upload worked
@@ -324,18 +334,36 @@ class SeleniumTestCase(StaticLiveServerTestCase, MediaMixin):
         # add algorithms
         # therefore, first open all flex-grow-elements
         # (so that algorithms can be selected from them)
-        self.driver.find_element(By.XPATH, "//div[@id='group_Probabilistic']/div")
-        self.driver.find_element(By.XPATH, "//div[@id='group_LinearModel']/div")
-        self.driver.find_element(By.XPATH, "//div[@id='group_Proximity-Based']/div")
-        self.driver.find_element(By.XPATH, "//div[@id='group_OutlierEnsembles']/div")
-        self.driver.find_element(By.XPATH, "//div[@id='group_NeuralNetworks']/div")
-        self.driver.find_element(By.XPATH, "//div[@id='group_Combination']/div")
-        self.driver.find_element(By.XPATH, "//div[@id='group_Other']/div")
+        # -> special procedure ensures, that every element is acutally clickable
+        #    (in this case this means mainly in screen)
+        group_xpath_list = [
+            "//div[@id='group_Probabilistic']/div",
+            "//div[@id='group_LinearModel']/div",
+            "//div[@id='group_Proximity-Based']/div",
+            "//div[@id='group_OutlierEnsembles']/div",
+            "//div[@id='group_NeuralNetworks']/div",
+            "//div[@id='group_Combination']/div",
+            "//div[@id='group_Other']/div"
+        ]
+
+        for group_xpath in group_xpath_list:
+            group_element = self.driver.find_element(By.XPATH, group_xpath)
+            self.driver.execute_script("arguments[0].scrollIntoView();", group_element)
+
+            sleep(0.5)
+
+            WebDriverWait(self.driver, 30).until(
+                EC.element_to_be_clickable(group_element)
+            )
+            group_element.click()
 
         for current_algo in list_algos:
             algo_element = self.driver.find_element(
                 By.XPATH, "//span[contains(.,'" + current_algo + "')]/parent::*"
             )
+            # scroll into view
+            self.driver.execute_script("arguments[0].scrollIntoView();", algo_element)
+
             WebDriverWait(self.driver, 30).until(
                 EC.element_to_be_clickable(algo_element)
             )
@@ -381,7 +409,7 @@ class SeleniumTestCase(StaticLiveServerTestCase, MediaMixin):
 
         self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
 
-        page_source = self.driver.current_url
+        page_source = self.driver.page_source
         self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.ALGORITHM_OVERVIEW)
         self.assertIn(algo_name, page_source)
         self.assertIn(algo_description, page_source)
