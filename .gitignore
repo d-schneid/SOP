@@ -183,3 +183,4 @@ Include/
 *.ini
 *.sh
 media/
+**/selenium_browser.conf
