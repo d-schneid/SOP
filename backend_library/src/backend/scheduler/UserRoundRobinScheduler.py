@@ -24,6 +24,30 @@ class UserRoundRobinScheduler(Scheduler):
     def __init__(self):
         super().__init__()
         UserRoundRobinScheduler.__start_by_fork()
+        try:
+            # When the fork happens whilst the resource tracker threading-lock is held,
+            # the lock will never be released in the subprocess.
+            # If that subprocess then tries to acquire the lock itself,
+            # it will be stuck there indefinitely.
+            # (see `man fork`)
+            # one could create a new lock in subprocesses,
+            # but that could result in two resource trackers existing.
+            # Instead replace the lock initially with a multiprocessing.Lock,
+            # which might be a bit slower but is the (only?) safe solution
+
+            # internal cpython classes,
+            # so ignore code checkers not resolving these references
+            # noinspection PyUnresolvedReferences
+            import multiprocessing.resource_tracker
+            # noinspection PyProtectedMember,PyUnresolvedReferences
+            tracker = multiprocessing.resource_tracker._resource_tracker
+            # can not use isinstance as thread.Lock is an alias
+            if tracker._lock.__class__ == threading.Lock().__class__:
+                tracker._lock = multiprocessing.Lock()
+        except (AttributeError, ImportError):
+            # Running on an interpreter without shitty resource tracker
+            # => nothing to worry about
+            pass
         self.__shutdown_ongoing: bool = False
         self.__on_shutdown_completed: Optional[Callable[[], None]] = None
         self.__empty_queue: Condition = Condition()
@@ -124,6 +148,7 @@ class UserRoundRobinScheduler(Scheduler):
         # No coverage of this method is recorded as extra processes are not recorded,
         # and an extra unittest of this method is not possible,
         # as it would also exit the unittest process
+
         r = sched.do_work()
         sys.exit(0 if r is None else r)
 
