@@ -1,13 +1,12 @@
 import multiprocessing
-import threading
 import unittest
-from collections.abc import Callable
 from multiprocessing import Manager
 from typing import Optional
 
 from backend.scheduler.Schedulable import Schedulable
 from backend.scheduler.Scheduler import Scheduler
 from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
+from test.unit_tests.backend.scheduler.SchedulableForTesting import TestSched
 
 timeout = 60
 manager = Manager()
@@ -139,50 +138,3 @@ class UnitTestUrrs(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-
-class TestSched(Schedulable):
-    def __init__(self, uid, tid, prio, tbc=None, tr=None,
-                 set_before: multiprocessing.Event = None, wait_for=None,
-                 run_before: Optional[Callable] = None,
-                 run_after: Optional[Callable[[Optional[int]], None]] = None):
-        self.uid = uid
-        self.tid = tid
-        self.prio = prio
-        self.tbc = tbc
-        self.tr = tr
-        self.set_before: multiprocessing.Event = set_before
-        self.wait_for: threading.Lock = wait_for
-        self.run_before = run_before
-        self.run_after = run_after
-
-    @property
-    def user_id(self) -> int:
-        return self.uid
-
-    @property
-    def task_id(self) -> int:
-        return self.tid
-
-    @property
-    def priority(self) -> int:
-        return self.prio
-
-    def do_work(self) -> None:
-        if self.set_before is not None:
-            self.set_before.set()
-        if self.wait_for is not None:
-            self.wait_for.acquire(True, timeout)
-            self.wait_for.release()
-        if self.tbc is not None:
-            self.tbc.set(True)
-        if self.tr is not None:
-            self.tr.set()
-
-    def run_before_on_main(self) -> None:
-        if self.run_before is not None:
-            self.run_before()
-
-    def run_later_on_main(self, statuscode: Optional[int]) -> None:
-        if self.run_after is not None:
-            self.run_after(statuscode)
