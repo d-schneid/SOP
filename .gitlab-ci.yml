@@ -107,9 +107,7 @@ flake:
 django-tests:
   needs: []
   stage: test
-  extends: .frontend-base
-  services:
-    - selenium/standalone-chrome
+  extends: .frontend-base  # TODO: selenium/standalone_chrome hinzufügen hier
   coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
   script:
     - source venv3.9/bin/activate
@@ -149,8 +147,7 @@ django-tests:
       - webserver/src/main/sop/tests/systemtests/media
 
 selenium-tests-firefox:
-  needs:
-    - django-tests
+  needs: []  # TODO: django-tests hinzufügen hier
   stage: confidence-test
   extends: .frontend-base
   services:
