@@ -1,35 +1,28 @@
 import copy
 import datetime
-from enum import Enum
 import os
 import re
 import shutil
-from pathlib import Path
+from enum import Enum
 from time import sleep
 from typing import List, Union
 
-import pyod
+import selenium
 from bs4 import BeautifulSoup
 from django.conf import settings
-
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-
-from authentication.models import User
-from backend.task.execution.AlgorithmLoader import AlgorithmLoader
-from experiments.management.commands import pyodtodb
-
-import selenium
-from selenium.webdriver.firefox.service import Service as FirefoxService
-from selenium.webdriver.firefox.options import Options as FirefoxOptions
-from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options as ChromeOptions
-
+from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
-
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
+
+from authentication.models import User
+from experiments.management.commands import pyodtodb
 
 
 def _add_users_to_db():
@@ -86,7 +79,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
             "_admin_authentication_user",
         ]
 
-        _pattern_overview: str = "{topic}/overview/sort\-by=[A-Za-z_]+"
+        _pattern_overview: str = "{topic}/overview/sort\-by=[A-Za-z_]+"  # noqa: W605
         _pattern_create: str = "{topic}/create"
         _pattern_upload: str = "{topic}/upload"
         _admin_base: str = "admin"

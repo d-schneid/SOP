@@ -22,7 +22,7 @@ class TestSiteDisplay(StaticLiveServerTestCase):
         driver.get(self.live_server_url)
 
         self.assertEqual(driver.title, "Login")
-        self.assertTrue("Login" in driver.page_source)
+        self.assertIn("Login", driver.page_source)
 
         driver.quit()
 
@@ -39,7 +39,7 @@ class TestSiteDisplay(StaticLiveServerTestCase):
         driver.get(self.live_server_url)
 
         self.assertEqual(driver.title, "Login")
-        self.assertTrue("Login" in driver.page_source)
+        self.assertIn("Login", driver.page_source)
 
         driver.quit()
 
