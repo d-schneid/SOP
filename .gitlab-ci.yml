@@ -121,6 +121,7 @@ django-tests:
     - wget -O chrome_browser.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
     - apt-get install --quiet --assume-yes ./chrome_browser.deb
     - rm chrome_browser.deb
+    - echo "chrome" > selenium_browser.conf  # settings file for the unittest (so that they are run with Chrome)
 
     - which python3.9
     - cd webserver/src/main/sop
@@ -174,8 +175,7 @@ selenium-tests-firefox:
     # The MYSQL user only gets permissions for MYSQL_DB, so Django can't create a test database.
     - echo "GRANT ALL on *.* to '${MYSQL_USER}';"| mysql -u root --password="${MYSQL_ROOT_PASSWORD}" -h mysql
 
-    # run tests with Chrome
-    - echo "chrome" > selenium_browser.conf  # settings file for the unittest
+    # run Selenium tests with Firefox
     - python3.9 manage.py test --settings=sop.settings_ci tests/systemtests/
 
   artifacts:
