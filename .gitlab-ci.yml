@@ -121,10 +121,10 @@ django-tests:
     - wget -O chrome_browser.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
     - apt-get install --quiet --assume-yes ./chrome_browser.deb
     - rm chrome_browser.deb
-    - echo "chrome" > selenium_browser.conf  # settings file for the unittest (so that they are run with Chrome)
 
     - which python3.9
     - cd webserver/src/main/sop
+    - echo "chrome" > selenium_browser.conf  # settings file for the unittest (so that they are run with Chrome)
 
     # make migrations and migrate, so the db is ready for the tests
     - python3.9 manage.py makemigrations --settings=sop.settings_ci
@@ -147,7 +147,8 @@ django-tests:
       - webserver/src/main/sop/tests/systemtests/media
 
 selenium-tests-firefox:
-  needs: []
+  needs:
+    - django-tests
   stage: confidence-test
   extends: .frontend-base
   script:
