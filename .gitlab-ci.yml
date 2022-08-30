@@ -32,6 +32,7 @@
 stages:
   - build
   - test
+  - confidence-test
   - publish
   - deploy
 
@@ -144,7 +145,7 @@ django-tests:
 
 selenium-tests-chrome:
   needs: []
-  stage: test
+  stage: confidence-test
   extends: .frontend-base
   script:
     - source venv3.9/bin/activate
