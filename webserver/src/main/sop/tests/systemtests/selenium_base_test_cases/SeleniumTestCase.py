@@ -138,12 +138,16 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         # read the selenium_browser.conf-file for settings (if available)
         browser_var = None
         if os.path.isfile(SeleniumTestCase.BROWSER_VALUE_CONF_FILEPATH):
+            print("Selenium Config File Found!")  # todo debug
             with open(SeleniumTestCase.BROWSER_VALUE_CONF_FILEPATH, "r") as file:
                 browser_var = file.read()
         else:
+            print("Selenium Config File NOT Found!")  # todo debug
             browser_var = SeleniumTestCase.BROWSER_VALUE_FIREFOX
 
-        # Setup the browser (Chrome or Firefox)
+        assert browser_var is not None
+
+        # Set up the browser (Chrome or Firefox)
         # the standard browser used is the Firefox browser
         browser_options: Union[ChromeOptions, FirefoxOptions, None] = None
         browser_service: Union[ChromeService, FirefoxService, None] = None
