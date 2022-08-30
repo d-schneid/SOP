@@ -4,6 +4,9 @@
 # Author: Yue Zhao <zhaoy@cmu.edu>
 # License: BSD 2 clause
 # This was copied form the PyOd project: https://pyod.readthedocs.io/en/latest/
+# Some things, such as the imports and the classname, have been changed.
+# Only used for testing purposes.
+
 from __future__ import division
 from __future__ import print_function
 
@@ -18,9 +21,9 @@ from sklearn.utils.validation import check_is_fitted
 from pyod.models.base import BaseDetector
 
 
-# algorithm parameter is deprecated and will be removed in 0.7.6.
+# TODO: algorithm parameter is deprecated and will be removed in 0.7.6.
 # Warning has been turned on.
-# since Ball_tree is used by default, may introduce its parameters.
+# TODO: since Ball_tree is used by default, may introduce its parameters.
 
 class SampleAlgoKnn(BaseDetector):
     # noinspection PyPep8
@@ -144,7 +147,7 @@ class SampleAlgoKnn(BaseDetector):
                  radius=1.0, algorithm='auto', leaf_size=30,
                  metric='minkowski', p=2, metric_params=None, n_jobs=1,
                  **kwargs):
-        super(KNN, self).__init__(contamination=contamination)
+        super(SampleAlgoKnn, self).__init__(contamination=contamination)
         self.n_neighbors = n_neighbors
         self.method = method
         self.radius = radius
