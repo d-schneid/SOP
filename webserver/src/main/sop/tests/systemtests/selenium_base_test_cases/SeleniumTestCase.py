@@ -62,9 +62,6 @@ def _add_users_to_db():
 
 
 def _add_pyod_algos_to_db():
-    # code was taken from pyodtodb command
-    #  the command itself was not used directly as it was not possible without
-    #  bigger restructuring of the production code
 
     # add a new attribute, which is a deepcopy of the attribute PYOD_ALGORITHMS
     # so the original values are saved
@@ -72,22 +69,7 @@ def _add_pyod_algos_to_db():
     # as the renaming will not work otherwise (after the first time)
     setattr(pyodtodb, "ORG_PYOD_DATA", copy.deepcopy(pyodtodb.PYOD_ALGORITHMS))
 
-    pyod_path = Path(pyod.__path__[0])
-
-    if os.path.isdir(SeleniumTestCase.PYOD_AGLO_ROOT):
-        shutil.rmtree(SeleniumTestCase.PYOD_AGLO_ROOT)
-
-    assert not os.path.exists(SeleniumTestCase.PYOD_AGLO_ROOT)
-
-    shutil.copytree(src=pyod_path, dst=SeleniumTestCase.PYOD_AGLO_ROOT)
-
-    AlgorithmLoader.set_algorithm_root_dir(str(settings.ALGORITHM_ROOT_DIR))
-
-    pyodtodb.rename_algorithm_files_if_needed(
-        SeleniumTestCase.PYOD_AGLO_ROOT / "models"
-    )
-    pyodtodb.fix_base_detector_imports(SeleniumTestCase.PYOD_AGLO_ROOT / "models")
-    pyodtodb.save_algorithms_in_db(SeleniumTestCase.PYOD_AGLO_ROOT / "models")
+    pyodtodb.Command().handle()
 
     # reset the original attribute
     pyodtodb.PYOD_ALGORITHMS = pyodtodb.ORG_PYOD_DATA
@@ -363,11 +345,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         # TODO: check directly in the database, if the dataset was added correctly
 
     def create_experiment(
-        self,
-        experiment_name: str,
-        dataset_name: str,
-        username: str,
-        list_algos: List[str],
+        self, experiment_name: str, dataset_name: str, list_algos: List[str]
     ):
 
         self.driver.find_element(By.LINK_TEXT, "Experiments").click()
@@ -381,7 +359,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         dropdown = self.driver.find_element(By.ID, "id_dataset")
         dropdown.find_element(
             By.XPATH,
-            "//option[. = '" + dataset_name + " | " + username + "']",
+            "//option[. = '" + dataset_name + "']",
         ).click()
 
         # add algorithms
