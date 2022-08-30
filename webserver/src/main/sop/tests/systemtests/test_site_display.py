@@ -55,6 +55,8 @@ class TestSiteDisplay(StaticLiveServerTestCase):
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--window-size=2560,1440")
         chrome_options.add_argument("--start-maximized")
+        chrome_options.add_argument("--ignore-ssl-errors=yes")
+        chrome_options.add_argument("--ignore-certificate-errors")
 
         chrome_driver = webdriver.Remote(
             command_executor="http://chrome:4444/wd/hub",
@@ -67,18 +69,18 @@ class TestSiteDisplay(StaticLiveServerTestCase):
 
         print("Test CI Chrome: " + chrome_driver.title)
         print("----------------------\nTest CI Chrome: Page source:")
-        print(chrome_driver.page_source + "\n------------")
+        print(chrome_driver.page_source[:20] + "\n------------")
 
         print("Live Server URL: " + self.live_server_url)
 
         chrome_driver.get(self.live_server_url)
 
         print("Test CI Chrome OWN page request worked!\n----------")
-        print("Page source: " + chrome_driver.page_source)
+        print("Page source: " + chrome_driver.page_source[:20])
         print("----------------")
 
         self.assertEqual(chrome_driver.title, "Login")
-        self.assertIn("Login", chrome_driver.page_source)
+        self.assertIn("Login", chrome_driver.page_source[:20])
 
         print("TEST CI CHROME WORKED !!!")
 
@@ -87,6 +89,8 @@ class TestSiteDisplay(StaticLiveServerTestCase):
         firefox_options.add_argument("--headless")
         firefox_options.add_argument("--window-size=2560,1440")
         firefox_options.add_argument("--start-maximized")
+        firefox_options.add_argument("--ignore-ssl-errors=yes")
+        firefox_options.add_argument("--ignore-certificate-errors")
 
         firefox_driver = webdriver.Remote(
             command_executor="http://firefox:4444/wd/hub",
@@ -99,17 +103,17 @@ class TestSiteDisplay(StaticLiveServerTestCase):
 
         print("Test CI Firefox: " + firefox_driver.title)
         print("----------------------\nTest CI Firefox: Page source:")
-        print(firefox_driver.page_source + "\n------------")
+        print(firefox_driver.page_source[:20] + "\n------------")
 
         print("Live Server URL: " + self.live_server_url)
 
         firefox_driver.get(self.live_server_url)
 
         print("Test CI Firefox OWN page request worked!\n----------")
-        print("Page source: " + firefox_driver.page_source)
+        print("Page source: " + firefox_driver.page_source[:20])
         print("----------------")
 
         self.assertEqual(firefox_driver.title, "Login")
-        self.assertIn("Login", firefox_driver.page_source)
+        self.assertIn("Login", firefox_driver.page_source[:20])
 
         print("TEST CI FIREFOX WORKED !!!")
