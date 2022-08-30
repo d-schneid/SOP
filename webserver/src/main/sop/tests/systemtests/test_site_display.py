@@ -1,11 +1,9 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options as ChromeOptions
-from selenium.webdriver.firefox.service import Service as FirefoxService
+from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
-
+from selenium.webdriver.firefox.service import Service as FirefoxService
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 
@@ -23,7 +21,7 @@ class TestSiteDisplay(StaticLiveServerTestCase):
 
         driver.get(self.live_server_url)
 
-        self.assertEqual(driver.title, "Subspace Outlier Profiling")
+        self.assertEqual(driver.title, "Login")
         self.assertTrue("Login" in driver.page_source)
 
         driver.quit()
@@ -40,7 +38,7 @@ class TestSiteDisplay(StaticLiveServerTestCase):
 
         driver.get(self.live_server_url)
 
-        self.assertEqual(driver.title, "Subspace Outlier Profiling")
+        self.assertEqual(driver.title, "Login")
         self.assertTrue("Login" in driver.page_source)
 
         driver.quit()
