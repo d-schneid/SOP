@@ -50,8 +50,12 @@ class Dataset(models.Model):
     path_original = models.FileField(
         upload_to=get_dataset_upload_path,
         validators=(FileExtensionValidator(allowed_extensions=["csv"]),),
+        max_length=255,
     )
-    path_cleaned = models.FileField(null=True)
+    path_cleaned = models.FileField(
+        null=True,
+        max_length=255,
+    )
     status = models.CharField(max_length=80)
     cleaning_progress = models.FloatField(default=0.0)
     has_header = models.BooleanField(default=True)
