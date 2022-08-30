@@ -138,11 +138,14 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         # read the selenium_browser.conf-file for settings (if available)
         browser_var = None
         if os.path.isfile(SeleniumTestCase.BROWSER_VALUE_CONF_FILEPATH):
-            print("Selenium Config File Found!")  # todo debug
             with open(SeleniumTestCase.BROWSER_VALUE_CONF_FILEPATH, "r") as file:
-                browser_var = file.read()
+                browser_var = file.read().strip()
+            print("Selenium Config File Found! - Contents: |" + browser_var + "|")
         else:
-            print("Selenium Config File NOT Found!")  # todo debug
+            print(
+                "Selenium Config File NOT Found! - Expected location was: "
+                + SeleniumTestCase.BROWSER_VALUE_CONF_FILEPATH
+            )
             browser_var = SeleniumTestCase.BROWSER_VALUE_FIREFOX
 
         assert browser_var is not None
