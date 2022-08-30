@@ -109,11 +109,15 @@ django-tests:
   extends: .frontend-base
   coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
   script:
-    - python3.9 -m pip install -r requirements_test.txt
     - source venv3.9/bin/activate
 
-    # We skip pyodtodb django admin command tests because it needs way to big python dependencies
-    # - pip3 install -r requirements_pyod_algorithms.txt
+    # Selenium Test requirements
+    - python3.9 -m pip install -r requirements_test.txt
+    # (we need PyOd requirements due to Selenium tests)
+    - python3.9 -m pip install -r requirements_pyod_algorithms.txt
+
+    # Firefox-Browser Installation
+    - apt-get install --install-suggests --quite --assume-yes firefox
 
     - which python3.9
     - cd webserver/src/main/sop
@@ -136,6 +140,45 @@ django-tests:
   artifacts:
     paths:
       - public/django-tests.svg
+      - webserver/src/main/sop/tests/systemtests/media
+
+selenium-tests-chrome:
+  needs: []
+  stage: test
+  extends: .frontend-base
+  script:
+    - source venv3.9/bin/activate
+
+    # Selenium Test requirements
+    - python3.9 -m pip install -r requirements_test.txt
+    # (we need PyOd requirements due to Selenium tests)
+    - python3.9 -m pip install -r requirements_pyod_algorithms.txt
+
+    # install Chrome-Browser
+    - wget -O chrome_browser.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    - apt-get install --install-suggests --quiet --assume-yes ./chrome_browser.deb
+    - rm chrome_browser.deb
+
+    - which python3.9
+    - cd webserver/src/main/sop
+
+    # make migrations and migrate, so the db is ready for the tests
+    - python3.9 manage.py makemigrations --settings=sop.settings_ci
+    - python3.9 manage.py migrate --settings=sop.settings_ci
+    - python3.9 manage.py showmigrations --settings=sop.settings_ci
+    - python3.9 manage.py check --settings=sop.settings_ci
+
+    # The MYSQL user only gets permissions for MYSQL_DB, so Django can't create a test database.
+    - echo "GRANT ALL on *.* to '${MYSQL_USER}';"| mysql -u root --password="${MYSQL_ROOT_PASSWORD}" -h mysql
+
+    # run tests with Chrome
+    - echo "chrome" > selenium_browser.conf  # settings file for the unittest
+    - python3.9 manage.py test --settings=sop.settings_ci tests/systemtests/
+
+  artifacts:
+    paths:
+      - public/django-tests.svg
+      - webserver/src/main/sop/tests/systemtests/media
 
 backend-tests:
   variables:
