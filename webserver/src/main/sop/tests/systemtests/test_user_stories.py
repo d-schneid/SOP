@@ -78,12 +78,9 @@ class UserStoriesTest(SeleniumTestCase):
         algo_name_kde = "[PYOD] KDE"
         algo_name_knn = "[PYOD] KNN"
 
-        self.create_experiment(
-            experiment_name=experiment_name,
-            dataset_name=dataset_name,
-            username=bob_username,
-            list_algos=[algo_name_kde, algo_name_knn],
-        )
+        self.create_experiment(experiment_name=experiment_name,
+                               dataset_name=dataset_name,
+                               list_algos=[algo_name_kde, algo_name_knn])
 
         # Bob creates an execution within his new experiment
         self.driver.find_element(By.LINK_TEXT, "New Execution").click()
@@ -185,12 +182,8 @@ class UserStoriesTest(SeleniumTestCase):
         # create new experiment with own algorithm
         experiment_name = "Charlies experiment"
 
-        self.create_experiment(
-            experiment_name=experiment_name,
-            dataset_name=dataset_name,
-            username=SeleniumTestCase.STANDARD_USERNAME_USER,
-            list_algos=[algo_name],
-        )
+        self.create_experiment(experiment_name=experiment_name,
+                               dataset_name=dataset_name, list_algos=[algo_name])
 
         # create new execution
         # TODO: not safe for more than 1 experiment!

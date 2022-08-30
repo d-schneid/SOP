@@ -359,7 +359,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         dropdown = self.driver.find_element(By.ID, "id_dataset")
         dropdown.find_element(
             By.XPATH,
-            "//option[. = '" + dataset_name + "']",
+            "//select/option[normalize-space(text()) = '" + dataset_name + "']",
         ).click()
 
         # add algorithms
