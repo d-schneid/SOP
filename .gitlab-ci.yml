@@ -81,6 +81,7 @@ default:
   # Check out: https://docs.gitlab.com/ee/ci/services/index.html
   services:
     - mysql:8.0
+    - selenium/standalone-chrome:latest
   before_script:
     - apt-get -y update
     - apt-get -yq install software-properties-common
@@ -151,7 +152,7 @@ selenium-tests-firefox:
   stage: confidence-test
   extends: .frontend-base
   services:
-    - selenium/standalone-firefox
+    - selenium/standalone-firefox:latest
   script:
     - source venv3.9/bin/activate
 
