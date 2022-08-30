@@ -81,7 +81,10 @@ default:
   # Check out: https://docs.gitlab.com/ee/ci/services/index.html
   services:
     - mysql:8.0
-    - selenium/standalone-chrome:latest
+    - name: selenium/standalone-chrome:latest
+      alias: chrome
+    - name: selenium/standalone-firefox:latest
+      alias: firefox
   before_script:
     - apt-get -y update
     - apt-get -yq install software-properties-common
@@ -116,7 +119,7 @@ django-tests:
     # Selenium Test requirements
     - python3.9 -m pip install -r requirements_test.txt
     # (we need PyOd requirements due to Selenium tests)
-    - python3.9 -m pip install -r requirements_pyod_algorithms.txt
+    # TODO: debug    - python3.9 -m pip install -r requirements_pyod_algorithms.txt
 
     # Chrome-Browser Installation
     #- wget -O chrome_browser.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
@@ -151,15 +154,13 @@ selenium-tests-firefox:
   needs: []  # TODO: django-tests hinzufügen hier
   stage: confidence-test
   extends: .frontend-base
-  services:
-    - selenium/standalone-firefox:latest
   script:
     - source venv3.9/bin/activate
 
     # Selenium Test requirements
     - python3.9 -m pip install -r requirements_test.txt
     # (we need PyOd requirements due to Selenium tests)
-    - python3.9 -m pip install -r requirements_pyod_algorithms.txt
+    # TODO: debugging  - python3.9 -m pip install -r requirements_pyod_algorithms.txt
 
     # install Firefox Browser
     # install dependencies
