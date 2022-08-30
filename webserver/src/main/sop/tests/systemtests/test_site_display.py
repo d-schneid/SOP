@@ -1,3 +1,4 @@
+import urllib
 from unittest import skip
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
@@ -46,6 +47,12 @@ class TestSiteDisplay(StaticLiveServerTestCase):
         self.assertEqual(driver.title, "Login")
         self.assertIn("Login", driver.page_source)
 
+        page = urllib.request.urlopen(self.live_server_url)
+        print("Status: " + str(page.status))
+        print("Url: " + str(page.url))
+        print("Headers: ------------\n" + str(page.headers) + "\n------------")
+        print("Content: -----------\n" + page.read(300).decode("utf-8") + "\n---------")
+
         driver.get("http://localhost:48289/")
 
         driver.quit()
@@ -74,6 +81,12 @@ class TestSiteDisplay(StaticLiveServerTestCase):
         print(chrome_driver.page_source[:20] + "\n------------")
 
         print("Live Server URL: " + self.live_server_url)
+
+        page = urllib.request.urlopen(self.live_server_url)
+        print("Status: " + str(page.status))
+        print("Url: " + str(page.url))
+        print("Headers: ------------\n" + str(page.headers) + "\n------------")
+        print("Content: -----------\n" + page.read(300).decode("utf-8") + "\n---------")
 
         chrome_driver.get(self.live_server_url)
 
@@ -108,6 +121,12 @@ class TestSiteDisplay(StaticLiveServerTestCase):
         print(firefox_driver.page_source[:20] + "\n------------")
 
         print("Live Server URL: " + self.live_server_url)
+
+        page = urllib.request.urlopen(self.live_server_url)
+        print("Status: " + str(page.status))
+        print("Url: " + str(page.url))
+        print("Headers: ------------\n" + str(page.headers) + "\n------------")
+        print("Content: -----------\n" + page.read(300).decode("utf-8") + "\n---------")
 
         firefox_driver.get(self.live_server_url)
 
