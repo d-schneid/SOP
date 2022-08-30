@@ -4,6 +4,7 @@ from typing import Optional
 import pandas as pd
 
 from backend.DataIO import DataIO
+from backend.DataIOInputException import DataIOInputException
 
 
 class DatasetInfo:
@@ -71,6 +72,6 @@ class DatasetInfo:
             # if no error was thrown upon reading, the dataset is valid
             return True
 
-        except DataIO.DataIoInputException:
+        except DataIOInputException:
             # if an error was thrown upon reading the dataset is invalid
             return False

@@ -2,9 +2,10 @@ from abc import ABC
 
 from backend.AnnotatedDataset import AnnotatedDataset
 from backend.task.cleaning.DatasetCleaningStep import DatasetCleaningStep
+from test.DatasetsForTesting import Datasets
 
 
-class DatasetCleaningStepThatAlwaysRaisesException(DatasetCleaningStep, ABC):
+class DatasetCleaningStepEmptyResult(DatasetCleaningStep, ABC):
     """
     Every cleaning_step of the cleaning_pipeline has to implement this abstract class.
     """
@@ -14,4 +15,4 @@ class DatasetCleaningStepThatAlwaysRaisesException(DatasetCleaningStep, ABC):
         :param dataset_to_clean: The dataset that will be cleaned in this cleaning_step.
         :return: The cleaned dataset.
         """
-        raise Exception
+        return Datasets().empty_annotated_dataset
