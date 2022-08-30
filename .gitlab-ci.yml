@@ -117,7 +117,7 @@ django-tests:
     - python3.9 -m pip install -r requirements_pyod_algorithms.txt
 
     # Firefox-Browser Installation
-    - apt-get install --install-suggests --quiet --assume-yes firefox
+    - apt-get install --quiet --assume-yes firefox
 
     - which python3.9
     - cd webserver/src/main/sop
@@ -156,7 +156,7 @@ selenium-tests-chrome:
 
     # install Chrome-Browser
     - wget -O chrome_browser.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-    - apt-get install --install-suggests --quiet --assume-yes ./chrome_browser.deb
+    - apt-get install --quiet --assume-yes ./chrome_browser.deb
     - rm chrome_browser.deb
 
     - which python3.9
