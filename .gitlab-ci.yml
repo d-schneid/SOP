@@ -117,8 +117,10 @@ django-tests:
     # (we need PyOd requirements due to Selenium tests)
     - python3.9 -m pip install -r requirements_pyod_algorithms.txt
 
-    # Firefox-Browser Installation
-    - apt-get install --quiet --assume-yes firefox
+    # Chrome-Browser Installation
+    - wget -O chrome_browser.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    - apt-get install --quiet --assume-yes ./chrome_browser.deb
+    - rm chrome_browser.deb
 
     - which python3.9
     - cd webserver/src/main/sop
@@ -143,7 +145,7 @@ django-tests:
       - public/django-tests.svg
       - webserver/src/main/sop/tests/systemtests/media
 
-selenium-tests-chrome:
+selenium-tests-firefox:
   needs: []
   stage: confidence-test
   extends: .frontend-base
@@ -155,10 +157,10 @@ selenium-tests-chrome:
     # (we need PyOd requirements due to Selenium tests)
     - python3.9 -m pip install -r requirements_pyod_algorithms.txt
 
-    # install Chrome-Browser
-    - wget -O chrome_browser.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-    - apt-get install --quiet --assume-yes ./chrome_browser.deb
-    - rm chrome_browser.deb
+    # install Firefox Browser
+    - wget -O firefox_browser.deb "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-GB"
+    - apt-get install --quiet --assume-yes ./firefox_browser.deb
+    - rm firefox_browser.deb
 
     - which python3.9
     - cd webserver/src/main/sop
