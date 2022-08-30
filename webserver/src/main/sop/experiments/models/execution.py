@@ -16,6 +16,7 @@ class ExecutionStatus(Enum):
     specific traits of the states, for example if the execution is running or if an
     error occurred.
     """
+
     RUNNING = auto, False, False, False, True
     RUNNING_WITH_ERROR = auto, False, False, True, True
     FINISHED = auto, False, True, False, False
@@ -64,6 +65,7 @@ class Execution(models.Model):
     """
     The database model of an execution
     """
+
     experiment = models.ForeignKey(to=Experiment, on_delete=models.CASCADE)
     status = models.CharField(max_length=80)
     progress = models.FloatField(default=0.0)
@@ -74,9 +76,10 @@ class Execution(models.Model):
     subspaces_max = models.PositiveIntegerField()
     subspace_generation_seed = models.PositiveBigIntegerField(blank=True)
     algorithm_parameters = models.JSONField()
-    result_path = models.FileField()
+    result_path = models.FileField(max_length=255)
     objects: ExecutionManager = ExecutionManager.from_queryset(
-        ExecutionQuerySet)()  # type: ignore
+        ExecutionQuerySet
+    )()  # type: ignore
 
     def save(self, *args: Any, **kwargs: Any) -> None:
         """

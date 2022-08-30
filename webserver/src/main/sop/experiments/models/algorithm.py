@@ -32,6 +32,7 @@ class Algorithm(models.Model):
         """
         An Enum that describes the way an algorithm does its calculations.
         """
+
         PROBABILISTIC = "Probabilistic"
         LINEAR_MODEL = "Linear Model"
         PROXIMITY_BASED = "Proximity-Based"
@@ -47,6 +48,7 @@ class Algorithm(models.Model):
     path = models.FileField(
         upload_to=get_algorithm_upload_path,
         validators=(FileExtensionValidator(allowed_extensions=["py"]),),
+        max_length=255,
     )
     description = models.TextField(blank=True)
     upload_date = models.DateTimeField(auto_now_add=True)
