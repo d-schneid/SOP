@@ -117,7 +117,7 @@ django-tests:
     - python3.9 -m pip install -r requirements_pyod_algorithms.txt
 
     # Firefox-Browser Installation
-    - apt-get install --install-suggests --quite --assume-yes firefox
+    - apt-get install --install-suggests --quiet --assume-yes firefox
 
     - which python3.9
     - cd webserver/src/main/sop
