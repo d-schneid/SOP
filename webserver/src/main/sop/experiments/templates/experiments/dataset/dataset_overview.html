@@ -47,12 +47,15 @@
 
 {% block edit %}
     <a href="{% url 'dataset_edit' model.pk %}"
-       class="btn btn-warning mr-3">Edit</a>
+       class="btn btn-warning mr-3"><i class="bi bi-pencil"></i> Edit</a>
     <div class="flex-grow-1">
-        <a href="{% url 'dataset_download_uncleaned' model.pk %}" class="btn btn-info mr-3">Download Uncleaned</a>
-        <a href="{% url 'dataset_download_cleaned' model.pk %}" class="btn btn-info mr-3" id="cleaned-download-{{ model.pk }}"
-           style="visibility: {% if model.is_cleaned and not model.has_error %}visible{% else %}hidden{% endif %}">Download
-            Cleaned</a>
+        <a href="{% url 'dataset_download_uncleaned' model.pk %}" class="btn btn-info mr-3"><i
+                class="bi bi-download"></i>
+            Uncleaned</a>
+        <a href="{% url 'dataset_download_cleaned' model.pk %}" class="btn btn-info mr-3"
+           id="cleaned-download-{{ model.pk }}"
+           style="visibility: {% if model.is_cleaned and not model.has_error %}visible{% else %}hidden{% endif %}"><i
+                class="bi bi-download"></i> Cleaned</a>
     </div>
 {% endblock %}
 
