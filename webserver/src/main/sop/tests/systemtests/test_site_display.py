@@ -9,6 +9,7 @@ from selenium.webdriver.firefox.service import Service as FirefoxService
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 
+
 @skip
 class TestSiteDisplay(StaticLiveServerTestCase):
     def test_driver_manager_chrome(self):
