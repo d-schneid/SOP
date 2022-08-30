@@ -33,7 +33,7 @@ class TestSiteDisplay(StaticLiveServerTestCase):
 
         print("Chrome successful!")
 
-
+    @skip
     def test_driver_manager_firefox(self):
         firefox_options = FirefoxOptions()
         firefox_options.add_argument("--headless")
@@ -47,17 +47,30 @@ class TestSiteDisplay(StaticLiveServerTestCase):
         self.assertEqual(driver.title, "Login")
         self.assertIn("Login", driver.page_source)
 
+        print("=============START========")
+
         page = urllib.request.urlopen(self.live_server_url)
         print("Status: " + str(page.status))
         print("Url: " + str(page.url))
         print("Headers: ------------\n" + str(page.headers) + "\n------------")
         print("Content: -----------\n" + page.read(300).decode("utf-8") + "\n---------")
 
+        print("=======================")
+
+        page = urllib.request.urlopen("http://localhost:48289/")
+        print("Status: " + str(page.status))
+        print("Url: " + str(page.url))
+        print("Headers: ------------\n" + str(page.headers) + "\n------------")
+        print("Content: -----------\n" + page.read(300).decode("utf-8") + "\n---------")
+
+        print("=========================")
+
         driver.get("http://localhost:48289/")
 
         driver.quit()
 
         print("Firefox successful!")
+
 
     def test_ci_chrome(self):
         chrome_options = ChromeOptions()
@@ -82,13 +95,21 @@ class TestSiteDisplay(StaticLiveServerTestCase):
 
         print("Live Server URL: " + self.live_server_url)
 
+        print("=================")
+
         page = urllib.request.urlopen(self.live_server_url)
         print("Status: " + str(page.status))
         print("Url: " + str(page.url))
         print("Headers: ------------\n" + str(page.headers) + "\n------------")
         print("Content: -----------\n" + page.read(300).decode("utf-8") + "\n---------")
 
-        chrome_driver.get(self.live_server_url)
+        print("========Try to access live_server_url=======")
+
+        port = self.live_server_url.split(":")[2]
+        url = "http://python:" + str(port)
+        print("Test-Bstel-URL: " + url)
+
+        chrome_driver.get(url)  # Todo: debug connection
 
         print("Test CI Chrome OWN page request worked!\n----------")
         print("Page source: " + chrome_driver.page_source[:20])
@@ -98,6 +119,7 @@ class TestSiteDisplay(StaticLiveServerTestCase):
         self.assertIn("Login", chrome_driver.page_source[:20])
 
         print("TEST CI CHROME WORKED !!!")
+
 
     def test_ci_firefox(self):
         firefox_options = FirefoxOptions()
@@ -122,13 +144,21 @@ class TestSiteDisplay(StaticLiveServerTestCase):
 
         print("Live Server URL: " + self.live_server_url)
 
+        print("=================")
+
         page = urllib.request.urlopen(self.live_server_url)
         print("Status: " + str(page.status))
         print("Url: " + str(page.url))
         print("Headers: ------------\n" + str(page.headers) + "\n------------")
         print("Content: -----------\n" + page.read(300).decode("utf-8") + "\n---------")
 
-        firefox_driver.get(self.live_server_url)
+        print("========Try to access live_server_url=======")
+
+        port = self.live_server_url.split(":")[2]
+        url = "http://python:" + str(port)
+        print("Test-Bstel-URL: " + url)
+
+        firefox_driver.get(url)   # Todo: debug connection
 
         print("Test CI Firefox OWN page request worked!\n----------")
         print("Page source: " + firefox_driver.page_source[:20])
