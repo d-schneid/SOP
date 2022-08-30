@@ -1,5 +1,4 @@
 import copy
-import datetime
 import os
 import re
 import shutil
@@ -79,7 +78,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
             "_admin_authentication_user",
         ]
 
-        _pattern_overview: str = "{topic}/overview/sort\-by=[A-Za-z_]+"  # noqa: W605
+        _pattern_overview: str = "{topic}/overview/sort-by=[A-Za-z_]+"
         _pattern_create: str = "{topic}/create"
         _pattern_upload: str = "{topic}/upload"
         _admin_base: str = "admin"
@@ -143,9 +142,6 @@ class SeleniumTestCase(StaticLiveServerTestCase):
                 browser_var = file.read()
         else:
             browser_var = SeleniumTestCase.BROWSER_VALUE_FIREFOX
-
-        # TODO debug
-        print("Browser var: " + browser_var)
 
         # Setup the browser (Chrome or Firefox)
         # the standard browser used is the Firefox browser
@@ -445,8 +441,6 @@ class SeleniumTestCase(StaticLiveServerTestCase):
 
     def wait_until_dataset_cleaned(self, dataset_name: str):
 
-        start_time = datetime.datetime.now()  # TODO: debug
-
         while True:
             sleep(1)
             dataset_div = self.driver.find_element(
@@ -457,17 +451,6 @@ class SeleniumTestCase(StaticLiveServerTestCase):
             )
             if dataset_div.text == "cleaned":
                 break
-
-            print(
-                "Dataset: "
-                + dataset_name
-                + ", Status: "
-                + dataset_div.text
-                + " | Time: "
-                + str(datetime.datetime.now() - start_time)
-                + " | "
-                + self.driver.current_url
-            )  # TODO: debug
 
     # -------------- Additional asserts -----------
 
