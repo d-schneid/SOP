@@ -32,7 +32,7 @@ class TestSiteDisplay(StaticLiveServerTestCase):
 
         print("Chrome successful!")
 
-    @skip
+
     def test_driver_manager_firefox(self):
         firefox_options = FirefoxOptions()
         firefox_options.add_argument("--headless")
@@ -45,6 +45,8 @@ class TestSiteDisplay(StaticLiveServerTestCase):
 
         self.assertEqual(driver.title, "Login")
         self.assertIn("Login", driver.page_source)
+
+        driver.get("http://localhost:48289/")
 
         driver.quit()
 
