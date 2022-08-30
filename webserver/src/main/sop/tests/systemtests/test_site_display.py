@@ -61,9 +61,19 @@ class TestSiteDisplay(StaticLiveServerTestCase):
             options=chrome_options,
         )
 
+        print("Test CI Chrome: Init worked !\n----------")
+
+        chrome_driver.get("https://de.wikipedia.org/wiki/Lorem_ipsum")
+
+        print("Test CI Chrome: " + chrome_driver.title)
+        print("----------------------\nTest CI Chrome: Page source:")
+        print(chrome_driver.page_source + "\n------------")
+
+        print("Live Server URL: " + self.live_server_url)
+
         chrome_driver.get(self.live_server_url)
 
-        print("Test CI Chrome worked so far!\n----------")
+        print("Test CI Chrome OWN page request worked!\n----------")
         print("Page source: " + chrome_driver.page_source)
         print("----------------")
 
@@ -83,9 +93,19 @@ class TestSiteDisplay(StaticLiveServerTestCase):
             options=firefox_options,
         )
 
+        print("Test CI Firefox: Init worked !\n----------")
+
+        firefox_driver.get("https://de.wikipedia.org/wiki/Lorem_ipsum")
+
+        print("Test CI Firefox: " + firefox_driver.title)
+        print("----------------------\nTest CI Firefox: Page source:")
+        print(firefox_driver.page_source + "\n------------")
+
+        print("Live Server URL: " + self.live_server_url)
+
         firefox_driver.get(self.live_server_url)
 
-        print("Test CI Firefox worked so far!\n----------")
+        print("Test CI Firefox OWN page request worked!\n----------")
         print("Page source: " + firefox_driver.page_source)
         print("----------------")
 
