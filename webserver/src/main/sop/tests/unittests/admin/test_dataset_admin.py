@@ -1,9 +1,11 @@
 import os
+from unittest import skip
 
 import django.test
 from django.urls import reverse
 
 from experiments.models.dataset import Dataset, CleaningState
+from experiments.models.experiment import Experiment
 from tests.generic import AdminLoggedInMixin, MediaMixin, DebugSchedulerMixin
 
 
@@ -152,3 +154,65 @@ class DatasetAdminTests(
             response,
             "Select a valid choice. That choice is not one of the available choices.",
         )
+
+    @skip("Test with invalid dataset, dataset validation does not work so we need to"
+          "fix that asap")
+    def test_add_dataset_unicode_error(self):
+        file_path: str = os.path.join("tests", "sample_datasets", "unicode_error.csv")
+        assert os.path.isfile(file_path)
+
+        url = reverse("admin:experiments_dataset_add")
+
+        with open(file_path, "r") as file:
+            data = {
+                "display_name": "dataset_add_1",
+                "description": "This is a description.",
+                "user": self.admin.pk,
+                "path_original": file,
+                "has_header": True,
+            }
+            response = self.client.post(url, data, follow=True)
+
+        assert data is not None
+        assert response is not None
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual("experiments_dataset_add", response.resolver_match.url_name)
+        self.assertContains(
+            response,
+            "Unicode error in selected dataset",
+        )
+
+    def test_admin_delete_dataset_of_experiment(self):
+        self.assertTrue(Dataset.objects.exists())
+        self.exp = Experiment.objects.create(
+            display_name="Test Exp", dataset=self.dataset_finished, user=self.admin
+        )
+        url = reverse("admin:experiments_dataset_delete",
+                      args=(self.dataset_finished.pk,))
+        response = self.client.post(url, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "This dataset cannot be deleted, since it is "
+                                      "used in at least one experiment (see below)")
+        self.assertTrue(Dataset.objects.exists())
+        self.assertEqual(
+            "experiments_dataset_delete", response.resolver_match.url_name
+        )
+
+    def test_admin_uncleaned_dataset_change_view(self):
+        self.dataset_uncleaned = Dataset.objects.create(
+            display_name="dataset_uncleaned_1",
+            description="This is a description.",
+            user=self.admin,
+            status=CleaningState.RUNNING.name,
+        )
+        url = reverse(
+            "admin:experiments_dataset_change", args=(self.dataset_uncleaned.pk,)
+        )
+        response = self.client.get(url, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.dataset_uncleaned.display_name)
+        self.assertContains(response, self.dataset_uncleaned.description)
+        self.assertContains(response, "Uncleaned dataset")
+        self.assertNotContains(response, "Cleaned dataset")
