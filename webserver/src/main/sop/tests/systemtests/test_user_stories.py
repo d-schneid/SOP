@@ -5,7 +5,7 @@ from selenium.webdriver.common.by import By
 
 from tests.systemtests.selenium_base_test_cases.SeleniumTestCase import SeleniumTestCase
 
-@skip
+
 class UserStoriesTest(SeleniumTestCase):
     @classmethod
     def setUpClass(cls) -> None:
