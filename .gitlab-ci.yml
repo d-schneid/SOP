@@ -74,17 +74,13 @@ default:
     - python3.9 -V
 
 .frontend-base:
-  image: python:3.9-slim-bullseye
+  image: python:3.9-buster
   #
   # Pick zero or more services to be used on all builds.
   # Only needed when using a docker container to run your tests in.
   # Check out: https://docs.gitlab.com/ee/ci/services/index.html
   services:
     - mysql:8.0
-    - name: selenium/standalone-chrome:latest
-      alias: chrome
-    - name: selenium/standalone-firefox:latest
-      alias: firefox
   before_script:
     - apt-get -y update
     - apt-get -yq install software-properties-common
@@ -97,16 +93,6 @@ default:
     - python3.9 -m pip install mysqlclient coverage
     - python3.9 -m pip install -e backend_library/src
     - python3.9 -V
-
-flake:
-  stage: test
-  needs: []
-  before_script:
-    - python3.9 -m pip install flake8 flake8-assertive
-  script:
-    - flake8 --color always .
-    - echo looking for forbidden windows line endings...
-    - '! grep -IUrPl --exclude-dir=.git --exclude-dir=venv* "\r$" 1>&2'
 
 django-tests:
   needs: []
@@ -122,13 +108,15 @@ django-tests:
     # TODO: debug    - python3.9 -m pip install -r requirements_pyod_algorithms.txt
 
     # Chrome-Browser Installation
-    #- wget -O chrome_browser.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-    #- apt-get install --quiet --assume-yes ./chrome_browser.deb
-    #- rm chrome_browser.deb
+    - wget -O chrome_browser.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    - apt-get install --quiet --assume-yes ./chrome_browser.deb
+    - rm chrome_browser.deb
+
+    # Firefox browser Installation
+    - apt-get install --quiet --assume-yes firefox
 
     - which python3.9
     - cd webserver/src/main/sop
-    - echo "chrome" > selenium_browser.conf  # settings file for the unittest (so that they are run with Chrome)
 
     # make migrations and migrate, so the db is ready for the tests
     - python3.9 manage.py makemigrations --settings=sop.settings_ci
@@ -145,52 +133,15 @@ django-tests:
     - python3.9 -m coverage run --rcfile=.coveragerc --source="." --omit="media/*","*/migrations/*","*/__init__.py","tests/*","sop/*","*/pyodtodb.py" manage.py test --settings sop.settings_ci
     - python3.9 -m coverage report --rcfile=.coveragerc --precision=2
     - 'wget -O ../../../../public/django-tests.svg https://img.shields.io/badge/webserver\ coverage-$(python3.9 -m coverage report --rcfile=.coveragerc --precision=2 | grep -E "^TOTAL.+?([0-9]+.[0-9]+%)$" | grep -Eo "[0-9]+.[0-9]+%$")-informational'
-  artifacts:
-    paths:
-      - public/django-tests.svg
-      - webserver/src/main/sop/tests/systemtests/media
 
-selenium-tests-firefox:
-  needs: []  # TODO: django-tests hinzufügen hier
-  stage: confidence-test
-  extends: .frontend-base
-  script:
-    - source venv3.9/bin/activate
-
-    # Selenium Test requirements
-    - python3.9 -m pip install -r requirements_test.txt
-    # (we need PyOd requirements due to Selenium tests)
-    # TODO: debugging  - python3.9 -m pip install -r requirements_pyod_algorithms.txt
-
-    # install Firefox Browser
-    # install dependencies
-    #- apt-get install --quiet --assume-yes glibc-source libgtk-3-dev libstdc++6 xorg
-    # get Firefox itself
-    #- wget -O firefox_browser.tar.bz2 "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-GB"
-    #- tar xjf firefox_browser.tar.bz2
-    #- mv firefox /opt
-    #- ln -s /opt/firefox/firefox /usr/local/bin/firefox
-    #- rm firefox_browser.tar.bz2
-
-    - which python3.9
-    - cd webserver/src/main/sop
-
-    # make migrations and migrate, so the db is ready for the tests
-    - python3.9 manage.py makemigrations --settings=sop.settings_ci
-    - python3.9 manage.py migrate --settings=sop.settings_ci
-    - python3.9 manage.py showmigrations --settings=sop.settings_ci
-    - python3.9 manage.py check --settings=sop.settings_ci
-
-    # The MYSQL user only gets permissions for MYSQL_DB, so Django can't create a test database.
-    - echo "GRANT ALL on *.* to '${MYSQL_USER}';"| mysql -u root --password="${MYSQL_ROOT_PASSWORD}" -h mysql
-
-    # run Selenium tests with Firefox
+    # run Selenium Tests with Chrome
+    - echo "chrome" > selenium_browser.conf  # settings file for the unittest (so that they are run with Chrome)
     - python3.9 manage.py test --settings=sop.settings_ci tests/systemtests/
-
   artifacts:
     paths:
       - public/django-tests.svg
-      - webserver/src/main/sop/tests/systemtests/media
+      - webserver/src/main/sop/tests/systemtests/media/
+
 
 # TODO: debug jobs START ---------------------
 
@@ -267,8 +218,7 @@ debug-ubuntu-browser-direct:
     - mysql:8.0
   before_script:
     - apt-get -y update
-    - apt-get -yq upgrade
-    - apt-get install --install-suggests --quiet --assume-yes python3.10*
+    - apt-get install --quiet --assume-yes python3.10*
     - apt-get -yq install software-properties-common
     - apt-get -y install apt-utils net-tools wget default-mysql-client default-libmysqlclient-dev python3-distutils python3-dev gcc memcached
     - "[ ! -d 'venv3.10' ] && python3.10 -m venv venv3.10"
@@ -319,178 +269,6 @@ debug-ubuntu-browser-direct:
     # run Selenium tests
     - python3.10 manage.py test --settings=sop.settings_ci tests/systemtests/
 
-debug-selenium-standalone-browser-browser-direct:
-  inherit:
-    default: false
-  needs: []
-  image: selenium/standalone-chrome:latest
-  stage: test
-  services:
-    - mysql:8.0
-  before_script:
-    - apt-get -y update
-    - apt-get -yq upgrade
-    - apt-get -yq install software-properties-common
-    - apt-get -y install apt-utils net-tools wget default-mysql-client default-libmysqlclient-dev python3-distutils python3-dev gcc memcached
-    - "[ ! -d 'venv3.9' ] && python3 -m venv venv3.9"
-    - "[ ! -d 'public' ] && mkdir public"
-    - source venv3.9/bin/activate
-    - python3.9 -m pip install --upgrade pip
-    - python3.9 -m pip install -r requirements.txt
-    - python3.9 -m pip install mysqlclient coverage
-    - python3.9 -m pip install -e backend_library/src
-    - python3.9 -V
-  script:
-    - source venv3.9/bin/activate
-
-    # Selenium Test requirements
-    - python3.9 -m pip install -r requirements_test.txt
-    # (we need PyOd requirements due to Selenium tests)
-    # TODO: debugging  - python3.9 -m pip install -r requirements_pyod_algorithms.txt
-
-    # install Firefox Browser
-    - apt-get install --install-suggests --quiet --assume-yes firefox
-    # do not install manually, try per package (see above)
-    # install dependencies
-    #- apt-get install --quiet --assume-yes glibc-source libgtk-3-dev libstdc++6 xorg
-    # get Firefox itself
-    #- wget -O firefox_browser.tar.bz2 "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-GB"
-    #- tar xjf firefox_browser.tar.bz2
-    #- mv firefox /opt
-    #- ln -s /opt/firefox/firefox /usr/local/bin/firefox
-    #- rm firefox_browser.tar.bz2
-
-    # Chrome-Browser Installation
-    #- wget -O chrome_browser.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-    #- apt-get install --install-suggests --quiet --assume-yes ./chrome_browser.deb
-    #- rm chrome_browser.deb
-
-    - which python3.9
-    - cd webserver/src/main/sop
-
-    # make migrations and migrate, so the db is ready for the tests
-    - python3.9 manage.py makemigrations --settings=sop.settings_ci
-    - python3.9 manage.py migrate --settings=sop.settings_ci
-    - python3.9 manage.py showmigrations --settings=sop.settings_ci
-    - python3.9 manage.py check --settings=sop.settings_ci
-
-    # The MYSQL user only gets permissions for MYSQL_DB, so Django can't create a test database.
-    - echo "GRANT ALL on *.* to '${MYSQL_USER}';"| mysql -u root --password="${MYSQL_ROOT_PASSWORD}" -h mysql
-
-    # run Selenium tests
-    - python3.9 manage.py test --settings=sop.settings_ci tests/systemtests/
-
 
 # TODO: debug jobs ENDE ---------------------
 
-backend-tests:
-  variables:
-    IS_EXECUTING_IN_CI: "1"
-  needs: [ ]
-  stage: test
-  coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
-  script:
-    - which python3.9
-    - cd backend_library/src
-    - python3.9 -m coverage run --source=backend/ --omit="*/__init__.py","backend/scheduler/DebugScheduler.py","backend/scheduler/ThreadedScheduler.py","backend/scheduler/Schedulable.py","backend/task/execution/subspace/SubspaceGenerationDescription.py","backend/task/execution/subspace/SubspaceSizeDistribution.py","backend/JsonSerializable.py","backend/metric/Metric.py","backend/task/Task.py","backend/task/cleaning/CategoricalDataHandler.py","backend/task/cleaning/DatasetCleaningStep.py","backend/task/cleaning/FeatureScaler.py","backend/task/cleaning/Imputation.py","backend/task/cleaning/MissingValuesRemover.py"  -m unittest discover -p "*.py" -s test/ -t .
-    - python3.9 -m coverage report --precision=2
-    - 'wget -O ../../public/backend-tests.svg https://img.shields.io/badge/backend\ coverage-$(python3.9 -m coverage report --rcfile=.coveragerc --precision=2 | grep -E "^TOTAL.+?([0-9]+.[0-9]+%)$" | grep -Eo "[0-9]+.[0-9]+%$")-informational'
-  artifacts:
-    paths:
-      - public/backend-tests.svg
-
-
-backend-docs:
-  image: python:3.9-slim-bullseye
-  allow_failure: true
-  only:
-    - main
-  stage: build
-  script:
-    - pip install pdoc
-    - apt-get update
-    - apt-get -y install zip
-    - which python3.9
-    - cd backend_library/src
-    - python3.9 -m pdoc ./backend -o docs
-    - mkdir -p ../../public/
-    - zip -r ../../public/backend-docs.zip ./docs
-  artifacts:
-    paths:
-      - public/backend-docs.zip
-
-deploy-docs:
-  inherit:
-    default: false
-  needs: 
-    - backend-docs
-  image: debian:latest
-  stage: deploy
-  only:
-    - main
-  before_script:
-    - apt -y update
-    - apt -y install openssh-client
-  script:
-    - chmod og= $ID_RSA
-    - echo "Pulling docs..."
-    - >-
-      ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "curl --location --output ~/sop-docs/backend-docs.zip --header 'JOB-TOKEN: $CI_JOB_TOKEN' 'https://git.scc.kit.edu/api/v4/projects/$CI_PROJECT_ID/jobs/artifacts/main/raw/public/backend-docs.zip?job=backend-docs'"
-    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "./deploy-docs.sh"
-
-
-publish-build:
-  inherit:
-    default: false
-  needs:
-    - backend-tests
-    - django-tests
-  stage: publish
-  only:
-    - main
-  image: docker:stable
-  script:
-    - docker login ghcr.io -u $DOCKERHUB_USER -p $DOCKERHUB_TOKEN
-    - docker pull $TAG_LATEST
-    - docker build -t $TAG_COMMIT -t $TAG_LATEST --cache-from $TAG_LATEST .
-    - docker push $TAG_COMMIT
-    - docker push $TAG_LATEST
-    - docker image rm -f $TAG_COMMIT
-
-
-deploy-badges:
-  needs: 
-    - backend-tests
-    - django-tests
-  inherit:
-    default: false
-  stage: deploy
-  only:
-    - main
-  artifacts:
-    paths:
-      - public
-  script:
-    - ''
-
-deploy-app:
-  needs:
-    - publish-build
-  inherit:
-    default: false
-  stage: deploy
-  only:
-    - main
-  image: debian:latest
-  tags:
-    - deployment
-  before_script:
-    - apt-get -y update
-    - apt-get -y install openssh-client
-
-  script:
-    - chmod og= $ID_RSA
-    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "./redeploy.sh"
-  environment:
-    name: development
-    url: https://sop.ffhz.site
