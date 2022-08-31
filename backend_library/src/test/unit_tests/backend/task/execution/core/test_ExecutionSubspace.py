@@ -115,7 +115,7 @@ class UnitTestExecutionSubspace(unittest.TestCase):
                 "", self._row_numbers
             )
 
-    def test_getter(self):
+    def test_properties(self):
         self.assertEqual(self._user_id, self._es.user_id)
         self.assertEqual(self._task_id, self._es.task_id)
         self.assertEqual(self._priority, self._es.priority)
