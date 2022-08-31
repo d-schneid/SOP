@@ -14,7 +14,7 @@ class Schedulable(ABC):
         """The id of the user this Schedulable belongs to, has to be >=-1,
          where -1 indicates that the Schedulable belongs to no user.
          The user id of a Schedulable must not change after scheduling"""
-        pass
+        raise NotImplementedError
 
     @property
     @abstractmethod
@@ -23,13 +23,13 @@ class Schedulable(ABC):
          where -1 indicates that the Schedulable belongs to no task.
         Two Schedulables with the same taskid != -1 must have the same user id.
         The task id of a Schedulable must not change after scheduling."""
-        pass
+        raise NotImplementedError
 
     @property
     @abstractmethod
     def priority(self) -> int:
         """The priority of this Schedulable, between 0 and 100 (both inclusive)"""
-        pass
+        raise NotImplementedError
 
     def run_before_on_main(self) -> None:
         """
@@ -51,7 +51,7 @@ class Schedulable(ABC):
         May be stopped half-way by abort calls.
         :return: Optionally an integer status provided to the run_later_on_main function
         """
-        return None
+        raise NotImplementedError
 
     def run_later_on_main(self, statuscode: Optional[int]) -> None:
         """
