@@ -87,7 +87,7 @@ class UnitTestExecutionSubspace(unittest.TestCase):
             -> None:
         self._execution_elements_finished1 += 1
 
-    def test_dont_create_execution_element_with_wrong_user_id_or_task_id(self):
+    def test_dont_create_execution_subspace_with_wrong_user_id_or_task_id(self):
         _wrong_user_id: int = -2
         _wrong_task_id: int = -2
 
