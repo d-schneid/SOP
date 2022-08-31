@@ -1,16 +1,16 @@
-import abc
+from abc import ABC, abstractmethod
 
 
-class JsonSerializable(abc.ABC):
+class JsonSerializable(ABC):
     """
     Interface of classes that can be json serialized using to_json
     """
 
-    @abc.abstractmethod
+    @abstractmethod
     def to_json(self) -> object:
         """
         Returns a simple object (often a dict) containing all important information
         about this object
         :return:  an object that can be serialized using json.dump
         """
-        pass
+        raise NotImplementedError

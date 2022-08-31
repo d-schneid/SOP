@@ -19,7 +19,7 @@ class Metric(ABC):
         (Use the build in property algorithm_directory_paths in Execution)
         :return: None
         """
-        assert metric_result_path.endswith(".csv")
+        raise NotImplementedError
 
     @property
     def eem_helper(self) -> eem_helper:

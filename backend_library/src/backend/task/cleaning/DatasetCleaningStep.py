@@ -14,4 +14,4 @@ class DatasetCleaningStep(ABC):
         :param dataset_to_clean: The dataset that will be cleaned in this cleaning_step.
         :return: The cleaned dataset.
         """
-        pass
+        raise NotImplementedError

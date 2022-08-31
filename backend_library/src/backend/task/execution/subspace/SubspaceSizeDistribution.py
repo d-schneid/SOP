@@ -29,8 +29,8 @@ class SubspaceSizeDistribution(JsonSerializable, ABC):
          The sum of all values has to be requested_subspace_count,
           0 < key <= dataset_dimension_count and 0 <= value must hold for all entries
         """
-        return {}
+        raise NotImplementedError
 
     @abstractmethod
     def to_json(self) -> dict[str, object]:
-        pass
+        raise NotImplementedError

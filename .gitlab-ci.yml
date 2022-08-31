@@ -142,15 +142,27 @@ backend-tests:
   needs: [ ]
   stage: test
   coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
+  image: python:3.9-slim-bullseye
   script:
     - which python3.9
+    - 'echo "import coverage" >> venv3.9/lib/python3.9/site-packages/sitecustomize.py'
+    - 'echo "coverage.process_startup()" >> venv3.9/lib/python3.9/site-packages/sitecustomize.py'
     - cd backend_library/src
-    - python3.9 -m coverage run --source=backend/ --omit="*/__init__.py","backend/scheduler/DebugScheduler.py","backend/scheduler/ThreadedScheduler.py","backend/scheduler/Schedulable.py","backend/task/execution/subspace/SubspaceGenerationDescription.py","backend/task/execution/subspace/SubspaceSizeDistribution.py","backend/JsonSerializable.py","backend/metric/Metric.py","backend/task/Task.py","backend/task/cleaning/CategoricalDataHandler.py","backend/task/cleaning/DatasetCleaningStep.py","backend/task/cleaning/FeatureScaler.py","backend/task/cleaning/Imputation.py","backend/task/cleaning/MissingValuesRemover.py"  -m unittest discover -p "*.py" -s test/ -t .
-    - python3.9 -m coverage report --precision=2
-    - 'wget -O ../../public/backend-tests.svg https://img.shields.io/badge/backend\ coverage-$(python3.9 -m coverage report --rcfile=.coveragerc --precision=2 | grep -E "^TOTAL.+?([0-9]+.[0-9]+%)$" | grep -Eo "[0-9]+.[0-9]+%$")-informational'
+    - apt-get update
+    - apt-get -y install zip wget
+    - python3.9 -m coverage --version
+    - export COVERAGE_PROCESS_START=$PWD/../MultiPTesting.ini
+    - export COVERAGE_RCFILE=$PWD/../MultiPTesting.ini
+    - python3.9 -m coverage run
+    - python3.9 -m coverage combine
+    - python3.9 -m coverage report
+    - 'wget -O ../../public/backend-tests.svg https://img.shields.io/badge/backend\ coverage-$(python3.9 -m coverage report | grep -E "^TOTAL.+?([0-9]+.[0-9]+%)$" | grep -Eo "[0-9]+.[0-9]+%$")-informational'
+    - python3.9 -m coverage html
+    - zip -r ../../public/backend-cov.zip ./htmlcov
   artifacts:
     paths:
       - public/backend-tests.svg
+      - public/backend-cov.zip
 
 
 backend-docs:

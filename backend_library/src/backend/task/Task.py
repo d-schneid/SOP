@@ -35,4 +35,4 @@ class Task(ABC):
         Inserts the Task into the Scheduler for processing. \n
         :return: None
         """
-        return None
+        raise NotImplementedError

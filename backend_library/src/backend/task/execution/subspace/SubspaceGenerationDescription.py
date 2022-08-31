@@ -17,4 +17,4 @@ class SubspaceGenerationDescription(JsonSerializable, ABC):
 
     @abstractmethod
     def to_json(self) -> dict[str, object]:
-        pass
+        raise NotImplementedError
