@@ -94,7 +94,7 @@ class ExecutionViewTests(django.test.TestCase):
         request = MagicMock()
         response = get_execution_progress(request)
         self.assertEqual(response.status_code, 500)
-        self.assertTrue(isinstance(response, HttpResponseServerError))
+        self.assertIsInstance(response, HttpResponseServerError)
 
     def test_restart_execution(self):
         request = MagicMock()

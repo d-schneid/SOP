@@ -59,7 +59,6 @@ def _clear_media_root():
 
 
 class MediaMixin(MixinBase):
-
     @classmethod
     def setUpClass(cls):
         if not os.path.isdir(settings.MEDIA_ROOT):
@@ -83,7 +82,6 @@ class MediaMixin(MixinBase):
         super().tearDown()
         if os.path.isdir(settings.MEDIA_ROOT):
             _clear_media_root()
-
 
 
 class LoggedInMixin(MixinBase):

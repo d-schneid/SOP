@@ -154,7 +154,8 @@ class ExecutionCreateView(
         if subspaces_max > experiment.dataset.dimensions_total:
             messages.error(
                 self.request,
-                f"Subspaces Max has to be smaller than or equal to the dataset dimension count: {experiment.dataset.dimensions_total}.",
+                f"Subspaces Max has to be smaller than or equal to the dataset \
+                dimension count: {experiment.dataset.dimensions_total}.",
             )
             error = True
         else:
