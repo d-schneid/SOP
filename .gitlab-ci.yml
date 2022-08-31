@@ -279,45 +279,45 @@ debug-ubuntu-browser-direct:
     - python3.10 -m pip install mysqlclient coverage
     - python3.10 -m pip install -e backend_library/src
     - python3.10 -V
-    script:
-      - source venv3.10/bin/activate
+  script:
+    - source venv3.10/bin/activate
 
-      # Selenium Test requirements
-      - python3.10 -m pip install -r requirements_test.txt
-      # (we need PyOd requirements due to Selenium tests)
-      # TODO: debugging  - python3.9 -m pip install -r requirements_pyod_algorithms.txt
+    # Selenium Test requirements
+    - python3.10 -m pip install -r requirements_test.txt
+    # (we need PyOd requirements due to Selenium tests)
+    # TODO: debugging  - python3.9 -m pip install -r requirements_pyod_algorithms.txt
 
-      # install Firefox Browser
-      - apt-get install --install-suggests --quiet --assume-yes firefox
-      # do not install manually, try per package (see above)
-      # install dependencies
-      #- apt-get install --quiet --assume-yes glibc-source libgtk-3-dev libstdc++6 xorg
-      # get Firefox itself
-      #- wget -O firefox_browser.tar.bz2 "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-GB"
-      #- tar xjf firefox_browser.tar.bz2
-      #- mv firefox /opt
-      #- ln -s /opt/firefox/firefox /usr/local/bin/firefox
-      #- rm firefox_browser.tar.bz2
+    # install Firefox Browser
+    - apt-get install --install-suggests --quiet --assume-yes firefox
+    # do not install manually, try per package (see above)
+    # install dependencies
+    #- apt-get install --quiet --assume-yes glibc-source libgtk-3-dev libstdc++6 xorg
+    # get Firefox itself
+    #- wget -O firefox_browser.tar.bz2 "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-GB"
+    #- tar xjf firefox_browser.tar.bz2
+    #- mv firefox /opt
+    #- ln -s /opt/firefox/firefox /usr/local/bin/firefox
+    #- rm firefox_browser.tar.bz2
 
-      # Chrome-Browser Installation
-      - wget -O chrome_browser.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-      - apt-get install --install-suggests --quiet --assume-yes ./chrome_browser.deb
-      - rm chrome_browser.deb
+    # Chrome-Browser Installation
+    - wget -O chrome_browser.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    - apt-get install --install-suggests --quiet --assume-yes ./chrome_browser.deb
+    - rm chrome_browser.deb
 
-      - which python3.10
-      - cd webserver/src/main/sop
+    - which python3.10
+    - cd webserver/src/main/sop
 
-      # make migrations and migrate, so the db is ready for the tests
-      - python3.10 manage.py makemigrations --settings=sop.settings_ci
-      - python3.10 manage.py migrate --settings=sop.settings_ci
-      - python3.10 manage.py showmigrations --settings=sop.settings_ci
-      - python3.10 manage.py check --settings=sop.settings_ci
+    # make migrations and migrate, so the db is ready for the tests
+    - python3.10 manage.py makemigrations --settings=sop.settings_ci
+    - python3.10 manage.py migrate --settings=sop.settings_ci
+    - python3.10 manage.py showmigrations --settings=sop.settings_ci
+    - python3.10 manage.py check --settings=sop.settings_ci
 
-      # The MYSQL user only gets permissions for MYSQL_DB, so Django can't create a test database.
-      - echo "GRANT ALL on *.* to '${MYSQL_USER}';"| mysql -u root --password="${MYSQL_ROOT_PASSWORD}" -h mysql
+    # The MYSQL user only gets permissions for MYSQL_DB, so Django can't create a test database.
+    - echo "GRANT ALL on *.* to '${MYSQL_USER}';"| mysql -u root --password="${MYSQL_ROOT_PASSWORD}" -h mysql
 
-      # run Selenium tests
-      - python3.10 manage.py test --settings=sop.settings_ci tests/systemtests/
+    # run Selenium tests
+    - python3.10 manage.py test --settings=sop.settings_ci tests/systemtests/
 
 debug-selenium-standalone-browser-browser-direct:
   inherit:
