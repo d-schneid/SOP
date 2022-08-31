@@ -8,7 +8,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # install psycopg2 dependencies
-RUN apt-get update && apt-get install --no-install-recommends -y python3-dev memcached \
+RUN apt-get update && apt-get install --no-install-recommends -y python3-dev=3.9.2-3 memcached=1.6.9+dfsg-1 \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
