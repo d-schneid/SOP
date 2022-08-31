@@ -80,7 +80,7 @@ class UnitTestExecution(unittest.TestCase):
     def tearDown(self) -> None:
         self._ex = None
 
-    def test_getter(self):
+    def test_properties(self):
         self.assertEqual(self._algorithms, list(self._ex.algorithms))
         self.assertEqual(list(self._ex._subspaces), list(self._ex.subspaces))
         self.assertEqual(self._final_zip_path, self._ex.zip_result_path)
