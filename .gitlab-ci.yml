@@ -113,7 +113,7 @@ django-tests:
     - rm chrome_browser.deb
 
     # install Firefox Browser
-    - apt-get install --install-suggests --quiet --assume-yes firefox-esr
+    - apt-get install --quiet --assume-yes firefox-esr
     # do not install manually, try per package (see above)
     # install dependencies
     #- apt-get install --quiet --assume-yes glibc-source libgtk-3-dev libstdc++6 xorg
