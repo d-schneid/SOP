@@ -31,7 +31,7 @@ class DatasetCleaningStepExceptionHandling:
         has one None-column (or has no entries at all)
         """
         DatasetCleaningStepExceptionHandling.check_no_empty_array(dataset_to_check,
-                                                                   error_root)
+                                                                  error_root)
 
         # normal case (more than one row)
         if len(dataset_to_check.shape) > 1:
