@@ -3,7 +3,7 @@ from unittest import skip
 
 from tests.systemtests.selenium_base_test_cases.SeleniumTestCase import SeleniumTestCase
 
-@skip  # TODO: debug
+
 class DatasetUploadTests(SeleniumTestCase):
     def test_standard_site(self):
         # login

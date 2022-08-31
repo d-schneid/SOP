@@ -13,7 +13,7 @@ from webdriver_manager.firefox import GeckoDriverManager
 
 
 class TestSiteDisplay(StaticLiveServerTestCase):
-    @skip
+
     def test_driver_manager_chrome(self):
         chrome_options = ChromeOptions()
         chrome_options.headless = True
@@ -33,7 +33,7 @@ class TestSiteDisplay(StaticLiveServerTestCase):
 
         print("Chrome successful!")
 
-    @skip
+
     def test_driver_manager_firefox(self):
         firefox_options = FirefoxOptions()
         firefox_options.add_argument("--headless")
@@ -105,11 +105,7 @@ class TestSiteDisplay(StaticLiveServerTestCase):
 
         print("========Try to access live_server_url=======")
 
-        port = self.live_server_url.split(":")[2]
-        url = "http://python:" + str(port)
-        print("Test-Bstel-URL: " + url)
-
-        chrome_driver.get(url)  # Todo: debug connection
+        chrome_driver.get(self.live_server_url)
 
         print("Test CI Chrome OWN page request worked!\n----------")
         print("Page source: " + chrome_driver.page_source[:20])
@@ -154,11 +150,7 @@ class TestSiteDisplay(StaticLiveServerTestCase):
 
         print("========Try to access live_server_url=======")
 
-        port = self.live_server_url.split(":")[2]
-        url = "http://python:" + str(port)
-        print("Test-Bstel-URL: " + url)
-
-        firefox_driver.get(url)   # Todo: debug connection
+        firefox_driver.get(self.live_server_url)
 
         print("Test CI Firefox OWN page request worked!\n----------")
         print("Page source: " + firefox_driver.page_source[:20])
