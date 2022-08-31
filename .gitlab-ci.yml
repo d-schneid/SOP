@@ -105,7 +105,7 @@ debug-firefox-manually:
     # Selenium Test requirements
     - python3.9 -m pip install -r requirements_test.txt
     # (we need PyOd requirements due to Selenium tests)
-    # TODO: debug    - python3.9 -m pip install -r requirements_pyod_algorithms.txt
+    - python3.9 -m pip install -r requirements_pyod_algorithms.txt
 
     # Chrome-Browser Installation
     - wget --quiet -O chrome_browser.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
@@ -157,7 +157,7 @@ debug-firefox-manually:
       - webserver/src/main/sop/tests/systemtests/media/
 
 
-# TODO: jobs debug start --------------
+
 
 debug-firefox-package:
   needs: []
@@ -170,7 +170,7 @@ debug-firefox-package:
     # Selenium Test requirements
     - python3.9 -m pip install -r requirements_test.txt
     # (we need PyOd requirements due to Selenium tests)
-    # TODO: debug    - python3.9 -m pip install -r requirements_pyod_algorithms.txt
+    - python3.9 -m pip install -r requirements_pyod_algorithms.txt
 
     # Chrome-Browser Installation
     - wget --quiet -O chrome_browser.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
@@ -222,5 +222,5 @@ debug-firefox-package:
       - webserver/src/main/sop/tests/systemtests/media/
 
 
-# TODO: jobs debug end --------------
+
 
