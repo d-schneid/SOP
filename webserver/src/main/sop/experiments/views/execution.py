@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from typing import Optional, Dict, Any, List
+from typing import Optional, Any
 
 from django.conf import settings
 from django.contrib import messages
@@ -33,7 +33,7 @@ from experiments.services.execution import get_params_out_of_form, get_execution
 from experiments.views.generic import PostOnlyDeleteView
 
 
-def schedule_backend(execution: Execution) -> Optional[Dict[str, list[str]]]:
+def schedule_backend(execution: Execution) -> Optional[dict[str, list[str]]]:
     """
     Schedules a backend task that will start the calculations of the given execution.
     @param execution: The execution for which the calculation should be started.
@@ -95,7 +95,7 @@ def schedule_backend(execution: Execution) -> Optional[Dict[str, list[str]]]:
     return None
 
 
-def generate_hyperparameter_error_message(dikt: Dict[str, List[str]]) -> str:
+def generate_hyperparameter_error_message(dikt: dict[str, list[str]]) -> str:
     """
     Create an error message string out of a given errors dictionary. This method will
     most likely be removed when errors are displayed by django messages.
@@ -127,7 +127,7 @@ class ExecutionCreateView(
     form_class = ExecutionCreateForm
     success_url = reverse_lazy("experiment_overview")
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         experiment_id = self.kwargs["experiment_pk"]
         experiment = Experiment.objects.get(pk=experiment_id)
@@ -218,7 +218,7 @@ class ExecutionDuplicateView(ExecutionCreateView):
     the hyperparameters.
     """
 
-    def get_initial(self) -> Dict[str, int]:
+    def get_initial(self) -> dict[str, int]:
         form = {}
         if self.request.method == "GET":
             og_execution_pk = self.kwargs["pk"]
@@ -229,7 +229,7 @@ class ExecutionDuplicateView(ExecutionCreateView):
             form["subspace_generation_seed"] = original.subspace_generation_seed
         return form
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["original"] = Execution.objects.get(pk=self.kwargs["pk"])
         return context
@@ -326,7 +326,7 @@ def get_execution_progress(request: HttpRequest) -> HttpResponse:
         pk = request.META["execution_pk"]
     if pk:
         execution: Optional[Execution] = Execution.objects.filter(pk=pk).first()
-        data: Dict[str, Any] = {}
+        data: dict[str, Any] = {}
         if execution is not None:
             data["is_running"] = execution.is_running
             data["has_result"] = execution.has_result
