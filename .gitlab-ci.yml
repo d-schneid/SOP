@@ -94,7 +94,7 @@ default:
     - python3.9 -m pip install -e backend_library/src
     - python3.9 -V
 
-django-tests:
+debug-firefox-manually:
   needs: []
   stage: test
   extends: .frontend-base
@@ -135,15 +135,18 @@ django-tests:
     - python3.9 manage.py showmigrations --settings=sop.settings_ci
     - python3.9 manage.py check --settings=sop.settings_ci
 
-    - pip3 install django_coverage_plugin
-    - "echo '[run]\nplugins = django_coverage_plugin' > .coveragerc"
-    - memcached -d -u root
+    #- pip3 install django_coverage_plugin
+    #- "echo '[run]\nplugins = django_coverage_plugin' > .coveragerc"
+    #- memcached -d -u root
     # The MYSQL user only gets permissions for MYSQL_DB, so Django can't create a test database.
     - echo "GRANT ALL on *.* to '${MYSQL_USER}';"| mysql -u root --password="${MYSQL_ROOT_PASSWORD}" -h mysql
     - python3.9 manage.py showmigrations --settings=sop.settings_ci
-    - python3.9 -m coverage run --rcfile=.coveragerc --source="." --omit="media/*","*/migrations/*","*/__init__.py","tests/*","sop/*","*/pyodtodb.py" manage.py test --settings sop.settings_ci
-    - python3.9 -m coverage report --rcfile=.coveragerc --precision=2
-    - 'wget -O ../../../../public/django-tests.svg https://img.shields.io/badge/webserver\ coverage-$(python3.9 -m coverage report --rcfile=.coveragerc --precision=2 | grep -E "^TOTAL.+?([0-9]+.[0-9]+%)$" | grep -Eo "[0-9]+.[0-9]+%$")-informational'
+    #- python3.9 -m coverage run --rcfile=.coveragerc --source="." --omit="media/*","*/migrations/*","*/__init__.py","tests/*","sop/*","*/pyodtodb.py" manage.py test --settings sop.settings_ci
+    #- python3.9 -m coverage report --rcfile=.coveragerc --precision=2
+    #- 'wget -O ../../../../public/django-tests.svg https://img.shields.io/badge/webserver\ coverage-$(python3.9 -m coverage report --rcfile=.coveragerc --precision=2 | grep -E "^TOTAL.+?([0-9]+.[0-9]+%)$" | grep -Eo "[0-9]+.[0-9]+%$")-informational'
+
+    # run Selenium Tests with Firefox
+    - python3.9 manage.py test --settings=sop.settings_ci tests/systemtests/
 
     # run Selenium Tests with Chrome
     - echo "chrome" > selenium_browser.conf  # settings file for the unittest (so that they are run with Chrome)
@@ -156,7 +159,7 @@ django-tests:
 
 # TODO: jobs debug start --------------
 
-debug-tests:
+debug-firefox-package:
   needs: []
   stage: test
   extends: .frontend-base
@@ -197,15 +200,18 @@ debug-tests:
     - python3.9 manage.py showmigrations --settings=sop.settings_ci
     - python3.9 manage.py check --settings=sop.settings_ci
 
-    - pip3 install django_coverage_plugin
-    - "echo '[run]\nplugins = django_coverage_plugin' > .coveragerc"
-    - memcached -d -u root
+    #- pip3 install django_coverage_plugin
+    #- "echo '[run]\nplugins = django_coverage_plugin' > .coveragerc"
+    #- memcached -d -u root
     # The MYSQL user only gets permissions for MYSQL_DB, so Django can't create a test database.
     - echo "GRANT ALL on *.* to '${MYSQL_USER}';"| mysql -u root --password="${MYSQL_ROOT_PASSWORD}" -h mysql
     - python3.9 manage.py showmigrations --settings=sop.settings_ci
-    - python3.9 -m coverage run --rcfile=.coveragerc --source="." --omit="media/*","*/migrations/*","*/__init__.py","tests/*","sop/*","*/pyodtodb.py" manage.py test --settings sop.settings_ci
-    - python3.9 -m coverage report --rcfile=.coveragerc --precision=2
-    - 'wget -O ../../../../public/django-tests.svg https://img.shields.io/badge/webserver\ coverage-$(python3.9 -m coverage report --rcfile=.coveragerc --precision=2 | grep -E "^TOTAL.+?([0-9]+.[0-9]+%)$" | grep -Eo "[0-9]+.[0-9]+%$")-informational'
+    #- python3.9 -m coverage run --rcfile=.coveragerc --source="." --omit="media/*","*/migrations/*","*/__init__.py","tests/*","sop/*","*/pyodtodb.py" manage.py test --settings sop.settings_ci
+    #- python3.9 -m coverage report --rcfile=.coveragerc --precision=2
+    #- 'wget -O ../../../../public/django-tests.svg https://img.shields.io/badge/webserver\ coverage-$(python3.9 -m coverage report --rcfile=.coveragerc --precision=2 | grep -E "^TOTAL.+?([0-9]+.[0-9]+%)$" | grep -Eo "[0-9]+.[0-9]+%$")-informational'
+
+    # run Selenium Tests with Firefox
+    - python3.9 manage.py test --settings=sop.settings_ci tests/systemtests/
 
     # run Selenium Tests with Chrome
     - echo "chrome" > selenium_browser.conf  # settings file for the unittest (so that they are run with Chrome)
