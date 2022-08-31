@@ -26,9 +26,13 @@ class TestSiteDisplay(StaticLiveServerTestCase):
 
         print("======= URL check endent ==========")
 
+        print("============ STARTING CHROME driver Setup ============")
+
 
         chrome_options = ChromeOptions()
         chrome_options.add_argument("--headless")
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-dev-shm-usage')
         chrome_options.add_argument("--window-size=2560,1440")
         chrome_options.add_argument("--start-maximized")
 
@@ -39,6 +43,16 @@ class TestSiteDisplay(StaticLiveServerTestCase):
         print("====== START Chrome driver tests ======")
 
         driver.get(self.live_server_url)
+
+        print("======= Got url - now printing info =======")
+
+        print("Test driver Chrome: " + driver.title)
+        print("----------------------\nTest driver Chrome: Page source:------")
+        print(driver.page_source[:20] + "\n------------")
+
+        print("Live Server URL: " + self.live_server_url)
+
+        print("====== Info ende - now asserting =======")
 
         self.assertEqual(driver.title, "Login")
         self.assertIn("Login", driver.page_source)
@@ -60,6 +74,7 @@ class TestSiteDisplay(StaticLiveServerTestCase):
 
         print("======= URL check endent ==========")
 
+        print("============ STARTING FIREFOX driver Setup ============")
 
         firefox_options = FirefoxOptions()
         firefox_options.add_argument("--headless")
@@ -73,6 +88,16 @@ class TestSiteDisplay(StaticLiveServerTestCase):
         print("====== START Firefox driver tests ======")
 
         driver.get(self.live_server_url)
+
+        print("======= Got url - now printint info =======")
+
+        print("Test driver Firefox: " + driver.title)
+        print("----------------------\nTest driver Firefox: Page source:--------")
+        print(driver.page_source[:20] + "\n------------")
+
+        print("Live Server URL: " + self.live_server_url)
+
+        print("====== Info ende - now asserting =======")
 
         self.assertEqual(driver.title, "Login")
         self.assertIn("Login", driver.page_source)
