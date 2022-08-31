@@ -12,8 +12,7 @@ class ResultZipper(Schedulable):
     """
     def __init__(self, user_id: int, task_id: int, error_occurred: bool,
                  task_progress_callback: Callable[[int, TaskState, float], None],
-                 dir_path: str, zip_path_running: str, zip_path_final: str,
-                 is_debug: bool = False):
+                 dir_path: str, zip_path_running: str, zip_path_final: str):
 
         """
         :param user_id: The ID of the user belonging to the Execution.
@@ -30,9 +29,6 @@ class ResultZipper(Schedulable):
         :param zip_path_final: The absolute path to the directory where the result of
         the zipping will be located after the zipping is completed.
         Any existing file will be deleted and overwritten.
-        :param is_debug: If true, the ResultZipper runs in debug mode.
-        In debug mode, e.g. no files are deleted.
-        For specific differences check the relevant method descriptions.
         """
 
         assert user_id >= -1
@@ -46,7 +42,6 @@ class ResultZipper(Schedulable):
         self._dir_path: str = dir_path
         self._zip_path_running: str = zip_path_running
         self._zip_path_final: str = zip_path_final
-        self._is_debug = is_debug
 
     @property
     def user_id(self) -> int:
@@ -84,16 +79,8 @@ class ResultZipper(Schedulable):
         e.g. after a server crash.
         For this to work, both paths have to be located in the same file system.
 
-        If the ResultZipper runs in debug mode,
-        only a directory at the given path will be created.
-
         :return: None
         """
-
-        # Check for debug mode
-        if self._is_debug:
-            TaskHelper.create_directory(self._zip_path_final)
-            return
 
         # Else, proceed with the normal operations
 
