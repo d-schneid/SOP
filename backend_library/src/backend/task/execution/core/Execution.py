@@ -177,9 +177,8 @@ class Execution(JsonSerializable, Task, Schedulable):
         details_path: str = os.path.join(self._result_path, 'details.json')
         running_path: str = details_path + ".running"
 
-        if not os.path.exists(running_path):
-            with open(running_path, 'w') as f:
-                json.dump(self.to_json(), f)
+        with open(running_path, 'w') as f:
+            json.dump(self.to_json(), f)
         shutil.move(running_path, details_path)
 
     def to_json(self) -> dict[str, object]:
