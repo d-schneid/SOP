@@ -7,7 +7,8 @@ class DebugAlgorithm(BaseDetector):
 
     def __init__(self, algorithm_result: int = 1):
         """
-        :param algorithm_result: The result that will be outputted by calling decision_function()
+        :param algorithm_result: The result that will be outputted
+        by calling decision_function()
         """
         self._algorithm_result: int = algorithm_result
         self.decision_scores_ = None
