@@ -149,6 +149,10 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         super().tearDown()
 
         # delete old dirs (this includes the pyod algo directory)
+
+        # wait for concurrent processes to finish (otherwise this might fail) # TODO
+        sleep(5)
+
         if os.path.isdir(settings.MEDIA_ROOT):
             shutil.rmtree(settings.MEDIA_ROOT)
         assert not os.path.isdir(settings.MEDIA_ROOT)
