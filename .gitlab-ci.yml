@@ -59,7 +59,7 @@ default:
     paths:
       - .cache/pip/
 
-  #
+
   # This folder is cached between builds
   # http://docs.gitlab.com/ee/ci/yaml/README.html#cache
   before_script:
@@ -73,7 +73,7 @@ default:
     - python3.9 -V
 
 .frontend-base:
-  image: python:3.9-slim-bullseye
+  image: python:3.9-bullseye
   #
   # Pick zero or more services to be used on all builds.
   # Only needed when using a docker container to run your tests in.
@@ -111,8 +111,26 @@ django-tests:
   script:
     - source venv3.9/bin/activate
 
-    # We skip pyodtodb django admin command tests because it needs way to big python dependencies
-    # - pip3 install -r requirements_pyod_algorithms.txt
+    # Selenium Test requirements
+    - python3.9 -m pip install -r requirements_test.txt
+    # (we need PyOd requirements due to Selenium tests)
+    - python3.9 -m pip install -r requirements_pyod_algorithms.txt
+
+    # Chrome-Browser Installation
+    - wget --quiet -O chrome_browser.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    - apt-get install --quiet --assume-yes ./chrome_browser.deb
+    - rm chrome_browser.deb
+
+    # Firefox-Browser Installation
+    # install dependencies
+    - apt-get install --quiet --assume-yes glibc-source libdbus-glib-1-2
+    # get Firefox itself
+    - wget --quiet -O firefox_browser.tar.bz2 "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-GB"
+    - tar xjf firefox_browser.tar.bz2
+    - mv firefox /opt
+    - ln -s /opt/firefox/firefox /usr/local/bin/firefox
+    - rm firefox_browser.tar.bz2
+
 
     - which python3.9
     - cd webserver/src/main/sop
@@ -132,9 +150,19 @@ django-tests:
     - python3.9 -m coverage run --rcfile=.coveragerc --source="." --omit="media/*","*/migrations/*","*/__init__.py","tests/*","sop/*","*/pyodtodb.py" manage.py test --settings sop.settings_ci
     - python3.9 -m coverage report --rcfile=.coveragerc --precision=2
     - 'wget -O ../../../../public/django-tests.svg https://img.shields.io/badge/webserver\ coverage-$(python3.9 -m coverage report --rcfile=.coveragerc --precision=2 | grep -E "^TOTAL.+?([0-9]+.[0-9]+%)$" | grep -Eo "[0-9]+.[0-9]+%$")-informational'
+
+    # run Selenium Tests with Chrome
+    - echo "chrome" > selenium_browser.conf  # settings file for the unittest (so that they are run with Chrome)
+    - python3.9 -Wa manage.py test --settings=sop.settings_ci tests/systemtests/
+
   artifacts:
+    name: "django_artefacts_job-${CI_JOB_ID}_commit-${CI_COMMIT_SHA}"
+    when: always
     paths:
       - public/django-tests.svg
+      - webserver/src/main/sop/tests/systemtests/media/
+    expire_in: 2 weeks
+
 
 backend-tests:
   variables:

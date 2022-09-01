@@ -47,6 +47,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+media_test/
 
 # Translations
 *.mo
@@ -182,3 +183,4 @@ Include/
 *.ini
 *.sh
 media/
+**/selenium_browser.conf
