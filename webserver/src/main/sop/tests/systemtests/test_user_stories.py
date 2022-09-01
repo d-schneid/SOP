@@ -68,12 +68,15 @@ class UserStoriesTest(SeleniumTestCase):
             "This is the Canada Dataset, which Bob uses for testint SOP."
         )
 
-        self.upload_dataset(valid_dataset_path, dataset_name, dataset_description)
+        self.upload_dataset(
+            dataset_path=valid_dataset_path,
+            dataset_name=dataset_name,
+            dataset_description=dataset_description,
+            username=bob_username,
+        )
 
         # wait for the dataset to be cleaned
-        self.wait_until_dataset_ready(
-            dataset_name=dataset_name, failure_expected=False
-        )
+        self.wait_until_dataset_ready(dataset_name=dataset_name, failure_expected=False)
 
         # Bob creates an Experiment with his new Dataset
         experiment_name = "Bobs Erstes Experiment"
@@ -84,6 +87,7 @@ class UserStoriesTest(SeleniumTestCase):
             experiment_name=experiment_name,
             dataset_name=dataset_name,
             list_algos=[algo_name_kde, algo_name_knn],
+            username=bob_username
         )
 
         # Bob creates an execution within his new experiment
@@ -168,12 +172,15 @@ class UserStoriesTest(SeleniumTestCase):
             "This is the Canada Dataset, which Chralie uses for testint SOP."
         )
 
-        self.upload_dataset(valid_dataset_path, dataset_name, dataset_description)
+        self.upload_dataset(
+            dataset_path=valid_dataset_path,
+            dataset_name=dataset_name,
+            dataset_description=dataset_description,
+            username=SeleniumTestCase.STANDARD_USERNAME_USER,
+        )
 
         # wait for the dataset to be cleaned
-        self.wait_until_dataset_ready(
-            dataset_name=dataset_name, failure_expected=False
-        )
+        self.wait_until_dataset_ready(dataset_name=dataset_name, failure_expected=False)
 
         # upload own algorithm
         algo_name = "Dr. Metas algorithm"
@@ -192,6 +199,7 @@ class UserStoriesTest(SeleniumTestCase):
             experiment_name=experiment_name,
             dataset_name=dataset_name,
             list_algos=[algo_name],
+            username=SeleniumTestCase.STANDARD_USERNAME_USER,
         )
 
         # create new execution

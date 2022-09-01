@@ -31,4 +31,9 @@ class DatasetUploadTests(SeleniumTestCase):
             "This is the Canada Dataset, used for automated tests with Selenium."
         )
 
-        self.upload_dataset(valid_dataset_path, dataset_name, dataset_description)
+        self.upload_dataset(
+            dataset_path=valid_dataset_path,
+            dataset_name=dataset_name,
+            dataset_description=dataset_description,
+            username=SeleniumTestCase.STANDARD_USERNAME_USER,
+        )
