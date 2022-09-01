@@ -87,7 +87,7 @@ class UserStoriesTest(SeleniumTestCase):
             experiment_name=experiment_name,
             dataset_name=dataset_name,
             list_algos=[algo_name_kde, algo_name_knn],
-            username=bob_username
+            username=bob_username,
         )
 
         # Bob creates an execution within his new experiment
@@ -153,6 +153,8 @@ class UserStoriesTest(SeleniumTestCase):
         self.driver.find_element(By.XPATH, "//input[@type='submit']").click()
         self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXPERIMENT_OVERVIEW)
 
+        # TODO: create helper method for execution creation
+
         # TODO: wait for finish & download result & check
         #  (-> change parameters and dataset)
 
@@ -190,7 +192,7 @@ class UserStoriesTest(SeleniumTestCase):
             algo_description="Provided by Dr. Meta, for my friend Charlie",
             algo_group=SeleniumTestCase.AlgoGroup.PROXIMITY_BASED,
             algo_path=os.path.join("tests", "sample_algorithms", "SampleAlgoKnn.py"),
-            username=SeleniumTestCase.STANDARD_USERNAME_USER
+            username=SeleniumTestCase.STANDARD_USERNAME_USER,
         )
 
         # create new experiment with own algorithm
@@ -242,6 +244,8 @@ class UserStoriesTest(SeleniumTestCase):
 
         self.driver.find_element(By.XPATH, "//input[@type='submit']").click()
         self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXPERIMENT_OVERVIEW)
+
+        # TODO: create helper method for execution creation
 
         # TODO: wait for finish & download result & check
         #  (-> change parameters and dataset)

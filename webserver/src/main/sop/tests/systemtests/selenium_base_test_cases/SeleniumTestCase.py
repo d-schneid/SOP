@@ -241,7 +241,11 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         self.assertEqual(dataset.user, self.get_user_from_db(username))
 
     def create_experiment(
-        self, experiment_name: str, dataset_name: str, list_algos: List[str], username: str
+        self,
+        experiment_name: str,
+        dataset_name: str,
+        list_algos: List[str],
+        username: str,
     ):
 
         self.driver.find_element(By.LINK_TEXT, "Experiments").click()
