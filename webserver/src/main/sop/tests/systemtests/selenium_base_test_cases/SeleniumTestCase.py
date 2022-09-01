@@ -358,10 +358,10 @@ class SeleniumTestCase(StaticLiveServerTestCase):
 
         # database check
         algo: Algorithm = self.get_algos_from_db([algo_name])[0]
-        self.assertTrue(algo.display_name, algo_name)
-        self.assertTrue(algo.description, algo_description)
-        self.assertTrue(algo.group, algo_group)
-        self.assertTrue(algo.user, self.get_user_from_db(username))
+        self.assertEqual(algo.display_name, algo_name)
+        self.assertEqual(algo.description, algo_description)
+        self.assertEqual(algo.group, algo_group)
+        self.assertEqual(algo.user, self.get_user_from_db(username))
 
         # TODO: select the correct div so that asserts are also valid
         #  with more than one algo uploaded
@@ -406,17 +406,17 @@ class SeleniumTestCase(StaticLiveServerTestCase):
 
     def get_user_from_db(self, username: str):
         user_list = User.objects.filter(username=username)
-        self.assertTrue(len(user_list) == 1)
+        self.assertEqual(len(user_list), 1)
         return user_list.first()
 
     def get_dataset_from_db(self, dataset_name: str) -> Dataset:
         dataset_list = Dataset.objects.filter(display_name=dataset_name)
-        self.assertTrue(len(dataset_list) == 1)
+        self.assertEqual(len(dataset_list), 1)
         return dataset_list.first()
 
     def get_experiment_from_db(self, experiment_name: str):
         experiment_list = Experiment.objects.filter(display_name=experiment_name)
-        self.assertTrue(len(experiment_list) == 1)
+        self.assertEqual(len(experiment_list), 1)
         return experiment_list.first()
 
     def get_algos_from_db(self, algo_list: List[str]) -> List[Algorithm]:
@@ -424,7 +424,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
 
         for algo_str in algo_list:
             algos_in_db = Algorithm.objects.filter(display_name=algo_str)
-            self.assertTrue(len(algos_in_db) == 1)
+            self.assertEqual(len(algos_in_db), 1)
             result_list.append(algos_in_db.first())
 
         return result_list
