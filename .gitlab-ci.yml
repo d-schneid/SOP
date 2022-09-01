@@ -153,7 +153,7 @@ django-tests:
 
     # run Selenium Tests with Chrome
     - echo "chrome" > selenium_browser.conf  # settings file for the unittest (so that they are run with Chrome)
-    - python3.9 manage.py test --settings=sop.settings_ci tests/systemtests/
+    - python3.9 -Wa manage.py test --settings=sop.settings_ci tests/systemtests/
 
   artifacts:
     name: "django_artefacts_job-${CI_JOB_ID}_commit-${CI_COMMIT_SHA}"
