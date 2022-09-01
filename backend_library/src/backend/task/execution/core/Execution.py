@@ -177,9 +177,6 @@ class Execution(JsonSerializable, Task, Schedulable):
         details_path: str = os.path.join(self._result_path, 'details.json')
         running_path: str = details_path + ".running"
 
-        if os.path.isfile(details_path):
-            return  # details file was already generated
-
         if os.path.isfile(running_path):
             os.remove(running_path)
 
