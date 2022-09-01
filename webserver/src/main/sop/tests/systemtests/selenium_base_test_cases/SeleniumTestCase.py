@@ -5,7 +5,6 @@ from enum import Enum
 from time import sleep
 from typing import List
 
-from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium.webdriver.common.by import By
@@ -13,8 +12,8 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
-import SeleniumTestHelper
 from experiments.models.dataset import Dataset, CleaningState
+from tests.systemtests.selenium_base_test_cases import SeleniumTestHelper
 
 
 class SeleniumTestCase(StaticLiveServerTestCase):
@@ -86,7 +85,11 @@ class SeleniumTestCase(StaticLiveServerTestCase):
             os.makedirs(SeleniumTestCase.SELENIUM_ERROR_PATH)
 
         # setting up the Webdriver
-        cls.driver = SeleniumTestHelper.initialize_the_webdriver()
+        cls.driver = SeleniumTestHelper.initialize_the_webdriver(
+            config_file_path=SeleniumTestCase.BROWSER_VALUE_CONF_FILEPATH,
+            browser_value_firefox=SeleniumTestCase.BROWSER_VALUE_FIREFOX,
+            browser_value_chrome=SeleniumTestCase.BROWSER_VALUE_CHROME,
+        )
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -104,7 +107,17 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         super().setUp()
 
         # add users to db
-        SeleniumTestHelper.add_users_to_db()
+        SeleniumTestCase.STANDARD_USERNAME_USER = SeleniumTestCase._BASE_USERNAME_USER
+        SeleniumTestCase.STANDARD_USERNAME_ADMIN = SeleniumTestCase._BASE_USERNAME_ADMIN
+        SeleniumTestCase.STANDARD_PASSWORD_USER = SeleniumTestCase._BASE_PASSWORD
+        SeleniumTestCase.STANDARD_PASSWORD_ADMIN = SeleniumTestCase._BASE_PASSWORD
+
+        SeleniumTestHelper.add_users_to_db(
+            username_user=SeleniumTestCase.STANDARD_USERNAME_USER,
+            username_admin=SeleniumTestCase.STANDARD_USERNAME_ADMIN,
+            password_user=SeleniumTestCase.STANDARD_PASSWORD_USER,
+            password_admin=SeleniumTestCase.STANDARD_PASSWORD_ADMIN,
+        )
 
         # import pyod algos
         SeleniumTestHelper.add_pyod_algos_to_db()
@@ -122,7 +135,10 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         self._feedErrorsToResult(result, self._outcome.errors)
 
         SeleniumTestHelper.save_artefacts_if_failure(
-            self.driver, result, self._testMethodName
+            driver=self.driver,
+            result=result,
+            test_method_name=self._testMethodName,
+            save_path=SeleniumTestCase.SELENIUM_ERROR_PATH,
         )
 
         # try to log out
@@ -188,16 +204,33 @@ class SeleniumTestCase(StaticLiveServerTestCase):
 
         # assert the upload worked
         self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.DATASET_OVERVIEW)
-        page_source = self.driver.page_source
-        self.assertIn(dataset_name, page_source)
-        self.assertIn(dataset_description, page_source)
+        whole_page = self.get_whole_page()
+        dataset_div = SeleniumTestHelper.get_dataset_div(whole_page, dataset_name)
+
+        self.assertIn(dataset_name, dataset_div.text)
+        self.assertIn(dataset_description, dataset_div.text)
 
         # check visibility of buttons
-        if self.get_dataset_cleaning_state(page_source, dataset_name) == CleaningState.FINISHED:
-            download_cleaned_button =
-            self.assertTrue()
+        download_button_cleaned = (
+            SeleniumTestHelper.get_dataset_button_download_cleaned(
+                whole_page, dataset_name
+            )
+        )
+        download_button_uncleaned = (
+            SeleniumTestHelper.get_dataset_button_download_uncleaned(
+                whole_page, dataset_name
+            )
+        )
+
+        self.assertTrue(download_button_uncleaned.is_displayed())
+
+        if (
+            self.get_dataset_cleaning_state(whole_page, dataset_name)
+            == CleaningState.FINISHED
+        ):
+            self.assertTrue(download_button_cleaned.is_displayed())
         else:
-            # TODO: check maybe visibility of buttons depending on cleaning state
+            self.assertFalse(download_button_cleaned.is_displayed())
 
         # check in the database
         dataset_list = Dataset.objects.filter(display_name=dataset_name)
@@ -312,17 +345,24 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         # TODO: check info displayed on the page
         # TODO: check directly in the database, if the dataset was added correctly
 
-    def wait_until_dataset_cleaned(self, dataset_name: str):
+    def get_whole_page(self) -> WebElement:
+        return self.driver.find_element(By.TAG_NAME, "html")
 
+    def wait_until_dataset_cleaned(self, dataset_name: str):
         while True:
             sleep(1)
-            if self.get_dataset_cleaning_state(dataset_name) == CleaningState.FINISHED:
+            if (
+                self.get_dataset_cleaning_state(self.get_whole_page(), dataset_name)
+                == CleaningState.FINISHED
+            ):
                 break
 
     def get_dataset_cleaning_state(
-        self, page_source: WebElement, dataset_name: str
+        self, whole_page: WebElement, dataset_name: str
     ) -> CleaningState:
-        text = SeleniumTestHelper.get_dataset_div(page_source, dataset_name).text
+        text = SeleniumTestHelper.get_dataset_status_element(
+            whole_page, dataset_name
+        ).text
 
         if text == "cleaning in progress":
             return CleaningState["RUNNING"]

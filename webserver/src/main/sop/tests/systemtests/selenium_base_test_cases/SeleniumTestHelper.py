@@ -18,18 +18,43 @@ from webdriver_manager.firefox import GeckoDriverManager
 
 from authentication.models import User
 from experiments.management.commands import pyodtodb
-from tests.systemtests.selenium_base_test_cases.SeleniumTestCase import SeleniumTestCase
 
 
 # ----------- Extracting Data -----------
 
+def get_dataset_div(whole_page: WebElement, dataset_name: str) -> WebElement:
+    return whole_page.find_element(
+        By.XPATH,
+        "//a[normalize-space(text()) = '"
+        + dataset_name
+        + "']/parent::*/parent::*/parent::*",
+    )
 
-def get_dataset_div(page_source: WebElement, dataset_name: str) -> WebElement:
-    return page_source.find_element(
+
+def get_dataset_status_element(whole_page: WebElement, dataset_name: str) -> WebElement:
+    return whole_page.find_element(
         By.XPATH,
         "//a[normalize-space(text()) = '"
         + dataset_name
         + "']/parent::*/following-sibling::a",
+    )
+
+
+def get_dataset_button_download_cleaned(
+        whole_page: WebElement, dataset_name: str
+) -> WebElement:
+    return get_dataset_div(whole_page, dataset_name).find_element(
+        By.XPATH,
+        "//a[contains(text(),'Cleaned')]",
+    )
+
+
+def get_dataset_button_download_uncleaned(
+        whole_page: WebElement, dataset_name: str
+) -> WebElement:
+    return get_dataset_div(whole_page, dataset_name).find_element(
+        By.XPATH,
+        "//a[contains(text(),'Uncleaned')]",
     )
 
 
@@ -49,54 +74,47 @@ def add_pyod_algos_to_db():
     pyodtodb.PYOD_ALGORITHMS = pyodtodb.ORG_PYOD_DATA
 
 
-def add_users_to_db():
-    #  generate a unique username
-    SeleniumTestCase.STANDARD_USERNAME_USER = SeleniumTestCase._BASE_USERNAME_USER
-    SeleniumTestCase.STANDARD_USERNAME_ADMIN = SeleniumTestCase._BASE_USERNAME_ADMIN
-    assert not User.objects.filter(
-        username=SeleniumTestCase.STANDARD_USERNAME_USER
-    ).exists()
-    assert not User.objects.filter(
-        username=SeleniumTestCase.STANDARD_USERNAME_ADMIN
-    ).exists()
+def add_users_to_db(username_user: str, password_user: str, username_admin: str, password_admin: str):
 
-    # set passwords
-    SeleniumTestCase.STANDARD_PASSWORD_USER = SeleniumTestCase._BASE_PASSWORD
-    SeleniumTestCase.STANDARD_PASSWORD_ADMIN = SeleniumTestCase._BASE_PASSWORD
+    assert not User.objects.filter(
+        username=username_user
+    ).exists()
+    assert not User.objects.filter(
+        username=username_admin
+    ).exists()
 
     #  add them
     User.objects.create_user(
-        username=SeleniumTestCase.STANDARD_USERNAME_USER,
-        password=SeleniumTestCase.STANDARD_PASSWORD_USER,
+        username=username_user,
+        password=password_user,
     )
     user_admin = User.objects.create_user(
-        username=SeleniumTestCase.STANDARD_USERNAME_ADMIN,
-        password=SeleniumTestCase.STANDARD_PASSWORD_ADMIN,
+        username=username_admin,
+        password=password_admin,
     )
     user_admin.is_staff = True
     user_admin.is_superuser = True
     user_admin.save()
 
 
-def initialize_the_webdriver() -> Union[
+def initialize_the_webdriver(config_file_path: str, browser_value_firefox: str, browser_value_chrome: str) -> Union[
     selenium.webdriver.Chrome | selenium.webdriver.Firefox
-]:
-
+    ]:
     # read the selenium_browser.conf-file for settings (if available)
-    if os.path.isfile(SeleniumTestCase.BROWSER_VALUE_CONF_FILEPATH):
-        with open(SeleniumTestCase.BROWSER_VALUE_CONF_FILEPATH, "r") as file:
+    if os.path.isfile(config_file_path):
+        with open(config_file_path, "r") as file:
             browser_var = file.read().strip()
         print("Selenium Config File Found! - Contents: |" + browser_var + "|")
     else:
         print(
             "Selenium Config File NOT Found! - Expected location was: "
-            + SeleniumTestCase.BROWSER_VALUE_CONF_FILEPATH
+            + config_file_path
         )
-        browser_var = SeleniumTestCase.BROWSER_VALUE_FIREFOX
+        browser_var = browser_value_firefox
 
     # Set up the webdriver (for Chrome or Firefox)
     # (the standard browser used is the Firefox browser)
-    if browser_var == SeleniumTestCase.BROWSER_VALUE_CHROME:
+    if browser_var == browser_value_chrome:
         # setup chrome webdriver
         print("Chrome Browser is used for Selenium Test Cases")
 
@@ -145,11 +163,11 @@ def initialize_the_webdriver() -> Union[
 
 
 def save_artefacts_if_failure(
-    driver: Union[selenium.webdriver.Chrome | selenium.webdriver.Firefox],
-    result: unittest.TestResult,
-    test_method_name: str,
+        driver: Union[selenium.webdriver.Chrome | selenium.webdriver.Firefox],
+        result: unittest.TestResult,
+        test_method_name: str,
+        save_path: str
 ):
-
     # check if an error has occurred
     if result.errors:
         err_type = "ERROR"
@@ -163,7 +181,7 @@ def save_artefacts_if_failure(
     if err_type is not None:
         # screenshot
         screenshot_path = os.path.join(
-            SeleniumTestCase.SELENIUM_ERROR_PATH,
+            save_path,
             "selenium_screenshot_{err_type}_{method_name}.png",
         ).format(method_name=test_method_name, err_type=err_type)
 
@@ -171,7 +189,7 @@ def save_artefacts_if_failure(
 
         # save page source (original and pretty version)
         page_source_path_base = os.path.join(
-            SeleniumTestCase.SELENIUM_ERROR_PATH,
+            save_path,
             "selenium_page_source_{err_type}_{method_name}.html",
         ).format(method_name=test_method_name, err_type=err_type)
 
@@ -185,7 +203,7 @@ def save_artefacts_if_failure(
 
         # save prettified version
         page_source_path_pretty = (
-            base_source_parts[0] + "_pretty." + base_source_parts[1]
+                base_source_parts[0] + "_pretty." + base_source_parts[1]
         )
 
         pretty_source = BeautifulSoup(driver.page_source, "html.parser").prettify()
