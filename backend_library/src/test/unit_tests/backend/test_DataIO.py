@@ -82,7 +82,7 @@ class UnitTestDataIO(unittest.TestCase):
         # TODO
 
     def test_invalid_file(self):
-        test_file: str = os.path.join("test", "datasets", "invalid_csv.csv")
+        test_file: str = "../resources/test/datasets/invalid_csv.csv"
         try:
             pd = DataIO.read_uncleaned_csv(test_file)
             print("--------------")
