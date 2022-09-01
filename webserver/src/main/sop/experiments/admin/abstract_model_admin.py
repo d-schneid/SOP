@@ -31,7 +31,7 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
         @return: The Form class for use in the admin add view. This is used by
         add_view.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def get_admin_change_form(self) -> type[ModelForm[Model]]:
@@ -40,7 +40,7 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
         @return: The Form class for use in the admin change view. This is used by
         change_view.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def get_model_name(self) -> str:
@@ -48,7 +48,7 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
         Hook for specifying custom model names.
         @return: The name of the associated model of this model admin.
         """
-        pass
+        raise NotImplementedError
 
     # override to get current user in form
     def get_form(self, request: HttpRequest, *args, **kwargs) -> type[ModelForm[Model]]:

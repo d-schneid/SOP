@@ -6,7 +6,7 @@ from tempfile import mkstemp
 from typing import Any, Optional
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand, CommandError, CommandParser
 
 from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from experiments.models import Algorithm
@@ -135,29 +135,45 @@ def fix_base_detector_imports(pyod_models_root: Path):
         shutil.move(abs_path, path)
 
 
+MISSING = object()
+
+
 class Command(BaseCommand):
     help = "Adds all pyod algorithms as algorithm models into to database"
 
-    def save_algorithms_in_db(self, pyod_models_root: Path):
+    def add_arguments(self, parser: CommandParser) -> None:
+        parser.add_argument(
+            "--quiet", "-q", action="store_true", help="Turn off console output."
+        )
+
+    def save_algorithms_in_db(self, pyod_models_root: Path, quiet: bool = False):
         # Check algorithms before adding them to the database
         for pyod_algo in PYOD_ALGORITHMS:
-            self.stdout.write(
+            self.stdout_write(
                 f"Checking {pyod_algo.display_name} ({pyod_algo.file_name})"
-                " for validity...", ending="")
+                " for validity...",
+                ending="",
+                quiet=quiet,
+            )
             # assert filename matches classname
-            assert (os.path.splitext(pyod_algo.file_name)[
-                        0] == pyod_algo.class_name.lower())
+            assert (
+                os.path.splitext(pyod_algo.file_name)[0] == pyod_algo.class_name.lower()
+            )
 
             # check algorithm for validity
             errors = AlgorithmLoader.is_algorithm_valid(
                 str(pyod_models_root / pyod_algo.file_name)
             )
             assert errors is None, errors
-            self.stdout.write(self.style.SUCCESS("OK"))
+            self.stdout_write(self.style.SUCCESS("OK"), quiet=quiet)
 
         for pyod_algo in PYOD_ALGORITHMS:
-            self.stdout.write(f"Saving {pyod_algo.display_name} ({pyod_algo.file_name})"
-                              " into database...", ending="")
+            self.stdout_write(
+                f"Saving {pyod_algo.display_name} ({pyod_algo.file_name})"
+                " into database...",
+                ending="",
+                quiet=quiet,
+            )
             path = pyod_models_root / (pyod_algo.class_name.lower() + ".py")
             mapping = AlgorithmLoader.get_algorithm_parameters(str(path))
             params_dict = convert_param_mapping_to_signature_dict(mapping)
@@ -170,12 +186,23 @@ class Command(BaseCommand):
             algo = Algorithm.objects.create(**data)
             algo.path.name = str(path.relative_to(settings.MEDIA_ROOT))
             algo.save()
-            self.stdout.write(self.style.SUCCESS("OK"))
+            self.stdout_write(self.style.SUCCESS("OK"), quiet=quiet)
+
+    def stdout_write(self, message: str, ending: str = MISSING, quiet: bool = False):
+        if quiet:
+            return
+
+        if ending is not MISSING:
+            self.stdout.write(message, ending=ending)
+        else:
+            self.stdout.write(message)
 
     def handle(self, *args: Any, **options: Any) -> Optional[str]:
         import pyod
 
-        self.stdout.write("Searching for pyod library path...", ending="")
+        quiet = options["quiet"]
+
+        self.stdout_write("Searching for pyod library path...", ending="", quiet=quiet)
 
         pyod_path = Path(pyod.__path__[0])
         media_pyod_root = settings.ALGORITHM_ROOT_DIR / "pyod_algorithms"
@@ -184,24 +211,30 @@ class Command(BaseCommand):
                 f"pyod seems to be imported before. {media_pyod_root} exists."
             )
 
-        self.stdout.write(self.style.SUCCESS("OK"))
+        self.stdout_write(self.style.SUCCESS("OK"), quiet=quiet)
 
-        self.stdout.write("Copying pyod library to media root...", ending="")
+        self.stdout_write(
+            "Copying pyod library to media root...", ending="", quiet=quiet
+        )
         shutil.copytree(src=pyod_path, dst=media_pyod_root)
-        self.stdout.write(self.style.SUCCESS("OK"))
+        self.stdout_write(self.style.SUCCESS("OK"), quiet=quiet)
 
         AlgorithmLoader.set_algorithm_root_dir(str(settings.ALGORITHM_ROOT_DIR))
 
-        self.stdout.write("Rename python files to match class names...", ending="")
+        self.stdout_write(
+            "Rename python files to match class names...", ending="", quiet=quiet
+        )
         rename_algorithm_files_if_needed(media_pyod_root / "models")
-        self.stdout.write(self.style.SUCCESS("OK"))
+        self.stdout_write(self.style.SUCCESS("OK"), quiet=quiet)
 
-        self.stdout.write(
-            "Change import statements for pyod.models.base.BaseDetector...", ending=""
+        self.stdout_write(
+            "Change import statements for pyod.models.base.BaseDetector...",
+            ending="",
+            quiet=quiet,
         )
         fix_base_detector_imports(media_pyod_root / "models")
-        self.stdout.write(self.style.SUCCESS("OK"))
+        self.stdout_write(self.style.SUCCESS("OK"), quiet=quiet)
 
-        self.stdout.write("Saving models to database:")
-        self.save_algorithms_in_db(media_pyod_root / "models")
+        self.stdout_write("Saving models to database:", quiet=quiet)
+        self.save_algorithms_in_db(media_pyod_root / "models", quiet)
         return None

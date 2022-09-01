@@ -24,7 +24,7 @@ class MinMaxScaler(FeatureScaler, ABC):
         """
         # exception handling
         assert len(dataset_to_clean.data.shape) == 2
-        eh.check_non_none_column(dataset_to_clean.data, "MinMaxScaler")
+        eh.check_no_none_column(dataset_to_clean.data, "MinMaxScaler")
 
         # MinMaxScaling logic
         scaler: mms = mms()

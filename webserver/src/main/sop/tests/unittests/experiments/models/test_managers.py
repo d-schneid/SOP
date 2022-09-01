@@ -263,7 +263,7 @@ class ExecutionQuerySetTests(django.test.TestCase):
     def test_execution_queryset_get_sorted_by_creation_date(self) -> None:
         queryset = Execution.objects.get_sorted_by_creation_date()  # type: ignore
         self.assertListEqual(
-            list(queryset), [self.exe4, self.exe3, self.exe2, self.exe1]
+            list(queryset), [self.exe1, self.exe2, self.exe3, self.exe4]
         )
 
     def test_execution_queryset_get_by_user(self) -> None:

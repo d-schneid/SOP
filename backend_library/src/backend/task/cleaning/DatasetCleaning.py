@@ -61,6 +61,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
                               none_roc_remover(0),
                               ImputationMode(),
                               MinMaxScaler()]  # Default Cleaning-Pipeline
+        assert all(step is not None for step in cleaning_steps)
         self._uncleaned_dataset_path: str = uncleaned_dataset_path
         self._cleaned_dataset_path: str = cleaned_dataset_path
         self._cleaning_steps: list[DatasetCleaningStep] = cleaning_steps
@@ -183,8 +184,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
 
         for cleaning_step in self._cleaning_steps:
             try:
-                if cleaning_step is not None:
-                    csv_to_clean = cleaning_step.do_cleaning(csv_to_clean)
+                csv_to_clean = cleaning_step.do_cleaning(csv_to_clean)
             except Exception as e:  # catch all exceptions
                 if str(e) == "":
                     e = "Error: " + str(cleaning_step) + " resulted in an error"

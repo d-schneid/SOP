@@ -32,42 +32,42 @@ class Scheduler(ABC):
         return Scheduler._instance
 
     @abstractmethod
-    def schedule(self, to_schedule: Schedulable) -> None:  # pragma: no cover
+    def schedule(self, to_schedule: Schedulable) -> None:
         """schedules a given Schedulable for processing"""
-        pass
+        raise NotImplementedError
 
     @abstractmethod
-    def abort_by_task(self, task_id: int) -> None:  # pragma: no cover
+    def abort_by_task(self, task_id: int) -> None:
         """Aborts all Tasks matching a Task id.
         Aborts do not happen whilst running run_before_on_main or run_later_on_main.
         :raises NotImplementedError if not supported
         :raises Value error optionally if -1 is provided as task_id"""
-        pass
+        raise NotImplementedError
 
     @abstractmethod
-    def abort_by_user(self, user_id: int) -> None:  # pragma: no cover
+    def abort_by_user(self, user_id: int) -> None:
         """Aborts all Tasks matching a User id
          :raises NotImplementedError if not supported
          :raises Value error optionally if -1 is provided as user_id"""
-        pass
+        raise NotImplementedError
 
     @abstractmethod
-    def hard_shutdown(self) -> None:  # pragma: no cover
+    def hard_shutdown(self) -> None:
         """Terminates all work now, scheduler might not be usable after calling this"""
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def graceful_shutdown(self,
                           on_shutdown_completed: Optional[Callable[[], None]] = None) \
-            -> None:  # pragma: no cover
+            -> None:
         """Waits for active Tasks to finish, no new ones are started after this.
         If called after a tasks run_before_on_main started but before do_work started,
         the task may or may not be aborted.
         :raises NotImplementedError if not supported"""
-        pass
+        raise NotImplementedError
 
     @abstractmethod
-    def is_shutting_down(self) -> bool:  # pragma: no cover
+    def is_shutting_down(self) -> bool:
         """Returns whether a graceful shutdown is ongoing,
         false if that feature is not supported """
-        pass
+        raise NotImplementedError
