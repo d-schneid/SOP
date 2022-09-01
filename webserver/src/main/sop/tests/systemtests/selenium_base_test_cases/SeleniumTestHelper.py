@@ -22,6 +22,7 @@ from experiments.management.commands import pyodtodb
 
 # ----------- Extracting Data -----------
 
+
 def get_dataset_div(whole_page: WebElement, dataset_name: str) -> WebElement:
     return whole_page.find_element(
         By.XPATH,
@@ -32,16 +33,13 @@ def get_dataset_div(whole_page: WebElement, dataset_name: str) -> WebElement:
 
 
 def get_dataset_status_element(whole_page: WebElement, dataset_name: str) -> WebElement:
-    return whole_page.find_element(
-        By.XPATH,
-        "//a[normalize-space(text()) = '"
-        + dataset_name
-        + "']/parent::*/following-sibling::a",
+    return get_dataset_div(whole_page, dataset_name).find_element(
+        By.CLASS_NAME, "dataset-status"
     )
 
 
 def get_dataset_button_download_cleaned(
-        whole_page: WebElement, dataset_name: str
+    whole_page: WebElement, dataset_name: str
 ) -> WebElement:
     return get_dataset_div(whole_page, dataset_name).find_element(
         By.XPATH,
@@ -50,7 +48,7 @@ def get_dataset_button_download_cleaned(
 
 
 def get_dataset_button_download_uncleaned(
-        whole_page: WebElement, dataset_name: str
+    whole_page: WebElement, dataset_name: str
 ) -> WebElement:
     return get_dataset_div(whole_page, dataset_name).find_element(
         By.XPATH,
@@ -74,14 +72,12 @@ def add_pyod_algos_to_db():
     pyodtodb.PYOD_ALGORITHMS = pyodtodb.ORG_PYOD_DATA
 
 
-def add_users_to_db(username_user: str, password_user: str, username_admin: str, password_admin: str):
+def add_users_to_db(
+    username_user: str, password_user: str, username_admin: str, password_admin: str
+):
 
-    assert not User.objects.filter(
-        username=username_user
-    ).exists()
-    assert not User.objects.filter(
-        username=username_admin
-    ).exists()
+    assert not User.objects.filter(username=username_user).exists()
+    assert not User.objects.filter(username=username_admin).exists()
 
     #  add them
     User.objects.create_user(
@@ -97,9 +93,9 @@ def add_users_to_db(username_user: str, password_user: str, username_admin: str,
     user_admin.save()
 
 
-def initialize_the_webdriver(config_file_path: str, browser_value_firefox: str, browser_value_chrome: str) -> Union[
-    selenium.webdriver.Chrome | selenium.webdriver.Firefox
-    ]:
+def initialize_the_webdriver(
+    config_file_path: str, browser_value_firefox: str, browser_value_chrome: str
+) -> Union[selenium.webdriver.Chrome | selenium.webdriver.Firefox]:
     # read the selenium_browser.conf-file for settings (if available)
     if os.path.isfile(config_file_path):
         with open(config_file_path, "r") as file:
@@ -163,10 +159,10 @@ def initialize_the_webdriver(config_file_path: str, browser_value_firefox: str, 
 
 
 def save_artefacts_if_failure(
-        driver: Union[selenium.webdriver.Chrome | selenium.webdriver.Firefox],
-        result: unittest.TestResult,
-        test_method_name: str,
-        save_path: str
+    driver: Union[selenium.webdriver.Chrome | selenium.webdriver.Firefox],
+    result: unittest.TestResult,
+    test_method_name: str,
+    save_path: str,
 ):
     # check if an error has occurred
     if result.errors:
@@ -203,7 +199,7 @@ def save_artefacts_if_failure(
 
         # save prettified version
         page_source_path_pretty = (
-                base_source_parts[0] + "_pretty." + base_source_parts[1]
+            base_source_parts[0] + "_pretty." + base_source_parts[1]
         )
 
         pretty_source = BeautifulSoup(driver.page_source, "html.parser").prettify()
