@@ -136,7 +136,6 @@ class SeleniumTestCase(StaticLiveServerTestCase):
             os.makedirs(SeleniumTestCase.SELENIUM_ERROR_PATH)
 
         # read the selenium_browser.conf-file for settings (if available)
-        browser_var = None
         if os.path.isfile(SeleniumTestCase.BROWSER_VALUE_CONF_FILEPATH):
             with open(SeleniumTestCase.BROWSER_VALUE_CONF_FILEPATH, "r") as file:
                 browser_var = file.read().strip()
@@ -148,50 +147,53 @@ class SeleniumTestCase(StaticLiveServerTestCase):
             )
             browser_var = SeleniumTestCase.BROWSER_VALUE_FIREFOX
 
-        assert browser_var is not None
-
         # Set up the browser (Chrome or Firefox)
-        # the standard browser used is the Firefox browser
-        browser_options: Union[ChromeOptions, FirefoxOptions, None] = None
-        browser_service: Union[ChromeService, FirefoxService, None] = None
-
+        # (the standard browser used is the Firefox browser)
         if browser_var == SeleniumTestCase.BROWSER_VALUE_CHROME:
             # setup chrome webdriver
             print("Chrome Browser is used for Selenium Test Cases")
 
-            browser_service = ChromeService(
+            chrome_service = ChromeService(
                 executable_path=ChromeDriverManager().install()
             )
 
-            browser_options = ChromeOptions()
+            # add options for the browser
+            chrome_options = ChromeOptions()
 
             if str(os.environ.get("CI")) == "true":
-                print("Running in CI - turning off sandbox for Chrome to work.")
-                browser_options.add_argument('--no-sandbox')
+                print("Running in CI - turning off sandbox for Chrome to work")
+                chrome_options.add_argument('--no-sandbox')
+            else:
+                print("Running NOT in CI")
+
+            chrome_options.add_argument("--headless")
+            chrome_options.add_argument("--window-size=2560,1440")
+            chrome_options.add_argument("--start-maximized")
+
+            # create driver object
+            cls.driver = selenium.webdriver.Chrome(
+                service=chrome_service,
+                options=chrome_options,
+            )
 
         else:
             # setup firefox webdriver
             print("Firefox Browser is used for Selenium Test Cases")
 
-            browser_service = FirefoxService(
+            firefox_service = FirefoxService(
                 executable_path=GeckoDriverManager().install()
             )
 
-            browser_options = FirefoxOptions()
+            # add options for the browser
+            firefox_options = FirefoxOptions()
+            firefox_options.add_argument("--headless")
+            firefox_options.add_argument("--window-size=2560,1440")
+            firefox_options.add_argument("--start-maximized")
 
-        # assert both object have been set
-        assert browser_options is not None
-        assert browser_service is not None
-
-        # add arguments to the options (must be available for both browsers)
-        browser_options.add_argument("--headless")
-        browser_options.add_argument("--window-size=2560,1440")
-        browser_options.add_argument("--start-maximized")
-
-        # create driver object
-        cls.driver: selenium.webdriver.Chrome = selenium.webdriver.Chrome(
-            service=browser_service, options=browser_options
-        )
+            # create driver object
+            cls.driver = selenium.webdriver.Firefox(
+                service=firefox_service, options=firefox_options
+            )
 
         # setting: wait, if an element is not found
         cls.driver.implicitly_wait(30)
@@ -224,10 +226,8 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         SeleniumTestCase.logout(self)
 
     def tearDown(self) -> None:
-        # delete dir of pyod algos
-        shutil.rmtree(path=SeleniumTestCase.PYOD_AGLO_ROOT)
-
         # if the test failed, take a screenshot and save the page source
+
         result = self.defaultTestResult()
         self._feedErrorsToResult(result, self._outcome.errors)
 
@@ -280,7 +280,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
 
         super().tearDown()
 
-        # delete old dirs
+        # delete old dirs (this includes the pyod algo directory)
         if os.path.isdir(settings.MEDIA_ROOT):
             shutil.rmtree(settings.MEDIA_ROOT)
         assert not os.path.isdir(settings.MEDIA_ROOT)
