@@ -16,11 +16,13 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 
 from authentication.models import User
+from experiments.models.dataset import Dataset, CleaningState
 from experiments.management.commands import pyodtodb
 
 
@@ -54,7 +56,6 @@ def _add_users_to_db():
 
 
 def _add_pyod_algos_to_db():
-
     # add a new attribute, which is a deepcopy of the attribute PYOD_ALGORITHMS
     # so the original values are saved
     # (and the original attribute can be reset, s. below)
@@ -266,7 +267,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
 
             # save prettified version
             page_source_path_pretty = (
-                base_source_parts[0] + "_pretty." + base_source_parts[1]
+                    base_source_parts[0] + "_pretty." + base_source_parts[1]
             )
 
             pretty_source = BeautifulSoup(
@@ -316,7 +317,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         self.assertIn("/logout", self.driver.page_source)
 
     def upload_dataset(
-        self, dataset_path: str, dataset_name: str, dataset_description: str
+            self, dataset_path: str, dataset_name: str, dataset_description: str,
     ):
         assert os.path.isfile(dataset_path)
 
@@ -334,18 +335,24 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
 
         # assert the upload worked
-        page_source = self.driver.page_source  # get page source instantly
         self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.DATASET_OVERVIEW)
+        page_source = self.driver.page_source
         self.assertIn(dataset_name, page_source)
         self.assertIn(dataset_description, page_source)
 
-        # TODO: select the correct div so that asserts are also valid
-        #  with more than one dataset uploaded
+        # check visibility of buttons
+
+        # check in the database
+        dataset_list = Dataset.objects.filter(display_name=dataset_name)
+        self.assertTrue(len(dataset_list) == 1)
+        dataset = dataset_list.first()
+        self.assertEqual(dataset.display_name, dataset_name)
+        self.assertEqual(dataset.description, dataset_description)
+
         # TODO: check maybe visibility of buttons depending on cleaning state
-        # TODO: check directly in the database, if the dataset was added correctly
 
     def create_experiment(
-        self, experiment_name: str, dataset_name: str, list_algos: List[str]
+            self, experiment_name: str, dataset_name: str, list_algos: List[str]
     ):
 
         self.driver.find_element(By.LINK_TEXT, "Experiments").click()
@@ -414,11 +421,11 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         # TODO: check directly in the database, if the dataset was added correctly
 
     def upload_algorithm(
-        self,
-        algo_name: str,
-        algo_description: str,
-        algo_group: AlgoGroup,
-        algo_path: str,
+            self,
+            algo_name: str,
+            algo_description: str,
+            algo_group: AlgoGroup,
+            algo_path: str,
     ):
         assert os.path.isfile(algo_path)
 
@@ -454,14 +461,29 @@ class SeleniumTestCase(StaticLiveServerTestCase):
 
         while True:
             sleep(1)
-            dataset_div = self.driver.find_element(
-                By.XPATH,
-                "//a[normalize-space(text()) = '"
-                + dataset_name
-                + "']/parent::*/following-sibling::a",
-            )
-            if dataset_div.text == "cleaned":
+            if self.get_dataset_cleaning_state(dataset_name) == CleaningState.FINISHED:
                 break
+
+    def get_dataset_div(self, page_source: WebElement, dataset_name: str) -> WebElement:
+        return page_source.find_element(
+            By.XPATH,
+            "//a[normalize-space(text()) = '"
+            + dataset_name
+            + "']/parent::*/following-sibling::a",
+        )
+
+    def get_dataset_cleaning_state(self, page_source: WebElement,
+                                   dataset_name: str) -> CleaningState:
+        text = self.get_dataset_div(page_source, dataset_name).text
+
+        if text == "cleaning in progress":
+            return CleaningState["RUNNING"]
+        elif text == "cleaned":
+            return CleaningState["FINISHED"]
+        elif text == "cleaning failed":
+            return CleaningState["FINISHED_WITH_ERROR"]
+        else:
+            self.fail("Unexpected Cleaning State of the Dataset: |" + text + "|")
 
     # -------------- Additional asserts -----------
 
@@ -473,7 +495,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
             url_suffix_regex_pattern = prefix_slash
         else:
             url_suffix_regex_pattern = (
-                prefix_slash + url_suffix_regex.value + suffix_slash
+                    prefix_slash + url_suffix_regex.value + suffix_slash
             )
 
         url_pattern_full = re.escape(self.get_base_url()) + url_suffix_regex_pattern
