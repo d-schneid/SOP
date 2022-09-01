@@ -156,8 +156,12 @@ django-tests:
     - python3.9 manage.py test --settings=sop.settings_ci tests/systemtests/
 
   artifacts:
+    name: "django_artefacts_job-${CI_JOB_ID}_commit-${CI_COMMIT_SHA}"
+    when: always
     paths:
       - public/django-tests.svg
+      - webserver/src/main/sop/tests/systemtests/media/
+    expire_in: 2 weeks
 
 
 backend-tests:
