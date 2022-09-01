@@ -165,6 +165,10 @@ class SeleniumTestCase(StaticLiveServerTestCase):
 
             browser_options = ChromeOptions()
 
+            if str(os.environ.get("CI")) == "true":
+                print("Running in CI - turning off sandbox for Chrome to work.")
+                browser_options.add_argument('--no-sandbox')
+
         else:
             # setup firefox webdriver
             print("Firefox Browser is used for Selenium Test Cases")
