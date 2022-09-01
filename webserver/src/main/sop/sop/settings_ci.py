@@ -97,7 +97,6 @@ DATABASES = {
         "PASSWORD": os.environ.get("MYSQL_PASSWORD"),
         "HOST": "mysql",
         "PORT": "3306",
-        "CONN_MAX_AGE": 60,
     },
 }
 
