@@ -12,6 +12,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
+from experiments.models import Experiment, Algorithm
 from experiments.models.dataset import Dataset, CleaningState
 from tests.systemtests.selenium_base_test_cases import SeleniumTestHelper
 
@@ -233,10 +234,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
             self.assertFalse(download_button_cleaned.is_displayed())
 
         # check in the database
-        dataset_list = Dataset.objects.filter(display_name=dataset_name)
-        self.assertTrue(len(dataset_list) == 1)
-        dataset = dataset_list.first()
-        self.assertEqual(dataset.display_name, dataset_name)
+        dataset = self.get_dataset_from_db(dataset_name)
         self.assertEqual(dataset.description, dataset_description)
 
     def create_experiment(
@@ -297,16 +295,27 @@ class SeleniumTestCase(StaticLiveServerTestCase):
 
         self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
 
-        page_source = self.driver.page_source
+        # asserts
         self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXPERIMENT_OVERVIEW)
-        self.assertIn(experiment_name, page_source)
-        self.assertIn(dataset_name, page_source)
-        for algo in list_algos:
-            self.assertIn(algo, page_source)
+        whole_page = self.get_whole_page()
 
-        # TODO: select the correct div so that asserts are also valid
+        self.assertIn(experiment_name, whole_page.text)
+        self.assertIn(dataset_name, whole_page.text)
+        for algo in list_algos:
+            self.assertIn(algo, whole_page.text)
+
+        # check in the database
+        dataset = self.get_dataset_from_db(dataset_name)
+        experiment = self.get_experiment_from_db(experiment_name)
+        self.assertEqual(experiment.dataset, dataset)
+
+        self.assertListEqual(
+            list(experiment.algorithms.all()), self.get_algos_from_db(list_algos)
+        )
+
+        # TODO: select the correct divs (a bit more complex here)
+        #  so that asserts are also valid
         #  with more than one experiment created
-        # TODO: check directly in the database, if the dataset was added correctly
 
     def upload_algorithm(
         self,
@@ -361,9 +370,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
                 break
 
         # check the database
-        dataset_list = Dataset.objects.filter(display_name=dataset_name)
-        self.assertTrue(len(dataset_list) == 1)
-        dataset = dataset_list.first()
+        dataset = self.get_dataset_from_db(dataset_name)
         self.assertNotEqual(dataset.is_cleaned, failure_expected)
         self.assertTrue(dataset.has_finished)
         self.assertEqual(dataset.has_error, failure_expected)
@@ -383,6 +390,26 @@ class SeleniumTestCase(StaticLiveServerTestCase):
             return CleaningState["FINISHED_WITH_ERROR"]
         else:
             self.fail("Unexpected Cleaning State of the Dataset: |" + text + "|")
+
+    def get_dataset_from_db(self, dataset_name: str) -> Dataset:
+        dataset_list = Dataset.objects.filter(display_name=dataset_name)
+        self.assertTrue(len(dataset_list) == 1)
+        return dataset_list.first()
+
+    def get_experiment_from_db(self, experiment_name: str):
+        experiment_list = Experiment.objects.filter(display_name=experiment_name)
+        self.assertTrue(len(experiment_list) == 1)
+        return experiment_list.first()
+
+    def get_algos_from_db(self, algo_list: List[str]) -> List[Algorithm]:
+        result_list: List[Algorithm] = []
+
+        for algo_str in algo_list:
+            algos_in_db = Algorithm.objects.filter(display_name=algo_str)
+            self.assertTrue(len(algos_in_db) == 1)
+            result_list.append(algos_in_db.first())
+
+        return result_list
 
     # -------------- Additional asserts -----------
 
