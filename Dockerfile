@@ -8,8 +8,9 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # install psycopg2 dependencies
-RUN apt update -y && apt upgrade -y \
-    && DEBIAN_FRONTEND=noninteractive apt install -y python3-dev memcached
+RUN apt-get update && apt-get install --no-install-recommends -y python3-dev=3.9.2-3 memcached=1.6.9+dfsg-1 \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 
 # copy requirements list and docker entrypoint
 COPY requirements.txt requirements_deploy.txt requirements_pyod_algorithms.txt entrypoint.sh ./
