@@ -1,5 +1,4 @@
 import urllib
-from unittest import skip
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
@@ -11,9 +10,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 
 
-
 class TestSiteDisplay(StaticLiveServerTestCase):
-
     def test_driver_manager_chrome(self):
         print("======== CHECKING URL accessible in CHROME driver tests =========")
 
@@ -29,7 +26,7 @@ class TestSiteDisplay(StaticLiveServerTestCase):
 
         chrome_options = ChromeOptions()
         chrome_options.add_argument("--headless")
-        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument("--no-sandbox")
         # chrome_options.add_argument('--disable-dev-shm-usage')
         chrome_options.add_argument("--window-size=2560,1440")
         chrome_options.add_argument("--start-maximized")
@@ -101,4 +98,3 @@ class TestSiteDisplay(StaticLiveServerTestCase):
         driver.quit()
 
         print("======== Firefox successful! ==========")
-

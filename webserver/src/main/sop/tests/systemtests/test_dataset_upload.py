@@ -1,5 +1,4 @@
 import os.path
-from unittest import skip
 
 from tests.systemtests.selenium_base_test_cases.SeleniumTestCase import SeleniumTestCase
 

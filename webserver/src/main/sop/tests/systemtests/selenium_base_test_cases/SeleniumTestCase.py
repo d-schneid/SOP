@@ -4,7 +4,7 @@ import re
 import shutil
 from enum import Enum
 from time import sleep
-from typing import List, Union
+from typing import List
 
 import selenium
 from bs4 import BeautifulSoup
@@ -162,7 +162,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
 
             if str(os.environ.get("CI")) == "true":
                 print("Running in CI - turning off sandbox for Chrome to work")
-                chrome_options.add_argument('--no-sandbox')
+                chrome_options.add_argument("--no-sandbox")
             else:
                 print("Running NOT in CI")
 
