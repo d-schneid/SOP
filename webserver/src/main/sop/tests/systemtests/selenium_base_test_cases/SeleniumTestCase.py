@@ -1,4 +1,3 @@
-import copy
 import os
 import re
 import shutil
@@ -6,66 +5,16 @@ from enum import Enum
 from time import sleep
 from typing import List
 
-import selenium
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from selenium.webdriver.chrome.options import Options as ChromeOptions
-from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
-from selenium.webdriver.firefox.options import Options as FirefoxOptions
-from selenium.webdriver.firefox.service import Service as FirefoxService
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
-from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.firefox import GeckoDriverManager
 
-from authentication.models import User
+import SeleniumTestHelper
 from experiments.models.dataset import Dataset, CleaningState
-from experiments.management.commands import pyodtodb
-
-
-def _add_users_to_db():
-    #  generate a unique username
-    SeleniumTestCase.STANDARD_USERNAME_USER = SeleniumTestCase._BASE_USERNAME_USER
-    SeleniumTestCase.STANDARD_USERNAME_ADMIN = SeleniumTestCase._BASE_USERNAME_ADMIN
-    assert not User.objects.filter(
-        username=SeleniumTestCase.STANDARD_USERNAME_USER
-    ).exists()
-    assert not User.objects.filter(
-        username=SeleniumTestCase.STANDARD_USERNAME_ADMIN
-    ).exists()
-
-    # set passwords
-    SeleniumTestCase.STANDARD_PASSWORD_USER = SeleniumTestCase._BASE_PASSWORD
-    SeleniumTestCase.STANDARD_PASSWORD_ADMIN = SeleniumTestCase._BASE_PASSWORD
-
-    #  add them
-    User.objects.create_user(
-        username=SeleniumTestCase.STANDARD_USERNAME_USER,
-        password=SeleniumTestCase.STANDARD_PASSWORD_USER,
-    )
-    user_admin = User.objects.create_user(
-        username=SeleniumTestCase.STANDARD_USERNAME_ADMIN,
-        password=SeleniumTestCase.STANDARD_PASSWORD_ADMIN,
-    )
-    user_admin.is_staff = True
-    user_admin.is_superuser = True
-    user_admin.save()
-
-
-def _add_pyod_algos_to_db():
-    # add a new attribute, which is a deepcopy of the attribute PYOD_ALGORITHMS
-    # so the original values are saved
-    # (and the original attribute can be reset, s. below)
-    # as the renaming will not work otherwise (after the first time)
-    setattr(pyodtodb, "ORG_PYOD_DATA", copy.deepcopy(pyodtodb.PYOD_ALGORITHMS))
-
-    pyodtodb.Command().handle()
-
-    # reset the original attribute
-    pyodtodb.PYOD_ALGORITHMS = pyodtodb.ORG_PYOD_DATA
 
 
 class SeleniumTestCase(StaticLiveServerTestCase):
@@ -136,68 +85,8 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         if not os.path.isdir(SeleniumTestCase.SELENIUM_ERROR_PATH):
             os.makedirs(SeleniumTestCase.SELENIUM_ERROR_PATH)
 
-        # read the selenium_browser.conf-file for settings (if available)
-        if os.path.isfile(SeleniumTestCase.BROWSER_VALUE_CONF_FILEPATH):
-            with open(SeleniumTestCase.BROWSER_VALUE_CONF_FILEPATH, "r") as file:
-                browser_var = file.read().strip()
-            print("Selenium Config File Found! - Contents: |" + browser_var + "|")
-        else:
-            print(
-                "Selenium Config File NOT Found! - Expected location was: "
-                + SeleniumTestCase.BROWSER_VALUE_CONF_FILEPATH
-            )
-            browser_var = SeleniumTestCase.BROWSER_VALUE_FIREFOX
-
-        # Set up the browser (Chrome or Firefox)
-        # (the standard browser used is the Firefox browser)
-        if browser_var == SeleniumTestCase.BROWSER_VALUE_CHROME:
-            # setup chrome webdriver
-            print("Chrome Browser is used for Selenium Test Cases")
-
-            chrome_service = ChromeService(
-                executable_path=ChromeDriverManager().install()
-            )
-
-            # add options for the browser
-            chrome_options = ChromeOptions()
-
-            if str(os.environ.get("CI")) == "true":
-                print("Running in CI - turning off sandbox for Chrome to work")
-                chrome_options.add_argument("--no-sandbox")
-            else:
-                print("Running NOT in CI")
-
-            chrome_options.add_argument("--headless")
-            chrome_options.add_argument("--window-size=2560,1440")
-            chrome_options.add_argument("--start-maximized")
-
-            # create driver object
-            cls.driver = selenium.webdriver.Chrome(
-                service=chrome_service,
-                options=chrome_options,
-            )
-
-        else:
-            # setup firefox webdriver
-            print("Firefox Browser is used for Selenium Test Cases")
-
-            firefox_service = FirefoxService(
-                executable_path=GeckoDriverManager().install()
-            )
-
-            # add options for the browser
-            firefox_options = FirefoxOptions()
-            firefox_options.add_argument("--headless")
-            firefox_options.add_argument("--window-size=2560,1440")
-            firefox_options.add_argument("--start-maximized")
-
-            # create driver object
-            cls.driver = selenium.webdriver.Firefox(
-                service=firefox_service, options=firefox_options
-            )
-
-        # setting: wait, if an element is not found
-        cls.driver.implicitly_wait(30)
+        # setting up the Webdriver
+        cls.driver = SeleniumTestHelper.initialize_the_webdriver()
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -215,10 +104,10 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         super().setUp()
 
         # add users to db
-        _add_users_to_db()
+        SeleniumTestHelper.add_users_to_db()
 
         # import pyod algos
-        _add_pyod_algos_to_db()
+        SeleniumTestHelper.add_pyod_algos_to_db()
 
         # get base url
         self.driver.get(self.get_base_url())
@@ -227,54 +116,14 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         SeleniumTestCase.logout(self)
 
     def tearDown(self) -> None:
-        # if the test failed, take a screenshot and save the page source
 
+        # if the test failed, take a screenshot and save the page source
         result = self.defaultTestResult()
         self._feedErrorsToResult(result, self._outcome.errors)
 
-        # check if an error has occurred
-        if result.errors:
-            err_type = "ERROR"
-        # or a failure
-        elif result.failures:
-            err_type = "FAILURE"
-        else:
-            err_type = None
-
-        # if there is and error, take a screenshot and save the page source
-        if err_type is not None:
-            # screenshot
-            screenshot_path = os.path.join(
-                SeleniumTestCase.SELENIUM_ERROR_PATH,
-                "selenium_screenshot_{err_type}_{method_name}.png",
-            ).format(method_name=self._testMethodName, err_type=err_type)
-
-            self.driver.save_screenshot(screenshot_path)
-
-            # save page source (original and pretty version)
-            page_source_path_base = os.path.join(
-                SeleniumTestCase.SELENIUM_ERROR_PATH,
-                "selenium_page_source_{err_type}_{method_name}.html",
-            ).format(method_name=self._testMethodName, err_type=err_type)
-
-            base_source_parts = page_source_path_base.split(".")
-
-            # save original
-            page_source_path_org = base_source_parts[0] + "_org." + base_source_parts[1]
-
-            with open(page_source_path_org, "w") as file:
-                file.write(self.driver.page_source)
-
-            # save prettified version
-            page_source_path_pretty = (
-                    base_source_parts[0] + "_pretty." + base_source_parts[1]
-            )
-
-            pretty_source = BeautifulSoup(
-                self.driver.page_source, "html.parser"
-            ).prettify()
-            with open(page_source_path_pretty, "w") as file:
-                file.write(pretty_source)
+        SeleniumTestHelper.save_artefacts_if_failure(
+            self.driver, result, self._testMethodName
+        )
 
         # try to log out
         SeleniumTestCase.logout(self)
@@ -317,7 +166,10 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         self.assertIn("/logout", self.driver.page_source)
 
     def upload_dataset(
-            self, dataset_path: str, dataset_name: str, dataset_description: str,
+        self,
+        dataset_path: str,
+        dataset_name: str,
+        dataset_description: str,
     ):
         assert os.path.isfile(dataset_path)
 
@@ -341,6 +193,11 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         self.assertIn(dataset_description, page_source)
 
         # check visibility of buttons
+        if self.get_dataset_cleaning_state(page_source, dataset_name) == CleaningState.FINISHED:
+            download_cleaned_button =
+            self.assertTrue()
+        else:
+            # TODO: check maybe visibility of buttons depending on cleaning state
 
         # check in the database
         dataset_list = Dataset.objects.filter(display_name=dataset_name)
@@ -349,10 +206,8 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         self.assertEqual(dataset.display_name, dataset_name)
         self.assertEqual(dataset.description, dataset_description)
 
-        # TODO: check maybe visibility of buttons depending on cleaning state
-
     def create_experiment(
-            self, experiment_name: str, dataset_name: str, list_algos: List[str]
+        self, experiment_name: str, dataset_name: str, list_algos: List[str]
     ):
 
         self.driver.find_element(By.LINK_TEXT, "Experiments").click()
@@ -421,11 +276,11 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         # TODO: check directly in the database, if the dataset was added correctly
 
     def upload_algorithm(
-            self,
-            algo_name: str,
-            algo_description: str,
-            algo_group: AlgoGroup,
-            algo_path: str,
+        self,
+        algo_name: str,
+        algo_description: str,
+        algo_group: AlgoGroup,
+        algo_path: str,
     ):
         assert os.path.isfile(algo_path)
 
@@ -464,17 +319,10 @@ class SeleniumTestCase(StaticLiveServerTestCase):
             if self.get_dataset_cleaning_state(dataset_name) == CleaningState.FINISHED:
                 break
 
-    def get_dataset_div(self, page_source: WebElement, dataset_name: str) -> WebElement:
-        return page_source.find_element(
-            By.XPATH,
-            "//a[normalize-space(text()) = '"
-            + dataset_name
-            + "']/parent::*/following-sibling::a",
-        )
-
-    def get_dataset_cleaning_state(self, page_source: WebElement,
-                                   dataset_name: str) -> CleaningState:
-        text = self.get_dataset_div(page_source, dataset_name).text
+    def get_dataset_cleaning_state(
+        self, page_source: WebElement, dataset_name: str
+    ) -> CleaningState:
+        text = SeleniumTestHelper.get_dataset_div(page_source, dataset_name).text
 
         if text == "cleaning in progress":
             return CleaningState["RUNNING"]
@@ -495,7 +343,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
             url_suffix_regex_pattern = prefix_slash
         else:
             url_suffix_regex_pattern = (
-                    prefix_slash + url_suffix_regex.value + suffix_slash
+                prefix_slash + url_suffix_regex.value + suffix_slash
             )
 
         url_pattern_full = re.escape(self.get_base_url()) + url_suffix_regex_pattern
