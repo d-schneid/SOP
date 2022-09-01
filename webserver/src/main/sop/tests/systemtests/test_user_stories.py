@@ -190,6 +190,7 @@ class UserStoriesTest(SeleniumTestCase):
             algo_description="Provided by Dr. Meta, for my friend Charlie",
             algo_group=SeleniumTestCase.AlgoGroup.PROXIMITY_BASED,
             algo_path=os.path.join("tests", "sample_algorithms", "SampleAlgoKnn.py"),
+            username=SeleniumTestCase.STANDARD_USERNAME_USER
         )
 
         # create new experiment with own algorithm

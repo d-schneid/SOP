@@ -325,6 +325,7 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         algo_description: str,
         algo_group: AlgoGroup,
         algo_path: str,
+        username: str,
     ):
         assert os.path.isfile(algo_path)
 
@@ -351,10 +352,16 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         self.assertIn(algo_name, page_source)
         self.assertIn(algo_description, page_source)
 
+        # database check
+        algo: Algorithm = self.get_algos_from_db([algo_name])[0]
+        self.assertTrue(algo.display_name, algo_name)
+        self.assertTrue(algo.description, algo_description)
+        self.assertTrue(algo.group, algo_group)
+        self.assertTrue(algo.user, self.get_user_from_db(username))
+
         # TODO: select the correct div so that asserts are also valid
         #  with more than one algo uploaded
         # TODO: check info displayed on the page
-        # TODO: check directly in the database, if the dataset was added correctly
 
     def get_whole_page(self) -> WebElement:
         return self.driver.find_element(By.TAG_NAME, "html")
