@@ -46,7 +46,7 @@
 {% endblock %}
 
 {% block card-footer %}
-    {% for execution in model.execution_set.all %}
+    {% for execution in model.execution_set.get_sorted_by_creation_date %}
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
                 <div class="d-flex flex-column-reverse">
