@@ -51,13 +51,13 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         ADMIN_AUTHENTICATION_USER_CHANGE = _admin_authentication_user + "/[0-9]+/change"
 
     class AlgoGroup(Enum):
-        PROBABILISTIC = "Probabilistic"
-        LINEAR_MODEL = "Linear Model"
-        PROXIMITY_BASED = "Proximity Based"
-        OUTLIER_ENSEMBLES = "Outlier Ensembles"
-        NEURONAL_NETWORKS = "Neural Networks"
-        COMBINATION = "Combination"
-        OTHER = "Other"
+        PROBABILISTIC: str = "Probabilistic"
+        LINEAR_MODEL: str = "Linear Model"
+        PROXIMITY_BASED: str = "Proximity Based"
+        OUTLIER_ENSEMBLES: str = "Outlier Ensembles"
+        NEURONAL_NETWORKS: str = "Neural Networks"
+        COMBINATION: str = "Combination"
+        OTHER: str = "Other"
 
     STANDARD_USERNAME_USER: str
     STANDARD_PASSWORD_USER: str
@@ -360,8 +360,11 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         algo: Algorithm = self.get_algos_from_db([algo_name])[0]
         self.assertEqual(algo.display_name, algo_name)
         self.assertEqual(algo.description, algo_description)
-        self.assertEqual(algo.group, algo_group)
         self.assertEqual(algo.user, self.get_user_from_db(username))
+
+        algo_group_regex = algo_group.value.replace(" ", "[\s\-]")  # noqa: W605
+
+        self.assertRegex(algo.group, algo_group_regex)
 
         # TODO: select the correct div so that asserts are also valid
         #  with more than one algo uploaded
