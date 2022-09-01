@@ -158,7 +158,6 @@ django-tests:
   artifacts:
     paths:
       - public/django-tests.svg
-      - webserver/src/main/sop/tests/systemtests/media/
 
 
 backend-tests:
