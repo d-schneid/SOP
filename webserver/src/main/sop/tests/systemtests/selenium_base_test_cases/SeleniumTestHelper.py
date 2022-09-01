@@ -66,7 +66,7 @@ def add_pyod_algos_to_db():
     # as the renaming will not work otherwise (after the first time)
     setattr(pyodtodb, "ORG_PYOD_DATA", copy.deepcopy(pyodtodb.PYOD_ALGORITHMS))
 
-    pyodtodb.Command().handle(**{"quiet": True})
+    pyodtodb.Command().handle(**{"quiet": True, "overwrite": False})
 
     # reset the original attribute
     pyodtodb.PYOD_ALGORITHMS = pyodtodb.ORG_PYOD_DATA
