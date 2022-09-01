@@ -6,7 +6,7 @@ from experiments.models.execution import ExecutionStatus
 from experiments.management.commands.markcrashed import Command
 
 
-class PyodToDBTests(django.test.TestCase):
+class MarkCrashedTests(django.test.TestCase):
     user1: User
     dataset1: Dataset
     exp1: Experiment
@@ -46,7 +46,7 @@ class PyodToDBTests(django.test.TestCase):
             subspace_amount=4,
             subspaces_min=2,
             subspaces_max=11,
-            status=ExecutionStatus.FINISHED.name,
+            status=ExecutionStatus.CRASHED.name,
         )
         cls.exe4 = Execution.objects.create(
             algorithm_parameters="",
@@ -54,7 +54,7 @@ class PyodToDBTests(django.test.TestCase):
             subspace_amount=4,
             subspaces_min=2,
             subspaces_max=11,
-            status=ExecutionStatus.FINISHED_WITH_ERROR.name,
+            status=ExecutionStatus.FINISHED.name,
         )
         cls.exe5 = Execution.objects.create(
             algorithm_parameters="",
@@ -62,16 +62,19 @@ class PyodToDBTests(django.test.TestCase):
             subspace_amount=4,
             subspaces_min=2,
             subspaces_max=11,
-            status=ExecutionStatus.CRASHED.name,
+            status=ExecutionStatus.FINISHED_WITH_ERROR.name,
         )
 
     def test_mark_crashed(self) -> None:
         cmd = Command()
         cmd.handle()
-        for execution in Execution.objects.get_queryset():
-            if execution.pk in [1, 2, 5]:
-                self.assertEqual(ExecutionStatus.CRASHED.name, execution.status)
-            elif execution.pk == 3:
-                self.assertEqual(ExecutionStatus.FINISHED.name, execution.status)
-            elif execution.pk == 4:
-                self.assertEqual(ExecutionStatus.FINISHED_WITH_ERROR.name, execution.status)
+        self.exe1.refresh_from_db()
+        self.assertEqual(ExecutionStatus.CRASHED.name, self.exe1.status)
+        self.exe2.refresh_from_db()
+        self.assertEqual(ExecutionStatus.CRASHED.name, self.exe2.status)
+        self.exe3.refresh_from_db()
+        self.assertEqual(ExecutionStatus.CRASHED.name, self.exe3.status)
+        self.exe4.refresh_from_db()
+        self.assertEqual(ExecutionStatus.FINISHED.name, self.exe4.status)
+        self.exe5.refresh_from_db()
+        self.assertEqual(ExecutionStatus.FINISHED_WITH_ERROR.name, self.exe5.status)
