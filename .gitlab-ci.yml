@@ -95,7 +95,7 @@ default:
 
 flake:
   stage: test
-  needs: []
+  needs: [ ]
   before_script:
     - python3.9 -m pip install flake8 flake8-assertive
   script:
@@ -104,7 +104,7 @@ flake:
     - '! grep -IUrPl --exclude-dir=.git --exclude-dir=venv* "\r$" 1>&2'
 
 django-tests:
-  needs: []
+  needs: [ ]
   stage: test
   extends: .frontend-base
   coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
@@ -187,8 +187,10 @@ backend-docs:
 deploy-docs:
   inherit:
     default: false
-  needs: 
+  needs:
     - backend-docs
+    - backend-tests
+    - flake
   image: debian:latest
   stage: deploy
   only:
@@ -210,6 +212,7 @@ publish-build:
   needs:
     - backend-tests
     - django-tests
+    - flake
   stage: publish
   only:
     - main
@@ -224,7 +227,7 @@ publish-build:
 
 
 deploy-badges:
-  needs: 
+  needs:
     - backend-tests
     - django-tests
   inherit:
