@@ -71,7 +71,9 @@ class UserStoriesTest(SeleniumTestCase):
         self.upload_dataset(valid_dataset_path, dataset_name, dataset_description)
 
         # wait for the dataset to be cleaned
-        self.wait_until_dataset_cleaned(dataset_name)
+        self.wait_until_dataset_ready(
+            dataset_name=dataset_name, failure_expected=False
+        )
 
         # Bob creates an Experiment with his new Dataset
         experiment_name = "Bobs Erstes Experiment"
@@ -169,7 +171,9 @@ class UserStoriesTest(SeleniumTestCase):
         self.upload_dataset(valid_dataset_path, dataset_name, dataset_description)
 
         # wait for the dataset to be cleaned
-        self.wait_until_dataset_cleaned(dataset_name)
+        self.wait_until_dataset_ready(
+            dataset_name=dataset_name, failure_expected=False
+        )
 
         # upload own algorithm
         algo_name = "Dr. Metas algorithm"

@@ -348,14 +348,25 @@ class SeleniumTestCase(StaticLiveServerTestCase):
     def get_whole_page(self) -> WebElement:
         return self.driver.find_element(By.TAG_NAME, "html")
 
-    def wait_until_dataset_cleaned(self, dataset_name: str):
+    def wait_until_dataset_ready(self, dataset_name: str, failure_expected: bool):
+        # wait until cleaned (or cleaning failed)
         while True:
             sleep(1)
-            if (
-                self.get_dataset_cleaning_state(self.get_whole_page(), dataset_name)
-                == CleaningState.FINISHED
+            cleaning_state = self.get_dataset_cleaning_state(
+                self.get_whole_page(), dataset_name
+            )
+            if (cleaning_state == CleaningState.FINISHED) or (
+                cleaning_state == CleaningState.FINISHED_WITH_ERROR
             ):
                 break
+
+        # check the database
+        dataset_list = Dataset.objects.filter(display_name=dataset_name)
+        self.assertTrue(len(dataset_list) == 1)
+        dataset = dataset_list.first()
+        self.assertNotEqual(dataset.is_cleaned, failure_expected)
+        self.assertTrue(dataset.has_finished)
+        self.assertEqual(dataset.has_error, failure_expected)
 
     def get_dataset_cleaning_state(
         self, whole_page: WebElement, dataset_name: str
