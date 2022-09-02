@@ -186,9 +186,13 @@ class DatasetCleaning(Task, Schedulable, ABC):
             try:
                 csv_to_clean = cleaning_step.do_cleaning(csv_to_clean)
             except Exception as e:  # catch all exceptions
-                if str(e) == "":
-                    e = "Error: " + str(cleaning_step) + " resulted in an error"
-                TaskHelper.save_error_csv(self._cleaned_dataset_path, str(e))
+                error_message: str = str(e)
+
+                if error_message == "":
+                    error_message = "ERROR The cleaning step " + str(cleaning_step) + \
+                                    " resulted in an error"
+
+                TaskHelper.save_error_csv(self._cleaned_dataset_path, error_message)
                 return None
 
             # Exception handling
