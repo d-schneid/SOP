@@ -4,10 +4,10 @@ from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 
 
 class UnitTestAlgorithmLoader(unittest.TestCase):
-    algo_location = "./test/algorithms/DebugAlgorithm.py"
+    algo_location = "../resources/test/algorithms/DebugAlgorithm.py"
 
     def setUp(self) -> None:
-        AlgorithmLoader.set_algorithm_root_dir("./test")
+        AlgorithmLoader.set_algorithm_root_dir("../resources/test")
 
     def test_basic_loading(self):
         self.assertIsNone(AlgorithmLoader.is_algorithm_valid(self.algo_location))

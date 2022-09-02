@@ -22,7 +22,7 @@ class SystemTest_ExecutionResultContents(unittest.TestCase):
     _task_id: int = 1553
 
     _dataset_path: str = os.path.join(os.getcwd(),
-                                      "test/datasets" +
+                                      "../resources/test/datasets" +
                                       "/canada_climate_cleaned_to_compare.csv")
 
     _dir_name: str = os.getcwd()
@@ -50,8 +50,8 @@ class SystemTest_ExecutionResultContents(unittest.TestCase):
     _display_names: list[str] = ["display_name", "display_name",
                                  "different_display_name", "display_name"]
 
-    _path: str = "./test/algorithms/DebugAlgorithm.py"
-    _root_dir: str = "./test/"
+    _path: str = "../resources/test/algorithms/DebugAlgorithm.py"
+    _root_dir: str = "../resources/test/"
     _algorithms: list[ParameterizedAlgorithm] = \
         list([ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[0]),
               ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[1]),
