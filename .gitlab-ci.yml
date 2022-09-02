@@ -108,6 +108,8 @@ django-tests:
   stage: test
   extends: .frontend-base
   coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
+  variables:
+    - SELENIUM_SCHEDULER: production
   script:
     - source venv3.9/bin/activate
 
@@ -131,6 +133,9 @@ django-tests:
     - ln -s /opt/firefox/firefox /usr/local/bin/firefox
     - rm firefox_browser.tar.bz2
 
+    # set browser to Firefox for the first run of the Selenium Tets
+    - export SELENIUM_BROWSER=firefox
+
 
     - which python3.9
     - cd webserver/src/main/sop
@@ -152,7 +157,7 @@ django-tests:
     - 'wget -O ../../../../public/django-tests.svg https://img.shields.io/badge/webserver\ coverage-$(python3.9 -m coverage report --rcfile=.coveragerc --precision=2 | grep -E "^TOTAL.+?([0-9]+.[0-9]+%)$" | grep -Eo "[0-9]+.[0-9]+%$")-informational'
 
     # run Selenium Tests with Chrome
-    - echo "chrome" > selenium_browser.conf  # settings file for the unittest (so that they are run with Chrome)
+    - export SELENIUM_BROWSER=chrome # setting for the systemtests (so that they are run with Chrome this time)
     - python3.9 -Wa manage.py test --settings=sop.settings_ci tests/systemtests/
 
   artifacts:
