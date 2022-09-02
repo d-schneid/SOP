@@ -14,6 +14,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
 from authentication.models import User
+from backend.scheduler.DebugScheduler import DebugScheduler
+from backend.scheduler.Scheduler import Scheduler
 from experiments.models import Experiment, Algorithm
 from experiments.models.dataset import Dataset, CleaningState
 from tests.systemtests.selenium_base_test_cases import SeleniumTestHelper
@@ -69,11 +71,12 @@ class SeleniumTestCase(StaticLiveServerTestCase):
     SELENIUM_ERROR_PATH = os.path.join(MEDIA_DIR_PATH, "selenium_err_artefacts")
     PYOD_AGLO_ROOT = settings.ALGORITHM_ROOT_DIR / "pyod_algorithms"
 
-    BROWSER_VALUE_CONF_FILEPATH = os.path.join(
-        settings.BASE_DIR, "selenium_browser.conf"
-    )
-    BROWSER_VALUE_FIREFOX = "firefox"
-    BROWSER_VALUE_CHROME = "chrome"
+    BROWSER_ENV_VAR_NAME = "SELENIUM_BROWSER"
+    BROWSER_ENV_VAR_VALUE_FIREFOX = "firefox"
+    BROWSER_ENV_VAR_VALUE_CHROME = "chrome"
+    SCHEDULER_ENV_VAR_NAME = "SELENIUM_SCHEDULER"
+    SCHEDULER_ENV_VAR_VALUE_DEBUG = "debug"
+    SCHEDULER_ENV_VAR_VALUE_REAL = "production"
 
     _BASE_USERNAME_USER = "SeleniumTestUser"
     _BASE_USERNAME_ADMIN = "SeleniumTestAdmin"
@@ -89,9 +92,9 @@ class SeleniumTestCase(StaticLiveServerTestCase):
 
         # setting up the Webdriver
         cls.driver = SeleniumTestHelper.initialize_the_webdriver(
-            config_file_path=SeleniumTestCase.BROWSER_VALUE_CONF_FILEPATH,
-            browser_value_firefox=SeleniumTestCase.BROWSER_VALUE_FIREFOX,
-            browser_value_chrome=SeleniumTestCase.BROWSER_VALUE_CHROME,
+            browser_env_var_name=SeleniumTestCase.BROWSER_ENV_VAR_NAME,
+            browser_value_firefox=SeleniumTestCase.BROWSER_ENV_VAR_VALUE_FIREFOX,
+            browser_value_chrome=SeleniumTestCase.BROWSER_ENV_VAR_VALUE_CHROME,
         )
 
     @classmethod
@@ -106,6 +109,19 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         if os.path.isdir(settings.MEDIA_ROOT):
             shutil.rmtree(settings.MEDIA_ROOT)
         assert not os.path.isdir(settings.MEDIA_ROOT)
+
+        # depending on the environment variables, run with the debug scheduler
+        if (
+            os.environ.get(
+                SeleniumTestCase.SCHEDULER_ENV_VAR_NAME,
+                SeleniumTestCase.SCHEDULER_ENV_VAR_VALUE_DEBUG,
+            )
+            == SeleniumTestCase.SCHEDULER_ENV_VAR_VALUE_REAL
+        ):
+            print("[Selenium Tests]  Running with normal, production Scheduler")
+        else:
+            Scheduler.default_scheduler = DebugScheduler
+            print("[Selenium Tests]  Running with DebugScheduler")
 
         super().setUp()
 
@@ -151,8 +167,10 @@ class SeleniumTestCase(StaticLiveServerTestCase):
 
         # delete old dirs (this includes the pyod algo directory)
 
-        # wait for concurrent processes to finish (otherwise this might fail) # TODO
-        sleep(5)
+        # cancel all still running tasks in the scheduler
+        if Scheduler._instance is not None:
+            Scheduler.get_instance().hard_shutdown()
+            Scheduler._instance = None
 
         if os.path.isdir(settings.MEDIA_ROOT):
             shutil.rmtree(settings.MEDIA_ROOT)

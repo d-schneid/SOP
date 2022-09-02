@@ -94,25 +94,17 @@ def add_users_to_db(
 
 
 def initialize_the_webdriver(
-    config_file_path: str, browser_value_firefox: str, browser_value_chrome: str
+    browser_env_var_name: str, browser_value_firefox: str, browser_value_chrome: str
 ) -> Union[selenium.webdriver.Chrome | selenium.webdriver.Firefox]:
-    # read the selenium_browser.conf-file for settings (if available)
-    if os.path.isfile(config_file_path):
-        with open(config_file_path, "r") as file:
-            browser_var = file.read().strip()
-        print("Selenium Config File Found! - Contents: |" + browser_var + "|")
-    else:
-        print(
-            "Selenium Config File NOT Found! - Expected location was: "
-            + config_file_path
-        )
-        browser_var = browser_value_firefox
 
     # Set up the webdriver (for Chrome or Firefox)
     # (the standard browser used is the Firefox browser)
-    if browser_var == browser_value_chrome:
+    if (
+        os.environ.get(browser_env_var_name, browser_value_firefox)
+        == browser_value_chrome
+    ):
         # setup chrome webdriver
-        print("Chrome Browser is used for Selenium Test Cases")
+        print("[Selenium Tests]  Using Chrome as browser")
 
         chrome_service = ChromeService(executable_path=ChromeDriverManager().install())
 
@@ -120,10 +112,13 @@ def initialize_the_webdriver(
         chrome_options = ChromeOptions()
 
         if str(os.environ.get("CI")) == "true":
-            print("Running in CI - turning off sandbox for Chrome to work")
+            print(
+                "[Selenium Tests]  "
+                "Running in CI - turning off sandbox for Chrome to work"
+            )
             chrome_options.add_argument("--no-sandbox")
         else:
-            print("Running NOT in CI")
+            print("[Selenium Tests]  Running NOT in CI")
 
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--window-size=2560,1440")
@@ -137,7 +132,7 @@ def initialize_the_webdriver(
 
     else:
         # setup firefox webdriver
-        print("Firefox Browser is used for Selenium Test Cases")
+        print("[Selenium Tests]  Using Firefox as browser")
 
         firefox_service = FirefoxService(executable_path=GeckoDriverManager().install())
 
