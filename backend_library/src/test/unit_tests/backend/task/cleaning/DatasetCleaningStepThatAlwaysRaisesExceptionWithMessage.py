@@ -4,8 +4,8 @@ from backend.AnnotatedDataset import AnnotatedDataset
 from backend.task.cleaning.DatasetCleaningStep import DatasetCleaningStep
 
 
-class DatasetCleaningStepThatAlwaysRaisesExceptionWithoutMessage(DatasetCleaningStep,
-                                                                 ABC):
+class DatasetCleaningStepThatAlwaysRaisesExceptionWithMessage(DatasetCleaningStep,
+                                                              ABC):
     """
     Every cleaning_step of the cleaning_pipeline has to implement this abstract class.
     """
@@ -15,4 +15,4 @@ class DatasetCleaningStepThatAlwaysRaisesExceptionWithoutMessage(DatasetCleaning
         :param dataset_to_clean: The dataset that will be cleaned in this cleaning_step.
         :return: The cleaned dataset.
         """
-        raise Exception("")
+        raise Exception("The error message is not empty")
