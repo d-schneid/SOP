@@ -1,3 +1,4 @@
+import datetime
 import os
 import re
 import shutil
@@ -438,7 +439,12 @@ class SeleniumTestCase(StaticLiveServerTestCase):
 
     # -------------- Additional asserts -----------
 
-    def assertUrlMatches(self, url_suffix_regex: UrlsSuffixRegex):
+    def assertUrlMatches(
+        self,
+        url_suffix_regex: UrlsSuffixRegex,
+        timeout: float = 30,
+        interval: float = 0.5,
+    ):
         prefix_slash: str = "/?"
         suffix_slash: str = "/?"
 
@@ -451,4 +457,15 @@ class SeleniumTestCase(StaticLiveServerTestCase):
 
         url_pattern_full = re.escape(self.get_base_url()) + url_suffix_regex_pattern
 
-        self.assertRegex(self.driver.current_url, url_pattern_full)
+        # wait dynamically for the new page to load;
+        # if the loading takes longer than the timeout, fail the test
+        start_time = datetime.datetime.now()
+        while not re.fullmatch(url_pattern_full, self.driver.current_url):
+            sleep(interval)
+            if (datetime.datetime.now() - start_time) > datetime.timedelta(
+                seconds=timeout
+            ):
+                self.fail(
+                    "URL-Check failed. Either an error occured "
+                    "or the loading took too long."
+                )
