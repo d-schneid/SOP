@@ -37,3 +37,10 @@ class DatasetUploadTests(SeleniumTestCase):
             dataset_description=dataset_description,
             username=SeleniumTestCase.STANDARD_USERNAME_USER,
         )
+
+        self.wait_until_dataset_ready(
+            dataset_name=dataset_name,
+            failure_expected=False,
+        )
+
+        # TODO: download cleaned & check
