@@ -4,7 +4,7 @@ import unittest
 import pandas as pd
 
 from backend.DatasetInfo import DatasetInfo
-from backend_library.resources.test.datasets.DatasetsForTesting import Datasets as ds
+from test.DatasetsForTesting import Datasets as ds
 
 
 class UnitTestDatasetInfo(unittest.TestCase):

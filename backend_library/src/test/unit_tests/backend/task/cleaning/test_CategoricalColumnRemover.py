@@ -4,7 +4,7 @@ import numpy as np
 
 from backend.task.cleaning.CategoricalColumnRemover \
     import CategoricalColumnRemover as ccr
-from backend_library.resources.test.datasets.DatasetsForTesting import Datasets as ds
+from test.DatasetsForTesting import Datasets as ds
 
 
 class UnitTestCategoricalColumnRemover(unittest.TestCase):

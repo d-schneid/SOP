@@ -10,7 +10,7 @@ from backend.task.TaskErrorMessages import TaskErrorMessages
 from backend.task.TaskHelper import TaskHelper
 from backend.task.TaskState import TaskState
 from backend.task.cleaning.DatasetCleaning import DatasetCleaning
-from backend_library.resources.test.datasets.DatasetsForTesting import Datasets
+from test.DatasetsForTesting import Datasets
 from test.unit_tests.backend.task.cleaning.DatasetCleaningStepEmptyResult \
     import DatasetCleaningStepEmptyResult
 from test.unit_tests.backend.task.cleaning.DatasetCleaningStepThatAlwaysRaisesException import \

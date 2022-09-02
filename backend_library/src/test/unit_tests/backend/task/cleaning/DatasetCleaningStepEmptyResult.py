@@ -2,7 +2,7 @@ from abc import ABC
 
 from backend.AnnotatedDataset import AnnotatedDataset
 from backend.task.cleaning.DatasetCleaningStep import DatasetCleaningStep
-from backend_library.resources.test.datasets.DatasetsForTesting import Datasets
+from test.DatasetsForTesting import Datasets
 
 
 class DatasetCleaningStepEmptyResult(DatasetCleaningStep, ABC):
