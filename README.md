@@ -231,6 +231,7 @@ POSTGRES_DB="django_db"
 DJANGO_SETTINGS_MODULE="sop.settings_deploy"
 DJANGO_SECRET_KEY="securekey123"
 DJANGO_DEBUG="0"
+SOP_LOG_LEVEL="INFO"
 DJANGO_ALLOWED_HOSTS="127.0.0.1 your-domain.com"
 DJANGO_CSRF_TRUSTED_ORIGINS="https://your-domain.com http://127.0.0.1"
 
