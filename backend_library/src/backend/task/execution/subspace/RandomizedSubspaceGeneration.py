@@ -102,7 +102,7 @@ class RandomizedSubspaceGeneration(SubspaceGenerationDescription, ABC):
         combs = itertools.combinations(range(self.__ds_dim_count), ss_size)
         for comb in combs:
             comb_array = np.full(self.__ds_dim_count, False)
-            comb_array[comb] = True
+            comb_array[np.array(comb)] = True
             ss_bytes = np.packbits(comb_array).tobytes()
             if ss_bytes not in ss_bits:
                 yield ss_bytes

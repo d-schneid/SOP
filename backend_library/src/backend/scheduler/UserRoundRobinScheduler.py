@@ -184,8 +184,11 @@ class UserRoundRobinScheduler(Scheduler):
                 p.start()
             p.join()
             debug(f"running cleanup for {next_sched}")
-            next_sched.run_later_on_main(
-                None if self.__running[next_sched][1] else p.exitcode)
+            if self.__running[next_sched][1]:
+                with self.__empty_queue:
+                    next_sched.run_later_on_main(None)
+            else:
+                next_sched.run_later_on_main(p.exitcode)
             debug(f"done with {next_sched}, looking for new tasks")
         self.__handle_shutdown()
 

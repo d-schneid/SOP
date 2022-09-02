@@ -19,8 +19,10 @@ class UnitTestAlgorithmLoader(unittest.TestCase):
         algorithm_paras = AlgorithmLoader.get_algorithm_parameters(self.algo_location)
         self.assertIn("algorithm_result", algorithm_paras)
         wrongAlgo = "./test/algorithms/WrongAlgorithm.py"
+        emptyAlgo = "./test/algorithms/EmptyAlgorithm.py"
         self.assertIsNotNone(AlgorithmLoader.is_algorithm_valid("abc"))
         self.assertIsNotNone(AlgorithmLoader.is_algorithm_valid(wrongAlgo))
+        self.assertIsNotNone(AlgorithmLoader.is_algorithm_valid(emptyAlgo))
 
     # def test_(self):
 
