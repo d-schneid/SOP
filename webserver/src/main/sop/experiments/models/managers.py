@@ -50,6 +50,9 @@ class AlgorithmQuerySet(models.QuerySet["Algorithm"]):
     def get_public(self) -> AlgorithmQuerySet:
         return self.filter(user=None)
 
+    def get_pyod(self) -> AlgorithmQuerySet:
+        return self.filter(user=None)
+
 
 class DatasetManager(models.Manager["Dataset"]):
     pass

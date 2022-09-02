@@ -6,7 +6,7 @@ from tempfile import mkstemp
 from typing import Any, Optional
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError, CommandParser
+from django.core.management.base import BaseCommand, CommandParser
 
 from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 from experiments.models import Algorithm
@@ -146,13 +146,6 @@ class Command(BaseCommand):
         parser.add_argument(
             "--quiet", "-q", action="store_true", help="Turn off console output."
         )
-        parser.add_argument(
-            "--overwrite",
-            "-o",
-            action="store_true",
-            help="Overwrite pyod_algorithms directory in media directory if it "
-            "already exists.",
-        )
 
     def save_algorithms_in_db(self, pyod_models_root: Path):
         # Check algorithms before adding them to the database
@@ -189,10 +182,13 @@ class Command(BaseCommand):
                 "signature": params_dict,
                 "user": None,
             }
-            algo = Algorithm.objects.create(**data)
-            algo.path.name = str(path.relative_to(settings.MEDIA_ROOT))
-            algo.save()
-            self.stdout_write(self.style.SUCCESS("OK"))
+            algo, created = Algorithm.objects.get_or_create(**data)
+            if created:
+                algo.path.name = str(path.relative_to(settings.MEDIA_ROOT))
+                algo.save()
+                self.stdout_write(self.style.SUCCESS("OK"))
+            else:
+                self.stdout_write(self.style.NOTICE("ALREADY EXISTS"))
 
     def stdout_write(self, message: str, ending: str = MISSING):
         if self.quiet:
@@ -207,7 +203,6 @@ class Command(BaseCommand):
         import pyod
 
         self.quiet = options["quiet"]
-        overwrite = options["overwrite"]
 
         self.stdout_write(
             "Searching for pyod library path...",
@@ -218,19 +213,13 @@ class Command(BaseCommand):
         self.stdout_write(self.style.SUCCESS("FOUND"))
 
         media_pyod_root = settings.ALGORITHM_ROOT_DIR / "pyod_algorithms"
+
         if os.path.exists(media_pyod_root):
-            if overwrite:
-                self.stdout_write(
-                    "Removing already existing pyod_algorithms directory in "
-                    "media directory...",
-                    ending="",
-                )
-                shutil.rmtree(media_pyod_root)
-                self.stdout_write(self.style.SUCCESS("OK"))
-            else:
-                raise CommandError(
-                    f"pyod seems to be imported before. {media_pyod_root} exists."
-                )
+            self.stdout_write(
+                "Pyod algorithms already exist in media root, deleting...", ending=""
+            )
+            shutil.rmtree(media_pyod_root)
+            self.stdout_write(self.style.SUCCESS("OK"))
 
         self.stdout_write("Copying pyod library to media root...", ending="")
         shutil.copytree(src=pyod_path, dst=media_pyod_root)
