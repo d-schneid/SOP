@@ -109,7 +109,7 @@ django-tests:
   extends: .frontend-base
   coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
   variables:
-    - SELENIUM_SCHEDULER: production
+    SELENIUM_SCHEDULER: "production"
   script:
     - source venv3.9/bin/activate
 
