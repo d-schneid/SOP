@@ -52,13 +52,16 @@
         <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 ml-3">
             {% with url_name=request.resolver_match.url_name %}
                 <li><a href="{% url 'experiment_overview' %}"
-                       class="nav-link px-2 ml-2 {% if 'experiment' in url_name or 'execution' in url_name %}text-secondary{% else %}text-white{% endif %}">Experiments</a>
+                       class="nav-link px-2 ml-2 {% if 'experiment' in url_name or 'execution' in url_name %}text-secondary{% else %}text-white{% endif %}"><i
+                        class="bi bi-lightning"></i> Experiments</a>
                 </li>
                 <li><a href="{% url 'dataset_overview' %}"
-                       class="nav-link px-2 ml-2 {% if 'dataset' in url_name %}text-secondary{% else %}text-white{% endif %}">Datasets</a>
+                       class="nav-link px-2 ml-2 {% if 'dataset' in url_name %}text-secondary{% else %}text-white{% endif %}"><i
+                        class="bi bi-file-earmark-spreadsheet"></i> Datasets</a>
                 </li>
                 <li><a href="{% url 'algorithm_overview' %}"
-                       class="nav-link px-2 ml-2 {% if 'algorithm' in url_name %}text-secondary{% else %}text-white{% endif %}">Algorithms</a>
+                       class="nav-link px-2 ml-2 {% if 'algorithm' in url_name %}text-secondary{% else %}text-white{% endif %}"><i
+                        class="bi bi-code-slash"></i> Algorithms</a>
                 </li>
             {% endwith %}
         </ul>
