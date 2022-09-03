@@ -25,7 +25,10 @@
                             <option value="">---------</option>
                             {% for dataset in datasets %}
                                 <option value="{{ dataset.pk }}"
-                                        {% if not dataset.is_cleaned %}disabled{% endif %}{% if form.instance.dataset == dataset %}selected{% endif %}>{{ dataset.get_representation }}
+                                        {% if not dataset.is_cleaned %}disabled
+                                        {% if dataset.has_error %}style="color: #ff0000" {% endif %}{% endif %}{% if form.dataset.value == dataset.pk %}selected{% endif %}>{{ dataset.get_representation }}
+                                    {% if not dataset.is_cleaned %}{% if not dataset.has_error %}(cleaning in progress,
+                                        try again later){% else %}(cleaning failed){% endif %}{% endif %}
                                 </option>
                             {% endfor %}
 
