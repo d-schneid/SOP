@@ -143,7 +143,7 @@ backend-tests:
     - 'echo "import coverage" >> /opt/venv/lib/python3.9/site-packages/sitecustomize.py'
     - 'echo "coverage.process_startup()" >> /opt/venv/lib/python3.9/site-packages/sitecustomize.py'
     - cd backend_library/src
-    - apt get update && apt-get -y --no-install-recommends install zip
+    - apt-get update && apt-get -y --no-install-recommends install zip
     - export COVERAGE_PROCESS_START=$PWD/../MultiPTesting.ini
     - export COVERAGE_RCFILE=$PWD/../MultiPTesting.ini
     - python3.9 -m coverage run
