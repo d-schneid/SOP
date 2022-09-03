@@ -19,7 +19,7 @@
                 <button type="button"
                         class="btn btn-danger mr-3"
                         data-toggle="modal"
-                        data-target="#deleteModal{{ model.pk }}">
+                        data-target="#deleteModal{{ model.pk }}"><i class="bi bi-trash"></i>
                     Delete
                 </button>
                 {% block edit %}{% endblock %}
@@ -88,7 +88,8 @@
                                 </div>
                                 <div class="modal-footer">
                                     <div class="d-flex">
-                                        <button type="button" class="btn btn-dark mr-3" data-dismiss="modal">Cancel</button>
+                                        <button type="button" class="btn btn-dark mr-3" data-dismiss="modal">Cancel
+                                        </button>
                                         {% block delete %}{% endblock %}
                                     </div>
                                 </div>
