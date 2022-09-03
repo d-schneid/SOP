@@ -136,23 +136,15 @@ django-tests:
     # set browser to Firefox for the first run of the Selenium Tets
     - export SELENIUM_BROWSER=firefox
 
-
     - which python3.9
     - cd webserver/src/main/sop
-
-    # make migrations and migrate, so the db is ready for the tests
-    - python3.9 manage.py makemigrations --settings=sop.settings_ci
-    - python3.9 manage.py migrate --settings=sop.settings_ci
-    - python3.9 manage.py showmigrations --settings=sop.settings_ci
-    - python3.9 manage.py check --settings=sop.settings_ci
 
     - pip3 install django_coverage_plugin
     - "echo '[run]\nplugins = django_coverage_plugin' > .coveragerc"
     - memcached -d -u root
     # The MYSQL user only gets permissions for MYSQL_DB, so Django can't create a test database.
     - echo "GRANT ALL on *.* to '${MYSQL_USER}';"| mysql -u root --password="${MYSQL_ROOT_PASSWORD}" -h mysql
-    - python3.9 manage.py showmigrations --settings=sop.settings_ci
-    - python3.9 -m coverage run --rcfile=.coveragerc --source="." --omit="static/*","media/*","*/migrations/*","*/__init__.py","tests/*","sop/*","*/pyodtodb.py" manage.py test --settings sop.settings_ci
+    - python3.9 -m coverage run --rcfile=.coveragerc --source="." --omit="media/*","*/migrations/*","*/__init__.py","tests/*","sop/*","*/pyodtodb.py" manage.py test --settings sop.settings_ci
     - python3.9 -m coverage report --rcfile=.coveragerc --precision=2
     - 'wget -O ../../../../public/django-tests.svg https://img.shields.io/badge/webserver\ coverage-$(python3.9 -m coverage report --rcfile=.coveragerc --precision=2 | grep -E "^TOTAL.+?([0-9]+.[0-9]+%)$" | grep -Eo "[0-9]+.[0-9]+%$")-informational'
 
