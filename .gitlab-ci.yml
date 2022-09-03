@@ -130,20 +130,20 @@ django-tests:
 
 
 backend-tests:
+  image: albinoboi/sop-ci-django:latest
+  inherit:
+    default: false
   variables:
     IS_EXECUTING_IN_CI: "1"
   needs: [ ]
   stage: test
   coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
-  image: python:3.9-slim-bullseye
   script:
-    - which python3.9
-    - 'echo "import coverage" >> venv3.9/lib/python3.9/site-packages/sitecustomize.py'
-    - 'echo "coverage.process_startup()" >> venv3.9/lib/python3.9/site-packages/sitecustomize.py'
+    - "[ ! -d 'public' ] && mkdir public"
+    - 'echo "import coverage" >> /opt/venv/lib/python3.9/site-packages/sitecustomize.py'
+    - 'echo "coverage.process_startup()" >> /opt/venv/lib/python3.9/site-packages/sitecustomize.py'
     - cd backend_library/src
-    - apt-get update
-    - apt-get -y install zip wget
-    - python3.9 -m coverage --version
+    - apt get update && apt-get -y --no-install-recommends install zip
     - export COVERAGE_PROCESS_START=$PWD/../MultiPTesting.ini
     - export COVERAGE_RCFILE=$PWD/../MultiPTesting.ini
     - python3.9 -m coverage run
