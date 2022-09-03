@@ -65,7 +65,7 @@
                         <a href="{% url 'execution_download_result' model.pk execution.pk %}"
                            class="btn btn-info mr-3" id="execution-download-{{ execution.pk }}"
                            style="visibility: {% if execution.has_result %}visible{% else %}hidden{% endif %}"><i
-                                class="bi bi-download"></i> Download Result</a>
+                                class="bi bi-download"></i> Result</a>
 
                         {% if execution.is_crashed %}
                             <a href="{% url "execution_restart" model.pk execution.pk %}"
@@ -105,7 +105,9 @@
                                         </button>
                                         <form action="{% url 'execution_delete' model.pk execution.pk %}" method="post">
                                             {% csrf_token %}
-                                            <button class="btn btn-danger mr-3" type="submit">Delete</button>
+                                            <button class="btn btn-danger mr-3" type="submit"><i
+                                                    class="bi bi-trash"></i> Yes, Delete
+                                            </button>
                                         </form>
                                     </div>
                                 </div>
@@ -149,7 +151,8 @@
                                 <button type="button" class="btn btn-dark mr-3" data-dismiss="modal">Cancel</button>
                                 <form action="{% url 'experiment_delete' model.pk %}" method="post">
                                     {% csrf_token %}
-                                    <button class="btn btn-danger mr-3" type="submit">Delete
+                                    <button class="btn btn-danger mr-3" type="submit"><i class="bi bi-trash"></i> Yes,
+                                        Delete
                                     </button>
                                 </form>
                             </div>
