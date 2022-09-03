@@ -73,7 +73,7 @@ default:
     - python3.9 -V
 
 .frontend-base:
-  image: python:3.9-bullseye
+  image: albinoboi/sop-ci-django
   #
   # Pick zero or more services to be used on all builds.
   # Only needed when using a docker container to run your tests in.
@@ -81,17 +81,7 @@ default:
   services:
     - mysql:8.0
   before_script:
-    - apt-get -y update
-    - apt-get -yq install software-properties-common
-    - apt-get -y install apt-utils net-tools wget default-mysql-client default-libmysqlclient-dev python3-distutils python3-dev gcc memcached
-    - "[ ! -d 'venv3.9' ] && python3 -m venv venv3.9"
-    - "[ ! -d 'public' ] && mkdir public"
-    - source venv3.9/bin/activate
-    - python3.9 -m pip install --upgrade pip
-    - python3.9 -m pip install -r requirements.txt
-    - python3.9 -m pip install mysqlclient coverage
     - python3.9 -m pip install -e backend_library/src
-    - python3.9 -V
 
 flake:
   stage: test
@@ -111,35 +101,12 @@ django-tests:
   variables:
     SELENIUM_SCHEDULER: "production"
   script:
-    - source venv3.9/bin/activate
-
-    # Selenium Test requirements
-    - python3.9 -m pip install -r requirements_test.txt
-    # (we need PyOd requirements due to Selenium tests)
-    - python3.9 -m pip install -r requirements_pyod_algorithms.txt
-
-    # Chrome-Browser Installation
-    - wget --quiet -O chrome_browser.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-    - apt-get install --quiet --assume-yes ./chrome_browser.deb
-    - rm chrome_browser.deb
-
-    # Firefox-Browser Installation
-    # install dependencies
-    - apt-get install --quiet --assume-yes glibc-source libdbus-glib-1-2
-    # get Firefox itself
-    - wget --quiet -O firefox_browser.tar.bz2 "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-GB"
-    - tar xjf firefox_browser.tar.bz2
-    - mv firefox /opt
-    - ln -s /opt/firefox/firefox /usr/local/bin/firefox
-    - rm firefox_browser.tar.bz2
 
     # set browser to Firefox for the first run of the Selenium Tets
     - export SELENIUM_BROWSER=firefox
 
-    - which python3.9
     - cd webserver/src/main/sop
 
-    - pip3 install django_coverage_plugin
     - "echo '[run]\nplugins = django_coverage_plugin' > .coveragerc"
     - memcached -d -u root
     # The MYSQL user only gets permissions for MYSQL_DB, so Django can't create a test database.
