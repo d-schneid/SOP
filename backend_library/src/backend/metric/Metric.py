@@ -20,11 +20,3 @@ class Metric(ABC):
         :return: None
         """
         raise NotImplementedError
-
-    @property
-    def eem_helper(self) -> eem_helper:
-        """
-        :return: The ExecutionElementMetricHelper used by this metric
-        (allows the child classes to access it)
-        """
-        return self._eem_helper

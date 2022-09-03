@@ -177,6 +177,10 @@ class Execution(JsonSerializable, Task, Schedulable):
         details_path: str = os.path.join(self._result_path, 'details.json')
         running_path: str = details_path + ".running"
 
+        if os.path.isfile(running_path):
+            os.remove(running_path)
+
+        # write details-file
         with open(running_path, 'w') as f:
             json.dump(self.to_json(), f)
         shutil.move(running_path, details_path)

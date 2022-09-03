@@ -42,7 +42,7 @@ class SystemTest_CleaningExecutingAndMetric(unittest.TestCase):
         self._rr_scheduler: Scheduler = UserRoundRobinScheduler()
 
         # Setup Algorithms
-        alg_root_directory: str = "./test"
+        alg_root_directory: str = "../resources/test"
         algorithm_loader: AlgorithmLoader = AlgorithmLoader()
         algorithm_loader.set_algorithm_root_dir(alg_root_directory)
 
@@ -171,8 +171,8 @@ class SystemTest_CleaningExecutingAndMetric(unittest.TestCase):
              'metric': 'minkowski', 'p': 2,
              'metric_params': None, 'n_jobs': 1}
 
-        debug_algorithm_path: str = "./test/algorithms/DebugAlgorithm.py"
-        knn_algorithm_path: str = "./test/algorithms/knn.py"
+        debug_algorithm_path: str = "../resources/test/algorithms/DebugAlgorithm.py"
+        knn_algorithm_path: str = "../resources/test/algorithms/knn.py"
 
         self._algorithms: list[ParameterizedAlgorithm] = \
             list([ParameterizedAlgorithm(debug_algorithm_path, hyper_parameter,
@@ -188,7 +188,7 @@ class SystemTest_CleaningExecutingAndMetric(unittest.TestCase):
     def __setup_cleaning(self):
         # DatasetCleaning setup ########################################################
         self._uncleaned_dataset_path: str = \
-            "./test/datasets/canada_climate_uncleaned.csv"
+            "../resources/test/datasets/canada_climate_uncleaned.csv"
         self._cleaning_finished: Event = Event()
 
 
