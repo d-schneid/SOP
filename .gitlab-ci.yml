@@ -81,6 +81,7 @@ default:
   services:
     - mysql:8.0
   before_script:
+    - "[ ! -d 'public' ] && mkdir public"
     - python3.9 -m pip install -e backend_library/src
 
 flake:
