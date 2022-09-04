@@ -84,6 +84,9 @@ PYOD_ALGORITHMS = [
     ),
     PyodAlgorithm("ocsvm.py", "OCSVM", "OCSVM", Algorithm.AlgorithmGroup.LINEAR_MODEL),
     PyodAlgorithm("pca.py", "PCA", "PCA", Algorithm.AlgorithmGroup.LINEAR_MODEL),
+    PyodAlgorithm(
+        "rgraph.py", "RGraph", "RGraph", Algorithm.AlgorithmGroup.GRAPH_BASED
+    ),
     PyodAlgorithm("rod.py", "ROD", "ROD", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
     PyodAlgorithm(
         "sampling.py", "Sampling", "Sampling", Algorithm.AlgorithmGroup.PROBABILISTIC

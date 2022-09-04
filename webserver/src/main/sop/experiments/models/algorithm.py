@@ -33,12 +33,13 @@ class Algorithm(models.Model):
         An Enum that describes the way an algorithm does its calculations.
         """
 
-        PROBABILISTIC = "Probabilistic"
-        LINEAR_MODEL = "Linear Model"
-        PROXIMITY_BASED = "Proximity-Based"
-        OUTLIER_ENSEMBLES = "Outlier Ensembles"
-        NEURAL_NETWORKS = "Neural Networks"
         COMBINATION = "Combination"
+        GRAPH_BASED = "Graph-Based"
+        LINEAR_MODEL = "Linear Model"
+        NEURAL_NETWORKS = "Neural Networks"
+        OUTLIER_ENSEMBLES = "Outlier Ensembles"
+        PROBABILISTIC = "Probabilistic"
+        PROXIMITY_BASED = "Proximity-Based"
         OTHER = "Other"
 
     # TODO: check max_length, blank, and null
