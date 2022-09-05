@@ -4,7 +4,7 @@ from unittest import skip
 import django.test
 from django.urls import reverse
 
-from experiments.models import Dataset
+from experiments.models import Dataset, Experiment
 from tests.generic import LoggedInMixin, MediaMixin, DebugSchedulerMixin
 
 
@@ -233,4 +233,19 @@ class DatasetDeleteViewTests(LoggedInMixin, django.test.TestCase):
         # we expect to be redirected to the dataset overview
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.redirect_chain)
+        self.assertTemplateUsed(response, "dataset_overview.html")
+
+    def test_dataset_delete_view_used_in_experiment(self):
+        dataset = Dataset.objects.create(
+            datapoints_total=0, dimensions_total=0, user=self.user
+        )
+        Experiment.objects.create(
+            display_name="exp", user=self.user, dataset=dataset
+        )
+        response = self.client.post(
+            reverse("dataset_delete", args=(dataset.pk,)), follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.redirect_chain)
+        self.assertIsNotNone(Dataset.objects.first())
         self.assertTemplateUsed(response, "dataset_overview.html")

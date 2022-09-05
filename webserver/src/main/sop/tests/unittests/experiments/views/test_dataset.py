@@ -73,6 +73,21 @@ class TestDatasetUncleanedDownload(django.test.TestCase):
             response = download_uncleaned_dataset(request, 42)
             self.assertIsNone(response)
 
+    def test_download_uncleaned_dataset_admin_invalid_pk(self) -> None:
+        object_mock = MagicMock()
+        object_mock.filter.return_value.first.return_value = None
+        request = MagicMock()
+        request.method = "GET"
+        request.path = "admin"
+        with mock.patch.object(Dataset, "objects", object_mock):
+            response = download_uncleaned_dataset(request, 42)
+            self.assertIsNotNone(response)
+            assert response is not None
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(
+                response.url, reverse_lazy("admin:experiments_dataset_changelist")
+            )  # type: ignore
+
 
 class TestDatasetCleanedDownload(django.test.TestCase):
     def test_download_cleaned_dataset_post(self) -> None:
@@ -139,6 +154,21 @@ class TestDatasetCleanedDownload(django.test.TestCase):
             self.assertEqual(response.status_code, 302)
             self.assertEqual(
                 response.url, reverse_lazy("dataset_overview")
+            )  # type: ignore
+
+    def test_download_cleaned_dataset_admin_invalid_pk(self) -> None:
+        object_mock = MagicMock()
+        object_mock.filter.return_value.first.return_value = None
+        request = MagicMock()
+        request.method = "GET"
+        request.path = "admin"
+        with mock.patch.object(Dataset, "objects", object_mock):
+            response = download_cleaned_dataset(request, 42)
+            self.assertIsNotNone(response)
+            assert response is not None
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(
+                response.url, reverse_lazy("admin:experiments_dataset_changelist")
             )  # type: ignore
 
 
