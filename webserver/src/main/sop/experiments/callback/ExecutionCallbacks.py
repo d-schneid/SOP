@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 
+from django.utils import timezone
+
 from backend.metric.MetricDataPointsAreOutliers import MetricDataPointsAreOutliers
 from backend.metric.MetricSubspaceOutlierAmount import MetricSubspaceOutlierAmount
 from backend.task import TaskState
@@ -33,6 +35,7 @@ def execution_callback(
         zip_path = get_zip_result_path(execution)
         assert os.path.exists(zip_path)
         execution.result_path.name = get_zip_result_path(execution)
+        execution.finished_date = timezone.now()
 
     if task_state.is_finished() and not task_state.error_occurred():
         execution.status = ExecutionStatus.FINISHED.name
