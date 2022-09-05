@@ -46,6 +46,31 @@ class DatasetAdminTests(
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Add dataset")
 
+    def test_dataset_admin_change_view_inline(self):
+        exp = Experiment.objects.create(
+            display_name="exp", dataset=self.dataset_finished, user=self.admin
+        )
+        url = reverse("admin:experiments_dataset_change", args=(self.dataset_finished.pk,))
+        response = self.client.get(url, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Change dataset")
+        self.assertTemplateUsed(
+            response, "admin/experiment/experiment_inline_dataset.html"
+        )
+        self.assertContains(response, "Usage in experiments")
+        self.assertContains(response, f"{exp.display_name}")
+
+    def test_dataset_admin_change_view_no_inline(self):
+        url = reverse("admin:experiments_dataset_change", args=(self.dataset_finished.pk,))
+        response = self.client.get(url, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Change dataset")
+        self.assertTemplateUsed(
+            response, "admin/experiment/experiment_inline_dataset.html"
+        )
+        self.assertContains(response, "Usage in experiments")
+        self.assertContains(response, "Not used in any experiment")
+
     def test_admin_add_dataset_valid(self):
         file_path: str = os.path.join("tests", "sample_datasets", "valid_dataset.csv")
         assert os.path.isfile(file_path)
