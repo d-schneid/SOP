@@ -86,7 +86,10 @@ class SystemTest_ExecutionRecovery(unittest.TestCase):
         # Copy execution to recover to not overwrite the original!!!
         if os.path.isdir(self._result_path):
             shutil.rmtree(self._result_path)
-        shutil.copytree(self._original_execution_to_recover_path, self._result_path)
+        self.assertFalse(os.path.isdir(self._result_path))
+
+        shutil.copytree(self._original_execution_to_recover_path, self._result_path,
+                        ignore=None)
 
         # Delete all folders and files of the old execution structure:
         # BEFORE creating the new execution!
@@ -114,6 +117,8 @@ class SystemTest_ExecutionRecovery(unittest.TestCase):
         self.assertFalse(self._metric_was_called)
         self.assertFalse(self._execution_finished)
         self.assertEqual(0, self._last_progress_report)
+
+        self.assertTrue(os.path.isdir(self._result_path))
 
         # perform the Execution
         self._ex.schedule()
