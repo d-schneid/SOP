@@ -1,3 +1,4 @@
+import logging
 import os
 from abc import ABC
 from collections.abc import Callable
@@ -78,6 +79,9 @@ class DatasetCleaning(Task, Schedulable, ABC):
         :return: None
         """
         if self.__did_cleaning_finish():
+            logging.debug("Execution of DatasetCleaning at path: " +
+                          str(self._cleaned_dataset_path) +
+                          " was skipped because it was already finished")
             self._task_progress_callback(self._task_id, TaskState.FINISHED, 1.0)
             return None
         scheduler: Scheduler = Scheduler.get_instance()
