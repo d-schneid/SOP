@@ -72,7 +72,6 @@ class SystemTest_ExecutionRecovery(unittest.TestCase):
               ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[3])])
 
     _running_path = _result_path + ".I_am_running"
-    _final_zip_path = _result_path + ".zip"
 
     # precomputed result
     _precomputed_result_path: str = "./test/system_tests/backend/task/" \
@@ -106,8 +105,8 @@ class SystemTest_ExecutionRecovery(unittest.TestCase):
                              self._result_path, self._subspace_generation,
                              self._algorithms,
                              self.__metric_callback, 29221,
-                             self._final_zip_path,
-                             zip_running_path=self._zipped_result_path)
+                             self._zipped_result_path,
+                             zip_running_path=self._running_path)
 
     def test_recover_execution(self):
         # Test if all the callbacks where initialized correctly
@@ -135,7 +134,7 @@ class SystemTest_ExecutionRecovery(unittest.TestCase):
 
     def __clear_old_execution_file_structure(self):
         if os.path.isfile(self._zipped_result_path):
-            os.remove(self._final_zip_path)
+            os.remove(self._zipped_result_path)
 
     def __task_progress_callback(self, task_id: int,
                                  task_state: TaskState, progress: float) -> None:
