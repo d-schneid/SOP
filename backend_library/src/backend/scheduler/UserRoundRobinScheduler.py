@@ -1,13 +1,12 @@
 import heapq
 import itertools
-import math
 import multiprocessing
 import sys
 import threading
-from logging import info, debug, critical
 from collections import OrderedDict
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from logging import info, debug, critical
 from multiprocessing import Condition, Process
 from threading import Thread
 from typing import Optional
@@ -51,12 +50,12 @@ class UserRoundRobinScheduler(Scheduler):
         self.__shutdown_ongoing: bool = False
         self.__on_shutdown_completed: Optional[Callable[[], None]] = None
         self.__empty_queue: Condition = Condition()
-        self.__threads: list[Thread] = list()
+        self.__threads: set[Thread] = set()
         self.__user_queues: OrderedDict[int, list[PrioritizedSchedulable]] \
             = OrderedDict()
         self.__next_queue: int = -1
         self.__running: dict[Schedulable, tuple[Process, bool]] = dict()
-        count = self.__get_targeted_worker_count()
+        count = self._get_targeted_worker_count()
         debug(f"starting urrs with {count} workers")
         for i in range(count):
             self.__make_worker_thread()
@@ -76,7 +75,7 @@ class UserRoundRobinScheduler(Scheduler):
         t = Thread(
             target=UserRoundRobinScheduler.__thread_main,
             args=(self,), daemon=True)
-        self.__threads.append(t)
+        self.__threads.add(t)
         t.start()
 
     def abort_by_task(self, task_id: int) -> None:
@@ -134,6 +133,13 @@ class UserRoundRobinScheduler(Scheduler):
         assert tid >= -1
         priority = to_schedule.priority
         assert 0 <= priority <= 100
+        if priority == 100:
+            t = Thread(
+                target=UserRoundRobinScheduler._run_single,
+                args=(self, to_schedule), daemon=True)
+            self.__threads.add(t)
+            t.start()
+            return
         with self.__empty_queue:
             if uid not in self.__user_queues:
                 self.__next_queue = len(self.__user_queues)
@@ -141,6 +147,10 @@ class UserRoundRobinScheduler(Scheduler):
             prioritized_schedulable = PrioritizedSchedulable(to_schedule, priority)
             heapq.heappush(self.__user_queues[uid], prioritized_schedulable)
             self.__empty_queue.notify()
+
+    def _run_single(self, sched: Schedulable):
+        self._run_schedulable(lambda: sched)
+        self.__threads.discard(threading.current_thread())
 
     def __process_main(self, sched: Schedulable):
         """main method executed by worker processes,
@@ -156,51 +166,19 @@ class UserRoundRobinScheduler(Scheduler):
         """main method executed by supervisor threads,
         starts worker processes when schedulables are available"""
         while not self.__shutdown_ongoing:
-            with self.__empty_queue:
-                next_sched = self.__get_next_schedulable()
-                if self.__shutdown_ongoing:
-                    self.__handle_shutdown()
-                    return
-                while next_sched is None:
-                    self.__empty_queue.wait()
-                    next_sched = self.__get_next_schedulable()
-                    if self.__shutdown_ongoing:
-                        self.__handle_shutdown()
-                        return
-                p = Process(target=UserRoundRobinScheduler.__process_main,
-                            args=(self, next_sched,), daemon=True)
-                self.__running[next_sched] = (p, False)
-            debug(f"preparing to run {next_sched}")
-            next_sched.run_before_on_main()
-            with self.__empty_queue:
-                if self.__shutdown_ongoing:
-                    next_sched.run_later_on_main(None)
-                    self.__handle_shutdown()
-                    return
-                if self.__running[next_sched][1]:
-                    next_sched.run_later_on_main(None)
-                    continue
-                info(f"{next_sched} will now be started")
-                p.start()
-            p.join()
-            debug(f"running cleanup for {next_sched}")
-            if self.__running[next_sched][1]:
-                with self.__empty_queue:
-                    next_sched.run_later_on_main(None)
-            else:
-                next_sched.run_later_on_main(p.exitcode)
-            debug(f"done with {next_sched}, looking for new tasks")
+            if self._run_schedulable(self._get_next_schedulable):
+                break
         self.__handle_shutdown()
 
     def __handle_shutdown(self) -> None:
         """Handles a graceful shutdown when detected"""
         if self.__on_shutdown_completed is not None:
             with self.__empty_queue:
-                self.__threads.remove(threading.current_thread())
+                self.__threads.discard(threading.current_thread())
                 if len(self.__threads) == 0:
                     self.__on_shutdown_completed()
 
-    def __get_next_schedulable(self) -> Optional[Schedulable]:
+    def _get_next_schedulable(self) -> Optional[Schedulable]:
         """Retrieves the next schedulable to run, to be run within __empty_queue only"""
         if self.__next_queue == -1:
             return None
@@ -216,9 +194,46 @@ class UserRoundRobinScheduler(Scheduler):
                 return heapq.heappop(v).schedulable
         return None
 
-    def __get_targeted_worker_count(self) -> int:
+    def _get_targeted_worker_count(self) -> int:
         """Calculates the number of worker threads to use"""
-        return math.ceil(multiprocessing.cpu_count() * 1.1)
+        return multiprocessing.cpu_count()
+
+    def _run_schedulable(self, sched_src: Callable[[], Schedulable]) -> bool:
+        with self.__empty_queue:
+            next_sched = sched_src()
+            if self.__shutdown_ongoing:
+                self.__handle_shutdown()
+                return True
+            while next_sched is None:
+                self.__empty_queue.wait()
+                next_sched = self._get_next_schedulable()
+                if self.__shutdown_ongoing:
+                    self.__handle_shutdown()
+                    return True
+            p = Process(target=UserRoundRobinScheduler.__process_main,
+                        args=(self, next_sched,), daemon=True)
+            self.__running[next_sched] = (p, False)
+        debug(f"preparing to run {next_sched}")
+        next_sched.run_before_on_main()
+        with self.__empty_queue:
+            if self.__shutdown_ongoing:
+                next_sched.run_later_on_main(None)
+                self.__handle_shutdown()
+                return True
+            if self.__running[next_sched][1]:
+                next_sched.run_later_on_main(None)
+                return False
+            info(f"{next_sched} will now be started")
+            p.start()
+        p.join()
+        debug(f"running cleanup for {next_sched}")
+        if self.__running[next_sched][1]:
+            with self.__empty_queue:
+                next_sched.run_later_on_main(None)
+        else:
+            next_sched.run_later_on_main(p.exitcode)
+        debug(f"done with {next_sched}, looking for new tasks")
+        return False
 
 
 @dataclass(order=True)

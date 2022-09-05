@@ -125,6 +125,15 @@ class UnitTestUrrs(unittest.TestCase):
         self.assertTrue(ts_shut.wait(timeout))
         self.assertFalse(tbc.value)
 
+    def test_shutdown_before_schedule(self):
+        # Tests race condition handling in the 3rd to 5th line of URRS._run_schedulable
+        urrs = UserRoundRobinScheduler()
+        tbc = manager.Value('b', False)
+        urrs.graceful_shutdown()
+        urrs._run_single(
+            TestSched(1, -1, 0, tbc))
+        self.assertFalse(tbc.value)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -13,8 +13,9 @@ from test.UrrsWoWorkers import UrrsWoWorkers
 
 
 class IntegrationTestExecutionAbort(unittest.TestCase):
-    _dataset_path: str = os.path.join(
-        os.getcwd(), "test/datasets/canada_climate_cleaned_to_compare.csv")
+    _dataset_path: str = os.path.join(os.getcwd(),
+                                      "../resources/test/datasets" +
+                                      "/canada_climate_cleaned_to_compare.csv")
 
     # path creation
     _result_path: str = os.path.join(os.getcwd(), "execution_folder")
@@ -36,7 +37,6 @@ class IntegrationTestExecutionAbort(unittest.TestCase):
     def setUp(self) -> None:
         # create a DebugScheduler
         Scheduler._instance = None
-        UrrsWoWorkers()
 
         # create Execution
         self._ex = ex(-1, 1, self.__task_progress_callback,
@@ -49,8 +49,24 @@ class IntegrationTestExecutionAbort(unittest.TestCase):
         Scheduler._instance = None
 
     def test_execution_abortion(self):
+        urrs = UrrsWoWorkers()
         self._ex.schedule()
-        Scheduler.get_instance().abort_by_task(1)
+        urrs.abort_by_task(1)
+        self.assertIsNone(self._ex._shared_memory_name)
+
+    def test_execution_ss_abortion(self):
+        urrs = UrrsWoWorkers()
+        self._ex.schedule()
+        urrs._run_single(self._ex)
+        urrs.abort_by_task(1)
+        self.assertIsNone(self._ex._shared_memory_name)
+
+    def test_execution_element_abortion(self):
+        urrs = UrrsWoWorkers()
+        self._ex.schedule()
+        urrs._run_single(self._ex)
+        urrs._run_single(self._ex._execution_subspaces[0])
+        urrs.abort_by_task(1)
         self.assertIsNone(self._ex._shared_memory_name)
 
 
