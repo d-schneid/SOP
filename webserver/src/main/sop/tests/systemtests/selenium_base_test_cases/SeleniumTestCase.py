@@ -296,8 +296,6 @@ class SeleniumTestCase(StaticLiveServerTestCase):
             "//div[@id='group_Proximity-Based']/div",
             "//div[@id='group_OutlierEnsembles']/div",
             "//div[@id='group_NeuralNetworks']/div",
-            "//div[@id='group_Combination']/div",
-            "//div[@id='group_Other']/div",
         ]
 
         for group_xpath in group_xpath_list:
