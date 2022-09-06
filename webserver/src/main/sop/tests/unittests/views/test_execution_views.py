@@ -50,6 +50,9 @@ class ExecutionCreateViewTests(
             schedule_backend_mock.return_value = {
                 "test_error": ["This is a test error message"]
             }
+        else:
+            schedule_backend_mock.return_value = None
+
         with patch(
             "experiments.views.execution.schedule_backend", schedule_backend_mock
         ):
