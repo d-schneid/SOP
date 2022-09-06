@@ -6,6 +6,8 @@ from backend.metric.ExecutionElementMetricHelper import \
 from backend.metric.Metric import Metric
 from pandas import DataFrame as df
 
+from backend.task.TaskHelper import TaskHelper
+
 
 class MetricDataPointsAreOutliers(Metric):
 
@@ -41,6 +43,12 @@ class MetricDataPointsAreOutliers(Metric):
         for result_path in execution_result_path:
             outlier_data_points. \
                 append(eem_helper.compute_outlier_data_points(result_path))
+
+        # create Error file and stop computation if no result file exists
+        if len(outlier_data_points) == 0:
+            error_path: str = TaskHelper.convert_to_error_csv_path(metric_result_path)
+            eem_helper.write_empty_execution_error_message(error_path)
+            return
 
         # Compute the metric result:
         data_points_outlier_in_subspace: list[int] = \

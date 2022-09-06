@@ -5,6 +5,7 @@ import numpy as np
 
 from backend.metric.MetricDataPointsAreOutliers import MetricDataPointsAreOutliers
 from backend.DataIO import DataIO
+from backend.task.TaskHelper import TaskHelper
 
 
 class IntegrationTest_MetricDataPointsAreOutlier(unittest.TestCase):
@@ -40,6 +41,11 @@ class IntegrationTest_MetricDataPointsAreOutlier(unittest.TestCase):
                                              -124, 5, 10, 11, 12, 13, 14, 15, 16,
                                              17, 18, 19, 192143])
     _metric_not_enough_indices: list[int] = list([42])
+
+    _empty_result_path: str = "./test/integration_tests/backend/metric" \
+                              "/emptyExecutionElementResult"
+    _error_metric_path: str = "./test/integration_tests/backend/metric/emptyExecutionElementResult_metric_result.csv"
+    _error_path: str = TaskHelper.convert_to_error_csv_path(_error_metric_path)
 
     def setUp(self) -> None:
         self.__clean_up_files()
@@ -97,11 +103,22 @@ class IntegrationTest_MetricDataPointsAreOutlier(unittest.TestCase):
         # clean up
         self.__clean_up_files()
 
+    def test_with_empty_execution_result(self):
+        self.assertTrue(os.path.isdir(self._empty_result_path))
+
+        self._metric.compute_metric(self._error_metric_path,
+                                    list([self._empty_result_path]))
+
+        self.assertTrue(self._error_path)
+        os.remove(self._error_path)
+
     def __clean_up_files(self):
         if os.path.isfile(self._metric_result_path1):
             os.remove(self._metric_result_path1)
         if os.path.isfile(self._metric_result_path2):
             os.remove(self._metric_result_path2)
+        if os.path.isfile(self._error_path):
+            os.remove(self._error_path)
 
 
 if __name__ == '__main__':

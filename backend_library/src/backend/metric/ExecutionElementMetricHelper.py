@@ -162,3 +162,14 @@ class ExecutionElementMetricHelper:
                 subspace_identifier_dict[subspace_identifier] = 1
 
         return list(subspace_identifier_dict.keys())
+
+    @staticmethod
+    def write_empty_execution_error_message(error_path: str) -> None:
+        """
+        Write the error file for an inputted Execution result, that has only failed
+        or no ExecutionElement-results.
+        :param error_path: The path where the error file will be saved
+        """
+        error_file_content: np.ndarray = \
+            np.asarray([["No ExecutionElement result existed"]])
+        DataIO.save_write_csv(error_path + ".running", error_path, error_file_content)
