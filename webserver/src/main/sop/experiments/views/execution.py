@@ -148,8 +148,6 @@ class ExecutionCreateView(
 
         # Sanity checks for subspaces_min
         subspaces_min = form.cleaned_data.get("subspaces_min")
-        if subspaces_min is None:
-            error = True
         assert subspaces_min >= 0
         if subspaces_min == 0:
             messages.error(
