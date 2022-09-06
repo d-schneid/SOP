@@ -30,14 +30,27 @@ class AnnotatedDataset:
         :param generate_row_numbers: True to generate row_numbers (numbered 1 to n),
          False to read them from the dataset, ignored if row_numbers is not None
         """
+        assert len(main_array.shape) == 2
         has_row_numbers = row_numbers is None and not generate_row_numbers
         has_header = headers is None and not generate_headers
         no_head = np.delete(main_array, 0, 0) if has_header else main_array
         self.data: np.ndarray = np.delete(no_head, 0, 1) if has_row_numbers else no_head
         if headers is None:
             headers = np.arange(0, self.data.shape[1], 1).astype(np.dtype('<U5'))
+        else:
+            assert len(headers.shape) == 1,\
+                "Header array must have exactly one dimension"
+            assert main_array.shape[0] == headers.shape[0],\
+                "The size of the header array does not match " \
+                "the number of columns of the data"
         if row_numbers is None:
             row_numbers = np.arange(0, self.data.shape[0], 1)
+        else:
+            assert len(row_numbers.shape) == 1, \
+                "Row numbers array must have exactly one dimension"
+            assert main_array.shape[1] == row_numbers.shape[0],\
+                "The size of the row numbers array does not match " \
+                "the number of rows of the data"
         self.headers = main_array[0] if has_header else headers
         self.row_mapping = main_array[:, 0] if has_row_numbers else row_numbers
         if has_row_numbers and has_header:
