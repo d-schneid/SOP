@@ -41,9 +41,8 @@ class ExperimentDownloadResultsTest(django.test.TestCase):
             with patch.object(Execution, "objects", exec_objects_mock):
                 response = download_all_execution_results(request, 3)
                 self.assertIsNotNone(response)
-                assert isinstance(response, HttpResponse)
+                self.assertIsInstance(response, HttpResponse)
                 self.assertEqual(response.status_code, 200)
-                print(str(response.content))
                 self.assertNotEqual(
                     str(response.content).find(content1.replace("\n", "\\n")), -1
                 )
