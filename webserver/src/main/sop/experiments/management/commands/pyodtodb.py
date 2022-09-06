@@ -15,7 +15,7 @@ from experiments.services.algorithm import convert_param_mapping_to_signature_di
 
 
 @dataclasses.dataclass
-class PyodAlgorithm:
+class _PyodAlgorithm:
     file_name: str
     class_name: str
     display_name: str
@@ -23,11 +23,11 @@ class PyodAlgorithm:
 
 
 _PYOD_ALGORITHMS = [
-    PyodAlgorithm("abod.py", "ABOD", "ABOD", Algorithm.AlgorithmGroup.PROBABILISTIC),
-    PyodAlgorithm(
+    _PyodAlgorithm("abod.py", "ABOD", "ABOD", Algorithm.AlgorithmGroup.PROBABILISTIC),
+    _PyodAlgorithm(
         "anogan.py", "AnoGAN", "AnoGAN", Algorithm.AlgorithmGroup.NEURAL_NETWORKS
     ),
-    PyodAlgorithm(
+    _PyodAlgorithm(
         "auto_encoder.py",
         "AutoEncoder",
         "AutoEncoder",
@@ -37,78 +37,78 @@ _PYOD_ALGORITHMS = [
     # special case in the code to rename the class of the algorithm (that's currently
     # called AutoEncoder) to AutoEncoderTorch, so it does not collide with the normal
     # AutoEncoder algorithm
-    PyodAlgorithm(
+    _PyodAlgorithm(
         "auto_encoder_torch.py",
         "AutoEncoderTorch",
         "AutoEncoder (torch)",
         Algorithm.AlgorithmGroup.NEURAL_NETWORKS,
     ),
-    PyodAlgorithm(
+    _PyodAlgorithm(
         "cblof.py", "CBLOF", "CBLOF", Algorithm.AlgorithmGroup.PROXIMITY_BASED
     ),
-    PyodAlgorithm("cd.py", "CD", "CD", Algorithm.AlgorithmGroup.LINEAR_MODEL),
-    PyodAlgorithm("cof.py", "COF", "COF", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
-    PyodAlgorithm("copod.py", "COPOD", "COPOD", Algorithm.AlgorithmGroup.PROBABILISTIC),
-    PyodAlgorithm(
+    _PyodAlgorithm("cd.py", "CD", "CD", Algorithm.AlgorithmGroup.LINEAR_MODEL),
+    _PyodAlgorithm("cof.py", "COF", "COF", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
+    _PyodAlgorithm("copod.py", "COPOD", "COPOD", Algorithm.AlgorithmGroup.PROBABILISTIC),
+    _PyodAlgorithm(
         "deep_svdd.py", "DeepSVDD", "DeepSVDD", Algorithm.AlgorithmGroup.NEURAL_NETWORKS
     ),
-    PyodAlgorithm("ecod.py", "ECOD", "ECOD", Algorithm.AlgorithmGroup.PROBABILISTIC),
-    PyodAlgorithm(
+    _PyodAlgorithm("ecod.py", "ECOD", "ECOD", Algorithm.AlgorithmGroup.PROBABILISTIC),
+    _PyodAlgorithm(
         "feature_bagging.py",
         "FeatureBagging",
         "FeatureBagging",
         Algorithm.AlgorithmGroup.OUTLIER_ENSEMBLES,
     ),
-    PyodAlgorithm("gmm.py", "GMM", "GMM", Algorithm.AlgorithmGroup.PROBABILISTIC),
-    PyodAlgorithm("hbos.py", "HBOS", "HBOS", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
-    PyodAlgorithm(
+    _PyodAlgorithm("gmm.py", "GMM", "GMM", Algorithm.AlgorithmGroup.PROBABILISTIC),
+    _PyodAlgorithm("hbos.py", "HBOS", "HBOS", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
+    _PyodAlgorithm(
         "iforest.py", "IForest", "IForest", Algorithm.AlgorithmGroup.OUTLIER_ENSEMBLES
     ),
-    PyodAlgorithm(
+    _PyodAlgorithm(
         "inne.py", "INNE", "INNE", Algorithm.AlgorithmGroup.OUTLIER_ENSEMBLES
     ),
-    PyodAlgorithm("kde.py", "KDE", "KDE", Algorithm.AlgorithmGroup.PROBABILISTIC),
-    PyodAlgorithm("knn.py", "KNN", "KNN", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
-    PyodAlgorithm("lmdd.py", "LMDD", "LMDD", Algorithm.AlgorithmGroup.LINEAR_MODEL),
-    PyodAlgorithm("loci.py", "LOCI", "LOCI", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
-    PyodAlgorithm(
+    _PyodAlgorithm("kde.py", "KDE", "KDE", Algorithm.AlgorithmGroup.PROBABILISTIC),
+    _PyodAlgorithm("knn.py", "KNN", "KNN", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
+    _PyodAlgorithm("lmdd.py", "LMDD", "LMDD", Algorithm.AlgorithmGroup.LINEAR_MODEL),
+    _PyodAlgorithm("loci.py", "LOCI", "LOCI", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
+    _PyodAlgorithm(
         "loda.py", "LODA", "LODA", Algorithm.AlgorithmGroup.OUTLIER_ENSEMBLES
     ),
-    PyodAlgorithm("lof.py", "LOF", "LOF", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
-    PyodAlgorithm(
+    _PyodAlgorithm("lof.py", "LOF", "LOF", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
+    _PyodAlgorithm(
         "lscp.py", "LSCP", "LSCP", Algorithm.AlgorithmGroup.OUTLIER_ENSEMBLES
     ),
-    PyodAlgorithm("mad.py", "MAD", "MAD", Algorithm.AlgorithmGroup.PROBABILISTIC),
-    PyodAlgorithm("mcd.py", "MCD", "MCD", Algorithm.AlgorithmGroup.LINEAR_MODEL),
-    PyodAlgorithm(
+    _PyodAlgorithm("mad.py", "MAD", "MAD", Algorithm.AlgorithmGroup.PROBABILISTIC),
+    _PyodAlgorithm("mcd.py", "MCD", "MCD", Algorithm.AlgorithmGroup.LINEAR_MODEL),
+    _PyodAlgorithm(
         "mo_gaal.py", "MO_GAAL", "MO_GAAL", Algorithm.AlgorithmGroup.NEURAL_NETWORKS
     ),
-    PyodAlgorithm("ocsvm.py", "OCSVM", "OCSVM", Algorithm.AlgorithmGroup.LINEAR_MODEL),
-    PyodAlgorithm("pca.py", "PCA", "PCA", Algorithm.AlgorithmGroup.LINEAR_MODEL),
-    PyodAlgorithm(
+    _PyodAlgorithm("ocsvm.py", "OCSVM", "OCSVM", Algorithm.AlgorithmGroup.LINEAR_MODEL),
+    _PyodAlgorithm("pca.py", "PCA", "PCA", Algorithm.AlgorithmGroup.LINEAR_MODEL),
+    _PyodAlgorithm(
         "rgraph.py", "RGraph", "RGraph", Algorithm.AlgorithmGroup.GRAPH_BASED
     ),
-    PyodAlgorithm("rod.py", "ROD", "ROD", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
-    PyodAlgorithm(
+    _PyodAlgorithm("rod.py", "ROD", "ROD", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
+    _PyodAlgorithm(
         "sampling.py", "Sampling", "Sampling", Algorithm.AlgorithmGroup.PROBABILISTIC
     ),
-    PyodAlgorithm(
+    _PyodAlgorithm(
         "so_gaal.py", "SO_GAAL", "SO_GAAL", Algorithm.AlgorithmGroup.NEURAL_NETWORKS
     ),
-    PyodAlgorithm("sod.py", "SOD", "SOD", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
-    PyodAlgorithm("sos.py", "SOS", "SOS", Algorithm.AlgorithmGroup.PROBABILISTIC),
-    PyodAlgorithm(
+    _PyodAlgorithm("sod.py", "SOD", "SOD", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
+    _PyodAlgorithm("sos.py", "SOS", "SOS", Algorithm.AlgorithmGroup.PROBABILISTIC),
+    _PyodAlgorithm(
         "suod.py", "SUOD", "SUOD", Algorithm.AlgorithmGroup.OUTLIER_ENSEMBLES
     ),
-    PyodAlgorithm("vae.py", "VAE", "VAE", Algorithm.AlgorithmGroup.NEURAL_NETWORKS),
-    PyodAlgorithm(
+    _PyodAlgorithm("vae.py", "VAE", "VAE", Algorithm.AlgorithmGroup.NEURAL_NETWORKS),
+    _PyodAlgorithm(
         "xgbod.py", "XGBOD", "XGBOD", Algorithm.AlgorithmGroup.OUTLIER_ENSEMBLES
     ),
 ]
 
 
 def _rename_algorithm_file_if_needed(
-    pyod_algo: PyodAlgorithm, pyod_models_root: Path
+    pyod_algo: _PyodAlgorithm, pyod_models_root: Path
 ) -> None:
     file_name, ext = os.path.splitext(pyod_algo.file_name)
     if file_name != pyod_algo.class_name.lower():
@@ -121,7 +121,7 @@ def _rename_algorithm_file_if_needed(
 
 
 def _replace_occurrences(
-    pyod_algo: PyodAlgorithm, pyod_models_root: Path, old: str, new: str
+    pyod_algo: _PyodAlgorithm, pyod_models_root: Path, old: str, new: str
 ):
     path = pyod_models_root / pyod_algo.file_name
     fh, abs_path = mkstemp()
@@ -153,7 +153,7 @@ class Command(BaseCommand):
         )
 
     def _check_algorithm_validity(
-        self, pyod_algo: PyodAlgorithm, pyod_models_root: Path
+        self, pyod_algo: _PyodAlgorithm, pyod_models_root: Path
     ):
         # Check algorithms before adding them to the database
         self._stdout_write(
@@ -172,7 +172,7 @@ class Command(BaseCommand):
 
         self._stdout_write(self.style.SUCCESS("OK"))
 
-    def _save_algorithms_in_db(self, pyod_algo: PyodAlgorithm, pyod_models_root: Path):
+    def _save_algorithms_in_db(self, pyod_algo: _PyodAlgorithm, pyod_models_root: Path):
         self._stdout_write(
             f"  Saving {pyod_algo.display_name} ({pyod_algo.file_name})"
             " into database...",
