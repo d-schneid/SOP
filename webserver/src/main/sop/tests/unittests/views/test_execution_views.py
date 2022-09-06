@@ -78,19 +78,6 @@ class ExecutionCreateViewTests(
         self.assertIsNone(Execution.objects.first())
 
     def test_execution_create_view_subspace_errors(self) -> None:
-        self.data["subspaces_min"] = -3
-        self.data["subspaces_max"] = 200
-        self.data["subspace_amount"] = -34
-        response = self.send_post()
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse(response.redirect_chain)
-        self.assertNotEqual(
-            str(response.context["form"]).find("greater than or equal to 0"), -1
-        )
-        # self.assertContains(response, "Value must be greater than or equal to 0")
-        self.assertIsNone(Execution.objects.first())
-
-    def test_execution_create_view_subspace_errors2(self) -> None:
         """
         Test that Subspaces max is greater than or equal to Subspaces min.
         """
@@ -109,31 +96,29 @@ class ExecutionCreateViewTests(
         )
         self.assertIsNone(Execution.objects.first())
 
-    def test_execution_create_view_subspace_errors3(self) -> None:
+    def test_execution_create_view_subspace_errors2(self) -> None:
         """
-        Test that subspace generation seed and Subspace amount cannot be smaller than zero
+        Test that Subspaces max is greater than or equal to Subspaces min.
         """
-        self.data["subspace_generation_seed"] = -1
+        self.data["subspaces_min"] = 0
+        self.data["subspaces_max"] = 2
         response = self.send_post()
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.redirect_chain)
-        self.assertNotEqual(
+        self.assertEqual(
             str(response.context["form"]).find("greater than or equal to 0"), -1
         )
         self.assertIsNone(Execution.objects.first())
 
-    def test_execution_create_view_subspace_errors4(self) -> None:
+    def test_execution_create_view_subspace_errors3(self) -> None:
         """
         Test that subspace min and max can't be smaller than 0, even if min < max.
         """
-        self.data["subspaces_min"] = -2
-        self.data["subspaces_max"] = -1
+        self.data["subspaces_min"] = 2
+        self.data["subspaces_max"] = 1
         response = self.send_post()
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.redirect_chain)
-        self.assertNotEqual(
-            str(response.context["form"]).find("greater than or equal to 0"), -1
-        )
         self.assertIsNone(Execution.objects.first())
 
     def test_schedule_backend(self) -> None:
