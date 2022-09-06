@@ -180,8 +180,7 @@ class UnitTest_ExecutionElementMetricHelper(unittest.TestCase):
 
     def test_write_empty_execution_error_message(self):
         self.assertFalse(os.path.isfile(self._error_metric_path))
-        ExecutionElementMetricHelper. \
-            _ExecutionElementMetricHelper__write_empty_execution_error_message(
+        ExecutionElementMetricHelper.write_empty_execution_error_message(
             self._error_metric_path)
 
         self.assertTrue(os.path.isfile(self._error_metric_path))
