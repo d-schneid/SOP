@@ -4,20 +4,24 @@ from random import Random
 import numpy as np
 
 from backend.task.execution.subspace.RandomizedSubspaceGeneration import \
-    RandomizedSubspaceGeneration
+    RandomizedSubspaceGeneration as RSG
 from backend.task.execution.subspace.UniformSubspaceDistribution import \
-    UniformSubspaceDistribution
+    UniformSubspaceDistribution as USD
 
 
 class UnitTestRndSubGen(unittest.TestCase):
-    ss_gen_paras = [(2, 2, 1, 1)]
+    ss_gen_paras = [(2, 2, 1, 1, -1),
+                    (21, 5, 2, 3, 0),
+                    (16, 33000, 7, 9, 0),
+                    ]
 
     def test_ss_gen(self):
-        for ds_dim_count, ss_count, ss_sz_min, ss_sz_max in self.ss_gen_paras:
-            sz_distr = UniformSubspaceDistribution(ss_sz_min, ss_sz_max)
-            sd = Random().randint(0, 1000)
-            ss_gen1 = RandomizedSubspaceGeneration(sz_distr, ds_dim_count, ss_count, sd)
-            ss_gen2 = RandomizedSubspaceGeneration(sz_distr, ds_dim_count, ss_count, sd)
+        for ds_dim_count, ss_count, ss_sz_min, ss_sz_max, seed in self.ss_gen_paras:
+            sz_distr = USD(ss_sz_min, ss_sz_max)
+            if seed == -1:
+                seed = Random().randint(0, 1000)
+            ss_gen1 = RSG(sz_distr, ds_dim_count, ss_count, seed)
+            ss_gen2 = RSG(sz_distr, ds_dim_count, ss_count, seed)
             ss_list1 = ss_gen1.generate()
             ss_list2 = ss_gen2.generate()
             self.assertEqual(ss_count, len(ss_list1))
