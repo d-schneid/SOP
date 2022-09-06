@@ -130,11 +130,25 @@ class ExecutionCreateViewTests(
         self.assertIsNone(Execution.objects.first())
 
     def test_execution_create_view_subspace_errors4(self) -> None:
-        # In this test, schedule_backend will return an error. We simulate this
         self.data["subspaces_min"] = self.dataset.dimensions_total
         self.data["subspaces_max"] = self.dataset.dimensions_total
         self.data["subspace_amount"] = 2
+        # In this test, schedule_backend will return an error
         response = self.send_post(schedule_error=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.redirect_chain)
+        self.assertIsNone(Execution.objects.first())
+
+    def test_execution_create_view_subspace_errors5(self) -> None:
+        self.data["subspaces_max"] = self.dataset.dimensions_total + 1
+        response = self.send_post()
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.redirect_chain)
+        self.assertIsNone(Execution.objects.first())
+
+    def test_execution_create_view_subspace_errors6(self) -> None:
+        self.data["subspace_amount"] = 0
+        response = self.send_post()
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.redirect_chain)
         self.assertIsNone(Execution.objects.first())
