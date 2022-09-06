@@ -46,7 +46,7 @@
 {% endblock %}
 
 {% block card-footer %}
-    {% for execution in model.execution_set.all %}
+    {% for execution in model.execution_set.get_sorted_by_creation_date %}
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
                 <div class="d-flex flex-column-reverse">
@@ -64,19 +64,21 @@
 
                         <a href="{% url 'execution_download_result' model.pk execution.pk %}"
                            class="btn btn-info mr-3" id="execution-download-{{ execution.pk }}"
-                           style="visibility: {% if execution.has_result %}visible{% else %}hidden{% endif %}">Download
-                            Result</a>
+                           style="visibility: {% if execution.has_result %}visible{% else %}hidden{% endif %}"><i
+                                class="bi bi-download"></i> Result</a>
 
                         {% if execution.is_crashed %}
-                            <a href="{% url "execution_restart" model.pk execution.pk %}" class="btn btn-success mr-3">Restart</a>
+                            <a href="{% url "execution_restart" model.pk execution.pk %}"
+                               class="btn btn-success mr-3"><i class="bi bi-arrow-counterclockwise"></i> Restart</a>
                         {% endif %}
 
-                        <a href="{% url "execution_duplicate" model.pk execution.pk %}" class="btn btn-warning mr-3">Duplicate</a>
+                        <a href="{% url "execution_duplicate" model.pk execution.pk %}" class="btn btn-warning mr-3"><i
+                                class="bi bi-stickies"></i> Duplicate</a>
                         <button type="button"
                                 class="btn btn-danger mr-3"
                                 data-toggle="modal"
                                 data-target="#deleteModal{{ execution.pk }}">
-                            Delete
+                            <i class="bi bi-trash"></i> Delete
                         </button>
                         <div class="modal fade"
                              id="deleteModal{{ execution.pk }}"
@@ -103,7 +105,9 @@
                                         </button>
                                         <form action="{% url 'execution_delete' model.pk execution.pk %}" method="post">
                                             {% csrf_token %}
-                                            <button class="btn btn-danger mr-3" type="submit">Delete</button>
+                                            <button class="btn btn-danger mr-3" type="submit"><i
+                                                    class="bi bi-trash"></i> Yes, Delete
+                                            </button>
                                         </form>
                                     </div>
                                 </div>
@@ -121,7 +125,7 @@
                         class="btn btn-danger mr-3"
                         data-toggle="modal"
                         data-target="#deleteModal{{ model.pk }}">
-                    Delete Experiment
+                    <i class="bi bi-trash"></i> Delete Experiment
                 </button>
                 <div class="modal fade"
                      id="deleteModal{{ model.pk }}"
@@ -147,19 +151,24 @@
                                 <button type="button" class="btn btn-dark mr-3" data-dismiss="modal">Cancel</button>
                                 <form action="{% url 'experiment_delete' model.pk %}" method="post">
                                     {% csrf_token %}
-                                    <button class="btn btn-danger mr-3" type="submit">Delete</button>
+                                    <button class="btn btn-danger mr-3" type="submit"><i class="bi bi-trash"></i> Yes,
+                                        Delete
+                                    </button>
                                 </form>
                             </div>
                         </div>
                     </div>
                 </div>
-                <a href="{% url "experiment_duplicate" model.pk %}" class="btn btn-warning mr-3">Duplicate
+                <a href="{% url "experiment_duplicate" model.pk %}" class="btn btn-warning mr-3"><i
+                        class="bi bi-stickies"></i>
+                    Duplicate
                     Experiment</a>
                 <a href="{% url 'experiment_edit' model.pk %}"
-                   class="btn btn-warning mr-3">Edit Experiment</a>
+                   class="btn btn-warning mr-3"><i class="bi bi-pencil"></i> Edit Experiment</a>
                 <a href="{% url "experiment_download_results" model.pk %}" id="experiment-download-{{ model.pk }}"
                    class="btn btn-info mr-3"
-                   style="visibility: {% if model.has_result %}visible{% else %}hidden{% endif %}">Download all
+                   style="visibility: {% if model.has_result %}visible{% else %}hidden{% endif %}"><i
+                        class="bi bi-download"></i> Download all
                     results</a>
             </div>
         </li>

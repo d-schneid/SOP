@@ -1,3 +1,4 @@
+import logging
 import os
 from abc import ABC
 from collections.abc import Callable
@@ -78,6 +79,9 @@ class DatasetCleaning(Task, Schedulable, ABC):
         :return: None
         """
         if self.__did_cleaning_finish():
+            logging.debug("Execution of DatasetCleaning at path: " +
+                          str(self._cleaned_dataset_path) +
+                          " was skipped because it was already finished")
             self._task_progress_callback(self._task_id, TaskState.FINISHED, 1.0)
             return None
         scheduler: Scheduler = Scheduler.get_instance()
@@ -186,9 +190,13 @@ class DatasetCleaning(Task, Schedulable, ABC):
             try:
                 csv_to_clean = cleaning_step.do_cleaning(csv_to_clean)
             except Exception as e:  # catch all exceptions
-                if str(e) == "":
-                    e = "Error: " + str(cleaning_step) + " resulted in an error"
-                TaskHelper.save_error_csv(self._cleaned_dataset_path, str(e))
+                error_message: str = str(e)
+
+                if error_message == "":
+                    error_message = "ERROR The cleaning step " + str(cleaning_step) + \
+                                    " resulted in an error"
+
+                TaskHelper.save_error_csv(self._cleaned_dataset_path, error_message)
                 return None
 
             # Exception handling
@@ -216,3 +224,8 @@ class DatasetCleaning(Task, Schedulable, ABC):
             TaskHelper.save_error_csv(self._cleaned_dataset_path, str(error))
             return True
         return False
+
+    def __str__(self):
+        return f"DatasetCleaning {self.task_id} from user {self.user_id}" \
+            f"cleans dataset from {self._uncleaned_dataset_path}" \
+            f"to {self._cleaned_dataset_path}"

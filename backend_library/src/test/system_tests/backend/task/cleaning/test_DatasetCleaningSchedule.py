@@ -24,10 +24,10 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
 
     # dataset 1
     _uncleaned_dataset_path1: str = os.path.join(_dir_name,
-                                                 "test/datasets/" +
+                                                 "../resources/test/datasets/" +
                                                  "/system_test_uncleaned_dataset1.csv")
     _cleaned_dataset_path1: str = os.path.join(_dir_name,
-                                               "test/datasets/" +
+                                               "../resources/test/datasets/" +
                                                "system_test_cleaned_dataset1.csv")
 
     _run_cleaning1: bool = False
@@ -36,21 +36,21 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
 
     # dataset 2
     _uncleaned_dataset_path2: str = os.path.join(_dir_name,
-                                                 "test/datasets/" +
+                                                 "../resources/test/datasets/" +
                                                  "system_test_uncleaned_dataset2.csv")
     _cleaned_dataset_path2: str = os.path.join(_dir_name,
-                                               "test/datasets/" +
+                                               "../resources/test/datasets/" +
                                                "system_test_cleaned_dataset2.csv")
 
     # dataset 3: canada_climate.csv
     _uncleaned_dataset_path3: str = os.path.join(_dir_name,
-                                                 "test/datasets/" +
+                                                 "../resources/test/datasets/" +
                                                  "/canada_climate_uncleaned.csv")
     _cleaned_dataset_path3: str = os.path.join(_dir_name,
-                                               "test/datasets/" +
+                                               "../resources/test/datasets/" +
                                                "canada_climate_cleaned.csv")
     _cleaned_dataset_path_to_compare_result3: str = os.path.join(_dir_name,
-                                               "test/datasets/" +
+                                               "../resources/test/datasets/" +
                                                "canada_climate_cleaned_to_compare.csv")
 
     def task_progress_callback(self, _task_id: int, task_state: TaskState,

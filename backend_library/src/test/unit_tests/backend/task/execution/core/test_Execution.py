@@ -115,6 +115,25 @@ class UnitTestExecution(unittest.TestCase):
     def test_generate_execution_details_in_filesystem(self):
         self.assertTrue(os.path.isfile(self._details_path))
 
+    def test_generate_execution_details_in_filesystem_old_running_path_exists(self):
+        running_path: str = self._details_path + ".running"
+        os.remove(self._details_path)
+
+        self.assertFalse(os.path.isfile(self._details_path))
+        self.assertFalse(os.path.isfile(running_path))
+
+        # Create file at running_path
+        with open(running_path, 'w'):
+            self.assertTrue(os.path.isfile(running_path))
+
+        # Method to test:
+        self._ex._Execution__generate_execution_details_in_filesystem()
+
+        # The file at the running_path has to be removed and
+        # the details.json should have been created:
+        self.assertFalse(os.path.isfile(running_path))
+        self.assertTrue(os.path.isfile(self._details_path))
+
     def test_does_zip_exists(self):
         if os.path.isdir(self._zipped_result_path):
             os.rmdir(self._zipped_result_path)

@@ -25,7 +25,7 @@ class ImputationMode(Imputation, ABC):
 
         # exception handling
         assert len(dataset_to_clean.data.shape) == 2
-        eh.check_non_none_column(dataset_to_clean.data, "ImputationMode")
+        eh.check_no_none_column(dataset_to_clean.data, "ImputationMode")
 
         # Mode logic
         # Replace None with np.nan

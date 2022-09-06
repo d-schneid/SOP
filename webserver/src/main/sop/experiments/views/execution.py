@@ -16,7 +16,6 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView
 
 from authentication.mixins import LoginRequiredMixin
-from backend.task.TaskState import TaskState
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 from backend.task.execution.core.Execution import Execution as BackendExecution
 from backend.task.execution.subspace.RandomizedSubspaceGeneration import (
@@ -146,39 +145,28 @@ class ExecutionCreateView(
 
         # Get subspaces_min out of form and do sanity checks
         subspaces_min = form.cleaned_data["subspaces_min"]
-        form.instance.subspaces_min = subspaces_min
+        assert subspaces_min >= 0
+        if subspaces_min == 0:
+            messages.error(
+                self.request,
+                "Subspaces Min has to be a positive integer greater than 0.",
+            )
+            error = True
+        else:
+            form.instance.subspaces_min = subspaces_min
 
         # Get subspaces_max out of form and do sanity checks
         subspaces_max = form.cleaned_data["subspaces_max"]
-
+        assert subspaces_max >= 0
         if subspaces_max > experiment.dataset.dimensions_total:
             messages.error(
                 self.request,
-                f"Subspaces Max has to be smaller than or equal to the dataset \
-                dimension count: {experiment.dataset.dimensions_total}.",
+                "Subspaces Max has to be smaller than or equal to the dataset"
+                f" dimension count: {experiment.dataset.dimensions_total}.",
             )
             error = True
         else:
             form.instance.subspaces_max = subspaces_max
-
-        # Get subspace_amount out of form and do sanity checks
-        subspace_amount = form.cleaned_data["subspace_amount"]
-        form.instance.subspace_amount = subspace_amount
-
-        # Generate algorithm_parameters out of form inputs
-        success, dikt = get_params_out_of_form(self.request, experiment)
-        if success:
-            form.instance.algorithm_parameters = dikt
-        else:
-            error = True
-            messages.error(self.request, generate_hyperparameter_error_message(dikt))
-
-        # Get subspace_generation_seed out of form and do sanity checks
-        seed: Optional[int] = form.cleaned_data.get("subspace_generation_seed")
-        # If the seed was not specified, it will be set to a random seed during
-        # model creation
-        if seed:
-            form.instance.subspace_generation_seed = seed
 
         # Sanity check that subspaces_min must be smaller than subspaces_max
         if subspaces_min > subspaces_max:
@@ -188,8 +176,27 @@ class ExecutionCreateView(
             )
             error = True
 
+        # Get subspace_amount out of form and do sanity checks
+        subspace_amount = form.cleaned_data["subspace_amount"]
+        assert subspace_amount is not None
+        form.instance.subspace_amount = subspace_amount
+
+        # Generate algorithm_parameters out of form inputs
+        success, dikt = get_params_out_of_form(self.request, experiment)
+        if success:
+            form.instance.algorithm_parameters = dikt
+        else:
+            messages.error(self.request, generate_hyperparameter_error_message(dikt))
+            error = True
+
+        seed: Optional[int] = form.cleaned_data.get("subspace_generation_seed")
+        # If the seed was not specified,
+        # it will be set to a random seed during model creation
+        if seed is not None:
+            form.instance.subspace_generation_seed = seed
+
         # set status of execution to running
-        form.instance.status = TaskState.RUNNING.name
+        form.instance.status = ExecutionStatus.RUNNING.name
 
         if error:
             return super(ExecutionCreateView, self).form_invalid(form)
@@ -205,7 +212,13 @@ class ExecutionCreateView(
 
         errors = schedule_backend(form.instance)
         if errors:
-            form.errors.update(errors)
+            # since the super().form_valid() call created the model, so we can access
+            # the pk in schedule_backend(), we need to delete the model again, if an
+            # error occurred
+            form.instance.delete()
+            for error_messages in errors.values():
+                for error_msg in error_messages:
+                    messages.error(self.request, error_msg)
             return super(ExecutionCreateView, self).form_invalid(form)
 
         return success_response
@@ -252,8 +265,8 @@ def download_execution_result(
     """
     A function view that will download an execution result. This view asserts that the
     execution has results located at the path in the result_path attribute of the
-    execution. Accessing this view with an unfinished execution will redirect to the
-    experiment overview.
+    execution. Accessing this view with an unfinished execution will result in
+    unexpected behaviour.
 
     @param request: The HTTPRequest, this will be given by django.
     @param experiment_pk: The primary key of the experiment of the execution.

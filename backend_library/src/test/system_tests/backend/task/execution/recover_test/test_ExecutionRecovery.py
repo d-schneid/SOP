@@ -20,7 +20,7 @@ class SystemTest_ExecutionRecovery(unittest.TestCase):
     _task_id: int = 1553
 
     _dataset_path: str = os.path.join(os.getcwd(),
-                                      "test/datasets" +
+                                      "../resources/test/datasets" +
                                       "/canada_climate_cleaned_to_compare.csv")
 
     _dir_name: str = os.getcwd()
@@ -52,8 +52,8 @@ class SystemTest_ExecutionRecovery(unittest.TestCase):
                                                 "different_display_name",
                                                 "display_name (2)"]
 
-    _path: str = "./test/algorithms/DebugAlgorithm.py"
-    _root_dir: str = "./test/"
+    _path: str = "../resources/test/algorithms/DebugAlgorithm.py"
+    _root_dir: str = "../resources/test/"
     _algorithms: list[ParameterizedAlgorithm] = \
         list([ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[0]),
               ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[1]),
@@ -72,7 +72,6 @@ class SystemTest_ExecutionRecovery(unittest.TestCase):
               ParameterizedAlgorithm(_path, _hyper_parameter, _display_names[3])])
 
     _running_path = _result_path + ".I_am_running"
-    _final_zip_path = _result_path + ".zip"
 
     # precomputed result
     _precomputed_result_path: str = "./test/system_tests/backend/task/" \
@@ -87,7 +86,10 @@ class SystemTest_ExecutionRecovery(unittest.TestCase):
         # Copy execution to recover to not overwrite the original!!!
         if os.path.isdir(self._result_path):
             shutil.rmtree(self._result_path)
-        shutil.copytree(self._original_execution_to_recover_path, self._result_path)
+        self.assertFalse(os.path.isdir(self._result_path))
+
+        shutil.copytree(self._original_execution_to_recover_path, self._result_path,
+                        ignore=None)
 
         # Delete all folders and files of the old execution structure:
         # BEFORE creating the new execution!
@@ -106,8 +108,8 @@ class SystemTest_ExecutionRecovery(unittest.TestCase):
                              self._result_path, self._subspace_generation,
                              self._algorithms,
                              self.__metric_callback, 29221,
-                             self._final_zip_path,
-                             zip_running_path=self._zipped_result_path)
+                             self._zipped_result_path,
+                             zip_running_path=self._running_path)
 
     def test_recover_execution(self):
         # Test if all the callbacks where initialized correctly
@@ -115,6 +117,8 @@ class SystemTest_ExecutionRecovery(unittest.TestCase):
         self.assertFalse(self._metric_was_called)
         self.assertFalse(self._execution_finished)
         self.assertEqual(0, self._last_progress_report)
+
+        self.assertTrue(os.path.isdir(self._result_path))
 
         # perform the Execution
         self._ex.schedule()
@@ -135,7 +139,7 @@ class SystemTest_ExecutionRecovery(unittest.TestCase):
 
     def __clear_old_execution_file_structure(self):
         if os.path.isfile(self._zipped_result_path):
-            os.remove(self._final_zip_path)
+            os.remove(self._zipped_result_path)
 
     def __task_progress_callback(self, task_id: int,
                                  task_state: TaskState, progress: float) -> None:

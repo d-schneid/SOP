@@ -97,7 +97,7 @@ class ExperimentCreateView(
                 "algorithm_groups": Algorithm.AlgorithmGroup,
                 "algorithms": Algorithm.objects.get_by_user_and_public(
                     self.request.user
-                ),
+                ).get_sorted_by_name(),
                 "datasets": Dataset.objects.get_by_user(self.request.user),
             }
         )

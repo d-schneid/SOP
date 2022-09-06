@@ -59,7 +59,7 @@ default:
     paths:
       - .cache/pip/
 
-  #
+
   # This folder is cached between builds
   # http://docs.gitlab.com/ee/ci/yaml/README.html#cache
   before_script:
@@ -73,7 +73,7 @@ default:
     - python3.9 -V
 
 .frontend-base:
-  image: python:3.9-slim-bullseye
+  image: albinoboi/sop-ci-django
   #
   # Pick zero or more services to be used on all builds.
   # Only needed when using a docker container to run your tests in.
@@ -81,21 +81,12 @@ default:
   services:
     - mysql:8.0
   before_script:
-    - apt-get -y update
-    - apt-get -yq install software-properties-common
-    - apt-get -y install apt-utils net-tools wget default-mysql-client default-libmysqlclient-dev python3-distutils python3-dev gcc memcached
-    - "[ ! -d 'venv3.9' ] && python3 -m venv venv3.9"
     - "[ ! -d 'public' ] && mkdir public"
-    - source venv3.9/bin/activate
-    - python3.9 -m pip install --upgrade pip
-    - python3.9 -m pip install -r requirements.txt
-    - python3.9 -m pip install mysqlclient coverage
-    - python3.9 -m pip install -e backend_library/src
-    - python3.9 -V
+    - python3.9 -m pip install backend_library/src
 
 flake:
   stage: test
-  needs: []
+  needs: [ ]
   before_script:
     - python3.9 -m pip install flake8 flake8-assertive
   script:
@@ -104,26 +95,19 @@ flake:
     - '! grep -IUrPl --exclude-dir=.git --exclude-dir=venv* "\r$" 1>&2'
 
 django-tests:
-  needs: []
+  needs: [ ]
   stage: test
   extends: .frontend-base
   coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
+  variables:
+    SELENIUM_SCHEDULER: "production"
   script:
-    - source venv3.9/bin/activate
 
-    # We skip pyodtodb django admin command tests because it needs way to big python dependencies
-    # - pip3 install -r requirements_pyod_algorithms.txt
+    # set browser to Firefox for the first run of the Selenium Tets
+    - export SELENIUM_BROWSER=firefox
 
-    - which python3.9
     - cd webserver/src/main/sop
 
-    # make migrations and migrate, so the db is ready for the tests
-    - python3.9 manage.py makemigrations --settings=sop.settings_ci
-    - python3.9 manage.py migrate --settings=sop.settings_ci
-    - python3.9 manage.py showmigrations --settings=sop.settings_ci
-    - python3.9 manage.py check --settings=sop.settings_ci
-
-    - pip3 install django_coverage_plugin
     - "echo '[run]\nplugins = django_coverage_plugin' > .coveragerc"
     - memcached -d -u root
     # The MYSQL user only gets permissions for MYSQL_DB, so Django can't create a test database.
@@ -132,9 +116,19 @@ django-tests:
     - python3.9 -m coverage run --rcfile=.coveragerc --source="." --omit="media/*","*/migrations/*","*/__init__.py","tests/*","sop/*","*/pyodtodb.py","manage.py","*/templates/admin/*" manage.py test --settings sop.settings_ci
     - python3.9 -m coverage report --rcfile=.coveragerc --precision=2
     - 'wget -O ../../../../public/django-tests.svg https://img.shields.io/badge/webserver\ coverage-$(python3.9 -m coverage report --rcfile=.coveragerc --precision=2 | grep -E "^TOTAL.+?([0-9]+.[0-9]+%)$" | grep -Eo "[0-9]+.[0-9]+%$")-informational'
+
+    # run Selenium Tests with Chrome
+    - export SELENIUM_BROWSER=chrome # setting for the systemtests (so that they are run with Chrome this time)
+    - python3.9 -Wa manage.py test --settings=sop.settings_ci tests/systemtests/
+
   artifacts:
+    name: "django_artefacts_job-${CI_JOB_ID}_commit-${CI_COMMIT_SHA}"
+    when: always
     paths:
       - public/django-tests.svg
+      - webserver/src/main/sop/tests/systemtests/media/
+    expire_in: 2 weeks
+
 
 backend-tests:
   variables:

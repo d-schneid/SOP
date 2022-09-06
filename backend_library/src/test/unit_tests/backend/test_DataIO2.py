@@ -12,7 +12,7 @@ class UnitTestDataIO2(unittest.TestCase):
     _dataIO: DataIO = DataIO()
 
     # cleaned dataset 1
-    _cleaned_dataset1_path: str = "./test/datasets/cleaned_dataset1.csv"
+    _cleaned_dataset1_path: str = "../resources/test/datasets/cleaned_dataset1.csv"
     _cleaned_data = np.asarray([[0, 0, 0, 0, 0, 0, 0, 0],
                                 [0, 0, 1, 0.124, 1, 0.2, 0.14, 0.999999],
                                 [0.42, 0.51, 0.1, 0.1324, 0.5198, 0.142, 0.5, 0.2]])
@@ -20,10 +20,10 @@ class UnitTestDataIO2(unittest.TestCase):
                                                              None, None, True, True)
 
     # empty dataset
-    _empty_dataset_path: str = "./test/datasets/empty_dataset.csv"
+    _empty_dataset_path: str = "../resources/test/datasets/empty_dataset.csv"
 
     # save write
-    _save_write_path: str = "./test/datasets/save_write.csv"
+    _save_write_path: str = "../resources/test/datasets/save_write.csv"
 
     # save_convert_to_float 1D
     _to_convert_1D: np.ndarray = np.asarray([1, "2", "21.315", "Cannot be converted :(",

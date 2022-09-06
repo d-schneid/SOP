@@ -1,0 +1,2 @@
+class Noalgo:
+    pass

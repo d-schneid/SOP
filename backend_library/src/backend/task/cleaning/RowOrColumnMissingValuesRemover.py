@@ -34,7 +34,7 @@ class RowOrColumnMissingValuesRemover(MissingValuesRemover, ABC):
         """
         # exception logic
         assert len(dataset_to_clean.data.shape) == 2
-        eh.check_non_empty_array(dataset_to_clean.data, "ThresholdMissingValuesRemover")
+        eh.check_no_empty_array(dataset_to_clean.data, "ThresholdMissingValuesRemover")
 
         # ThresholdMissingValuesRemover logic
         df: pd.DataFrame = pd.DataFrame(dataset_to_clean.to_single_array())
