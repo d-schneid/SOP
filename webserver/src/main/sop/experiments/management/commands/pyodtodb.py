@@ -1,3 +1,4 @@
+import copy
 import dataclasses
 import os
 import shutil
@@ -21,7 +22,7 @@ class PyodAlgorithm:
     group: Algorithm.AlgorithmGroup
 
 
-PYOD_ALGORITHMS = [
+_PYOD_ALGORITHMS = [
     PyodAlgorithm("abod.py", "ABOD", "ABOD", Algorithm.AlgorithmGroup.PROBABILISTIC),
     PyodAlgorithm(
         "anogan.py", "AnoGAN", "AnoGAN", Algorithm.AlgorithmGroup.NEURAL_NETWORKS
@@ -106,7 +107,7 @@ PYOD_ALGORITHMS = [
 ]
 
 
-def rename_algorithm_file_if_needed(
+def _rename_algorithm_file_if_needed(
     pyod_algo: PyodAlgorithm, pyod_models_root: Path
 ) -> None:
     file_name, ext = os.path.splitext(pyod_algo.file_name)
@@ -119,7 +120,7 @@ def rename_algorithm_file_if_needed(
         pyod_algo.file_name = new_file_name + ext
 
 
-def replace_occurrences(
+def _replace_occurrences(
     pyod_algo: PyodAlgorithm, pyod_models_root: Path, old: str, new: str
 ):
     path = pyod_models_root / pyod_algo.file_name
@@ -151,11 +152,11 @@ class Command(BaseCommand):
             "--quiet", "-q", action="store_true", help="Turn off console output."
         )
 
-    def check_algorithm_validity(
+    def _check_algorithm_validity(
         self, pyod_algo: PyodAlgorithm, pyod_models_root: Path
     ):
         # Check algorithms before adding them to the database
-        self.stdout_write(
+        self._stdout_write(
             f"  Checking {pyod_algo.display_name} ({pyod_algo.file_name})"
             " for validity...",
             ending="",
@@ -169,10 +170,10 @@ class Command(BaseCommand):
         )
         assert errors is None, errors
 
-        self.stdout_write(self.style.SUCCESS("OK"))
+        self._stdout_write(self.style.SUCCESS("OK"))
 
-    def save_algorithms_in_db(self, pyod_algo: PyodAlgorithm, pyod_models_root: Path):
-        self.stdout_write(
+    def _save_algorithms_in_db(self, pyod_algo: PyodAlgorithm, pyod_models_root: Path):
+        self._stdout_write(
             f"  Saving {pyod_algo.display_name} ({pyod_algo.file_name})"
             " into database...",
             ending="",
@@ -190,11 +191,11 @@ class Command(BaseCommand):
         if created:
             algo.path.name = str(path.relative_to(settings.MEDIA_ROOT))
             algo.save()
-            self.stdout_write(self.style.SUCCESS("OK"))
+            self._stdout_write(self.style.SUCCESS("OK"))
         else:
-            self.stdout_write(self.style.NOTICE("ALREADY EXISTS"))
+            self._stdout_write(self.style.NOTICE("ALREADY EXISTS"))
 
-    def stdout_write(self, message: str, ending: str = MISSING):
+    def _stdout_write(self, message: str, ending: str = MISSING):
         if self.quiet:
             return
 
@@ -204,31 +205,43 @@ class Command(BaseCommand):
             self.stdout.write(message)
 
     def handle(self, *args: Any, **options: Any) -> Optional[str]:
+        global _PYOD_ALGORITHMS
+        # save the original state of the PYOD_ALGORITHMS list
+        original_pyod_algorithms = copy.deepcopy(_PYOD_ALGORITHMS)
+
+        result = self._execute(*args, **options)
+
+        # reset the original attribute
+        _PYOD_ALGORITHMS = original_pyod_algorithms
+
+        return result
+
+    def _execute(self, *args: Any, **options: Any) -> Optional[str]:
         import pyod
 
         self.quiet = options["quiet"]
 
-        self.stdout_write(
+        self._stdout_write(
             "Searching for pyod library path...",
             ending="",
         )
 
         pyod_path = Path(pyod.__path__[0])
-        self.stdout_write(self.style.SUCCESS("FOUND"))
+        self._stdout_write(self.style.SUCCESS("FOUND"))
 
         media_pyod_root = settings.ALGORITHM_ROOT_DIR / "pyod_algorithms"
         pyod_models_dir = media_pyod_root / "models"
 
         if os.path.exists(media_pyod_root):
-            self.stdout_write(
+            self._stdout_write(
                 "Pyod algorithms already exist in media root, deleting...", ending=""
             )
             shutil.rmtree(media_pyod_root)
-            self.stdout_write(self.style.SUCCESS("OK"))
+            self._stdout_write(self.style.SUCCESS("OK"))
 
-        self.stdout_write("Copying pyod library to media root...", ending="")
+        self._stdout_write("Copying pyod library to media root...", ending="")
         shutil.copytree(src=pyod_path, dst=media_pyod_root)
-        self.stdout_write(self.style.SUCCESS("OK"))
+        self._stdout_write(self.style.SUCCESS("OK"))
 
         AlgorithmLoader.set_algorithm_root_dir(str(settings.ALGORITHM_ROOT_DIR))
 
@@ -236,11 +249,11 @@ class Command(BaseCommand):
         # This is needed since the check for validity by the AlgorithmLoader checks for
         # inheritance of pyod.models.BaseDetector, which does not equal
         # .base.BaseDetector
-        self.stdout_write(
+        self._stdout_write(
             "Change import statements for pyod.models.base.BaseDetector...", ending=""
         )
-        for algo in PYOD_ALGORITHMS:
-            replace_occurrences(
+        for algo in _PYOD_ALGORITHMS:
+            _replace_occurrences(
                 algo,
                 pyod_models_dir,
                 "from .base import BaseDetector",
@@ -252,25 +265,25 @@ class Command(BaseCommand):
             # We replace every occurrence of AutoEncoder with AutoEncoderTorch, so it
             # doesn't collide with the normal AutoEncoder and we can continue normally
             if algo.file_name == "auto_encoder_torch.py":
-                replace_occurrences(
+                _replace_occurrences(
                     algo, pyod_models_dir, "AutoEncoder", "AutoEncoderTorch"
                 )
-        self.stdout_write(self.style.SUCCESS("OK"))
+        self._stdout_write(self.style.SUCCESS("OK"))
 
         # Rename algorithm files if they don't fulfill the requirement of matching
         # file name and class name
-        self.stdout_write("Rename python files to match class names...", ending="")
-        for algo in PYOD_ALGORITHMS:
-            rename_algorithm_file_if_needed(algo, pyod_models_dir)
-        self.stdout_write(self.style.SUCCESS("OK"))
+        self._stdout_write("Rename python files to match class names...", ending="")
+        for algo in _PYOD_ALGORITHMS:
+            _rename_algorithm_file_if_needed(algo, pyod_models_dir)
+        self._stdout_write(self.style.SUCCESS("OK"))
 
         # Check algorithms for validity with the AlgorithmLoader
-        self.stdout_write("Perform validity checks for algorithms:")
-        for algo in PYOD_ALGORITHMS:
-            self.check_algorithm_validity(algo, pyod_models_dir)
+        self._stdout_write("Perform validity checks for algorithms:")
+        for algo in _PYOD_ALGORITHMS:
+            self._check_algorithm_validity(algo, pyod_models_dir)
 
         # Finally save the algorithms in the database
-        self.stdout_write("Saving models to database:")
-        for algo in PYOD_ALGORITHMS:
-            self.save_algorithms_in_db(algo, pyod_models_dir)
+        self._stdout_write("Saving models to database:")
+        for algo in _PYOD_ALGORITHMS:
+            self._save_algorithms_in_db(algo, pyod_models_dir)
         return None

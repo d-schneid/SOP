@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import copy
 import os
 import unittest
 from typing import Union
-from bs4 import BeautifulSoup
 
 import selenium
+from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
@@ -60,16 +59,7 @@ def get_dataset_button_download_uncleaned(
 
 
 def add_pyod_algos_to_db():
-    # add a new attribute, which is a deepcopy of the attribute PYOD_ALGORITHMS
-    # so the original values are saved
-    # (and the original attribute can be reset, s. below)
-    # as the renaming will not work otherwise (after the first time)
-    setattr(pyodtodb, "ORG_PYOD_DATA", copy.deepcopy(pyodtodb.PYOD_ALGORITHMS))
-
     pyodtodb.Command().handle(**{"quiet": True, "overwrite": False})
-
-    # reset the original attribute
-    pyodtodb.PYOD_ALGORITHMS = pyodtodb.ORG_PYOD_DATA
 
 
 def add_users_to_db(
