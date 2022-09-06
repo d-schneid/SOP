@@ -20,6 +20,10 @@ class UnitTestDebugScheduler(unittest.TestCase):
             sched = TestSched(-1, -1, 0, toChange)
             scheduler.schedule(sched)
             self.assertTrue(toChange.get())
+            toChange2: ValueProxy[bool] = m.Value('b', False)
+            scheduler.graceful_shutdown(lambda: toChange2.set(True))
+            self.assertTrue(toChange2.get())
+        self.assertIsNone(scheduler.graceful_shutdown())
         self.assertIsNone(scheduler.hard_shutdown())
 
     def tearDown(self) -> None:
