@@ -133,18 +133,23 @@ class ExecutionCreateView(
         context.update({"experiment": experiment})
         return context
 
-    def form_valid(self, form: ExecutionCreateForm) -> HttpResponse:
-        # Get data from form
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        # This attribute is used by django in super().post() and super().form_invalid()
+        self.object = None # noqa
+
+        form = self.get_form()
+        form.full_clean()
         error = False
 
         experiment_id = self.kwargs["experiment_pk"]
         assert experiment_id > 0
         experiment: Experiment = Experiment.objects.get(pk=experiment_id)
         assert experiment is not None
-        form.instance.experiment = experiment
 
-        # Get subspaces_min out of form and do sanity checks
-        subspaces_min = form.cleaned_data["subspaces_min"]
+        # Sanity checks for subspaces_min
+        subspaces_min = form.cleaned_data.get("subspaces_min")
+        if subspaces_min is None:
+            error = True
         assert subspaces_min >= 0
         if subspaces_min == 0:
             messages.error(
@@ -152,10 +157,8 @@ class ExecutionCreateView(
                 "Subspaces Min has to be a positive integer greater than 0.",
             )
             error = True
-        else:
-            form.instance.subspaces_min = subspaces_min
 
-        # Get subspaces_max out of form and do sanity checks
+        # Sanity checks for subspaces_max
         subspaces_max = form.cleaned_data["subspaces_max"]
         assert subspaces_max >= 0
         if subspaces_max > experiment.dataset.dimensions_total:
@@ -165,8 +168,6 @@ class ExecutionCreateView(
                 f" dimension count: {experiment.dataset.dimensions_total}.",
             )
             error = True
-        else:
-            form.instance.subspaces_max = subspaces_max
 
         # Sanity check that subspaces_min must be smaller than subspaces_max
         if subspaces_min > subspaces_max:
@@ -176,18 +177,54 @@ class ExecutionCreateView(
             )
             error = True
 
-        # Get subspace_amount out of form and do sanity checks
+        # Sanity checks for subspaces_amount
         subspace_amount = form.cleaned_data["subspace_amount"]
-        assert subspace_amount is not None
+        assert subspace_amount >= 0
+        if subspace_amount == 0:
+            messages.error(
+                self.request,
+                "Subspace amount has to be a positive integer greater than zero.",
+            )
+            error = True
+
+        # Check algorithm parameters for validity
+        success, dikt = get_params_out_of_form(self.request, experiment)
+        if not success:
+            messages.error(self.request, generate_hyperparameter_error_message(dikt))
+            error = True
+
+        if error:
+            return super().form_invalid(form)
+        else:
+            return super().post(request, *args, **kwargs)
+
+    def form_valid(self, form: ExecutionCreateForm) -> HttpResponse:
+        # get experiment out of url
+        experiment_id = self.kwargs["experiment_pk"]
+        assert experiment_id > 0
+        experiment: Experiment = Experiment.objects.get(pk=experiment_id)
+        assert experiment is not None
+        form.instance.experiment = experiment
+
+        # Get subspaces_min out of form
+        subspaces_min = form.cleaned_data["subspaces_min"]
+        assert subspaces_min >= 1
+        form.instance.subspaces_min = subspaces_min
+
+        # Get subspaces_max out of form
+        subspaces_max = form.cleaned_data["subspaces_max"]
+        assert subspaces_min <= subspaces_max <= experiment.dataset.dimensions_total
+        form.instance.subspaces_max = subspaces_max
+
+        # Get subspace_amount out of form
+        subspace_amount = form.cleaned_data["subspace_amount"]
+        assert subspace_amount >= 1
         form.instance.subspace_amount = subspace_amount
 
         # Generate algorithm_parameters out of form inputs
         success, dikt = get_params_out_of_form(self.request, experiment)
-        if success:
-            form.instance.algorithm_parameters = dikt
-        else:
-            messages.error(self.request, generate_hyperparameter_error_message(dikt))
-            error = True
+        assert success is True
+        form.instance.algorithm_parameters = dikt
 
         seed: Optional[int] = form.cleaned_data.get("subspace_generation_seed")
         # If the seed was not specified,
@@ -198,13 +235,10 @@ class ExecutionCreateView(
         # set status of execution to running
         form.instance.status = ExecutionStatus.RUNNING.name
 
-        if error:
-            return super(ExecutionCreateView, self).form_invalid(form)
-
-        # we need to call super().form_valid before calling the backend, since we need
+        # we save the model before calling the backend, since we need
         # access to the primary key of this instance and the primary key will be set
-        # on the save call in form_valid
-        success_response = super(ExecutionCreateView, self).form_valid(form)
+        # during the save() call
+        form.instance.save()
         assert form.instance.pk is not None
         assert experiment.user.pk is not None
         assert experiment.pk is not None
@@ -221,7 +255,7 @@ class ExecutionCreateView(
                     messages.error(self.request, error_msg)
             return super(ExecutionCreateView, self).form_invalid(form)
 
-        return success_response
+        return super(ExecutionCreateView, self).form_valid(form)
 
 
 class ExecutionDuplicateView(ExecutionCreateView):
