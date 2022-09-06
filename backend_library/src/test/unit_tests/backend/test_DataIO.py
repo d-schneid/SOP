@@ -6,6 +6,7 @@ import os
 import numpy
 import numpy as np
 
+from backend.AnnotatedDataset import AnnotatedDataset
 from backend.DataIO import DataIO
 
 
@@ -89,6 +90,11 @@ class UnitTestDataIO(unittest.TestCase):
             print(pd)
         except DataIO.DataIoInputException as exp:
             print(exp)
+
+    def test_ads_opts(self):
+        ads = AnnotatedDataset(np.array([[1]]), np.array(["a"]), np.array([0]))
+        exp = np.array([["", "a"], [0, 1]], dtype=object)
+        self.assertTrue(np.array_equal(ads.to_single_array(), exp))
 
     def test_write_csv(self):
         test_file_path: str = os.path.join(UnitTestDataIO._test_dir_path, "test_file_path")
