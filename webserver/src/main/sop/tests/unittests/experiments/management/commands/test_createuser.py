@@ -41,7 +41,7 @@ class MarkCrashedTests(django.test.TestCase):
 
         # check that error message was printed
         self.stdout_write_mock.assert_called()
-        self.assertTrue("already exists" in str(self.stdout_write_mock.call_args))
+        self.assertIn("already exists", str(self.stdout_write_mock.call_args))
 
         # check that no user was created
         self.assertEqual(User.objects.all().count(), 1)
