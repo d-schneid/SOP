@@ -48,7 +48,9 @@ _PYOD_ALGORITHMS = [
     ),
     _PyodAlgorithm("cd.py", "CD", "CD", Algorithm.AlgorithmGroup.LINEAR_MODEL),
     _PyodAlgorithm("cof.py", "COF", "COF", Algorithm.AlgorithmGroup.PROXIMITY_BASED),
-    _PyodAlgorithm("copod.py", "COPOD", "COPOD", Algorithm.AlgorithmGroup.PROBABILISTIC),
+    _PyodAlgorithm(
+        "copod.py", "COPOD", "COPOD", Algorithm.AlgorithmGroup.PROBABILISTIC
+    ),
     _PyodAlgorithm(
         "deep_svdd.py", "DeepSVDD", "DeepSVDD", Algorithm.AlgorithmGroup.NEURAL_NETWORKS
     ),
