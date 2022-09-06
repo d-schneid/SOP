@@ -195,7 +195,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
                 if error_message == "":
                     error_message = "ERROR The cleaning step " + str(cleaning_step) + \
                                     " resulted in an error"
-
+                logging.warning(f"{self}: cleaning error: {error_message}")
                 TaskHelper.save_error_csv(self._cleaned_dataset_path, error_message)
                 return None
 
@@ -221,6 +221,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
         """
         if csv_to_check.size == 0:
             error: str = TaskErrorMessages().cleaning_result_empty
+            logging.warning(f"{self}: {error}")
             TaskHelper.save_error_csv(self._cleaned_dataset_path, str(error))
             return True
         return False
