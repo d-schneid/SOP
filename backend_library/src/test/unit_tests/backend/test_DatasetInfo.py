@@ -31,6 +31,10 @@ class UnitTestDatasetInfo(unittest.TestCase):
     def tearDown(self) -> None:
         self.__clean_created_files_and_directories()
 
+    def test_validation_edge_case(self):
+        csv = "../resources/test/datasets/invalid_edge_case.csv"
+        self.assertFalse(DatasetInfo.is_dataset_valid(csv))
+
     def __clean_created_files_and_directories(self):
         if os.path.isfile(self._uncleaned_dataset_path1):
             os.remove(self._uncleaned_dataset_path1)
