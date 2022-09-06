@@ -44,9 +44,14 @@ class ExecutionCreateViewTests(
             f"{cls.algo2.pk}_param2": "'was None'",
         }
 
-    def send_post(self) -> HttpResponse:
+    def send_post(self, schedule_error=False) -> HttpResponse:
+        schedule_backend_mock = MagicMock()
+        if schedule_error:
+            schedule_backend_mock.return_value = {
+                "test_error": ["This is a test error message"]
+            }
         with patch(
-            "experiments.views.execution.schedule_backend", lambda execution: None
+            "experiments.views.execution.schedule_backend", schedule_backend_mock
         ):
             response = self.client.post(
                 reverse_lazy("execution_create", args=(self.exp.pk,)),
@@ -117,6 +122,16 @@ class ExecutionCreateViewTests(
         self.data["subspaces_min"] = 2
         self.data["subspaces_max"] = 1
         response = self.send_post()
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.redirect_chain)
+        self.assertIsNone(Execution.objects.first())
+
+    def test_execution_create_view_subspace_errors4(self) -> None:
+        # In this test, schedule_backend will return an error. We simulate this
+        self.data["subspaces_min"] = self.dataset.dimensions_total
+        self.data["subspaces_max"] = self.dataset.dimensions_total
+        self.data["subspace_amount"] = 2
+        response = self.send_post(schedule_error=True)
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.redirect_chain)
         self.assertIsNone(Execution.objects.first())

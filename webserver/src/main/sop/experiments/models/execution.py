@@ -17,6 +17,7 @@ class ExecutionStatus(Enum):
     error occurred.
     """
 
+    WAITING = auto, False, False, False, False
     RUNNING = auto, False, False, False, True
     RUNNING_WITH_ERROR = auto, False, False, True, True
     FINISHED = auto, False, True, False, False

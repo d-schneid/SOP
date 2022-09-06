@@ -232,8 +232,12 @@ class ExecutionCreateView(
         if seed is not None:
             form.instance.subspace_generation_seed = seed
 
-        # set status of execution to running
-        form.instance.status = ExecutionStatus.RUNNING.name
+        # Set status of execution to waiting. This is because if the scheduling
+        # throws an error, we delete the model again. This will trigger a delete signal
+        # which will check the status of the execution. If we set it to running now, the
+        # scheduler will try to abort the execution, but it does not have any running
+        # processes yet, so we use this extra state until we scheduled the execution
+        form.instance.status = ExecutionStatus.WAITING.name
 
         # we save the model before calling the backend, since we need
         # access to the primary key of this instance and the primary key will be set
@@ -254,6 +258,9 @@ class ExecutionCreateView(
                 for error_msg in error_messages:
                     messages.error(self.request, error_msg)
             return super(ExecutionCreateView, self).form_invalid(form)
+
+        # Now the execution is started for real, so we can set the status accordingly
+        form.instance.status = ExecutionStatus.RUNNING.name
 
         return super(ExecutionCreateView, self).form_valid(form)
 
