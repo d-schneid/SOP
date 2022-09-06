@@ -28,7 +28,7 @@ class RandomizedSubspaceGeneration(SubspaceGenerationDescription, ABC):
         self.__rnd: np.random.Generator = np.random.Generator(np.random.PCG64(seed))
         self.__ds_dim_count = dataset_total_dimension_count
         self.__size_distr: SubspaceSizeDistribution = size_distr
-        self.__subspace_amount: int = subspace_amount
+        self._subspace_amount: int = subspace_amount
         self.__seed: int = seed
         assert size_distr.has_enough_subspaces(subspace_amount,
                                                dataset_total_dimension_count), \
@@ -36,7 +36,7 @@ class RandomizedSubspaceGeneration(SubspaceGenerationDescription, ABC):
 
     def to_json(self) -> dict[str, object]:
         return {"size_distr": self.__size_distr.to_json(), "seed": self.__seed,
-                "subspace_amount": self.__subspace_amount,
+                "subspace_amount": self._subspace_amount,
                 "dataset_dimension_count": self.__ds_dim_count}
 
     def generate(self) -> list[Subspace]:
@@ -45,13 +45,13 @@ class RandomizedSubspaceGeneration(SubspaceGenerationDescription, ABC):
         :return: a list of subspaces to be used
         """
         size_counts: dict[int, int] = self.__size_distr.get_subspace_counts(
-            self.__subspace_amount, self.__ds_dim_count)
+            self._subspace_amount, self.__ds_dim_count)
         result: list[Subspace] = list()
         for k, v in size_counts.items():
             result.extend(self.__generate_subspaces_of_size(k, v))
         return result
 
-    def __generate_subspace_bits(self, size: int, count: int) -> set[bytes]:
+    def _generate_subspace_bits(self, size: int, count: int) -> set[bytes]:
         """generates a set of #count bytes objects,
          each of them containing #size ones,
          only the first #self.__ds_dim_count bits will be used.
@@ -74,10 +74,13 @@ class RandomizedSubspaceGeneration(SubspaceGenerationDescription, ABC):
         :param count: the number of subspaces to generate
         :return: an iterable of subspaces of that size
         """
-        if (count / math.comb(self.__ds_dim_count, ss_size)) > 0.5:
+        # decision based on asymptotic complexity of both methods
+        if (count + 1) > math.pow(
+                math.comb(self.__ds_dim_count, ss_size) - count + 1,
+                1 + (1 / math.log(self.__ds_dim_count))):
             ss_bits = self.__generate_dense_subspace_bits(ss_size, count)
         else:
-            ss_bits = self.__generate_subspace_bits(ss_size, count)
+            ss_bits = self._generate_subspace_bits(ss_size, count)
         ss = map(lambda b: self.__subspace_from_bytes(b, self.__ds_dim_count), ss_bits)
         return ss
 
@@ -95,7 +98,8 @@ class RandomizedSubspaceGeneration(SubspaceGenerationDescription, ABC):
           normal generation would take exponentially long in such cases."""
         # Works by generating self.__subspace_amount - count subspace bits
         # and then returning all that were not in that sample
-        ss_bits = self.__generate_subspace_bits(ss_size, self.__subspace_amount - count)
+        ss_bits = self._generate_subspace_bits(
+            ss_size, math.comb(self.__ds_dim_count, ss_size) - count)
         # one could check in the future if ss_size/self.ds_dim_count>0.5 is given
         # and then remove dims instead of adding them, would improve constant factors
         # of this generation algorithm, but I don't see the need for that
