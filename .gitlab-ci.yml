@@ -112,8 +112,7 @@ django-tests:
     - memcached -d -u root
     # The MYSQL user only gets permissions for MYSQL_DB, so Django can't create a test database.
     - echo "GRANT ALL on *.* to '${MYSQL_USER}';"| mysql -u root --password="${MYSQL_ROOT_PASSWORD}" -h mysql
-    - python3.9 manage.py showmigrations --settings=sop.settings_ci
-    - python3.9 -m coverage run --rcfile=.coveragerc --source="." --omit="media/*","*/migrations/*","*/__init__.py","tests/*","sop/*","*/pyodtodb.py","manage.py","*/templates/admin/*" manage.py test --settings sop.settings_ci
+    - python3.9 -m coverage run --rcfile=.coveragerc --source="." --omit="static/*","media/*","*/migrations/*","*/__init__.py","tests/*","sop/*","*/pyodtodb.py","manage.py","*/templates/admin/*" manage.py test --settings sop.settings_ci
     - python3.9 -m coverage report --rcfile=.coveragerc --precision=2
     - 'wget -O ../../../../public/django-tests.svg https://img.shields.io/badge/webserver\ coverage-$(python3.9 -m coverage report --rcfile=.coveragerc --precision=2 | grep -E "^TOTAL.+?([0-9]+.[0-9]+%)$" | grep -Eo "[0-9]+.[0-9]+%$")-informational'
 
@@ -131,20 +130,20 @@ django-tests:
 
 
 backend-tests:
+  image: albinoboi/sop-ci-django:latest
+  inherit:
+    default: false
   variables:
     IS_EXECUTING_IN_CI: "1"
   needs: [ ]
   stage: test
   coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
-  image: python:3.9-slim-bullseye
   script:
-    - which python3.9
-    - 'echo "import coverage" >> venv3.9/lib/python3.9/site-packages/sitecustomize.py'
-    - 'echo "coverage.process_startup()" >> venv3.9/lib/python3.9/site-packages/sitecustomize.py'
+    - "[ ! -d 'public' ] && mkdir public"
+    - 'echo "import coverage" >> /opt/venv/lib/python3.9/site-packages/sitecustomize.py'
+    - 'echo "coverage.process_startup()" >> /opt/venv/lib/python3.9/site-packages/sitecustomize.py'
     - cd backend_library/src
-    - apt-get update
-    - apt-get -y install zip wget
-    - python3.9 -m coverage --version
+    - apt-get update && apt-get -y --no-install-recommends install zip
     - export COVERAGE_PROCESS_START=$PWD/../MultiPTesting.ini
     - export COVERAGE_RCFILE=$PWD/../MultiPTesting.ini
     - python3.9 -m coverage run
@@ -181,8 +180,10 @@ backend-docs:
 deploy-docs:
   inherit:
     default: false
-  needs: 
+  needs:
     - backend-docs
+    - backend-tests
+    - flake
   image: debian:latest
   stage: deploy
   only:
@@ -204,6 +205,7 @@ publish-build:
   needs:
     - backend-tests
     - django-tests
+    - flake
   stage: publish
   only:
     - main
@@ -218,7 +220,7 @@ publish-build:
 
 
 deploy-badges:
-  needs: 
+  needs:
     - backend-tests
     - django-tests
   inherit:
