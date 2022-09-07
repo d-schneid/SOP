@@ -57,7 +57,7 @@ class RandomizedSubspaceGeneration(SubspaceGenerationDescription, ABC):
          only the first #self.__ds_dim_count bits will be used.
          Takes exponential time as count approaches comb(self.__ds_dim_count, size)"""
         result_bytes: set[bytes] = set()
-        current_mask: np.array = np.concatenate(
+        current_mask: np.ndarray = np.concatenate(
             (np.repeat(True, size), np.repeat(False, self.__ds_dim_count - size)))
         while len(result_bytes) < count:
             self.__rnd.shuffle(current_mask)

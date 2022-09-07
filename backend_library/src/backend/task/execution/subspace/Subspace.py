@@ -7,12 +7,12 @@ import numpy as np
 
 class Subspace:
     """Represents a Subspace of a n-dimensional Space"""
-    def __init__(self, mask: np.array):
+    def __init__(self, mask: np.ndarray):
         assert mask.dtype == np.dtype("?")
         self._mask = mask
 
     @property
-    def mask(self) -> np.array:
+    def mask(self) -> np.ndarray:
         """A numpy array storing for each dimension of the Space,
          whether it is included in the Subspace"""
         return self._mask

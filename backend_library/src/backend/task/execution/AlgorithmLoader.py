@@ -4,7 +4,7 @@ import inspect
 import os.path
 import pathlib
 import sys
-from types import ModuleType
+from types import ModuleType, MappingProxyType
 from typing import Optional
 
 from pyod.models.base import BaseDetector
@@ -56,7 +56,7 @@ class AlgorithmLoader:
         assert len(import_path) > 0, 'the file must not be directly in the root dir'
         module: ModuleType = importlib.import_module(
             ('.'.join(import_path)) + '.' + class_name)
-        class_name: str = next(
+        class_name: Optional[str] = next(
             (x for x in dir(module) if x.lower() == lower_class_name), None)
         if class_name is None:
             raise ValueError('file does not contain a class of the same name')
@@ -88,7 +88,7 @@ class AlgorithmLoader:
             return None
 
     @staticmethod
-    def get_algorithm_parameters(path: str) -> inspect.Signature.parameters:
+    def get_algorithm_parameters(path: str) -> MappingProxyType[str, inspect.Parameter]:
         """reads the parameters of the constructor of the BaseDetector implementation
         under the given path, and if existing the default parameter value"""
         return inspect.signature(AlgorithmLoader.get_algorithm_class(path)).parameters
