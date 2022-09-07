@@ -33,8 +33,8 @@ class UnitTestRndSubGen(unittest.TestCase):
                                         current_ss.get_included_dimension_count())
                 self.assertLessEqual(ss_sz_min,
                                      current_ss.get_included_dimension_count())
-            for j in range(1, len(ss_list1)):
-                self.assertFalse(np.array_equal(ss_list1[j].mask, ss_list1[0].mask))
+            self.assertEqual(ss_count, len(set(map(
+                lambda x: np.packbits(x.mask).tobytes(), ss_list1))))
 
 
 if __name__ == '__main__':
