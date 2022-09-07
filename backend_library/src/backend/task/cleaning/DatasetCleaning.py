@@ -34,7 +34,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
                  uncleaned_dataset_path: str, cleaned_dataset_path: str,
                  cleaning_steps: Optional[list[DatasetCleaningStep]] = None,
                  priority: int = 100,
-                 running_dataset_cleaning_path: str = ""):
+                 running_dataset_cleaning_path: str = "", has_header: bool = True):
         """
         :param user_id: The ID of the user belonging to the DatasetCleaning.
         Has to be at least -1.
@@ -63,6 +63,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
                               ImputationMode(),
                               MinMaxScaler()]  # Default Cleaning-Pipeline
         assert all(step is not None for step in cleaning_steps)
+        self.has_header: bool = has_header
         self._uncleaned_dataset_path: str = uncleaned_dataset_path
         self._cleaned_dataset_path: str = cleaned_dataset_path
         self._cleaning_steps: list[DatasetCleaningStep] = cleaning_steps
@@ -171,7 +172,7 @@ class DatasetCleaning(Task, Schedulable, ABC):
         (Throws FileNotFoundError if there exists no file at the uncleaned_dataset_path)
         """
         return DataIO.read_annotated(self._uncleaned_dataset_path, is_cleaned=False,
-                                     has_row_numbers=False)
+                                     has_row_numbers=False, has_header=self.has_header)
 
     def __run_cleaning_pipeline(self, csv_to_clean: AnnotatedDataset) -> \
             Optional[AnnotatedDataset]:
