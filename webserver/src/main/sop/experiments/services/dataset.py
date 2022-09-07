@@ -66,6 +66,7 @@ def schedule_backend(dataset: Dataset) -> None:
         task_progress_callback=DatasetCallbacks.cleaning_callback,
         uncleaned_dataset_path=dataset.path_original.path,
         cleaned_dataset_path=dataset.path_cleaned.path,
+        has_header=dataset.has_header,
         cleaning_steps=None,  # can be changed later on
     )
 
