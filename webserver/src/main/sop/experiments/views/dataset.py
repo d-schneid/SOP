@@ -122,7 +122,9 @@ class DatasetOverview(LoginRequiredMixin, ListView[Dataset]):
         return context
 
 
-class DatasetDeleteView(LoginRequiredMixin, SingleObjectPermissionMixin, PostOnlyDeleteView[Dataset]):
+class DatasetDeleteView(
+    LoginRequiredMixin, SingleObjectPermissionMixin, PostOnlyDeleteView[Dataset]
+):
     """
     A view to delete a dataset. It inherits PostOnlyDeleteView, so it is only accessible
     via a POST request and will then perform the deletion of the dataset model.
@@ -143,7 +145,11 @@ class DatasetDeleteView(LoginRequiredMixin, SingleObjectPermissionMixin, PostOnl
         return super().form_valid(form)
 
 
-class DatasetEditView(LoginRequiredMixin, SingleObjectPermissionMixin, UpdateView[Dataset, DatasetEditForm]):
+class DatasetEditView(
+    LoginRequiredMixin,
+    SingleObjectPermissionMixin,
+    UpdateView[Dataset, DatasetEditForm],
+):
     """
     A view to edit an existing dataset. It uses the DatasetEditForm to display widgets
     for fields that a user can edit.
@@ -156,7 +162,7 @@ class DatasetEditView(LoginRequiredMixin, SingleObjectPermissionMixin, UpdateVie
 
 
 def download_uncleaned_dataset(
-        request: HttpRequest, pk: int
+    request: HttpRequest, pk: int
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
     """
     A function view to download the uncleaned csv of a dataset.
@@ -182,7 +188,7 @@ def download_uncleaned_dataset(
 
 
 def download_cleaned_dataset(
-        request: HttpRequest, pk: int
+    request: HttpRequest, pk: int
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
     """
     A function view to download the cleaned csv of a dataset. This view asserts that the
@@ -210,7 +216,7 @@ def download_cleaned_dataset(
 
 
 def dataset_status_view(
-        request: HttpRequest,
+    request: HttpRequest,
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
     if request.method == "GET":
         dataset_pk: int = -1

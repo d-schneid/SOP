@@ -250,7 +250,9 @@ class ExecutionDuplicateView(SingleObjectPermissionMixin, ExecutionCreateView):
         return context
 
 
-class ExecutionDeleteView(LoginRequiredMixin, SingleObjectPermissionMixin, PostOnlyDeleteView[Execution]):
+class ExecutionDeleteView(
+    LoginRequiredMixin, SingleObjectPermissionMixin, PostOnlyDeleteView[Execution]
+):
     """
     A view to delete an execution model. It inherits form PostOnlyDeleteView, so it is
     only accessible via POST requests.
@@ -261,7 +263,7 @@ class ExecutionDeleteView(LoginRequiredMixin, SingleObjectPermissionMixin, PostO
 
 
 def download_execution_result(
-        request: HttpRequest, experiment_pk: int, pk: int
+    request: HttpRequest, experiment_pk: int, pk: int
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
     """
     A function view that will download an execution result. This view asserts that the
@@ -288,7 +290,7 @@ def download_execution_result(
 
 
 def download_execution_result_admin(
-        request: HttpRequest, pk: int
+    request: HttpRequest, pk: int
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
     """
     A function view that will download an execution result. This view asserts that the
@@ -358,7 +360,7 @@ def get_execution_progress(request: HttpRequest) -> HttpResponse:
 
 
 def restart_execution(
-        request: HttpRequest, experiment_pk: int, pk: int
+    request: HttpRequest, experiment_pk: int, pk: int
 ) -> HttpResponse:
     """
     A view that can be accessed in any way (GET or POST). When accessed, it will restart
