@@ -135,20 +135,18 @@ class ExecutionCreateView(
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         # This attribute is used by django in super().post() and super().form_invalid()
-        self.object = None # noqa
+        self.object = None  # noqa
 
         form = self.get_form()
         form.full_clean()
         error = False
 
         experiment_id = self.kwargs["experiment_pk"]
-        assert experiment_id > 0
         experiment: Experiment = Experiment.objects.get(pk=experiment_id)
         assert experiment is not None
 
         # Sanity checks for subspaces_min
         subspaces_min = form.cleaned_data.get("subspaces_min")
-        assert subspaces_min >= 0
         if subspaces_min == 0:
             messages.error(
                 self.request,
@@ -157,9 +155,11 @@ class ExecutionCreateView(
             error = True
 
         # Sanity checks for subspaces_max
-        subspaces_max = form.cleaned_data["subspaces_max"]
-        assert subspaces_max >= 0
-        if subspaces_max > experiment.dataset.dimensions_total:
+        subspaces_max = form.cleaned_data.get("subspaces_max")
+        if (
+            subspaces_max is not None
+            and subspaces_max > experiment.dataset.dimensions_total
+        ):
             messages.error(
                 self.request,
                 "Subspaces Max has to be smaller than or equal to the dataset"
@@ -168,7 +168,11 @@ class ExecutionCreateView(
             error = True
 
         # Sanity check that subspaces_min must be smaller than subspaces_max
-        if subspaces_min > subspaces_max:
+        if (
+            subspaces_min is not None
+            and subspaces_max is not None
+            and subspaces_min > subspaces_max
+        ):
             messages.error(
                 self.request,
                 "Subspaces Max has to be greater than or equal to Subspaces Min.",
@@ -176,8 +180,7 @@ class ExecutionCreateView(
             error = True
 
         # Sanity checks for subspaces_amount
-        subspace_amount = form.cleaned_data["subspace_amount"]
-        assert subspace_amount >= 0
+        subspace_amount = form.cleaned_data.get("subspace_amount")
         if subspace_amount == 0:
             messages.error(
                 self.request,

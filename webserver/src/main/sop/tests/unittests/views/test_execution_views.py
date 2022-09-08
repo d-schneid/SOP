@@ -142,6 +142,15 @@ class ExecutionCreateViewTests(
         self.assertFalse(response.redirect_chain)
         self.assertIsNone(Execution.objects.first())
 
+    def test_execution_create_view_subspace_errors6(self) -> None:
+        self.data["subspaces_min"] = -4
+        self.data["subspaces_max"] = -4
+        self.data["subspace_amount"] = -4
+        response = self.send_post()
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.redirect_chain)
+        self.assertIsNone(Execution.objects.first())
+
     def test_schedule_backend(self) -> None:
         algo1 = MagicMock()
         algo1.path.path = "algorithm/path"
