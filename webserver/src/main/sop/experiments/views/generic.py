@@ -31,6 +31,10 @@ class PostOnlyDeleteView(DeleteView[_M]):
             return HttpResponseRedirect(self.success_url)
 
         assert request.method == "POST"
+        # Check for correct instance ownership
+        if not self.request.user == self.get_object().user:
+            raise PermissionDenied()
+
         model_id = self.kwargs["pk"]
         assert model_id is not None
         # If no model with the given pk exists, we also redirect to the success_url.
