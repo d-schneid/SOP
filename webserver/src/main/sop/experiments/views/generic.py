@@ -1,10 +1,11 @@
 from typing import TypeVar, Any
 
+from django.core.exceptions import PermissionDenied
 from django.db.models import Model
 from django.http import HttpResponseRedirect, HttpRequest
 from django.http.response import HttpResponseBase
 from django.urls import reverse_lazy
-from django.views.generic import DeleteView
+from django.views.generic import DeleteView, UpdateView
 
 _M = TypeVar("_M", bound=Model)
 
@@ -18,8 +19,9 @@ class PostOnlyDeleteView(DeleteView[_M]):
     primary key specified in self.kwargs with key "pk". If no model of that class with
     the given primary key exists, it will also redirect to the success_url.
     """
+
     def dispatch(
-        self, request: HttpRequest, *args: Any, **kwargs: Any
+            self, request: HttpRequest, *args: Any, **kwargs: Any
     ) -> HttpResponseBase:
         self.success_url = self.success_url or reverse_lazy("home")
         # We don't want the DeleteView to render something, so any GET request (for
@@ -35,3 +37,17 @@ class PostOnlyDeleteView(DeleteView[_M]):
         if not self.model.objects.filter(pk=model_id).count():
             return HttpResponseRedirect(self.success_url)
         return super().dispatch(request, *args, **kwargs)
+
+
+class RestrictedUpdateView(UpdateView):
+    def get(self, request, *args, **kwargs):
+        # Check if dataset belongs to user
+        if not self.request.user == self.get_object().user:
+            raise PermissionDenied()
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        # Check if dataset belongs to user
+        if not self.request.user == self.get_object().user:
+            raise PermissionDenied()
+        return super().post(request, *args, **kwargs)
