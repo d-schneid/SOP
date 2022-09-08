@@ -89,7 +89,6 @@ class ExecutionServiceTests(django.test.TestCase):
         self.assertIsNotNone(return_dict.get("8_param4"))
         self.assertIsNotNone(return_dict.get("8_param1"))
 
-
     def test_schedule_backend(self) -> None:
         algo1 = MagicMock()
         algo1.path.path = "algorithm/path"
