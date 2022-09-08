@@ -3,9 +3,7 @@ from __future__ import annotations
 import json
 from typing import Optional, Any
 
-from django.conf import settings
 from django.contrib import messages
-from django.db.models import QuerySet
 from django.http import (
     HttpRequest,
     HttpResponseRedirect,
@@ -16,82 +14,12 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView
 
 from authentication.mixins import LoginRequiredMixin
-from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
-from backend.task.execution.core.Execution import Execution as BackendExecution
-from backend.task.execution.subspace.RandomizedSubspaceGeneration import (
-    RandomizedSubspaceGeneration,
-)
-from backend.task.execution.subspace.UniformSubspaceDistribution import (
-    UniformSubspaceDistribution,
-)
-from experiments.callback import ExecutionCallbacks
 from experiments.forms.create import ExecutionCreateForm
 from experiments.models import Execution, Experiment, Algorithm
-from experiments.models.execution import get_result_path, ExecutionStatus
+from experiments.models.execution import ExecutionStatus
 from experiments.services.execution import get_params_out_of_form, get_execution_result
+from experiments.services.execution import schedule_backend
 from experiments.views.generic import PostOnlyDeleteView
-
-
-def schedule_backend(execution: Execution) -> Optional[dict[str, list[str]]]:
-    """
-    Schedules a backend task that will start the calculations of the given execution.
-    @param execution: The execution for which the calculation should be started.
-    @return: If the scheduling is successful and all parameters of the given execution
-    are valid, it will return None. If errors occur, it will return a dictionary that
-    contains the names of the execution model fields that resulted in the error as keys
-    and an error message as the value.
-    """
-    experiment = execution.experiment
-    dataset = experiment.dataset
-    algorithms: QuerySet[Algorithm] = experiment.algorithms.all()
-    user = execution.experiment.user
-
-    subspace_size_distribution = UniformSubspaceDistribution(
-        subspace_size_min=execution.subspaces_min,
-        subspace_size_max=execution.subspaces_max,
-    )
-
-    has_enough_subspaces = subspace_size_distribution.has_enough_subspaces(
-        dataset_dimension_count=dataset.dimensions_total,
-        requested_subspace_count=execution.subspace_amount,
-    )
-    if not has_enough_subspaces:
-        return {
-            "subspace_amount": [
-                "Dataset does not have enough dimensions for requested subspace_amount"
-            ]
-        }
-
-    subspace_generation_description = RandomizedSubspaceGeneration(
-        size_distr=subspace_size_distribution,
-        subspace_amount=execution.subspace_amount,
-        seed=execution.subspace_generation_seed,
-        dataset_total_dimension_count=dataset.dimensions_total,
-    )
-
-    parameterized_algorithms = []
-    for algorithm in algorithms:
-        parameterized_algorithms.append(
-            ParameterizedAlgorithm(
-                display_name=algorithm.display_name,
-                path=algorithm.path.path,
-                hyper_parameter=execution.algorithm_parameters[str(algorithm.pk)],
-            )
-        )
-    backend_execution = BackendExecution(
-        user_id=user.pk,
-        task_id=execution.pk,
-        task_progress_callback=ExecutionCallbacks.execution_callback,
-        dataset_path=str(settings.MEDIA_ROOT / dataset.path_cleaned.path),
-        result_path=get_result_path(execution),
-        datapoint_count=dataset.datapoints_total,
-        subspace_generation=subspace_generation_description,
-        algorithms=parameterized_algorithms,
-        metric_callback=ExecutionCallbacks.metric_callback,
-    )
-
-    backend_execution.schedule()
-    return None
 
 
 def generate_hyperparameter_error_message(dikt: dict[str, list[str]]) -> str:
