@@ -4,7 +4,7 @@ import django.test
 from django.urls import reverse
 
 from experiments.models import Algorithm
-from tests.generic import LoggedInMixin, MediaMixin
+from tests.generic import LoggedInMixin, MediaMixin, MaliciousMixin
 
 
 class AlgorithmOverviewTests(LoggedInMixin, django.test.TestCase):
@@ -191,7 +191,7 @@ class AlgorithmUploadViewTests(LoggedInMixin, MediaMixin, django.test.TestCase):
         self.assertFalse(os.path.exists(f"algorithms/{self.user.pk}/" + test_file_name))
 
 
-class AlgorithmDeleteViewTests(LoggedInMixin, django.test.TestCase):
+class AlgorithmDeleteViewTests(LoggedInMixin, MaliciousMixin, django.test.TestCase):
     def test_algorithm_delete_view_valid_delete(self):
         algorithm = Algorithm.objects.create(signature="", user=self.user)
         response = self.client.post(
@@ -201,6 +201,17 @@ class AlgorithmDeleteViewTests(LoggedInMixin, django.test.TestCase):
         self.assertTrue(response.redirect_chain)
         self.assertIsNone(Algorithm.objects.first())
         self.assertTemplateUsed(response, "algorithm_overview.html")
+
+    def test_algorithm_delete_view_foreign_delete(self):
+        # Different user tries to delete victims algorithm
+        algorithm = Algorithm.objects.create(signature="", user=self.victim_user)
+        response = self.client.post(
+            reverse("algorithm_delete", args=(algorithm.pk,)), follow=True
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertIsNotNone(Algorithm.objects.get(pk=algorithm.pk))
+        self.assertTemplateNotUsed(response, "algorithm_overview.html")
+        self.assertTemplateNotUsed(response, "algorithm_delete.html")
 
     def test_algorithm_delete_view_invalid_pk(self):
         response = self.client.post(
@@ -212,7 +223,7 @@ class AlgorithmDeleteViewTests(LoggedInMixin, django.test.TestCase):
         self.assertTemplateNotUsed(response, "algorithm_delete.html")
 
 
-class AlgorithmEditViewTest(LoggedInMixin, django.test.TestCase):
+class AlgorithmEditViewTest(LoggedInMixin, MaliciousMixin, django.test.TestCase):
     def setUp(self) -> None:
         self.name = "Original Name"
         self.group = Algorithm.AlgorithmGroup.COMBINATION
@@ -293,3 +304,34 @@ class AlgorithmEditViewTest(LoggedInMixin, django.test.TestCase):
         self.assertTemplateNotUsed(response, "algorithm_edit.html")
         self.assertTemplateNotUsed(response, "algorithm_overview.html")
         self.assertNoAlgorithmChange(response)
+
+    def test_algorithm_edit_view_foreign_edit_post(self):
+        victim_algo = Algorithm.objects.create(
+            display_name=self.name,
+            group=self.group,
+            description=self.description,
+            user=self.victim_user,
+            signature="",
+        )
+        response = self.post_algorithm_edit(
+            algorithm_pk=victim_algo.pk, expected_code=403, update_model=False
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertTemplateNotUsed(response, "algorithm_edit.html")
+        self.assertTemplateNotUsed(response, "algorithm_overview.html")
+        self.assertNoAlgorithmChange(response)
+
+    def test_algorithm_edit_view_foreign_edit_get(self):
+        victim_algo = Algorithm.objects.create(
+            display_name=self.name,
+            group=self.group,
+            description=self.description,
+            user=self.victim_user,
+            signature="",
+        )
+        response = self.client.get(
+            reverse("algorithm_edit", args=(victim_algo.pk,)), follow=True
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertTemplateNotUsed(response, "algorithm_edit.html")
+        self.assertTemplateNotUsed(response, "algorithm_overview.html")

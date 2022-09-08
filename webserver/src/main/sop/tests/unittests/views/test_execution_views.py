@@ -3,12 +3,12 @@ from unittest.mock import patch, MagicMock
 
 import django.test
 from django.http import HttpResponse
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 
 from backend.task.execution.core.Execution import Execution as BackendExecution
 from experiments.models import Experiment, Dataset, Algorithm, Execution
 from experiments.views.execution import schedule_backend
-from tests.generic import LoggedInMixin, MediaMixin, DebugSchedulerMixin
+from tests.generic import LoggedInMixin, MediaMixin, DebugSchedulerMixin, MaliciousMixin
 
 
 class ExecutionCreateViewTests(
@@ -46,7 +46,7 @@ class ExecutionCreateViewTests(
 
     def send_post(self) -> HttpResponse:
         with patch(
-            "experiments.views.execution.schedule_backend", lambda execution: None
+                "experiments.views.execution.schedule_backend", lambda execution: None
         ):
             response = self.client.post(
                 reverse_lazy("execution_create", args=(self.exp.pk,)),
@@ -187,7 +187,7 @@ class ExecutionCreateViewTests(
             self.assertIsNotNone(errors.get("subspace_amount"))
 
 
-class ExecutionDuplicateViewTests(LoggedInMixin, django.test.TestCase):
+class ExecutionDuplicateViewTests(LoggedInMixin, MaliciousMixin, django.test.TestCase):
     dataset: Dataset
     algo1: Algorithm
     algo2: Algorithm
@@ -219,7 +219,7 @@ class ExecutionDuplicateViewTests(LoggedInMixin, django.test.TestCase):
             },
         )
 
-    def test_experiment_duplicate_view_get(self) -> None:
+    def test_execution_duplicate_view_get(self) -> None:
         response = self.client.get(
             reverse_lazy(
                 "execution_duplicate",
@@ -233,3 +233,30 @@ class ExecutionDuplicateViewTests(LoggedInMixin, django.test.TestCase):
         self.assertContains(response, "&quot;World&quot;")
         self.assertContains(response, "3.14")
         self.assertContains(response, "&quot;was None&quot;")
+
+    def test_execution_duplicate_view_foreign_execution_dup_get(self):
+        # Login hacker
+        self.client.post(reverse("login"), self.hacker_credentials, follow=True)
+        response = self.client.get(
+            reverse_lazy(
+                "execution_duplicate",
+                args=(self.execution.experiment.pk, self.execution.pk),
+            )
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertTemplateNotUsed(response, "experiment_overview")
+        self.assertTemplateNotUsed(response, "execution_duplicate")
+
+    def test_execution_duplicate_view_foreign_execution_dup_post(self):
+        # Login hacker
+        self.client.post(reverse("login"), self.hacker_credentials, follow=True)
+        response = self.client.post(
+            reverse_lazy(
+                "execution_duplicate",
+                args=(self.execution.experiment.pk, self.execution.pk),
+            )
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertTemplateNotUsed(response, "experiment_overview")
+        self.assertTemplateNotUsed(response, "execution_duplicate")
+        self.assertEqual(len(Execution.objects.all()), 1)

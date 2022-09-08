@@ -5,7 +5,7 @@ from django.urls import reverse
 
 from backend.scheduler.Scheduler import Scheduler
 from experiments.models import Dataset
-from tests.generic import LoggedInMixin, MediaMixin, DebugSchedulerMixin
+from tests.generic import LoggedInMixin, MediaMixin, DebugSchedulerMixin, MaliciousMixin
 
 
 class DatasetOverviewTests(LoggedInMixin, django.test.TestCase):
@@ -118,7 +118,7 @@ class DatasetUploadViewTests(
         )
 
 
-class DatasetEditViewTests(LoggedInMixin, django.test.TestCase):
+class DatasetEditViewTests(LoggedInMixin, MaliciousMixin, django.test.TestCase):
     name: str
     new_name: str
     description: str
@@ -195,8 +195,41 @@ class DatasetEditViewTests(LoggedInMixin, django.test.TestCase):
         self.assertTemplateNotUsed(response, "dataset_overview.html")
         self.assertNoDatasetChange(response)
 
+    def test_dataset_edit_view_foreign_edit_post(self):
+        victim_dataset = Dataset.objects.create(
+            display_name=self.name,
+            description=self.description,
+            user=self.victim_user,
+            datapoints_total=420,
+            dimensions_total=42,
+        )
 
-class DatasetDeleteViewTests(LoggedInMixin, django.test.TestCase):
+        response = self.post_dataset_edit(
+            dataset_pk=victim_dataset.pk, expected_status=403, update_model=False
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertTemplateNotUsed(response, "dataset_edit.html")
+        self.assertTemplateNotUsed(response, "dataset_overview.html")
+        self.assertNoDatasetChange(response)
+
+    def test_dataset_edit_view_foreign_edit_get(self):
+        victim_dataset = Dataset.objects.create(
+            display_name=self.name,
+            description=self.description,
+            user=self.victim_user,
+            datapoints_total=420,
+            dimensions_total=42,
+        )
+
+        response = self.client.get(
+            reverse("dataset_edit", args=(victim_dataset.pk,)), follow=True
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertTemplateNotUsed(response, "dataset_edit.html")
+        self.assertTemplateNotUsed(response, "dataset_overview.html")
+
+
+class DatasetDeleteViewTests(LoggedInMixin, MaliciousMixin, django.test.TestCase):
     def test_dataset_delete_view_valid_delete(self):
         dataset = Dataset.objects.create(
             datapoints_total=0, dimensions_total=0, user=self.user
@@ -213,5 +246,16 @@ class DatasetDeleteViewTests(LoggedInMixin, django.test.TestCase):
         response = self.client.post(reverse("dataset_delete", args=(42,)), follow=True)
         # we expect to get 404 because of invalid pk
         self.assertEqual(response.status_code, 404)
+        self.assertTemplateNotUsed(response, "dataset_overview.html")
+        self.assertTemplateNotUsed(response, "dataset_delete.html")
+
+    def test_dataset_delete_view_foreign_delete(self):
+        # Different user tries to delete victims dataset
+        dataset = Dataset.objects.create(user=self.victim_user)
+        response = self.client.post(
+            reverse("dataset_delete", args=(dataset.pk,)), follow=True
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertIsNotNone(Dataset.objects.get(pk=dataset.pk))
         self.assertTemplateNotUsed(response, "dataset_overview.html")
         self.assertTemplateNotUsed(response, "dataset_delete.html")
