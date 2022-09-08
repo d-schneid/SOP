@@ -119,17 +119,6 @@ class ExecutionCreateViewTests(
         self.assertIsNone(Execution.objects.first())
 
     def test_execution_create_view_subspace_errors3(self) -> None:
-        """
-        Test that subspace min and max can't be smaller than 0, even if min < max.
-        """
-        self.data["subspaces_min"] = 2
-        self.data["subspaces_max"] = 1
-        response = self.send_post()
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse(response.redirect_chain)
-        self.assertIsNone(Execution.objects.first())
-
-    def test_execution_create_view_subspace_errors4(self) -> None:
         self.data["subspaces_min"] = self.dataset.dimensions_total
         self.data["subspaces_max"] = self.dataset.dimensions_total
         self.data["subspace_amount"] = 2
@@ -139,14 +128,14 @@ class ExecutionCreateViewTests(
         self.assertFalse(response.redirect_chain)
         self.assertIsNone(Execution.objects.first())
 
-    def test_execution_create_view_subspace_errors5(self) -> None:
+    def test_execution_create_view_subspace_errors4(self) -> None:
         self.data["subspaces_max"] = self.dataset.dimensions_total + 1
         response = self.send_post()
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.redirect_chain)
         self.assertIsNone(Execution.objects.first())
 
-    def test_execution_create_view_subspace_errors6(self) -> None:
+    def test_execution_create_view_subspace_errors5(self) -> None:
         self.data["subspace_amount"] = 0
         response = self.send_post()
         self.assertEqual(response.status_code, 200)
