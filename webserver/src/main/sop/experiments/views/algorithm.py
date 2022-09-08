@@ -10,8 +10,7 @@ from django.http.response import HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import (
     CreateView,
-    ListView,
-    UpdateView,
+    ListView, UpdateView,
 )
 
 from authentication.mixins import LoginRequiredMixin
@@ -26,6 +25,7 @@ from experiments.services.algorithm import (
 )
 from experiments.services.dataset import get_download_response
 from experiments.views.generic import PostOnlyDeleteView
+from experiments.mixins import SingleObjectPermissionMixin
 
 
 class AlgorithmOverview(LoginRequiredMixin, ListView[Algorithm]):
@@ -86,7 +86,7 @@ class AlgorithmUploadView(
             return super(AlgorithmUploadView, self).form_valid(form)
 
 
-class AlgorithmDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Algorithm]):
+class AlgorithmDeleteView(LoginRequiredMixin, SingleObjectPermissionMixin, PostOnlyDeleteView[Algorithm]):
     """
     A view to delete an algorithm. It inherits from PostOnlyDeleteView, so it can only
     be called via a POST request and then execute the deletion.
@@ -95,7 +95,7 @@ class AlgorithmDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Algorithm]):
     success_url = reverse_lazy("algorithm_overview")
 
 
-class AlgorithmEditView(LoginRequiredMixin, UpdateView[Algorithm, AlgorithmEditForm]):
+class AlgorithmEditView(LoginRequiredMixin, SingleObjectPermissionMixin, UpdateView[Algorithm, AlgorithmEditForm]):
     """
     A view to edit an existing algorithm. It uses the AlgorithmEditForm to display
     widgets for the fields that a user can edit.

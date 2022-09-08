@@ -7,7 +7,7 @@ from typing import Optional
 from django.contrib import messages
 from django.http import HttpResponse, HttpRequest, HttpResponseRedirect
 from django.urls import reverse_lazy
-from django.views.generic import ListView, UpdateView, CreateView
+from django.views.generic import ListView, CreateView, UpdateView
 
 from authentication.mixins import LoginRequiredMixin
 from backend.DatasetInfo import DatasetInfo
@@ -21,6 +21,7 @@ from experiments.services.dataset import (
 )
 from experiments.services.dataset import schedule_backend
 from experiments.views.generic import PostOnlyDeleteView
+from experiments.mixins import SingleObjectPermissionMixin
 
 
 class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadForm]):
@@ -121,7 +122,7 @@ class DatasetOverview(LoginRequiredMixin, ListView[Dataset]):
         return context
 
 
-class DatasetDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Dataset]):
+class DatasetDeleteView(LoginRequiredMixin, SingleObjectPermissionMixin, PostOnlyDeleteView[Dataset]):
     """
     A view to delete a dataset. It inherits PostOnlyDeleteView, so it is only accessible
     via a POST request and will then perform the deletion of the dataset model.
@@ -142,7 +143,7 @@ class DatasetDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Dataset]):
         return super().form_valid(form)
 
 
-class DatasetEditView(LoginRequiredMixin, UpdateView[Dataset, DatasetEditForm]):
+class DatasetEditView(LoginRequiredMixin, SingleObjectPermissionMixin, UpdateView[Dataset, DatasetEditForm]):
     """
     A view to edit an existing dataset. It uses the DatasetEditForm to display widgets
     for fields that a user can edit.
@@ -155,7 +156,7 @@ class DatasetEditView(LoginRequiredMixin, UpdateView[Dataset, DatasetEditForm]):
 
 
 def download_uncleaned_dataset(
-    request: HttpRequest, pk: int
+        request: HttpRequest, pk: int
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
     """
     A function view to download the uncleaned csv of a dataset.
@@ -181,7 +182,7 @@ def download_uncleaned_dataset(
 
 
 def download_cleaned_dataset(
-    request: HttpRequest, pk: int
+        request: HttpRequest, pk: int
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
     """
     A function view to download the cleaned csv of a dataset. This view asserts that the
@@ -209,7 +210,7 @@ def download_cleaned_dataset(
 
 
 def dataset_status_view(
-    request: HttpRequest,
+        request: HttpRequest,
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
     if request.method == "GET":
         dataset_pk: int = -1

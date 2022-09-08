@@ -30,6 +30,7 @@ from experiments.models import Execution, Experiment, Algorithm
 from experiments.models.execution import get_result_path, ExecutionStatus
 from experiments.services.execution import get_params_out_of_form, get_execution_result
 from experiments.views.generic import PostOnlyDeleteView
+from experiments.mixins import SingleObjectPermissionMixin
 
 
 def schedule_backend(execution: Execution) -> Optional[dict[str, list[str]]]:
@@ -224,7 +225,7 @@ class ExecutionCreateView(
         return success_response
 
 
-class ExecutionDuplicateView(ExecutionCreateView):
+class ExecutionDuplicateView(SingleObjectPermissionMixin, ExecutionCreateView):
     """
     A view to duplicate an execution. This will act just like the ExecutionCreateView
     except that it adds default values for the subspace information to the form and the
@@ -249,7 +250,7 @@ class ExecutionDuplicateView(ExecutionCreateView):
         return context
 
 
-class ExecutionDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Execution]):
+class ExecutionDeleteView(LoginRequiredMixin, SingleObjectPermissionMixin, PostOnlyDeleteView[Execution]):
     """
     A view to delete an execution model. It inherits form PostOnlyDeleteView, so it is
     only accessible via POST requests.
@@ -260,7 +261,7 @@ class ExecutionDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Execution]):
 
 
 def download_execution_result(
-    request: HttpRequest, experiment_pk: int, pk: int
+        request: HttpRequest, experiment_pk: int, pk: int
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
     """
     A function view that will download an execution result. This view asserts that the
@@ -287,7 +288,7 @@ def download_execution_result(
 
 
 def download_execution_result_admin(
-    request: HttpRequest, pk: int
+        request: HttpRequest, pk: int
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
     """
     A function view that will download an execution result. This view asserts that the
@@ -357,7 +358,7 @@ def get_execution_progress(request: HttpRequest) -> HttpResponse:
 
 
 def restart_execution(
-    request: HttpRequest, experiment_pk: int, pk: int
+        request: HttpRequest, experiment_pk: int, pk: int
 ) -> HttpResponse:
     """
     A view that can be accessed in any way (GET or POST). When accessed, it will restart
