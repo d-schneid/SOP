@@ -68,7 +68,6 @@ default:
     - source venv3.9/bin/activate
     - python3.9 -m pip install --upgrade pip
     - python3.9 -m pip install -r requirements.txt
-    - python3.9 -m pip install coverage
     - python3.9 -m pip install backend_library/src
     - python3.9 -V
 
@@ -141,9 +140,12 @@ backend-tests:
   coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
   script:
     - "[ ! -d 'public' ] && mkdir public"
+    # Needed to for coverage measurement in subprocesses
     - 'echo "import coverage" >> /opt/venv/lib/python3.9/site-packages/sitecustomize.py'
     - 'echo "coverage.process_startup()" >> /opt/venv/lib/python3.9/site-packages/sitecustomize.py'
+    - python3.9 -m pip install coverage pytype
     - cd backend_library/src
+    - pytype  -P .  --strict-parameter-checks --strict-primitive-comparisons --platform linux backend/
     - apt-get update && apt-get -y --no-install-recommends install zip
     - export COVERAGE_PROCESS_START=$PWD/../MultiPTesting.ini
     - export COVERAGE_RCFILE=$PWD/../MultiPTesting.ini
