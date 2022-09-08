@@ -312,7 +312,8 @@ class ExperimentDuplicateViewTests(LoggedInMixin, django.test.TestCase):
 
         self.assertContains(response, "HUHU")
 
-        # Not really checks for if they are selected, but it still has to be there, so we might as well check it
+        # Not really checks for if they are selected, but it still has to be there,
+        # so we might as well check it
         self.assertContains(response, self.algo1.display_name)
         self.assertContains(response, self.algo2.display_name)
         self.assertContains(response, self.algo1.group)
