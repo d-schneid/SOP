@@ -41,13 +41,12 @@ class LoggedInSiteTests(LoggedInMixin, django.test.TestCase):
 
     def test_algorithm_delete_urls_no_algorithm_logged_in(self):
         response = self.client.get("/algorithm/42/delete/", follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.redirect_chain)
-        self.assertTemplateUsed(response, "algorithm_overview.html")
+        self.assertEqual(response.status_code, 404)
+        self.assertTemplateNotUsed(response, "algorithm_overview.html")
         self.assertTemplateNotUsed(response, "algorithm_delete.html")
 
     def test_algorithm_delete_urls_algorithm_exists_logged_in(self):
-        algo = Algorithm.objects.create(signature="")
+        algo = Algorithm.objects.create(signature="", user=self.user)
         response = self.client.get(f"/algorithm/{algo.pk}/delete/", follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.redirect_chain)
@@ -88,9 +87,8 @@ class LoggedInSiteTests(LoggedInMixin, django.test.TestCase):
 
     def test_dataset_delete_urls_no_dataset_logged_in(self):
         response = self.client.get("/dataset/42/delete/", follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.redirect_chain)
-        self.assertTemplateUsed(response, "dataset_overview.html")
+        self.assertEqual(response.status_code, 404)
+        self.assertTemplateNotUsed(response, "dataset_overview.html")
         self.assertTemplateNotUsed(response, "dataset_delete.html")
 
     def test_dataset_delete_urls_dataset_exists_logged_in(self):
@@ -144,9 +142,8 @@ class LoggedInSiteTests(LoggedInMixin, django.test.TestCase):
         experiment = Experiment.objects.create(dataset=dataset, user=self.user)
         experiment.algorithms.set([algo])
         response = self.client.get("/experiment/42/delete/", follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.redirect_chain)
-        self.assertTemplateUsed(response, "experiment_overview.html")
+        self.assertEqual(response.status_code, 404)
+        self.assertTemplateNotUsed(response, "experiment_overview.html")
         self.assertTemplateNotUsed(response, "experiment_delete.html")
 
     def test_experiment_delete_urls_experiment_exists_logged_in(self):

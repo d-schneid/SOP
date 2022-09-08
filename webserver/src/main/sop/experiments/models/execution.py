@@ -141,6 +141,10 @@ class Execution(models.Model):
         """
         return self.progress * 100
 
+    @property
+    def user(self) -> settings.AUTH_USER_MODEL:
+        return self.experiment.user
+
 
 def get_result_path(execution: Execution) -> str:
     """

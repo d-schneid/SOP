@@ -197,10 +197,10 @@ class ExperimentEditViewTests(LoggedInMixin, django.test.TestCase):
         cls.experiment.algorithms.set(cls.algorithms)
 
     def post_experiment_edit(
-        self,
-        experiment_pk: Optional[int] = None,
-        expected_status: int = 200,
-        update_model: bool = True,
+            self,
+            experiment_pk: Optional[int] = None,
+            expected_status: int = 200,
+            update_model: bool = True,
     ) -> HttpResponse:
         experiment_pk = (
             experiment_pk if experiment_pk is not None else self.experiment.pk
@@ -270,10 +270,10 @@ class ExperimentDeleteViewTests(LoggedInMixin, django.test.TestCase):
         response = self.client.post(
             reverse("experiment_delete", args=(42,)), follow=True
         )
-        # we expect to be redirected to the experiment overview
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.redirect_chain)  # type: ignore
-        self.assertTemplateUsed(response, "experiment_overview.html")
+        # we expect to get 404 because of invalid pk
+        self.assertEqual(response.status_code, 404)
+        self.assertTemplateNotUsed(response, "experiment_overview.html")
+        self.assertTemplateNotUsed(response, "experiment_delete.html")
 
 
 class ExperimentDuplicateViewTests(LoggedInMixin, django.test.TestCase):

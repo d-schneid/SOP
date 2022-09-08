@@ -141,7 +141,7 @@ class DatasetEditViewTests(LoggedInMixin, django.test.TestCase):
         )
 
     def post_dataset_edit(
-        self, dataset_pk=None, expected_status=200, update_model=True
+            self, dataset_pk=None, expected_status=200, update_model=True
     ):
         dataset_pk = dataset_pk if dataset_pk is not None else self.dataset.pk
         data = {
@@ -211,7 +211,7 @@ class DatasetDeleteViewTests(LoggedInMixin, django.test.TestCase):
 
     def test_dataset_delete_view_invalid_pk(self):
         response = self.client.post(reverse("dataset_delete", args=(42,)), follow=True)
-        # we expect to be redirected to the dataset overview
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.redirect_chain)
-        self.assertTemplateUsed(response, "dataset_overview.html")
+        # we expect to get 404 because of invalid pk
+        self.assertEqual(response.status_code, 404)
+        self.assertTemplateNotUsed(response, "dataset_overview.html")
+        self.assertTemplateNotUsed(response, "dataset_delete.html")

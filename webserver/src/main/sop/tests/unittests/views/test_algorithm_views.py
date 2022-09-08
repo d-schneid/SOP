@@ -193,7 +193,7 @@ class AlgorithmUploadViewTests(LoggedInMixin, MediaMixin, django.test.TestCase):
 
 class AlgorithmDeleteViewTests(LoggedInMixin, django.test.TestCase):
     def test_algorithm_delete_view_valid_delete(self):
-        algorithm = Algorithm.objects.create(signature="")
+        algorithm = Algorithm.objects.create(signature="", user=self.user)
         response = self.client.post(
             reverse("algorithm_delete", args=(algorithm.pk,)), follow=True
         )
@@ -206,10 +206,10 @@ class AlgorithmDeleteViewTests(LoggedInMixin, django.test.TestCase):
         response = self.client.post(
             reverse("algorithm_delete", args=(42,)), follow=True
         )
-        # we expect to be redirected to the algorithm overview
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.redirect_chain)
-        self.assertTemplateUsed(response, "algorithm_overview.html")
+        # we expect to get 404 because of invalid pk
+        self.assertEqual(response.status_code, 404)
+        self.assertTemplateNotUsed(response, "algorithm_overview.html")
+        self.assertTemplateNotUsed(response, "algorithm_delete.html")
 
 
 class AlgorithmEditViewTest(LoggedInMixin, django.test.TestCase):
@@ -230,7 +230,7 @@ class AlgorithmEditViewTest(LoggedInMixin, django.test.TestCase):
         super().setUp()
 
     def post_algorithm_edit(
-        self, algorithm_pk=None, expected_code=200, update_model=True
+            self, algorithm_pk=None, expected_code=200, update_model=True
     ):
         algorithm_pk = algorithm_pk if algorithm_pk is not None else self.algo.pk
         data = {
