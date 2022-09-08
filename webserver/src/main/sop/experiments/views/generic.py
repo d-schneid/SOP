@@ -40,14 +40,9 @@ class PostOnlyDeleteView(DeleteView[_M]):
 
 
 class RestrictedUpdateView(UpdateView):
-    def get(self, request, *args, **kwargs):
-        # Check if dataset belongs to user
-        if not self.request.user == self.get_object().user:
-            raise PermissionDenied()
-        return super().get(request, *args, **kwargs)
 
-    def post(self, request, *args, **kwargs):
+    def dispatch(self, request, *args, **kwargs):
         # Check if dataset belongs to user
         if not self.request.user == self.get_object().user:
             raise PermissionDenied()
-        return super().post(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
