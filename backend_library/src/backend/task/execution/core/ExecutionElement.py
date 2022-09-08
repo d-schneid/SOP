@@ -132,9 +132,15 @@ class ExecutionElement(Schedulable):
               f"with {self._ss_shm_name} as data source")
         algo.fit(ss_arr, None)
         debug(f"{self} will now load the decision_scores_ of the algorithm")
-        results = algo.decision_scores_
+        results: np.ndarray = algo.decision_scores_
         info(f"{self} has successfully executed the algorithm")
         ss_shm.close()
+        assert results.size == (ss_arr.shape[0]),\
+            "The result provided by the algorithm is not of the shape expected"
+        assert results.dtype.kind in ['f', 'i', 'u'],\
+            "The result of the algorithm is not of a number type"
+        assert not np.all(np.isnan(results)),\
+            "The algorithm only returned NaN values"
         return results
 
     def __convert_result_to_csv(self, run_algo_result: np.ndarray) -> np.ndarray:
