@@ -229,5 +229,5 @@ class DatasetCleaning(Task, Schedulable, ABC):
 
     def __str__(self):
         return f"DatasetCleaning {self.task_id} from user {self.user_id}" \
-            f"cleans dataset from {self._uncleaned_dataset_path}" \
-            f"to {self._cleaned_dataset_path}"
+            f" cleans dataset from {self._uncleaned_dataset_path}" \
+            f" to {self._cleaned_dataset_path}"
