@@ -77,6 +77,9 @@ PYOD_ALGORITHMS = [
     PyodAlgorithm(
         "lscp.py", "LSCP", "LSCP", Algorithm.AlgorithmGroup.OUTLIER_ENSEMBLES
     ),
+    PyodAlgorithm(
+        "lunarwrapper.py", "LUNARWrapper", "LUNAR", Algorithm.AlgorithmGroup.GRAPH_BASED
+    ),
     PyodAlgorithm("mad.py", "MAD", "MAD", Algorithm.AlgorithmGroup.PROBABILISTIC),
     PyodAlgorithm("mcd.py", "MCD", "MCD", Algorithm.AlgorithmGroup.LINEAR_MODEL),
     PyodAlgorithm(
@@ -137,6 +140,14 @@ def replace_occurrences(
     os.remove(path)
     # Move new file
     shutil.move(abs_path, path)
+
+
+def load_wrappers(pyod_models_root: Path):
+    pyod_wrappers_root = "experiments/pyod_algorithm_wrappers"
+    shutil.copytree(src=pyod_wrappers_root,
+                    dst=pyod_models_root,
+                    ignore=shutil.ignore_patterns("__init__.py"),
+                    dirs_exist_ok=True)
 
 
 MISSING = object()
@@ -229,6 +240,8 @@ class Command(BaseCommand):
         self.stdout_write("Copying pyod library to media root...", ending="")
         shutil.copytree(src=pyod_path, dst=media_pyod_root)
         self.stdout_write(self.style.SUCCESS("OK"))
+
+        load_wrappers(pyod_models_dir)
 
         AlgorithmLoader.set_algorithm_root_dir(str(settings.ALGORITHM_ROOT_DIR))
 
