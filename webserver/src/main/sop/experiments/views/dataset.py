@@ -13,6 +13,7 @@ from authentication.mixins import LoginRequiredMixin
 from backend.DatasetInfo import DatasetInfo
 from experiments.forms.create import DatasetUploadForm
 from experiments.forms.edit import DatasetEditForm
+from experiments.mixins import SingleObjectPermissionMixin
 from experiments.models.dataset import Dataset, CleaningState
 from experiments.models.managers import DatasetQuerySet
 from experiments.services.dataset import (
@@ -21,7 +22,6 @@ from experiments.services.dataset import (
 )
 from experiments.services.dataset import schedule_backend
 from experiments.views.generic import PostOnlyDeleteView
-from experiments.mixins import SingleObjectPermissionMixin
 
 
 class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadForm]):
@@ -68,17 +68,12 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
             assert not os.path.isfile(temp_file_path)
             return super(DatasetUploadView, self).form_invalid(form)
 
-        # check if the file is a csv file
         if not dataset_valid:
             os.remove(temp_file_path)
 
-            # TODO: Maybe an error in FileField validator?
-            # return an error
-            form.add_error("path_original", "The given file is not a valid csv.-file.")
+            messages.error(self.request, "Error in selected dataset.")
             assert not os.path.isfile(temp_file_path)
             return super(DatasetUploadView, self).form_invalid(form)
-
-        # don't add the data on datapoints and dimensions to the model
 
         os.remove(temp_file_path)
 

@@ -115,7 +115,9 @@ class DatasetUploadViewTests(
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.redirect_chain)
         self.assertTemplateUsed(response, "dataset_upload.html")
-        self.assertFalse(Dataset.objects.first().exists())
+        messages = list(response.context["messages"])
+        self.assertEqual(len(messages), 1)
+        self.assertIsNone(Dataset.objects.first())
 
     def test_dataset_upload_view_invalid_file_type(self):
         file_name = "no_csv.txt"
