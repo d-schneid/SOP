@@ -1,12 +1,7 @@
 import csv
 import os
-import re
-from typing import Optional
 
 import pandas as pd
-
-from backend.DataIO import DataIO
-from backend.DataIOInputException import DataIOInputException
 
 
 class DatasetInfo:
