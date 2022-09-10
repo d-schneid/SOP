@@ -87,7 +87,7 @@ class UserRoundRobinScheduler(Scheduler):
     def log_debug_data(self):
         with self.__empty_queue:
             for running in self.__running.items():
-                info(f" {running[0]} is registered as running on PID {running[1][0].pid}"
+                info(f"{running[0]} is registered as running on PID {running[1][0].pid}"
                      f" is alive returns {running[1][0].is_alive()}")
             for q in self.__user_queues.values():
                 for ps in q:
