@@ -76,7 +76,7 @@ class DatasetInfo:
                 # if all rows have the same amount of columns, return True
                 return True
 
-        except csv.Error:
+        except (csv.Error, UnicodeDecodeError):
             return False
 
     class RfcCsvDialect(csv.Dialect):

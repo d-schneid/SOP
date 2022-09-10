@@ -95,6 +95,9 @@ class UnitTestDatasetInfo(unittest.TestCase):
     csv_file_valid = os.path.join(
         csv_files_base_path, "validator_valid.csv"
     )
+    csv_file_cp1252 = os.path.join(
+        csv_files_base_path, "validator_cp1252.csv"
+    )
 
     def test_validation_edge_case(self):
         self.assertFalse(
@@ -119,6 +122,11 @@ class UnitTestDatasetInfo(unittest.TestCase):
     def test_validation_valid_csv(self):
         self.assertTrue(
             DatasetInfo.is_dataset_valid(self.csv_file_valid)
+        )
+
+    def test_validation_unicode_error(self):
+        self.assertFalse(
+            DatasetInfo.is_dataset_valid(self.csv_file_cp1252)
         )
 
 
