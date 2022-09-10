@@ -430,6 +430,6 @@ class Execution(JsonSerializable, Task, Schedulable):
         """
         return cast(list[int], self._row_numbers.tolist())
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Execution {self.task_id} with {len(self.algorithms)} algorithms" \
                f" and {len(self._subspaces)}"

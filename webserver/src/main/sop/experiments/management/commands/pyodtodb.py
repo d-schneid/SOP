@@ -19,7 +19,7 @@ class _PyodAlgorithm:
     file_name: str
     class_name: str
     display_name: str
-    group: Algorithm.AlgorithmGroup
+    group: Algorithm.AlgorithmGroup.values
 
 
 _PYOD_ALGORITHMS = [
@@ -142,7 +142,7 @@ def _replace_occurrences(
     shutil.move(abs_path, path)
 
 
-MISSING = object()
+MISSING = str()
 
 
 class Command(BaseCommand):
@@ -228,7 +228,7 @@ class Command(BaseCommand):
             ending="",
         )
 
-        pyod_path = Path(pyod.__path__[0])
+        pyod_path = Path(list(pyod.__path__)[0])
         self._stdout_write(self.style.SUCCESS("FOUND"))
 
         media_pyod_root = settings.ALGORITHM_ROOT_DIR / "pyod_algorithms"

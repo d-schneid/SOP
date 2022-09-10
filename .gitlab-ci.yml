@@ -87,7 +87,7 @@ flake:
   stage: test
   needs: [ ]
   before_script:
-    - python3.9 -m pip install flake8 flake8-assertive
+    - python3.9 -m pip install -r requirements_flake.txt
   script:
     - flake8 --color always .
     - echo looking for forbidden windows line endings...

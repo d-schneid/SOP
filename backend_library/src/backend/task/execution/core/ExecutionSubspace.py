@@ -192,7 +192,7 @@ class ExecutionSubspace(Schedulable):
     def do_work(self) -> None:
         self.__load_subspace_from_dataset()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"ExecutionSubspace with taskid {self.task_id} and" \
                f" {len(self._algorithms)} algos" \
                f" and subspace-id {self._subspace.get_subspace_identifier()}"

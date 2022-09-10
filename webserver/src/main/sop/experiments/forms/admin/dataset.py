@@ -1,9 +1,10 @@
 import os
 from typing import Optional, Any
 
-from backend.DatasetInfo import DatasetInfo
 from django import forms
 from django.core.files.uploadedfile import TemporaryUploadedFile
+
+from backend.DatasetInfo import DatasetInfo
 from experiments.models.dataset import Dataset, CleaningState
 from experiments.services.dataset import save_dataset, generate_path_dataset_cleaned
 
@@ -46,6 +47,8 @@ class AdminAddDatasetForm(forms.ModelForm[Dataset]):
         try:
             dataset_valid = DatasetInfo.is_dataset_valid(temp_file_path)
         except UnicodeError as e:
+            # needed for pytype to accept that UnicodeError has an attribute reason
+            assert hasattr(e, "reason")
             os.remove(temp_file_path)
             self.add_error("path_original",
                            f"Unicode error in selected dataset: {e.reason}")
