@@ -180,8 +180,6 @@ class DatasetAdminTests(
             "Select a valid choice. That choice is not one of the available choices.",
         )
 
-    @skip("Test with invalid dataset, dataset validation does not work so we need to"
-          "fix that asap")
     def test_add_dataset_unicode_error(self):
         file_path: str = os.path.join("tests", "sample_datasets", "unicode_error.csv")
         assert os.path.isfile(file_path)

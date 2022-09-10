@@ -108,8 +108,6 @@ class DatasetUploadViewTests(
         self.assertTemplateNotUsed(response, "dataset_overview.html")
         self.assertTemplateUsed(response, "dataset_upload.html")
 
-    @skip("Test with invalid dataset, dataset validation does not work so we need to"
-          "fix that asap")
     def test_dataset_upload_different_column_size(self):
         file_name = "parser_error.csv"
         response = self.upload_dataset(self.client, file_name)
