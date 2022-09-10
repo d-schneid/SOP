@@ -3,7 +3,7 @@ import os
 import django.test
 from django.urls import reverse
 
-from experiments.models import Dataset
+from experiments.models import Dataset, Experiment
 from tests.generic import LoggedInMixin, MediaMixin, DebugSchedulerMixin, MaliciousMixin
 
 

@@ -1,5 +1,4 @@
 import os
-from unittest import skip
 
 import django.test
 from django.urls import reverse
@@ -50,7 +49,9 @@ class DatasetAdminTests(
         exp = Experiment.objects.create(
             display_name="exp", dataset=self.dataset_finished, user=self.admin
         )
-        url = reverse("admin:experiments_dataset_change", args=(self.dataset_finished.pk,))
+        url = reverse(
+            "admin:experiments_dataset_change", args=(self.dataset_finished.pk,)
+        )
         response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Change dataset")
@@ -61,7 +62,9 @@ class DatasetAdminTests(
         self.assertContains(response, f"{exp.display_name}")
 
     def test_dataset_admin_change_view_no_inline(self):
-        url = reverse("admin:experiments_dataset_change", args=(self.dataset_finished.pk,))
+        url = reverse(
+            "admin:experiments_dataset_change", args=(self.dataset_finished.pk,)
+        )
         response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Change dataset")
@@ -211,16 +214,18 @@ class DatasetAdminTests(
         self.exp = Experiment.objects.create(
             display_name="Test Exp", dataset=self.dataset_finished, user=self.admin
         )
-        url = reverse("admin:experiments_dataset_delete",
-                      args=(self.dataset_finished.pk,))
+        url = reverse(
+            "admin:experiments_dataset_delete", args=(self.dataset_finished.pk,)
+        )
         response = self.client.post(url, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "This dataset cannot be deleted, since it is "
-                                      "used in at least one experiment (see below)")
-        self.assertTrue(Dataset.objects.exists())
-        self.assertEqual(
-            "experiments_dataset_delete", response.resolver_match.url_name
+        self.assertContains(
+            response,
+            "This dataset cannot be deleted, since it is "
+            "used in at least one experiment (see below)",
         )
+        self.assertTrue(Dataset.objects.exists())
+        self.assertEqual("experiments_dataset_delete", response.resolver_match.url_name)
 
     def test_admin_uncleaned_dataset_change_view(self):
         self.dataset_uncleaned = Dataset.objects.create(
