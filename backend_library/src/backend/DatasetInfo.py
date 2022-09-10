@@ -1,4 +1,6 @@
+import csv
 import os
+import re
 from typing import Optional
 
 import pandas as pd
@@ -44,8 +46,7 @@ class DatasetInfo:
         assert os.path.isfile(dataset_path)
 
         try:
-            df_first_column = pd.read_csv(dataset_path, usecols=[0],
-                                          header=None)
+            df_first_column = pd.read_csv(dataset_path, usecols=[0], header=None)
         except pd.errors.EmptyDataError:
             return 0
 
@@ -66,12 +67,29 @@ class DatasetInfo:
         assert os.path.isfile(path)
 
         try:
-            has_header: Optional[int] = 0
-            DataIO.read_uncleaned_csv(path, has_header=has_header)
+            with open(path, newline="") as file:
+                csv_reader = csv.reader(file, dialect=DatasetInfo.RfcCsvDialect)
 
-            # if no error was thrown upon reading, the dataset is valid
-            return True
+                col_num = None
 
-        except DataIOInputException:
-            # if an error was thrown upon reading the dataset is invalid
+                for row in csv_reader:
+                    if col_num is None:
+                        col_num = len(row)
+                    elif col_num != len(row):
+                        return False
+
+                # if all rows have the same amount of columns, return True
+                return True
+
+        except csv.Error:
             return False
+
+    class RfcCsvDialect(csv.Dialect):
+        delimiter = ","
+        doublequote = True
+        escapechar = None
+        lineterminator = "\n\r"  # <-- not important for reading
+        quotechar = '"'
+        quoting = csv.QUOTE_MINIMAL
+        skipinitialspace = False
+        strict = True

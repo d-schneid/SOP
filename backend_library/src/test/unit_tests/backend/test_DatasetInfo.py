@@ -31,10 +31,6 @@ class UnitTestDatasetInfo(unittest.TestCase):
     def tearDown(self) -> None:
         self.__clean_created_files_and_directories()
 
-    def test_validation_edge_case(self):
-        csv = "../resources/test/datasets/invalid_edge_case.csv"
-        self.assertFalse(DatasetInfo.is_dataset_valid(csv))
-
     def __clean_created_files_and_directories(self):
         if os.path.isfile(self._uncleaned_dataset_path1):
             os.remove(self._uncleaned_dataset_path1)
@@ -79,6 +75,51 @@ class UnitTestDatasetInfo(unittest.TestCase):
         self.assertEqual(DatasetInfo.get_dataset_datapoint_amount
                          (self._uncleaned_dataset_path3, has_header), 6)
         self.__clean_created_files_and_directories()
+
+    # ---------- Tests for DatasetInfo.is_valid()
+    csv_files_base_path = os.path.join(
+        "..", "resources", "test", "datasets"
+    )
+    csv_file_invalid_edge_case = os.path.join(
+        csv_files_base_path, "validator_invalid_edge_case.csv"
+    )
+    csv_file_inconsistent_col_nom = os.path.join(
+        csv_files_base_path, "invalid_csv.csv"
+    )
+    csv_file_not_rfc_quote_char = os.path.join(
+        csv_files_base_path, "non_rfc_conform.csv"
+    )
+    csv_file_rfc_linebreak = os.path.join(
+        csv_files_base_path, "validator_rfc_linebreak.csv"
+    )
+    csv_file_valid = os.path.join(
+        csv_files_base_path, "validator_valid.csv"
+    )
+
+    def test_validation_edge_case(self):
+        self.assertFalse(
+            DatasetInfo.is_dataset_valid(self.csv_file_invalid_edge_case)
+        )
+
+    def test_validation_inconsistent_column_number(self):
+        self.assertFalse(
+            DatasetInfo.is_dataset_valid(self.csv_file_inconsistent_col_nom)
+        )
+
+    def test_validation_quote_char(self):
+        self.assertFalse(
+            DatasetInfo.is_dataset_valid(self.csv_file_not_rfc_quote_char)
+        )
+
+    def test_validation_linebreak(self):
+        self.assertTrue(
+            DatasetInfo.is_dataset_valid(self.csv_file_rfc_linebreak)
+        )
+
+    def test_validation_valid_csv(self):
+        self.assertTrue(
+            DatasetInfo.is_dataset_valid(self.csv_file_valid)
+        )
 
 
 if __name__ == '__main__':
