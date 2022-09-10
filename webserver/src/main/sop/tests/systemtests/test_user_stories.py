@@ -91,69 +91,26 @@ class UserStoriesTest(SeleniumTestCase):
         )
 
         # Bob creates an execution within his new experiment
-        self.driver.find_element(By.LINK_TEXT, "New Execution").click()
-        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXECUTION_CREATE)
-
-        # add subspace options
-        self.driver.find_element(By.ID, "id_subspace_amount").send_keys("2")
-        self.driver.find_element(By.ID, "id_subspaces_min").send_keys("5")
-        self.driver.find_element(By.ID, "id_subspaces_max").send_keys("8")
-        self.driver.find_element(By.ID, "id_subspace_generation_seed").send_keys("1")
-
-        # change algorithm parameters
-        all_labels_kde = self.driver.find_elements(
-            By.XPATH,
-            "//div[text() = '"
-            + algo_name_kde
-            + "']/parent::*/parent::*/descendant::label",
+        self.create_execution(
+            experiment_name=experiment_name,
+            subspace_amount="2",
+            subspaces_min="5",
+            subspaces_max="8",
+            subspace_gen_seed="1",
+            algos=[
+                {
+                    "key": algo_name_kde,
+                    "contamination": "0.2",
+                    "leaf_size": "10",
+                },
+                {
+                    "key": algo_name_knn,
+                    "contamination": "0.3",
+                    "n_neighbors": "3",
+                    "leaf_size": "20",
+                },
+            ],
         )
-        all_labels_knn = self.driver.find_elements(
-            By.XPATH,
-            "//div[text() = '"
-            + algo_name_knn
-            + "']/parent::*/parent::*/descendant::label",
-        )
-
-        # kde options
-        for label in all_labels_kde:
-            if "contamination =" == label.text:
-                input_element = self.driver.find_element(
-                    By.ID, label.get_dom_attribute("for")
-                )
-                input_element.clear()
-                input_element.send_keys("0.2")
-            elif "leaf_size =" == label.text:
-                input_element = self.driver.find_element(
-                    By.ID, label.get_dom_attribute("for")
-                )
-                input_element.clear()
-                input_element.send_keys("10")
-
-        # knn options
-        for label in all_labels_knn:
-            if "contamination =" == label.text:
-                input_element = self.driver.find_element(
-                    By.ID, label.get_dom_attribute("for")
-                )
-                input_element.clear()
-                input_element.send_keys("0.3")
-            elif "n_neighbors =" == label.text:
-                input_element = self.driver.find_element(
-                    By.ID, label.get_dom_attribute("for")
-                )
-                input_element.clear()
-                input_element.send_keys("3")
-            elif "leaf_size =" == label.text:
-                input_element = self.driver.find_element(
-                    By.ID, label.get_dom_attribute("for")
-                )
-                input_element.clear()
-                input_element.send_keys("20")
-
-        self.driver.find_element(By.XPATH, "//input[@type='submit']").click()
-        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXPERIMENT_OVERVIEW)
-
-        # TODO: create helper method for execution creation
 
         # TODO: wait for finish & download result & check
         #  (-> change parameters and dataset)
@@ -206,46 +163,21 @@ class UserStoriesTest(SeleniumTestCase):
         )
 
         # create new execution
-        # TODO: not safe for more than 1 experiment!
-        self.driver.find_element(By.LINK_TEXT, "New Execution").click()
-        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXECUTION_CREATE)
-
-        # enter subspace data
-        self.driver.find_element(By.ID, "id_subspace_amount").send_keys("2")
-        self.driver.find_element(By.ID, "id_subspaces_min").send_keys("5")
-        self.driver.find_element(By.ID, "id_subspaces_max").send_keys("8")
-        self.driver.find_element(By.ID, "id_subspace_generation_seed").send_keys("1")
-
-        # change option for the specific algorithm
-        all_labels = self.driver.find_elements(
-            By.XPATH,
-            "//div[text() = '" + algo_name + "']/parent::*/parent::*/descendant::label",
+        self.create_execution(
+            experiment_name=experiment_name,
+            subspace_amount="2",
+            subspaces_min="5",
+            subspaces_max="8",
+            subspace_gen_seed="1",
+            algos=[
+                {
+                    "key": algo_name,
+                    "contamination": "0.2",
+                    "n_neighbors": "7",
+                    "leaf_size": "20",
+                }
+            ],
         )
-
-        for label in all_labels:
-            if "contamination =" == label.text:
-                input_element = self.driver.find_element(
-                    By.ID, label.get_dom_attribute("for")
-                )
-                input_element.clear()
-                input_element.send_keys("0.2")
-            elif "n_neighbors =" == label.text:
-                input_element = self.driver.find_element(
-                    By.ID, label.get_dom_attribute("for")
-                )
-                input_element.clear()
-                input_element.send_keys("7")
-            elif "leaf_size =" == label.text:
-                input_element = self.driver.find_element(
-                    By.ID, label.get_dom_attribute("for")
-                )
-                input_element.clear()
-                input_element.send_keys("20")
-
-        self.driver.find_element(By.XPATH, "//input[@type='submit']").click()
-        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXPERIMENT_OVERVIEW)
-
-        # TODO: create helper method for execution creation
 
         # TODO: wait for finish & download result & check
         #  (-> change parameters and dataset)

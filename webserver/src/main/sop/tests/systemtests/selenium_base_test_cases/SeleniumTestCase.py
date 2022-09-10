@@ -391,6 +391,70 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         #  with more than one algo uploaded
         # TODO: check info displayed on the page
 
+    def create_execution(
+        self,
+        experiment_name: str,
+        subspace_amount: str,
+        subspaces_min: str,
+        subspaces_max: str,
+        subspace_gen_seed: str,
+        algos: List[dict],
+    ):
+
+        self.driver.find_element(
+            By.LINK_TEXT, "New Execution"
+        ).click()  # TODO mehrere Excecutions safe
+        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXECUTION_CREATE)
+
+        # add subspace options
+        self.driver.find_element(By.ID, "id_subspace_amount").send_keys(subspace_amount)
+        self.driver.find_element(By.ID, "id_subspaces_min").send_keys(subspaces_min)
+        self.driver.find_element(By.ID, "id_subspaces_max").send_keys(subspaces_max)
+        self.driver.find_element(By.ID, "id_subspace_generation_seed").send_keys(
+            subspace_gen_seed
+        )
+
+        # change algorithm parameters for all algorithms
+        for current_algo in algos:
+
+            # get all labels
+            all_labels = self.driver.find_elements(
+                By.XPATH,
+                "//div[text() = '"
+                + current_algo["key"]
+                + "']/parent::*/parent::*/descendant::label",
+            )
+
+            # set options
+            for option in current_algo:
+                if option != "key":
+
+                    option_is_set = False
+
+                    for current_label in all_labels:
+                        if (option + " =") == current_label.text:
+                            input_element = self.driver.find_element(
+                                By.ID, current_label.get_dom_attribute("for")
+                            )
+                            input_element.clear()
+                            input_element.send_keys(current_algo[option])
+
+                            option_is_set = True
+                            break
+
+                    # if the option was not set, fail the testcase (something is wrong)
+                    if not option_is_set:
+                        self.fail(
+                            "The option "
+                            + str(option)
+                            + " for algorithm "
+                            + str(current_algo)
+                            + " was not set."
+                        )
+
+        self.driver.find_element(By.XPATH, "//input[@type='submit']").click()
+        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXPERIMENT_OVERVIEW)
+
     def get_whole_page(self) -> WebElement:
         return self.driver.find_element(By.TAG_NAME, "html")
 
