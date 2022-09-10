@@ -37,7 +37,7 @@
 
 {% block edit %}
     <a href="{% url 'algorithm_edit' model.pk %}"
-       class="btn btn-warning mr-3">Edit</a>
+       class="btn btn-warning mr-3"><i class="bi bi-pencil"></i> Edit</a>
 {% endblock %}
 
 {% block error %}
@@ -51,6 +51,6 @@
 {% block delete %}
     <form action="{% url 'algorithm_delete' model.pk %}" method="post">
         {% csrf_token %}
-        <button type="submit" class="btn btn-danger ml-auto mr-3">Yes</button>
+        <button type="submit" class="btn btn-danger ml-auto mr-3"><i class="bi bi-trash"></i> Yes, Delete</button>
     </form>
 {% endblock %}

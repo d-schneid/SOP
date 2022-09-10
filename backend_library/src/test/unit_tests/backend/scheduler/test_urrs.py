@@ -1,24 +1,14 @@
 import multiprocessing
 import unittest
 from multiprocessing import Manager
-from typing import Optional
 
-from backend.scheduler.Schedulable import Schedulable
 from backend.scheduler.Scheduler import Scheduler
 from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
+from test.UrrsWoWorkers import UrrsWoWorkers
 from test.unit_tests.backend.scheduler.SchedulableForTesting import TestSched
 
 timeout = 60
 manager = Manager()
-
-
-class UserRoundRobinSchedulerMock(UserRoundRobinScheduler):
-
-    def _UserRoundRobinScheduler__get_targeted_worker_count(self) -> int:
-        return 0
-
-    def next_sched(self) -> Optional[Schedulable]:
-        return self._UserRoundRobinScheduler__get_next_schedulable()
 
 
 class PriorityTests(unittest.TestCase):
@@ -26,7 +16,7 @@ class PriorityTests(unittest.TestCase):
         Scheduler._instance = None
 
     def test_priorities(self):
-        sched = UserRoundRobinSchedulerMock()
+        sched = UrrsWoWorkers()
         self.assertIsNone(sched.next_sched())  # add assertion here
         a = TestSched(-1, -1, 1)
         sched.schedule(a)
@@ -40,7 +30,7 @@ class PriorityTests(unittest.TestCase):
         self.assertIsNone(sched.next_sched())
 
     def test_round_robin_scheduling(self):
-        sched = UserRoundRobinSchedulerMock()
+        sched = UrrsWoWorkers()
 
         sched.schedule(TestSched(0, -1, 2))
         sched.schedule(TestSched(0, -1, 2))
@@ -133,6 +123,15 @@ class UnitTestUrrs(unittest.TestCase):
                       run_after=lambda status: ts.set() if status is None else None))
         self.assertTrue(ts.wait(timeout))
         self.assertTrue(ts_shut.wait(timeout))
+        self.assertFalse(tbc.value)
+
+    def test_shutdown_before_schedule(self):
+        # Tests race condition handling in the 3rd to 5th line of URRS._run_schedulable
+        urrs = UserRoundRobinScheduler()
+        tbc = manager.Value('b', False)
+        urrs.graceful_shutdown()
+        urrs._run_single(
+            TestSched(1, -1, 0, tbc))
         self.assertFalse(tbc.value)
 
 

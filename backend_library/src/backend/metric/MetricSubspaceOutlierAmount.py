@@ -8,6 +8,8 @@ from backend.metric.ExecutionElementMetricHelper import \
 from backend.metric.Metric import Metric
 from pandas import DataFrame as df
 
+from backend.task.TaskHelper import TaskHelper
+
 
 class MetricSubspaceOutlierAmount(Metric):
 
@@ -32,6 +34,12 @@ class MetricSubspaceOutlierAmount(Metric):
         outlier_data_points_divided_in_subspaces: dict = {}
         all_subspace_identifier: list[str] = \
             eem_helper.convert_paths_into_subspace_identifier(execution_result_paths)
+
+        # create Error file and stop computation if no result file exists
+        if len(all_subspace_identifier) == 0:
+            error_path: str = TaskHelper.convert_to_error_csv_path(metric_result_path)
+            eem_helper.write_empty_execution_error_message(error_path)
+            return
 
         # Divide outlier_data_points by their subspace identifier
         for identifier in all_subspace_identifier:

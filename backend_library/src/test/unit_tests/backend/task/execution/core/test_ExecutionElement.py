@@ -82,7 +82,7 @@ class UnitTestExecutionElement(unittest.TestCase):
                                             self.__execution_element_is_finished,
                                             self._datapoint_count, self._row_numbers)
 
-    def test_getter(self):
+    def test_properties(self):
         self.assertEqual(self._ee.user_id, self._user_id)
         self.assertEqual(self._ee.task_id, self._task_id)
         self.assertEqual(self._ee.priority, self._priority)

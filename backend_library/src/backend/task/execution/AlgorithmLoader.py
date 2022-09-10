@@ -4,7 +4,7 @@ import inspect
 import os.path
 import pathlib
 import sys
-from types import ModuleType
+from types import ModuleType, MappingProxyType
 from typing import Optional
 
 from pyod.models.base import BaseDetector
@@ -37,7 +37,10 @@ class AlgorithmLoader:
     @staticmethod
     def get_algorithm_class(path: str) -> type[BaseDetector]:
         """gets the type object of the BaseDetector implementation
-        under the given path with the given"""
+        under the given path with the given
+        :raises an AssertionError if the file does not exist at a correct location
+        :raises a ValueError if the contents of the file are somehow wrong
+        :raises an ImportError if the file is not valid python code"""
         assert AlgorithmLoader._root_dir is not None, \
             "call set_algorithm_root_dir first"
         assert os.path.isfile(path), 'path is not an existing file'
@@ -53,14 +56,17 @@ class AlgorithmLoader:
         assert len(import_path) > 0, 'the file must not be directly in the root dir'
         module: ModuleType = importlib.import_module(
             ('.'.join(import_path)) + '.' + class_name)
-        class_name: str = next(
+        class_name: Optional[str] = next(
             (x for x in dir(module) if x.lower() == lower_class_name), None)
-        assert class_name is not None, 'file does not contain a class of the same name'
+        if class_name is None:
+            raise ValueError('file does not contain a class of the same name')
         requested_class = getattr(module, class_name)
-        assert issubclass(requested_class, BaseDetector), \
-            f"{class_name} is not a subclass of pyod.models.base.BaseDetector"
-        assert not issubclass(requested_class, abc.ABC), \
-            f"{class_name} must not be a subclass abc.ABC aka must not be abstract"
+        if not issubclass(requested_class, BaseDetector):
+            raise ValueError(
+                f"{class_name} is not a subclass of pyod.models.base.BaseDetector")
+        if issubclass(requested_class, abc.ABC):
+            raise ValueError(
+                f"{class_name} must not be a subclass abc.ABC aka must not be abstract")
         return requested_class
 
     @staticmethod
@@ -82,7 +88,7 @@ class AlgorithmLoader:
             return None
 
     @staticmethod
-    def get_algorithm_parameters(path: str) -> inspect.Signature.parameters:
+    def get_algorithm_parameters(path: str) -> MappingProxyType[str, inspect.Parameter]:
         """reads the parameters of the constructor of the BaseDetector implementation
         under the given path, and if existing the default parameter value"""
         return inspect.signature(AlgorithmLoader.get_algorithm_class(path)).parameters

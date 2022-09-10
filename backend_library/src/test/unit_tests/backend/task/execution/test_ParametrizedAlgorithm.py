@@ -11,7 +11,7 @@ class UnitTestParameterizedAlgorithm(unittest.TestCase):
     _parameterized_algorithm: ParameterizedAlgorithm = ParameterizedAlgorithm("path", _hyper_parameter,
                                                                               _display_name)
 
-    def test_parameterized_algorithm_getter(self):
+    def test_parameterized_algorithm_properties(self):
         self.assertEqual(self._parameterized_algorithm.display_name, self._display_name)
         self.assertEqual(self._parameterized_algorithm.hyper_parameter, self._hyper_parameter)
         self.assertEqual(self._parameterized_algorithm.directory_name_in_execution, "")

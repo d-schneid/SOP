@@ -68,12 +68,11 @@ default:
     - source venv3.9/bin/activate
     - python3.9 -m pip install --upgrade pip
     - python3.9 -m pip install -r requirements.txt
-    - python3.9 -m pip install coverage
     - python3.9 -m pip install backend_library/src
     - python3.9 -V
 
 .frontend-base:
-  image: python:3.9-bullseye
+  image: albinoboi/sop-ci-django
   #
   # Pick zero or more services to be used on all builds.
   # Only needed when using a docker container to run your tests in.
@@ -81,17 +80,8 @@ default:
   services:
     - mysql:8.0
   before_script:
-    - apt-get -y update
-    - apt-get -yq install software-properties-common
-    - apt-get -y install apt-utils net-tools wget default-mysql-client default-libmysqlclient-dev python3-distutils python3-dev gcc memcached
-    - "[ ! -d 'venv3.9' ] && python3 -m venv venv3.9"
     - "[ ! -d 'public' ] && mkdir public"
-    - source venv3.9/bin/activate
-    - python3.9 -m pip install --upgrade pip
-    - python3.9 -m pip install -r requirements.txt
-    - python3.9 -m pip install mysqlclient coverage
-    - python3.9 -m pip install -e backend_library/src
-    - python3.9 -V
+    - python3.9 -m pip install backend_library/src
 
 flake:
   stage: test
@@ -111,48 +101,18 @@ django-tests:
   variables:
     SELENIUM_SCHEDULER: "production"
   script:
-    - source venv3.9/bin/activate
-
-    # Selenium Test requirements
-    - python3.9 -m pip install -r requirements_test.txt
-    # (we need PyOd requirements due to Selenium tests)
-    - python3.9 -m pip install -r requirements_pyod_algorithms.txt
-
-    # Chrome-Browser Installation
-    - wget --quiet -O chrome_browser.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-    - apt-get install --quiet --assume-yes ./chrome_browser.deb
-    - rm chrome_browser.deb
-
-    # Firefox-Browser Installation
-    # install dependencies
-    - apt-get install --quiet --assume-yes glibc-source libdbus-glib-1-2
-    # get Firefox itself
-    - wget --quiet -O firefox_browser.tar.bz2 "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-GB"
-    - tar xjf firefox_browser.tar.bz2
-    - mv firefox /opt
-    - ln -s /opt/firefox/firefox /usr/local/bin/firefox
-    - rm firefox_browser.tar.bz2
 
     # set browser to Firefox for the first run of the Selenium Tets
     - export SELENIUM_BROWSER=firefox
 
-
-    - which python3.9
     - cd webserver/src/main/sop
 
-    # make migrations and migrate, so the db is ready for the tests
-    - python3.9 manage.py makemigrations --settings=sop.settings_ci
-    - python3.9 manage.py migrate --settings=sop.settings_ci
-    - python3.9 manage.py showmigrations --settings=sop.settings_ci
-    - python3.9 manage.py check --settings=sop.settings_ci
-
-    - pip3 install django_coverage_plugin
     - "echo '[run]\nplugins = django_coverage_plugin' > .coveragerc"
     - memcached -d -u root
+    - sleep 30
     # The MYSQL user only gets permissions for MYSQL_DB, so Django can't create a test database.
     - echo "GRANT ALL on *.* to '${MYSQL_USER}';"| mysql -u root --password="${MYSQL_ROOT_PASSWORD}" -h mysql
-    - python3.9 manage.py showmigrations --settings=sop.settings_ci
-    - python3.9 -m coverage run --rcfile=.coveragerc --source="." --omit="media/*","*/migrations/*","*/__init__.py","tests/*","sop/*","*/pyodtodb.py" manage.py test --settings sop.settings_ci
+    - python3.9 -m coverage run --rcfile=.coveragerc --source="." --omit="static/*","media/*","*/migrations/*","*/__init__.py","tests/*","sop/*","*/pyodtodb.py" manage.py test --settings sop.settings_ci
     - python3.9 -m coverage report --rcfile=.coveragerc --precision=2
     - 'wget -O ../../../../public/django-tests.svg https://img.shields.io/badge/webserver\ coverage-$(python3.9 -m coverage report --rcfile=.coveragerc --precision=2 | grep -E "^TOTAL.+?([0-9]+.[0-9]+%)$" | grep -Eo "[0-9]+.[0-9]+%$")-informational'
 
@@ -170,23 +130,27 @@ django-tests:
 
 
 backend-tests:
+  image: albinoboi/sop-ci-django:latest
+  inherit:
+    default: false
   variables:
     IS_EXECUTING_IN_CI: "1"
   needs: [ ]
   stage: test
   coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
-  image: python:3.9-slim-bullseye
   script:
-    - which python3.9
-    - 'echo "import coverage" >> venv3.9/lib/python3.9/site-packages/sitecustomize.py'
-    - 'echo "coverage.process_startup()" >> venv3.9/lib/python3.9/site-packages/sitecustomize.py'
+    - "[ ! -d 'public' ] && mkdir public"
+    # Needed to for coverage measurement in subprocesses
+    - 'echo "import coverage" >> /opt/venv/lib/python3.9/site-packages/sitecustomize.py'
+    - 'echo "coverage.process_startup()" >> /opt/venv/lib/python3.9/site-packages/sitecustomize.py'
+    - python3.9 -m pip install coverage pytype
     - cd backend_library/src
-    - apt-get update
-    - apt-get -y install zip wget
-    - python3.9 -m coverage --version
+    - pytype  -P .  --strict-parameter-checks --strict-primitive-comparisons --platform linux backend/
+    - apt-get update && apt-get -y --no-install-recommends install zip
     - export COVERAGE_PROCESS_START=$PWD/../MultiPTesting.ini
     - export COVERAGE_RCFILE=$PWD/../MultiPTesting.ini
-    - python3.9 -m coverage run
+    # error when a shm was leaked
+    - '! python3.9 -m coverage run |& tee /dev/stderr | grep -q "leaked shared_memory objects to clean up at shutdown"'
     - python3.9 -m coverage combine
     - python3.9 -m coverage report
     - 'wget -O ../../public/backend-tests.svg https://img.shields.io/badge/backend\ coverage-$(python3.9 -m coverage report | grep -E "^TOTAL.+?([0-9]+.[0-9]+%)$" | grep -Eo "[0-9]+.[0-9]+%$")-informational'

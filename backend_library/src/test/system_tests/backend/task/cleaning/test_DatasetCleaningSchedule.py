@@ -17,7 +17,6 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
 
     _user_id: int = -1
     _task_id: int = -1
-    _priority: int = 9999
 
     # datasets
     _dir_name: str = os.getcwd()
@@ -79,27 +78,25 @@ class SystemTestDatasetCleaningRunCleaningPipeline(unittest.TestCase):
         self._dc1: DatasetCleaning = DatasetCleaning(self._user_id, self._task_id,
                                                      self.task_progress_callback,
                                                      self._uncleaned_dataset_path1,
-                                                     self._cleaned_dataset_path1, None,
-                                                     self._priority)
+                                                     self._cleaned_dataset_path1, None)
 
         self._dc2: DatasetCleaning = DatasetCleaning(self._user_id, self._task_id,
                                                      self.task_progress_callback,
                                                      self._uncleaned_dataset_path2,
                                                      self._cleaned_dataset_path2, None,
-                                                     self._priority)
+                                                     has_header=False)
 
         self._dc3: DatasetCleaning = DatasetCleaning(self._user_id, self._task_id,
                                                      self.task_progress_callback,
                                                      self._uncleaned_dataset_path3,
-                                                     self._cleaned_dataset_path3, None,
-                                                     self._priority)
+                                                     self._cleaned_dataset_path3, None)
 
         self._dc3_already_finished: DatasetCleaning = DatasetCleaning(self._user_id,
                                         self._task_id,
                                         self.task_progress_callback,
                                         self._uncleaned_dataset_path3,
                                         self._cleaned_dataset_path_to_compare_result3,
-                                        None, self._priority)
+                                        None)
 
     def tearDown(self) -> None:
         self.__clean_created_files_and_directories()

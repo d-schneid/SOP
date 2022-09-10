@@ -38,6 +38,8 @@ class UnitTest_ExecutionElementMetricHelper(unittest.TestCase):
          os.path.join(_child_directory3, "random_name.csv")])
 
     _error_csv_path: str = os.path.join(_dir_path, "this_element_failed.csv.error")
+    _error_metric_path: str = "./test/unit_tests/backend/metric" \
+                              "/error_metric.csv.error"
 
     def setUp(self) -> None:
         self.__clean_existing_files()
@@ -45,29 +47,29 @@ class UnitTest_ExecutionElementMetricHelper(unittest.TestCase):
     def test_get_csv_files_in_directory(self):
         # No .csv files
         self.assertEqual(len(ExecutionElementMetricHelper.
-                             _ExecutionElementMetricHelper__get_csv_files_in_directory(
+        _ExecutionElementMetricHelper__get_csv_files_in_directory(
             self._dir_path)), 0)
 
         # csv files in this directory
         for i in range(0, len(self._csv_paths_in_this_directory)):
             DataIO.write_csv(self._csv_paths_in_this_directory[i], self._csv_to_store)
             self.assertEqual(len(ExecutionElementMetricHelper.
-                            _ExecutionElementMetricHelper__get_csv_files_in_directory(
+            _ExecutionElementMetricHelper__get_csv_files_in_directory(
                 self._dir_path)), i + 1)
 
         # ignore error files
         DataIO.write_csv(self._error_csv_path, self._csv_to_store)
         self.assertEqual(len(ExecutionElementMetricHelper.
-                             _ExecutionElementMetricHelper__get_csv_files_in_directory(
+        _ExecutionElementMetricHelper__get_csv_files_in_directory(
             self._dir_path)),
-                         len(self._csv_paths_in_this_directory))
+            len(self._csv_paths_in_this_directory))
 
         # Cleaning
         self.__clean_existing_files()
 
         # No .csv files
         self.assertEqual(len(ExecutionElementMetricHelper.
-                             _ExecutionElementMetricHelper__get_csv_files_in_directory(
+        _ExecutionElementMetricHelper__get_csv_files_in_directory(
             self._dir_path)), 0)
 
     def test_get_execution_elements_result_paths(self):
@@ -148,9 +150,9 @@ class UnitTest_ExecutionElementMetricHelper(unittest.TestCase):
         _expected_result1: np.ndarray[int] = np.asarray(list([3, 2, 1, 1, 0, 0, 0, 0]))
 
         np.testing.assert_array_equal(ExecutionElementMetricHelper.
-                                      compute_data_point_outlier_count(
+        compute_data_point_outlier_count(
             _execution_element_outlier_result_dataset1),
-                                      _expected_result1)
+            _expected_result1)
 
     def test_compute_subspace_outlier_amount(self):
         _execution_element_outlier_result_dataset1: dict[str, list[np.ndarray]] = {
@@ -172,9 +174,17 @@ class UnitTest_ExecutionElementMetricHelper(unittest.TestCase):
             list([4 + 2, 1 + 0, 8 + 8, 0 + 0]))
 
         np.testing.assert_array_equal(ExecutionElementMetricHelper.
-                                      compute_subspace_outlier_amount(
+        compute_subspace_outlier_amount(
             _execution_element_outlier_result_dataset1),
-                                      _expected_result1)
+            _expected_result1)
+
+    def test_write_empty_execution_error_message(self):
+        self.assertFalse(os.path.isfile(self._error_metric_path))
+        ExecutionElementMetricHelper.write_empty_execution_error_message(
+            self._error_metric_path)
+
+        self.assertTrue(os.path.isfile(self._error_metric_path))
+        pass
 
     def __clean_existing_files(self):
         if os.path.isdir(self._child_directory):
@@ -192,6 +202,8 @@ class UnitTest_ExecutionElementMetricHelper(unittest.TestCase):
 
         if os.path.isfile(self._error_csv_path):
             os.remove(self._error_csv_path)
+        if os.path.isfile(self._error_metric_path):
+            os.remove(self._error_metric_path)
 
 
 class UnitTest_ExecutionElementMetricHelper_ComputeOutlierDataPoints(unittest.TestCase):

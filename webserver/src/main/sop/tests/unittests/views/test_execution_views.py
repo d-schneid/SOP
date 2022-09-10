@@ -3,12 +3,12 @@ from unittest.mock import patch, MagicMock
 
 import django.test
 from django.http import HttpResponse
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 
 from backend.task.execution.core.Execution import Execution as BackendExecution
 from experiments.models import Experiment, Dataset, Algorithm, Execution
 from experiments.views.execution import schedule_backend
-from tests.generic import LoggedInMixin, MediaMixin, DebugSchedulerMixin
+from tests.generic import LoggedInMixin, MediaMixin, DebugSchedulerMixin, MaliciousMixin
 
 
 class ExecutionCreateViewTests(
@@ -46,7 +46,7 @@ class ExecutionCreateViewTests(
 
     def send_post(self) -> HttpResponse:
         with patch(
-            "experiments.views.execution.schedule_backend", lambda execution: None
+                "experiments.views.execution.schedule_backend", lambda execution: None
         ):
             response = self.client.post(
                 reverse_lazy("execution_create", args=(self.exp.pk,)),
@@ -78,19 +78,6 @@ class ExecutionCreateViewTests(
         self.assertIsNone(Execution.objects.first())
 
     def test_execution_create_view_subspace_errors(self) -> None:
-        self.data["subspaces_min"] = -3
-        self.data["subspaces_max"] = 200
-        self.data["subspace_amount"] = -34
-        response = self.send_post()
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse(response.redirect_chain)
-        self.assertNotEqual(
-            str(response.context["form"]).find("greater than or equal to 0"), -1
-        )
-        # self.assertContains(response, "Value must be greater than or equal to 0")
-        self.assertIsNone(Execution.objects.first())
-
-    def test_execution_create_view_subspace_errors2(self) -> None:
         """
         Test that Subspaces max is greater than or equal to Subspaces min.
         """
@@ -109,31 +96,29 @@ class ExecutionCreateViewTests(
         )
         self.assertIsNone(Execution.objects.first())
 
-    def test_execution_create_view_subspace_errors3(self) -> None:
+    def test_execution_create_view_subspace_errors2(self) -> None:
         """
-        Test that subspace generation seed and Subspace amount cannot be smaller than zero
+        Test that Subspaces max is greater than or equal to Subspaces min.
         """
-        self.data["subspace_generation_seed"] = -1
+        self.data["subspaces_min"] = 0
+        self.data["subspaces_max"] = 2
         response = self.send_post()
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.redirect_chain)
-        self.assertNotEqual(
+        self.assertEqual(
             str(response.context["form"]).find("greater than or equal to 0"), -1
         )
         self.assertIsNone(Execution.objects.first())
 
-    def test_execution_create_view_subspace_errors4(self) -> None:
+    def test_execution_create_view_subspace_errors3(self) -> None:
         """
         Test that subspace min and max can't be smaller than 0, even if min < max.
         """
-        self.data["subspaces_min"] = -2
-        self.data["subspaces_max"] = -1
+        self.data["subspaces_min"] = 2
+        self.data["subspaces_max"] = 1
         response = self.send_post()
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.redirect_chain)
-        self.assertNotEqual(
-            str(response.context["form"]).find("greater than or equal to 0"), -1
-        )
         self.assertIsNone(Execution.objects.first())
 
     def test_schedule_backend(self) -> None:
@@ -187,7 +172,7 @@ class ExecutionCreateViewTests(
             self.assertIsNotNone(errors.get("subspace_amount"))
 
 
-class ExecutionDuplicateViewTests(LoggedInMixin, django.test.TestCase):
+class ExecutionDuplicateViewTests(LoggedInMixin, MaliciousMixin, django.test.TestCase):
     dataset: Dataset
     algo1: Algorithm
     algo2: Algorithm
@@ -219,7 +204,7 @@ class ExecutionDuplicateViewTests(LoggedInMixin, django.test.TestCase):
             },
         )
 
-    def test_experiment_duplicate_view_get(self) -> None:
+    def test_execution_duplicate_view_get(self) -> None:
         response = self.client.get(
             reverse_lazy(
                 "execution_duplicate",
@@ -233,3 +218,30 @@ class ExecutionDuplicateViewTests(LoggedInMixin, django.test.TestCase):
         self.assertContains(response, "&quot;World&quot;")
         self.assertContains(response, "3.14")
         self.assertContains(response, "&quot;was None&quot;")
+
+    def test_execution_duplicate_view_foreign_execution_dup_get(self):
+        # Login hacker
+        self.client.post(reverse("login"), self.hacker_credentials, follow=True)
+        response = self.client.get(
+            reverse_lazy(
+                "execution_duplicate",
+                args=(self.execution.experiment.pk, self.execution.pk),
+            )
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertTemplateNotUsed(response, "experiment_overview")
+        self.assertTemplateNotUsed(response, "execution_duplicate")
+
+    def test_execution_duplicate_view_foreign_execution_dup_post(self):
+        # Login hacker
+        self.client.post(reverse("login"), self.hacker_credentials, follow=True)
+        response = self.client.post(
+            reverse_lazy(
+                "execution_duplicate",
+                args=(self.execution.experiment.pk, self.execution.pk),
+            )
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertTemplateNotUsed(response, "experiment_overview")
+        self.assertTemplateNotUsed(response, "execution_duplicate")
+        self.assertEqual(len(Execution.objects.all()), 1)

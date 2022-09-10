@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import multiprocessing
 import os
 from collections.abc import Callable
@@ -89,7 +90,7 @@ class ExecutionSubspace(Schedulable):
             result_path: str = os.path.join(
                 os.path.join(self._result_path,
                              algorithm.directory_name_in_execution),
-                self._subspace.get_subspace_identifier() + ".csv")  # TODO: TEST THIS!
+                self._subspace.get_subspace_identifier() + ".csv")
 
             self._execution_elements.append(ExecutionElement(
                 self._user_id, self._task_id, self._subspace, algorithm, result_path,
@@ -104,7 +105,13 @@ class ExecutionSubspace(Schedulable):
         """
         scheduler: Scheduler = Scheduler.get_instance()
         for execution_element in self._execution_elements:
-            scheduler.schedule(execution_element)
+            if execution_element.finished_result_exists():
+                logging.debug("ExecutionElement at path: " +
+                              str(execution_element._result_path) +
+                              " was skipped because it was already finished")
+                self.__execution_element_is_finished(False, False)
+            else:
+                scheduler.schedule(execution_element)
 
     def __load_subspace_from_dataset(self) -> SharedMemory:
         """

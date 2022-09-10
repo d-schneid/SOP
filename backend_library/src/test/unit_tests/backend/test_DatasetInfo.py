@@ -76,6 +76,59 @@ class UnitTestDatasetInfo(unittest.TestCase):
                          (self._uncleaned_dataset_path3, has_header), 6)
         self.__clean_created_files_and_directories()
 
+    # ---------- Tests for DatasetInfo.is_valid()
+    csv_files_base_path = os.path.join(
+        "..", "resources", "test", "datasets"
+    )
+    csv_file_invalid_edge_case = os.path.join(
+        csv_files_base_path, "validator_invalid_edge_case.csv"
+    )
+    csv_file_inconsistent_col_nom = os.path.join(
+        csv_files_base_path, "invalid_csv.csv"
+    )
+    csv_file_not_rfc_quote_char = os.path.join(
+        csv_files_base_path, "non_rfc_conform.csv"
+    )
+    csv_file_rfc_linebreak = os.path.join(
+        csv_files_base_path, "validator_rfc_linebreak.csv"
+    )
+    csv_file_valid = os.path.join(
+        csv_files_base_path, "validator_valid.csv"
+    )
+    csv_file_cp1252 = os.path.join(
+        csv_files_base_path, "validator_cp1252.csv"
+    )
+
+    def test_validation_edge_case(self):
+        self.assertFalse(
+            DatasetInfo.is_dataset_valid(self.csv_file_invalid_edge_case)
+        )
+
+    def test_validation_inconsistent_column_number(self):
+        self.assertFalse(
+            DatasetInfo.is_dataset_valid(self.csv_file_inconsistent_col_nom)
+        )
+
+    def test_validation_quote_char(self):
+        self.assertFalse(
+            DatasetInfo.is_dataset_valid(self.csv_file_not_rfc_quote_char)
+        )
+
+    def test_validation_linebreak(self):
+        self.assertTrue(
+            DatasetInfo.is_dataset_valid(self.csv_file_rfc_linebreak)
+        )
+
+    def test_validation_valid_csv(self):
+        self.assertTrue(
+            DatasetInfo.is_dataset_valid(self.csv_file_valid)
+        )
+
+    def test_validation_unicode_error(self):
+        self.assertFalse(
+            DatasetInfo.is_dataset_valid(self.csv_file_cp1252)
+        )
+
 
 if __name__ == '__main__':
     unittest.main()
