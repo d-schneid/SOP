@@ -6,6 +6,7 @@ import threading
 from collections import OrderedDict
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from datetime import datetime
 from logging import info, debug, critical
 from multiprocessing import Condition, Process, synchronize
 from threading import Thread
@@ -85,6 +86,7 @@ class UserRoundRobinScheduler(Scheduler):
         self.__abort(lambda x: x.user_id == user_id)
 
     def log_debug_data(self):
+        info(f"[{datetime.now()}] Printing currently registered tasks:")
         with self.__empty_queue:
             for running in self.__running.items():
                 info(f"{running[0]} is registered as running on PID {running[1][0].pid}"
