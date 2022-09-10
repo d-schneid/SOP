@@ -1,4 +1,4 @@
-from typing import TypeVar, Any
+from typing import TypeVar, Any, Generic
 
 from django.db.models import Model
 from django.http import HttpResponseRedirect, HttpRequest
@@ -9,7 +9,7 @@ from django.views.generic import DeleteView
 _M = TypeVar("_M", bound=Model)
 
 
-class PostOnlyDeleteView(DeleteView[_M]):
+class PostOnlyDeleteView(Generic[_M], DeleteView[_M]):
     """
     A generic delete view that is only accessible via POST requests.
     If it is accessed with a GET request, it will redirect to the url specified in the

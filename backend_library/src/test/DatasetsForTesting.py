@@ -108,5 +108,5 @@ class Datasets:
         return empty_annotated_dataset
 
     @staticmethod
-    def data_to_annotated(data: np.ndarray):
+    def data_to_annotated(data: np.ndarray) -> AnnotatedDataset:
         return AnnotatedDataset(data, generate_headers=True, generate_row_numbers=True)

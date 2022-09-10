@@ -105,6 +105,6 @@ class TestHelper:
         return False
 
     @staticmethod
-    def __cleanup_unzipped_files(unzipped_path1: str, unzipped_path2):
+    def __cleanup_unzipped_files(unzipped_path1: str, unzipped_path2: str):
         shutil.rmtree(unzipped_path1)
         shutil.rmtree(unzipped_path2)
