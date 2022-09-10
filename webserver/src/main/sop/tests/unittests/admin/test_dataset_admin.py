@@ -206,7 +206,7 @@ class DatasetAdminTests(
         self.assertEqual("experiments_dataset_add", response.resolver_match.url_name)
         self.assertContains(
             response,
-            "Unicode error in selected dataset",
+            "Selected dataset is not valid",
         )
 
     def test_admin_delete_dataset_of_experiment(self):
