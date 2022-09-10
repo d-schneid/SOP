@@ -1,11 +1,10 @@
 import os
-from unittest import skip
 
 import django.test
 from django.urls import reverse
 
-from experiments.models import Dataset, Experiment
-from tests.generic import LoggedInMixin, MediaMixin, DebugSchedulerMixin
+from experiments.models import Dataset
+from tests.generic import LoggedInMixin, MediaMixin, DebugSchedulerMixin, MaliciousMixin
 
 
 class DatasetOverviewTests(LoggedInMixin, django.test.TestCase):
@@ -137,7 +136,7 @@ class DatasetUploadViewTests(
         )
 
 
-class DatasetEditViewTests(LoggedInMixin, django.test.TestCase):
+class DatasetEditViewTests(LoggedInMixin, MaliciousMixin, django.test.TestCase):
     name: str
     new_name: str
     description: str
@@ -160,7 +159,7 @@ class DatasetEditViewTests(LoggedInMixin, django.test.TestCase):
         )
 
     def post_dataset_edit(
-        self, dataset_pk=None, expected_status=200, update_model=True
+            self, dataset_pk=None, expected_status=200, update_model=True
     ):
         dataset_pk = dataset_pk if dataset_pk is not None else self.dataset.pk
         data = {
@@ -214,8 +213,41 @@ class DatasetEditViewTests(LoggedInMixin, django.test.TestCase):
         self.assertTemplateNotUsed(response, "dataset_overview.html")
         self.assertNoDatasetChange(response)
 
+    def test_dataset_edit_view_foreign_edit_post(self):
+        victim_dataset = Dataset.objects.create(
+            display_name=self.name,
+            description=self.description,
+            user=self.victim_user,
+            datapoints_total=420,
+            dimensions_total=42,
+        )
 
-class DatasetDeleteViewTests(LoggedInMixin, django.test.TestCase):
+        response = self.post_dataset_edit(
+            dataset_pk=victim_dataset.pk, expected_status=403, update_model=False
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertTemplateNotUsed(response, "dataset_edit.html")
+        self.assertTemplateNotUsed(response, "dataset_overview.html")
+        self.assertNoDatasetChange(response)
+
+    def test_dataset_edit_view_foreign_edit_get(self):
+        victim_dataset = Dataset.objects.create(
+            display_name=self.name,
+            description=self.description,
+            user=self.victim_user,
+            datapoints_total=420,
+            dimensions_total=42,
+        )
+
+        response = self.client.get(
+            reverse("dataset_edit", args=(victim_dataset.pk,)), follow=True
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertTemplateNotUsed(response, "dataset_edit.html")
+        self.assertTemplateNotUsed(response, "dataset_overview.html")
+
+
+class DatasetDeleteViewTests(LoggedInMixin, MaliciousMixin, django.test.TestCase):
     def test_dataset_delete_view_valid_delete(self):
         dataset = Dataset.objects.create(
             datapoints_total=0, dimensions_total=0, user=self.user
@@ -230,10 +262,21 @@ class DatasetDeleteViewTests(LoggedInMixin, django.test.TestCase):
 
     def test_dataset_delete_view_invalid_pk(self):
         response = self.client.post(reverse("dataset_delete", args=(42,)), follow=True)
-        # we expect to be redirected to the dataset overview
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.redirect_chain)
-        self.assertTemplateUsed(response, "dataset_overview.html")
+        # we expect to get 404 because of invalid pk
+        self.assertEqual(response.status_code, 404)
+        self.assertTemplateNotUsed(response, "dataset_overview.html")
+        self.assertTemplateNotUsed(response, "dataset_delete.html")
+
+    def test_dataset_delete_view_foreign_delete(self):
+        # Different user tries to delete victims dataset
+        dataset = Dataset.objects.create(user=self.victim_user)
+        response = self.client.post(
+            reverse("dataset_delete", args=(dataset.pk,)), follow=True
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertIsNotNone(Dataset.objects.get(pk=dataset.pk))
+        self.assertTemplateNotUsed(response, "dataset_overview.html")
+        self.assertTemplateNotUsed(response, "dataset_delete.html")
 
     def test_dataset_delete_view_used_in_experiment(self):
         dataset = Dataset.objects.create(

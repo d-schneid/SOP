@@ -102,6 +102,23 @@ class LoggedInMixin(MixinBase):
         super().setUp()
 
 
+class MaliciousMixin(MixinBase):
+    victim_credentials: dict[str, str]
+    victim_user: User
+
+    hacker_credentials: dict[str, str]
+    hacker_user: User
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.victim_credentials = {"username": "victim", "password": "passwd"}
+        cls.victim_user = User.objects.create_user(**cls.victim_credentials)
+
+        cls.hacker_credentials = {"username": "hackerman", "password": "1337"}
+        cls.hacker_user = User.objects.create_user(**cls.hacker_credentials)
+        super().setUpTestData()
+
+
 class AdminLoggedInMixin(MixinBase):
     credentials: dict[str, str]
     user: User

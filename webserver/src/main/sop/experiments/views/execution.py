@@ -20,6 +20,7 @@ from experiments.models.execution import ExecutionStatus
 from experiments.services.execution import get_params_out_of_form, get_execution_result
 from experiments.services.execution import schedule_backend
 from experiments.views.generic import PostOnlyDeleteView
+from experiments.mixins import SingleObjectPermissionMixin
 
 
 def generate_hyperparameter_error_message(dikt: dict[str, list[str]]) -> str:
@@ -63,7 +64,7 @@ class ExecutionCreateView(
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         # This attribute is used by django in super().post() and super().form_invalid()
-        self.object = None  # noqa
+        self.object = None # noqa
 
         form = self.get_form()
         form.full_clean()
@@ -194,7 +195,7 @@ class ExecutionCreateView(
         return super(ExecutionCreateView, self).form_valid(form)
 
 
-class ExecutionDuplicateView(ExecutionCreateView):
+class ExecutionDuplicateView(SingleObjectPermissionMixin, ExecutionCreateView):
     """
     A view to duplicate an execution. This will act just like the ExecutionCreateView
     except that it adds default values for the subspace information to the form and the
@@ -219,7 +220,9 @@ class ExecutionDuplicateView(ExecutionCreateView):
         return context
 
 
-class ExecutionDeleteView(LoginRequiredMixin, PostOnlyDeleteView[Execution]):
+class ExecutionDeleteView(
+    LoginRequiredMixin, SingleObjectPermissionMixin, PostOnlyDeleteView[Execution]
+):
     """
     A view to delete an execution model. It inherits form PostOnlyDeleteView, so it is
     only accessible via POST requests.

@@ -18,6 +18,7 @@ class PostOnlyDeleteView(DeleteView[_M]):
     primary key specified in self.kwargs with key "pk". If no model of that class with
     the given primary key exists, it will also redirect to the success_url.
     """
+
     def dispatch(
         self, request: HttpRequest, *args: Any, **kwargs: Any
     ) -> HttpResponseBase:
@@ -29,6 +30,7 @@ class PostOnlyDeleteView(DeleteView[_M]):
             return HttpResponseRedirect(self.success_url)
 
         assert request.method == "POST"
+
         model_id = self.kwargs["pk"]
         assert model_id is not None
         # If no model with the given pk exists, we also redirect to the success_url.

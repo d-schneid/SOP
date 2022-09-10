@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.urls import reverse, reverse_lazy
 
 from experiments.models import Experiment, Dataset, Algorithm
-from tests.generic import LoggedInMixin, MediaMixin
+from tests.generic import LoggedInMixin, MediaMixin, MaliciousMixin
 
 
 class ExperimentOverviewTests(LoggedInMixin, django.test.TestCase):
@@ -159,7 +159,7 @@ class ExperimentCreateViewTests(LoggedInMixin, MediaMixin, django.test.TestCase)
         self.assertIsNone(experiment)
 
 
-class ExperimentEditViewTests(LoggedInMixin, django.test.TestCase):
+class ExperimentEditViewTests(LoggedInMixin, MaliciousMixin, django.test.TestCase):
     name: str
     dataset: Dataset
     algorithms: list[Algorithm]
@@ -197,10 +197,10 @@ class ExperimentEditViewTests(LoggedInMixin, django.test.TestCase):
         cls.experiment.algorithms.set(cls.algorithms)
 
     def post_experiment_edit(
-        self,
-        experiment_pk: Optional[int] = None,
-        expected_status: int = 200,
-        update_model: bool = True,
+            self,
+            experiment_pk: Optional[int] = None,
+            expected_status: int = 200,
+            update_model: bool = True,
     ) -> HttpResponse:
         experiment_pk = (
             experiment_pk if experiment_pk is not None else self.experiment.pk
@@ -248,8 +248,64 @@ class ExperimentEditViewTests(LoggedInMixin, django.test.TestCase):
         self.assertTemplateNotUsed(response, "experiment_overview.html")
         self.assertNoExperimentChange(response)
 
+    def test_experiment_edit_view_foreign_edit_get(self) -> None:
+        self.client.post(reverse("login"), self.hacker_credentials, follow=True)
+        response = self.client.get(
+            reverse_lazy(
+                "experiment_edit",
+                args=(self.experiment.pk,),
+            )
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertTemplateNotUsed(response, "experiment_edit")
 
-class ExperimentDeleteViewTests(LoggedInMixin, django.test.TestCase):
+    def test_experiment_edit_view_foreign_edit_post(self) -> None:
+        self.client.post(reverse("login"), self.hacker_credentials, follow=True)
+        response = self.post_experiment_edit(
+            experiment_pk=self.experiment.pk, expected_status=403, update_model=False
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertTemplateNotUsed(response, "experiment_edit")
+        self.assertEqual(len(Experiment.objects.all()), 1)
+
+
+class ExperimentDeleteViewTests(LoggedInMixin, MaliciousMixin, django.test.TestCase):
+    name: str
+    dataset: Dataset
+    algorithms: list[Algorithm]
+    experiment: Experiment
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.name = "Original Name"
+        cls.new_name = "New Name"
+        cls.dataset = Dataset.objects.create(
+            display_name="Datset Name",
+            description="Dataset Description",
+            user=cls.user,
+            datapoints_total=4,
+            dimensions_total=7,
+        )
+        cls.algorithms = [
+            Algorithm.objects.create(
+                display_name="First Algorithm",
+                group=Algorithm.AlgorithmGroup.PROBABILISTIC,
+                user=cls.user,
+                signature="",
+            ),
+            Algorithm.objects.create(
+                display_name="Second Algorithm",
+                group=Algorithm.AlgorithmGroup.COMBINATION,
+                user=cls.user,
+                signature="",
+            ),
+        ]
+        cls.experiment = Experiment.objects.create(
+            display_name=cls.name, user=cls.user, dataset=cls.dataset
+        )
+        cls.experiment.algorithms.set(cls.algorithms)
+
     def test_experiment_delete_view_valid_delete(self) -> None:
         dataset = Dataset.objects.create(
             datapoints_total=0, dimensions_total=0, user=self.user
@@ -263,20 +319,30 @@ class ExperimentDeleteViewTests(LoggedInMixin, django.test.TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.redirect_chain)  # type: ignore
-        self.assertIsNone(Experiment.objects.first())
+        # Expect the newly created experiment to be deleted
+        self.assertEqual(len(Experiment.objects.all()), 1)
         self.assertTemplateUsed(response, "experiment_overview.html")
 
     def test_experiment_delete_view_invalid_pk(self) -> None:
         response = self.client.post(
             reverse("experiment_delete", args=(42,)), follow=True
         )
-        # we expect to be redirected to the experiment overview
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.redirect_chain)  # type: ignore
-        self.assertTemplateUsed(response, "experiment_overview.html")
+        # we expect to get 404 because of invalid pk
+        self.assertEqual(response.status_code, 404)
+        self.assertTemplateNotUsed(response, "experiment_overview.html")
+        self.assertTemplateNotUsed(response, "experiment_delete.html")
+
+    def test_experiment_delete_view_foreign_delete(self) -> None:
+        self.client.post(reverse("login"), self.hacker_credentials, follow=True)
+        response = self.client.post(
+            reverse("experiment_delete", args=(self.experiment.pk,)), follow=True
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertTemplateNotUsed(response, "experiment_overview")
+        self.assertNotEqual(len(Experiment.objects.all()), 0)
 
 
-class ExperimentDuplicateViewTests(LoggedInMixin, django.test.TestCase):
+class ExperimentDuplicateViewTests(LoggedInMixin, MaliciousMixin, django.test.TestCase):
     dataset: Dataset
     algo1: Algorithm
     algo2: Algorithm
@@ -318,3 +384,30 @@ class ExperimentDuplicateViewTests(LoggedInMixin, django.test.TestCase):
         self.assertContains(response, self.algo2.display_name)
         self.assertContains(response, self.algo1.group)
         self.assertContains(response, self.algo2.group)
+
+    def test_experiment_duplicate_view_foreign_experiment_dup_get(self):
+        # Login hacker
+        self.client.post(reverse("login"), self.hacker_credentials, follow=True)
+        response = self.client.get(
+            reverse_lazy(
+                "experiment_duplicate",
+                args=(self.exp.pk,),
+            )
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertTemplateNotUsed(response, "experiment_overview")
+        self.assertTemplateNotUsed(response, "experiment_duplicate")
+
+    def test_experiment_duplicate_view_foreign_experiment_dup_post(self):
+        # Login hacker
+        self.client.post(reverse("login"), self.hacker_credentials, follow=True)
+        response = self.client.post(
+            reverse_lazy(
+                "experiment_duplicate",
+                args=(self.exp.pk,),
+            )
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertTemplateNotUsed(response, "experiment_overview")
+        self.assertTemplateNotUsed(response, "experiment_duplicate")
+        self.assertNotEqual(len(Experiment.objects.all()), 0)

@@ -109,7 +109,7 @@ class ExecutionSubspace(Schedulable):
                 logging.debug("ExecutionElement at path: " +
                               str(execution_element._result_path) +
                               " was skipped because it was already finished")
-                self._on_execution_element_finished_callback(False, False)
+                self.__execution_element_is_finished(False, False)
             else:
                 scheduler.schedule(execution_element)
 

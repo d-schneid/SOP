@@ -4,7 +4,7 @@ import django.test
 from django.urls import reverse
 
 from experiments.models import Algorithm
-from tests.generic import LoggedInMixin, MediaMixin
+from tests.generic import LoggedInMixin, MediaMixin, MaliciousMixin
 
 
 class AlgorithmOverviewTests(LoggedInMixin, django.test.TestCase):
@@ -191,9 +191,9 @@ class AlgorithmUploadViewTests(LoggedInMixin, MediaMixin, django.test.TestCase):
         self.assertFalse(os.path.exists(f"algorithms/{self.user.pk}/" + test_file_name))
 
 
-class AlgorithmDeleteViewTests(LoggedInMixin, django.test.TestCase):
+class AlgorithmDeleteViewTests(LoggedInMixin, MaliciousMixin, django.test.TestCase):
     def test_algorithm_delete_view_valid_delete(self):
-        algorithm = Algorithm.objects.create(signature="")
+        algorithm = Algorithm.objects.create(signature="", user=self.user)
         response = self.client.post(
             reverse("algorithm_delete", args=(algorithm.pk,)), follow=True
         )
@@ -202,17 +202,28 @@ class AlgorithmDeleteViewTests(LoggedInMixin, django.test.TestCase):
         self.assertIsNone(Algorithm.objects.first())
         self.assertTemplateUsed(response, "algorithm_overview.html")
 
+    def test_algorithm_delete_view_foreign_delete(self):
+        # Different user tries to delete victims algorithm
+        algorithm = Algorithm.objects.create(signature="", user=self.victim_user)
+        response = self.client.post(
+            reverse("algorithm_delete", args=(algorithm.pk,)), follow=True
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertIsNotNone(Algorithm.objects.get(pk=algorithm.pk))
+        self.assertTemplateNotUsed(response, "algorithm_overview.html")
+        self.assertTemplateNotUsed(response, "algorithm_delete.html")
+
     def test_algorithm_delete_view_invalid_pk(self):
         response = self.client.post(
             reverse("algorithm_delete", args=(42,)), follow=True
         )
-        # we expect to be redirected to the algorithm overview
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.redirect_chain)
-        self.assertTemplateUsed(response, "algorithm_overview.html")
+        # we expect to get 404 because of invalid pk
+        self.assertEqual(response.status_code, 404)
+        self.assertTemplateNotUsed(response, "algorithm_overview.html")
+        self.assertTemplateNotUsed(response, "algorithm_delete.html")
 
 
-class AlgorithmEditViewTest(LoggedInMixin, django.test.TestCase):
+class AlgorithmEditViewTest(LoggedInMixin, MaliciousMixin, django.test.TestCase):
     def setUp(self) -> None:
         self.name = "Original Name"
         self.group = Algorithm.AlgorithmGroup.COMBINATION
@@ -230,7 +241,7 @@ class AlgorithmEditViewTest(LoggedInMixin, django.test.TestCase):
         super().setUp()
 
     def post_algorithm_edit(
-        self, algorithm_pk=None, expected_code=200, update_model=True
+            self, algorithm_pk=None, expected_code=200, update_model=True
     ):
         algorithm_pk = algorithm_pk if algorithm_pk is not None else self.algo.pk
         data = {
@@ -293,3 +304,34 @@ class AlgorithmEditViewTest(LoggedInMixin, django.test.TestCase):
         self.assertTemplateNotUsed(response, "algorithm_edit.html")
         self.assertTemplateNotUsed(response, "algorithm_overview.html")
         self.assertNoAlgorithmChange(response)
+
+    def test_algorithm_edit_view_foreign_edit_post(self):
+        victim_algo = Algorithm.objects.create(
+            display_name=self.name,
+            group=self.group,
+            description=self.description,
+            user=self.victim_user,
+            signature="",
+        )
+        response = self.post_algorithm_edit(
+            algorithm_pk=victim_algo.pk, expected_code=403, update_model=False
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertTemplateNotUsed(response, "algorithm_edit.html")
+        self.assertTemplateNotUsed(response, "algorithm_overview.html")
+        self.assertNoAlgorithmChange(response)
+
+    def test_algorithm_edit_view_foreign_edit_get(self):
+        victim_algo = Algorithm.objects.create(
+            display_name=self.name,
+            group=self.group,
+            description=self.description,
+            user=self.victim_user,
+            signature="",
+        )
+        response = self.client.get(
+            reverse("algorithm_edit", args=(victim_algo.pk,)), follow=True
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertTemplateNotUsed(response, "algorithm_edit.html")
+        self.assertTemplateNotUsed(response, "algorithm_overview.html")

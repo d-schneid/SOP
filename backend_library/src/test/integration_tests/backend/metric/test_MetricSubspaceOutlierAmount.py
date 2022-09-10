@@ -5,6 +5,7 @@ import numpy as np
 
 from backend.DataIO import DataIO
 from backend.metric.MetricSubspaceOutlierAmount import MetricSubspaceOutlierAmount
+from backend.task.TaskHelper import TaskHelper
 
 
 class IntegrationTest_MetricSubspaceOutlierAmount(unittest.TestCase):
@@ -20,6 +21,11 @@ class IntegrationTest_MetricSubspaceOutlierAmount(unittest.TestCase):
     _metric_result_to_compare1: str = \
         "./test/integration_tests/backend/metric/subspace_outlier_amount_metric_result1_to_compare.csv"
     _wrong_metric_path: str = "I don't end with .csv :("
+
+    _empty_result_path: str = "./test/integration_tests/backend/metric" \
+                              "/emptyExecutionElementResult"
+    _error_metric_path: str = "./test/integration_tests/backend/metric/emptyExecutionElementResult_metric_result.csv"
+    _error_path: str = TaskHelper.convert_to_error_csv_path(_error_metric_path)
 
     def setUp(self) -> None:
         self.__clean_up_files()
@@ -53,6 +59,15 @@ class IntegrationTest_MetricSubspaceOutlierAmount(unittest.TestCase):
                                         self._algorithm_directory_paths)
         # clean up
         self.__clean_up_files()
+
+    def test_with_empty_execution_result(self):
+        self.assertTrue(os.path.isdir(self._empty_result_path))
+
+        self._metric.compute_metric(self._error_metric_path,
+                                    list([self._empty_result_path]))
+
+        self.assertTrue(self._error_path)
+        os.remove(self._error_path)
 
     def __clean_up_files(self):
         if os.path.isfile(self._metric_result_path1):

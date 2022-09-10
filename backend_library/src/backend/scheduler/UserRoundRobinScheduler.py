@@ -7,7 +7,7 @@ from collections import OrderedDict
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from logging import info, debug, critical
-from multiprocessing import Condition, Process
+from multiprocessing import Condition, Process, synchronize
 from threading import Thread
 from typing import Optional
 
@@ -49,7 +49,7 @@ class UserRoundRobinScheduler(Scheduler):
             pass
         self.__shutdown_ongoing: bool = False
         self.__on_shutdown_completed: Optional[Callable[[], None]] = None
-        self.__empty_queue: Condition = Condition()
+        self.__empty_queue: synchronize.Condition = Condition()
         self.__threads: set[Thread] = set()
         self.__user_queues: OrderedDict[int, list[PrioritizedSchedulable]] \
             = OrderedDict()

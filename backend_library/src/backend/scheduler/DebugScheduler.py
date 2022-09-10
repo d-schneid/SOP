@@ -20,7 +20,8 @@ class DebugScheduler(Scheduler):
     def graceful_shutdown(self,
                           on_shutdown_completed: Optional[Callable[[], None]] = None) \
             -> None:
-        raise NotImplementedError
+        if on_shutdown_completed is not None:
+            on_shutdown_completed()
 
     def is_shutting_down(self) -> bool:
         return False
