@@ -58,24 +58,15 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
         temp_file_path: str = save_dataset(self.request.FILES["path_original"])
         assert os.path.isfile(temp_file_path)
 
-        try:
-            dataset_valid = DatasetInfo.is_dataset_valid(temp_file_path)
-        except UnicodeError as e:
-            os.remove(temp_file_path)
-            messages.error(
-                self.request, "Unicode error in selected dataset: " + e.reason
-            )
-            assert not os.path.isfile(temp_file_path)
-            return super(DatasetUploadView, self).form_invalid(form)
-
-        if not dataset_valid:
-            os.remove(temp_file_path)
-
-            messages.error(self.request, "Error in selected dataset.")
-            assert not os.path.isfile(temp_file_path)
-            return super(DatasetUploadView, self).form_invalid(form)
+        dataset_valid = DatasetInfo.is_dataset_valid(temp_file_path)
 
         os.remove(temp_file_path)
+
+        if not dataset_valid:
+            messages.error(
+                self.request, "Error in selected dataset, dataset is invalid."
+            )
+            return super(DatasetUploadView, self).form_invalid(form)
 
         form.instance.user = self.request.user
         form.instance.status = CleaningState.RUNNING.name
@@ -87,8 +78,6 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
 
         # start Dataset Cleaning
         schedule_backend(form.instance)
-
-        assert not os.path.isfile(temp_file_path)
 
         return response
 
