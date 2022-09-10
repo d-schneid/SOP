@@ -11,6 +11,8 @@ from backend.DataIOInputException import DataIOInputException
 
 
 class DataIO:
+    encoding: Optional[str] = 'utf_8_sig'
+
     @staticmethod
     def read_annotated(path: str, is_cleaned: bool, has_header: bool = True,
                        has_row_numbers: bool = True) -> AnnotatedDataset:
@@ -25,7 +27,8 @@ class DataIO:
         """
         assert os.path.isfile(path)
 
-        base = pd.read_csv(path, dtype=object, header=None).to_numpy()
+        base = pd.read_csv(path, dtype=object, header=None,
+                           encoding=DataIO.encoding).to_numpy()
         anno_ds = AnnotatedDataset(base, None, None,
                                    not has_header, not has_row_numbers)
         if is_cleaned:
@@ -67,7 +70,8 @@ class DataIO:
         # (in terms for pandas)
         df: pd.DataFrame
         try:
-            df: pd.DataFrame = pd.read_csv(path, dtype=object, header=has_header)
+            df: pd.DataFrame = pd.read_csv(path, dtype=object, header=has_header,
+                                           encoding=DataIO.encoding)
         except (ParserError, EmptyDataError) as err:
             raise DataIOInputException(
                 "An error occurred while reading the given dataset", err)
