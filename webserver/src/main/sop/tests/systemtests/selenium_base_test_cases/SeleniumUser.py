@@ -33,7 +33,11 @@ class SeleniumUser:
         self._tc.assertIn("/logout", self._tc.driver.page_source)
 
     def logout(self) -> bool:
-        return self._tc.logout()
+        if "Logout" in self._tc.driver.page_source:
+            self._tc.driver.find_element(By.LINK_TEXT, "Logout").click()
+            return True
+        else:
+            return False
 
     def get_from_db(self):
         user_list = User.objects.filter(username=self._name)

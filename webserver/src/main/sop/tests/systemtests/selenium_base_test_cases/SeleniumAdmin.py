@@ -10,8 +10,40 @@ class SeleniumAdmin(SeleniumUser):
         self._is_admin = True
 
     def create_user(self, user: SeleniumUser):
+
+        self._create_standard_user(user)
+
+        # promote admin if user is admin
+        if user.is_admin:
+            self.promote_admin(user)
+
+    def promote_admin(self, user: SeleniumUser):
+        pass  # TODO implement
+
+    def denote_admin(self, user: SeleniumUser):
+        pass  # TODO implement
+
+    def delete_user(self, user):
+        self._navigate_to_admin_screen()
+
+        # TODO implement
+
+        self._navigate_to_home_screen()
+
+        # TODO check in the db
+
+    def _navigate_to_admin_screen(self):
         self._tc.driver.find_element(By.LINK_TEXT, "Admin").click()
         self._tc.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.ADMIN_BASE)
+
+    def _navigate_to_home_screen(self):
+        self._tc.driver.find_element(
+            By.XPATH, "//a[contains(text(),'View site')]"
+        ).click()
+        self._tc.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.HOMEPAGE)
+
+    def _create_standard_user(self, user):
+        self._navigate_to_admin_screen()
 
         self._tc.driver.find_element(By.LINK_TEXT, "Users").click()
         self._tc.assertUrlMatches(
@@ -31,8 +63,6 @@ class SeleniumAdmin(SeleniumUser):
             SeleniumTestCase.UrlsSuffixRegex.ADMIN_AUTHENTICATION_USER_CHANGE
         )
 
-        # TODO: make it possible for admins to also be craeted
+        self._navigate_to_home_screen()
 
-        # Alice logs herself out
-        self._tc.driver.find_element(By.CSS_SELECTOR, "a:nth-child(4)").click()
-        self._tc.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.LOGIN)
+        # TODO: assert the user is in the db correctly

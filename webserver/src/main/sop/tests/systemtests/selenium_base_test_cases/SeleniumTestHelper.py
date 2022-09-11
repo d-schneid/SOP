@@ -19,42 +19,6 @@ from authentication.models import User
 from experiments.management.commands import pyodtodb
 
 
-# ----------- Extracting Data -----------
-
-
-def get_dataset_div(whole_page: WebElement, dataset_name: str) -> WebElement:
-    return whole_page.find_element(
-        By.XPATH,
-        "//a[normalize-space(text()) = '"
-        + dataset_name
-        + "']/parent::*/parent::*/parent::*",
-    )
-
-
-def get_dataset_status_element(whole_page: WebElement, dataset_name: str) -> WebElement:
-    return get_dataset_div(whole_page, dataset_name).find_element(
-        By.CLASS_NAME, "dataset-status"
-    )
-
-
-def get_dataset_button_download_cleaned(
-    whole_page: WebElement, dataset_name: str
-) -> WebElement:
-    return get_dataset_div(whole_page, dataset_name).find_element(
-        By.XPATH,
-        "//a[contains(text(),'Cleaned')]",
-    )
-
-
-def get_dataset_button_download_uncleaned(
-    whole_page: WebElement, dataset_name: str
-) -> WebElement:
-    return get_dataset_div(whole_page, dataset_name).find_element(
-        By.XPATH,
-        "//a[contains(text(),'Uncleaned')]",
-    )
-
-
 # --------- Setting Up / Tearing Down the Test Environment ----------
 
 

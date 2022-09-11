@@ -5,7 +5,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
 from experiments.models.dataset import CleaningState, Dataset
-from tests.systemtests.selenium_base_test_cases import SeleniumTestHelper
 from tests.systemtests.selenium_base_test_cases.SeleniumTestCase import SeleniumTestCase
 from tests.systemtests.selenium_base_test_cases.SeleniumUser import SeleniumUser
 
@@ -48,22 +47,14 @@ class SeleniumDataset:
         # assert the upload worked
         self._tc.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.DATASET_OVERVIEW)
         whole_page = self._tc.get_whole_page()
-        dataset_div = SeleniumTestHelper.get_dataset_div(whole_page, self._name)
+        dataset_div = self._get_whole_div(whole_page)
 
         self._tc.assertIn(self._name, dataset_div.text)
         self._tc.assertIn(self._description, dataset_div.text)
 
         # check visibility of buttons
-        download_button_cleaned = (
-            SeleniumTestHelper.get_dataset_button_download_cleaned(
-                whole_page, self._name
-            )
-        )
-        download_button_uncleaned = (
-            SeleniumTestHelper.get_dataset_button_download_uncleaned(
-                whole_page, self._name
-            )
-        )
+        download_button_cleaned = self._get_button_download_cleaned(whole_page)
+        download_button_uncleaned = self._get_button_download_uncleaned(whole_page)
 
         self._tc.assertTrue(download_button_uncleaned.is_displayed())
 
@@ -101,13 +92,16 @@ class SeleniumDataset:
     def download_cleaned(self):
         pass  # TODO: implement
 
+    def delete(self):
+        pass  # TODO: implement
+
     def get_from_db(self):
         dataset_list = Dataset.objects.filter(display_name=self._name)
         self._tc.assertEqual(len(dataset_list), 1)
         return dataset_list.first()
 
     def _get_cleaning_state(self, whole_page: WebElement, name: str) -> CleaningState:
-        text = SeleniumTestHelper.get_dataset_status_element(whole_page, name).text
+        text = self._get_dataset_status_element(whole_page).text
 
         if text == "cleaning in progress":
             return CleaningState["RUNNING"]
@@ -117,6 +111,43 @@ class SeleniumDataset:
             return CleaningState["FINISHED_WITH_ERROR"]
         else:
             self._tc.fail("Unexpected Cleaning State of the Dataset: |" + text + "|")
+
+    def _get_whole_div(self, whole_page: WebElement) -> WebElement:
+        return whole_page.find_element(
+            By.XPATH,
+            "//a[normalize-space(text()) = '"
+            + self._name
+            + "']/parent::*/parent::*/parent::*",
+        )
+
+    def _get_button_download_uncleaned(
+        self,
+        whole_page: WebElement,
+    ) -> WebElement:
+        return self._get_whole_div(whole_page).find_element(
+            By.XPATH,
+            "//a[contains(text(),'Uncleaned')]",
+        )
+
+    def _get_button_download_cleaned(
+        self,
+        whole_page: WebElement,
+    ) -> WebElement:
+        return self._get_whole_div(whole_page).find_element(
+            By.XPATH,
+            "//a[contains(text(),'Cleaned')]",
+        )
+
+    def _get_dataset_status_element(
+        self,
+        whole_page: WebElement,
+    ) -> WebElement:
+        return self._get_whole_div(whole_page).find_element(
+            By.CLASS_NAME, "dataset-status"
+        )
+
+    def rename(self, new_name, new_description):
+        pass  # TODO: implement
 
     @property
     def name(self):

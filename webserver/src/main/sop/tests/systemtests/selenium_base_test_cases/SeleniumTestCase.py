@@ -129,9 +129,6 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         # get base url
         self.driver.get(self.get_base_url())
 
-        # try to log out
-        SeleniumTestCase.logout(self)
-
     def tearDown(self) -> None:
 
         # if the test failed, take a screenshot and save the page source
@@ -144,9 +141,6 @@ class SeleniumTestCase(StaticLiveServerTestCase):
             test_method_name=self._testMethodName,
             save_path=SeleniumTestCase.SELENIUM_ERROR_PATH,
         )
-
-        # try to log out
-        SeleniumTestCase.logout(self)
 
         super().tearDown()
 
@@ -165,13 +159,6 @@ class SeleniumTestCase(StaticLiveServerTestCase):
 
     def get_base_url(self) -> str:
         return self.live_server_url
-
-    def logout(self) -> bool:
-        if "Logout" in self.driver.page_source:
-            self.driver.find_element(By.LINK_TEXT, "Logout").click()
-            return True
-        else:
-            return False
 
     def get_whole_page(self) -> WebElement:
         return self.driver.find_element(By.TAG_NAME, "html")
