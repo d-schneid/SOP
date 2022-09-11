@@ -59,31 +59,15 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
         temp_file_path: str = save_dataset(self.request.FILES["path_original"])
         assert os.path.isfile(temp_file_path)
 
-        try:
-            dataset_valid = DatasetInfo.is_dataset_valid(temp_file_path)
-        except UnicodeError as e:
-            # needed for pytype to accept that UnicodeError has an attribute reason
-            assert hasattr(e, "reason")
-            os.remove(temp_file_path)
-            messages.error(
-                self.request, "Unicode error in selected dataset: " + e.reason
-            )
-            assert not os.path.isfile(temp_file_path)
-            return super(DatasetUploadView, self).form_invalid(form)
-
-        # check if the file is a csv file
-        if not dataset_valid:
-            os.remove(temp_file_path)
-
-            # TODO: Maybe an error in FileField validator?
-            # return an error
-            form.add_error("path_original", "The given file is not a valid csv.-file.")
-            assert not os.path.isfile(temp_file_path)
-            return super(DatasetUploadView, self).form_invalid(form)
-
-        # don't add the data on datapoints and dimensions to the model
+        dataset_valid = DatasetInfo.is_dataset_valid(temp_file_path)
 
         os.remove(temp_file_path)
+
+        if not dataset_valid:
+            messages.error(
+                self.request, "Error in selected dataset, dataset is invalid."
+            )
+            return super(DatasetUploadView, self).form_invalid(form)
 
         form.instance.user = self.request.user
         form.instance.status = CleaningState.RUNNING.name
@@ -95,8 +79,6 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
 
         # start Dataset Cleaning
         schedule_backend(form.instance)
-
-        assert not os.path.isfile(temp_file_path)
 
         return response
 
@@ -221,6 +203,17 @@ def download_cleaned_dataset(
 def dataset_status_view(
     request: HttpRequest,
 ) -> Optional[HttpResponse | HttpResponseRedirect]:
+    """
+    A function view to retrieve the status of a dataset and it's cleaning progress.
+    It is used in dataset templates to display this information to a user.
+    @param request: The HttpRequest, given by django. It must contain the datasets
+    primary key in it.
+    @return: A HttpResponse containing JSON data describing the status and progress
+    of the wanted dataset, if a dataset with the given primary key exists.
+    If no dataset with the given primary exists, this redirects to the dataset overview.
+    If this view is accessed via a POST request or no primary key is given,
+    it will return None.
+    """
     if request.method == "GET":
         dataset_pk: int = -1
         if "dataset_pk" in request.GET:

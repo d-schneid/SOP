@@ -49,3 +49,16 @@ class DatasetViewTests(django.test.TestCase):
         with mock.patch.object(Algorithm, "objects", object_mock):
             response = download_algorithm(request, 42)
             self.assertIsNone(response)
+
+    def test_download_algorithm_admin_invalid_pk(self) -> None:
+        object_mock = MagicMock()
+        object_mock.filter.return_value.first.return_value = None
+        request = MagicMock()
+        request.method = "GET"
+        request.path = "admin"
+        with mock.patch.object(Algorithm, "objects", object_mock):
+            response = download_algorithm(request, 42)
+            self.assertIsNotNone(response)
+            assert response is not None
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.url, reverse_lazy("admin:experiments_algorithm_changelist"))  # type: ignore

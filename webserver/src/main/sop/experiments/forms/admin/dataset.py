@@ -44,21 +44,12 @@ class AdminAddDatasetForm(forms.ModelForm[Dataset]):
         temp_file_path: str = save_dataset(dataset)
         assert os.path.isfile(temp_file_path)
 
-        try:
-            dataset_valid = DatasetInfo.is_dataset_valid(temp_file_path)
-        except UnicodeError as e:
-            # needed for pytype to accept that UnicodeError has an attribute reason
-            assert hasattr(e, "reason")
-            os.remove(temp_file_path)
-            self.add_error("path_original",
-                           f"Unicode error in selected dataset: {e.reason}")
-            assert not os.path.isfile(temp_file_path)
-            return None
+        dataset_valid = DatasetInfo.is_dataset_valid(temp_file_path)
 
         # check the dataset
         if not dataset_valid:
             os.remove(temp_file_path)
-            self.add_error("path_original", "Selected dataset is not a valid csv-file.")
+            self.add_error("path_original", "Selected dataset is not valid.")
             assert not os.path.isfile(temp_file_path)
             return None
 

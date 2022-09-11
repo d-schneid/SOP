@@ -69,7 +69,7 @@ class ExperimentOverviewTests(LoggedInMixin, django.test.TestCase):
             [experiment3, experiment2, experiment1],
         )
 
-    def test_experiment_overview_sort_by_upload_date(self) -> None:
+    def test_experiment_overview_sort_by_creation_date(self) -> None:
         experiment1 = self.create_experiment("name_c")
         experiment2 = self.create_experiment("name_a")
         experiment3 = self.create_experiment("name_b")
@@ -121,8 +121,8 @@ class ExperimentCreateViewTests(LoggedInMixin, MediaMixin, django.test.TestCase)
     def post_experiment_creation(self) -> HttpResponse:
         data = {
             "display_name": self.name,
-            # we need to pass in the primary keys since these are choice fields and datasets and algorithms are
-            # passed via their primary key
+            # we need to pass in the primary keys since these are choice fields and
+            # datasets and algorithms are passed via their primary key
             "dataset": self.dataset.pk,
             "check-algo": [algo.pk for algo in self.algorithms],
         }
@@ -378,7 +378,8 @@ class ExperimentDuplicateViewTests(LoggedInMixin, MaliciousMixin, django.test.Te
 
         self.assertContains(response, "HUHU")
 
-        # Not really checks for if they are selected, but it still has to be there, so we might as well check it
+        # Not really checks for if they are selected, but it still has to be there,
+        # so we might as well check it
         self.assertContains(response, self.algo1.display_name)
         self.assertContains(response, self.algo2.display_name)
         self.assertContains(response, self.algo1.group)
