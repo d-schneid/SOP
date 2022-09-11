@@ -1,0 +1,7 @@
+# We are not allowed to create subgroups on this gitlab instance so we declare useres here individually
+[Backend]
+backend_library/ @uikto @ulztu @ufjqw
+[Webserver]
+webserver/ @ulztu @uuhmc @uvgkb @uhwkd
+[CI]
+.gitlab-ci.yml @uikto @uuhmc @uhwkd 

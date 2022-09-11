@@ -6,7 +6,7 @@ import pandas as pd
 
 class DatasetInfo:
     @staticmethod
-    def get_dataset_dimension(dataset_path, has_row_mapping: bool = True) -> int:
+    def get_dataset_dimension(dataset_path: str, has_row_mapping: bool = True) -> int:
         """
         Return the dimension (number of columns) of a dataset.
         :param dataset_path: The dataset that will be inspected.
@@ -31,7 +31,7 @@ class DatasetInfo:
         return dataset_dimension
 
     @staticmethod
-    def get_dataset_datapoint_amount(dataset_path, has_header: bool = True) -> int:
+    def get_dataset_datapoint_amount(dataset_path: str, has_header: bool = True) -> int:
         """
         Return the amount of data points in the dataset.
         :param dataset_path: The dataset that will be inspected.

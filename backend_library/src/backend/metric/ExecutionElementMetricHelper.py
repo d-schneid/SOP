@@ -51,7 +51,8 @@ class ExecutionElementMetricHelper:
         return np.asarray(outlier_data_points)
 
     @staticmethod
-    def get_execution_elements_result_paths(algorithm_directory_paths: list[str]):
+    def get_execution_elements_result_paths(
+            algorithm_directory_paths: list[str]) -> list[str]:
         """ Gets all files that end with .csv in the selected directory. \n
         :param algorithm_directory_paths: The selected algorithm directories
         that should be scanned for the files.

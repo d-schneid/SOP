@@ -18,12 +18,18 @@ class PriorityTests(unittest.TestCase):
     def test_priorities(self):
         sched = UrrsWoWorkers()
         self.assertIsNone(sched.next_sched())  # add assertion here
-        a = TestSched(-1, -1, 1)
+        a = TestSched(-1, 3, 1)
         sched.schedule(a)
-        b = TestSched(-1, -1, 0)
+        b = TestSched(-1, 5, 0)
         sched.schedule(b)
         c = TestSched(-1, -1, 2)
         sched.schedule(c)
+        d = TestSched(-1, 9, 50)
+        sched.schedule(d)
+        e = TestSched(-1, 2, 20)
+        sched.schedule(e)
+        self.assertEqual(d, sched.next_sched())
+        self.assertEqual(e, sched.next_sched())
         self.assertEqual(c, sched.next_sched())
         self.assertEqual(a, sched.next_sched())
         self.assertEqual(b, sched.next_sched())
@@ -85,6 +91,7 @@ class UnitTestUrrs(unittest.TestCase):
                     TestSched(1, -1, 0, tbc, None, wait_for_sub, wait_for_main))
             wait_for_sub.wait(timeout)
             urrs.abort_by_user(1)
+        urrs.log_debug_data()
         self.assertTrue(ts.wait(timeout))
         self.assertFalse(tbc.value)
 

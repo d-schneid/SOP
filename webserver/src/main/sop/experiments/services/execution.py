@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Optional, Any
 
 from django.conf import settings
 from django.db.models import QuerySet
@@ -68,7 +68,7 @@ def get_params_out_of_form(
         return True, dikt
 
 
-def get_download_http_response(data, file_name: str) -> HttpResponse:
+def get_download_http_response(data: Any, file_name: str) -> HttpResponse:
     response = HttpResponse(data)
     response["Content-Type"] = "text/plain"
     response["Content-Disposition"] = f"attachment; filename={file_name}"

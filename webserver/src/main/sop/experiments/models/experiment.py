@@ -21,7 +21,7 @@ class Experiment(models.Model):
     objects = ExperimentManager.from_queryset(ExperimentQuerySet)()  # type: ignore
 
     @property
-    def has_result(self):
+    def has_result(self) -> bool:
         return any(execution.has_result for execution in self.execution_set.all())
 
     def __str__(self) -> str:

@@ -3,7 +3,7 @@ from __future__ import annotations
 import io
 import zipfile
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 from django.contrib import messages
 from django.db import models
@@ -14,12 +14,12 @@ from django.views.generic import ListView, CreateView, UpdateView
 from authentication.mixins import LoginRequiredMixin
 from experiments.forms.create import ExperimentCreateForm
 from experiments.forms.edit import ExperimentEditForm
+from experiments.mixins import SingleObjectPermissionMixin
 from experiments.models import Experiment, Dataset, Execution
 from experiments.models.algorithm import Algorithm
 from experiments.models.managers import ExperimentQuerySet
 from experiments.services.execution import get_download_http_response
 from experiments.views.generic import PostOnlyDeleteView
-from experiments.mixins import SingleObjectPermissionMixin
 
 
 class ExperimentOverview(LoginRequiredMixin, ListView[Experiment]):
@@ -114,9 +114,7 @@ class ExperimentDuplicateView(SingleObjectPermissionMixin, ExperimentCreateView)
     needed fields that match the original experiments values.
     """
 
-    def get_initial(
-        self,
-    ) -> dict[str, Any]:
+    def get_initial(self) -> dict[str, Any]:
         form: dict[str, Any] = {}
         if self.request.method == "GET":
             og_experiment_pk = self.kwargs["pk"]
@@ -162,9 +160,11 @@ class ExperimentDeleteView(
     success_url = reverse_lazy("experiment_overview")
 
 
-def download_all_execution_results(request: HttpRequest, pk: int):
+def download_all_execution_results(
+    request: HttpRequest, pk: int
+) -> Optional[HttpResponse]:
     if not Experiment.objects.filter(pk=pk).exists():
-        return
+        return None
 
     if request.method == "GET":
         experiment = Experiment.objects.get(pk=pk)

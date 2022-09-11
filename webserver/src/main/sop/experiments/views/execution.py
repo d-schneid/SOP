@@ -15,12 +15,12 @@ from django.views.generic import CreateView
 
 from authentication.mixins import LoginRequiredMixin
 from experiments.forms.create import ExecutionCreateForm
+from experiments.mixins import SingleObjectPermissionMixin
 from experiments.models import Execution, Experiment, Algorithm
 from experiments.models.execution import ExecutionStatus
 from experiments.services.execution import get_params_out_of_form, get_execution_result
 from experiments.services.execution import schedule_backend
 from experiments.views.generic import PostOnlyDeleteView
-from experiments.mixins import SingleObjectPermissionMixin
 
 
 def generate_hyperparameter_error_message(dikt: dict[str, list[str]]) -> str:
@@ -120,6 +120,9 @@ class ExecutionCreateView(
         # Check algorithm parameters for validity
         success, dikt = get_params_out_of_form(self.request, experiment)
         if not success:
+            # we know an error occurred during parsing, so we now the type of the
+            # dict has to be the type of error dict
+            dikt: dict[str, list[str]]
             messages.error(self.request, generate_hyperparameter_error_message(dikt))
             error = True
 

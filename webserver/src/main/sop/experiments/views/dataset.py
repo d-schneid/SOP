@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import json
 import os.path
-from typing import Optional
+from typing import Optional, Any
 
 from django.contrib import messages
+from django.forms.models import ModelForm
 from django.http import HttpResponse, HttpRequest, HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView
@@ -37,7 +38,7 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
     success_url = reverse_lazy("dataset_overview")
 
     # Overwrite post to find error in dataset uploads
-    def post(self, request, *args, **kwargs):
+    def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         form = self.get_form()
 
         # Check is form is invalid and set error messages
@@ -53,7 +54,7 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
             messages.error(request, f"Invalid dataset: {error_text}")
         return super().post(request, *args, **kwargs)
 
-    def form_valid(self, form):
+    def form_valid(self, form: ModelForm[Dataset]) -> HttpResponse:
         # save the file temporarily to disk
         temp_file_path: str = save_dataset(self.request.FILES["path_original"])
         assert os.path.isfile(temp_file_path)
@@ -91,7 +92,7 @@ class DatasetOverview(LoginRequiredMixin, ListView[Dataset]):
     model = Dataset
     template_name = "dataset_overview.html"
 
-    def get_context_data(self, *, object_list=None, **kwargs):
+    def get_context_data(self, *args, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         datasets: DatasetQuerySet = Dataset.objects.get_by_user(self.request.user)
 
@@ -117,7 +118,7 @@ class DatasetDeleteView(
     model = Dataset
     success_url = reverse_lazy("dataset_overview")
 
-    def form_valid(self, form) -> HttpResponse:
+    def form_valid(self, form: ModelForm[Dataset]) -> HttpResponse:
         # processing before object is deleted
         # access object and its fields
         dataset: Dataset = self.get_object()
