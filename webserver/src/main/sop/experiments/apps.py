@@ -2,6 +2,7 @@ import logging
 import os
 import signal
 import sys
+import types
 
 from django.apps import AppConfig
 from django.conf import settings
@@ -11,7 +12,7 @@ from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
 from backend.task.execution.AlgorithmLoader import AlgorithmLoader
 
 
-def hard_shutdown():
+def hard_shutdown(signum: int, frame: types.FrameType):
     Scheduler.get_instance().hard_shutdown()
 
 

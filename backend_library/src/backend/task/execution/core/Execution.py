@@ -6,8 +6,6 @@ import os
 import shutil
 from collections.abc import Callable
 from logging import debug
-from multiprocessing import shared_memory
-from multiprocessing.shared_memory import SharedMemory
 from typing import Optional, cast
 
 import numpy as np
@@ -21,6 +19,7 @@ from backend.task.TaskHelper import TaskHelper
 from backend.task.TaskState import TaskState
 from backend.task.execution.ParameterizedAlgorithm import ParameterizedAlgorithm
 from backend.task.execution.ResultZipper import ResultZipper
+from backend.task.execution.core.ExecutionShmContainer import ExecutionShmContainer
 from backend.task.execution.core.ExecutionSubspace import ExecutionSubspace
 from backend.task.execution.subspace.Subspace import Subspace
 from backend.task.execution.subspace.SubspaceGenerationDescription import \
@@ -101,25 +100,15 @@ class Execution(JsonSerializable, Task, Schedulable):
         self._finished_execution_element_count: int = 0
         self._metric_finished: bool = False
 
-        # generate subspaces
-        self._subspaces: list[Subspace] = self._subspace_generation.generate()
-        self._subspaces_count: int = len(self._subspaces)
-        self._total_execution_element_count: int = self._subspaces_count * len(
-            self._algorithms)
+        # Don't generate subspaces
+        self._subspaces: Optional[list[Subspace]] = None
+        self._subspaces_count: Optional[int] = None
+        self._total_execution_element_count: Optional[int] = None
 
         # generate execution_subspaces
         self._execution_subspaces: list[ExecutionSubspace] = list()
-
-        # shared memory
-        self._shared_memory_name: Optional[str] = None
-        self._shared_memory_on_main: Optional[SharedMemory] = None
-        self._dataset_on_main: Optional[np.ndarray] = None
-
-        self._rownrs_shm_name: Optional[str] = None
-        self._rownrs_shm_on_main: Optional[SharedMemory] = None
-        self._rownrs_on_main: Optional[np.ndarray] = None
+        self._execution_shms: ExecutionShmContainer = ExecutionShmContainer()
         self._row_numbers: Optional[np.ndarray] = None
-
         debug(f"{self} created")
 
     def __fill_algorithms_directory_name(self) -> None:
@@ -197,9 +186,11 @@ class Execution(JsonSerializable, Task, Schedulable):
         for subspace in self._subspaces:
             self._execution_subspaces.append(
                 ExecutionSubspace(self._user_id, self._task_id, self._algorithms,
-                                  subspace, self._result_path, self._dataset_on_main,
+                                  subspace, self._result_path,
+                                  self._execution_shms.dataset_on_main,
                                   self.__on_execution_element_finished,
-                                  self._shared_memory_name, self._row_numbers))
+                                  self._execution_shms.shared_memory_name,
+                                  self._row_numbers))
 
     # schedule
     def schedule(self) -> None:
@@ -242,49 +233,29 @@ class Execution(JsonSerializable, Task, Schedulable):
         return progress
 
     def run_before_on_main(self) -> None:
+        # generate subspaces
+        self._subspaces = self._subspace_generation.generate()
+        self._subspaces_count = len(self._subspaces)
+        self._total_execution_element_count = self._subspaces_count * len(
+            self._algorithms)
+
         if self._datapoint_count is None:
             self._datapoint_count = DataIO.read_annotated(
                 self._dataset_path, True).data.shape[0]
         ds_dim_count = self._subspaces[0].get_dataset_dimension_count()
-        entry_count = self._datapoint_count * ds_dim_count
-        dtype = np.dtype('f4')
-        size = entry_count * dtype.itemsize
-        self._shared_memory_on_main = SharedMemory(None, True, size)
-        self._shared_memory_name = self._shared_memory_on_main.name
-        self._dataset_on_main = np.ndarray((self._datapoint_count, ds_dim_count),
-                                           buffer=self._shared_memory_on_main.buf,
-                                           dtype=dtype)
-
-        self._rownrs_shm_on_main = SharedMemory(None, True, self._datapoint_count * 4)
-        self._rownrs_shm_name = self._rownrs_shm_on_main.name
-        self._rownrs_on_main = np.ndarray([self._datapoint_count],
-                                          buffer=self._rownrs_shm_on_main.buf,
-                                          dtype=np.int32)
+        self._execution_shms.make_shms(self._datapoint_count, ds_dim_count)
 
     def __load_dataset(self) -> None:
         """
         Load the cleaned dataset into shared memory
         """
         dataset = DataIO.read_annotated(self._dataset_path, True)
-        data = dataset.data
+        assert dataset.data.shape[0] == self._datapoint_count
+        assert dataset.data.shape[1] == self._subspaces[0].get_dataset_dimension_count()
 
-        assert data.shape[0] == self._datapoint_count
-        assert data.shape[1] == self._subspaces[0].get_dataset_dimension_count()
+        self._execution_shms.store_dataset(dataset)
 
-        shm = shared_memory.SharedMemory(self._shared_memory_name, False)
-        shared_data = np.ndarray(data.shape, data.dtype, shm.buf)
-
-        rownrs_shm = shared_memory.SharedMemory(self._rownrs_shm_name, False)
-        rownrs_shared_data = np.ndarray([self._datapoint_count], np.int32,
-                                        rownrs_shm.buf)
-
-        shared_data[:] = data[:]
-        rownrs_shared_data[:] = dataset.row_mapping[:]
-        if type(multiprocessing.current_process()) == multiprocessing.Process:
-            shm.close()
-            rownrs_shm.close()
-
-        debug(f"Loaded dataset for {self} to {shm.name}")
+        debug(f"Loaded dataset for {self}")
 
     def __on_execution_element_finished(self, error: bool,
                                         aborted: bool = False) -> None:
@@ -309,31 +280,19 @@ class Execution(JsonSerializable, Task, Schedulable):
                 self.__run_progress_callback()
                 if self._finished_execution_element_count == \
                         self._total_execution_element_count:
-                    self.__unload_dataset()
+                    self._execution_shms.unload_dataset()
                     self._metric_callback(self)
                     self._metric_finished = True
                     self.__run_progress_callback()
                     self.__schedule_result_zipping()
         else:
-            self.__unload_dataset(True)
+            self._execution_shms.unload_dataset(True)
 
     def __run_progress_callback(self):
         """Executes the task progress callback with the appropriate parameters"""
         state = TaskState.RUNNING_WITH_ERROR if self._has_failed_element else \
             TaskState.RUNNING
         self._task_progress_callback(self.task_id, state, self.__compute_progress())
-
-    def __unload_dataset(self, ignore_if_done: bool = False) -> None:
-        """
-        Unloads the cleaned dataset from shared_memory. \n
-        :return: None
-        """
-        assert ignore_if_done or self._shared_memory_name is not None, \
-            "If there is no shared memory currently loaded it can not be unloaded"
-        if self._shared_memory_name is not None:
-            self._shared_memory_on_main.unlink()
-            self._shared_memory_on_main.close()
-            self._shared_memory_name = None
 
     def __schedule_result_zipping(self) -> None:
         """
@@ -350,15 +309,9 @@ class Execution(JsonSerializable, Task, Schedulable):
         scheduler.schedule(result_zipper)
 
     def run_later_on_main(self, statuscode: Optional[int]):
-        self._row_numbers = np.copy(self._rownrs_on_main)
-        if self._rownrs_shm_name is not None:
-            self._rownrs_shm_on_main.close()
-            self._rownrs_shm_on_main.unlink()
-            self._rownrs_shm_name = None
-            self._rownrs_on_main = None
-            self._rownrs_shm_on_main = None
+        self._row_numbers = self._execution_shms.copy_rns_back()
         if statuscode is None:
-            self.__unload_dataset(True)
+            self._execution_shms.unload_dataset(True)
         else:
             self.__generate_execution_subspaces()
             for ess in self._execution_subspaces:
@@ -430,6 +383,8 @@ class Execution(JsonSerializable, Task, Schedulable):
         """
         return cast(list[int], self._row_numbers.tolist())
 
-    def __str__(self):
-        return f"Execution {self.task_id} with {len(self.algorithms)} algorithms" \
-               f" and {len(self._subspaces)}"
+    def __str__(self) -> str:
+        return f"Execution {self.task_id} of {self.user_id}" \
+               f" with {len(self.algorithms)} algorithms" \
+               f" and {'unknown' if self._subspaces is None else len(self._subspaces)}"\
+               f" subspaces"

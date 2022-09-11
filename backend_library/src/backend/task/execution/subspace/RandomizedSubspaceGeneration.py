@@ -81,6 +81,12 @@ class RandomizedSubspaceGeneration(SubspaceGenerationDescription, ABC):
             ss_bits = self.__generate_dense_subspace_bits(ss_size, count)
         else:
             ss_bits = self._generate_subspace_bits(ss_size, count)
+        # Needed to have guaranteed same order of subspaces generated
+        # Could be eliminated by using a sorted set.
+        # But python does not have that in its standard lib.
+        # There is a third party package for that but it does not even have type hints.
+        # I do not like that, shouldn't make much of a difference either way.
+        ss_bits = sorted(ss_bits)
         ss = map(lambda b: self.__subspace_from_bytes(b, self.__ds_dim_count), ss_bits)
         return ss
 

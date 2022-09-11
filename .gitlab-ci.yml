@@ -87,7 +87,7 @@ flake:
   stage: test
   needs: [ ]
   before_script:
-    - python3.9 -m pip install flake8 flake8-assertive
+    - python3.9 -m pip install -r requirements_flake.txt
   script:
     - flake8 --color always .
     - echo looking for forbidden windows line endings...
@@ -149,8 +149,9 @@ backend-tests:
     - apt-get update && apt-get -y --no-install-recommends install zip
     - export COVERAGE_PROCESS_START=$PWD/../MultiPTesting.ini
     - export COVERAGE_RCFILE=$PWD/../MultiPTesting.ini
+    - set -o pipefail
     # error when a shm was leaked
-    - '! python3.9 -m coverage run |& tee /dev/stderr | grep -q "leaked shared_memory objects to clean up at shutdown"'
+    - 'python3.9 -m coverage run |& tee /dev/stderr | (! grep -q "leaked shared_memory objects to clean up at shutdown")'
     - python3.9 -m coverage combine
     - python3.9 -m coverage report
     - 'wget -O ../../public/backend-tests.svg https://img.shields.io/badge/backend\ coverage-$(python3.9 -m coverage report | grep -E "^TOTAL.+?([0-9]+.[0-9]+%)$" | grep -Eo "[0-9]+.[0-9]+%$")-informational'

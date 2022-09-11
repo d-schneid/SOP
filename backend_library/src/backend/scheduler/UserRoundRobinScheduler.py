@@ -213,7 +213,7 @@ class UserRoundRobinScheduler(Scheduler):
             p = Process(target=UserRoundRobinScheduler.__process_main,
                         args=(self, next_sched,), daemon=True)
             self.__running[next_sched] = (p, False)
-        debug(f"preparing to run {next_sched}")
+        debug(f"preparing to run {next_sched} (prio: {next_sched.priority})")
         next_sched.run_before_on_main()
         with self.__empty_queue:
             if self.__shutdown_ongoing:

@@ -158,7 +158,7 @@ class ExecutionElement(Schedulable):
     def run_later_on_main(self, statuscode: Optional[int]) -> None:
         self._execution_element_is_finished(statuscode != 0, statuscode is None)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"ExecutionElement with taskid {self.task_id} running" \
                f" {self._algorithm.directory_name_in_execution} on subspace-id" \
                f" {self._subspace.get_subspace_identifier()}"

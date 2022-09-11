@@ -76,8 +76,10 @@ class UnitTestExecution(unittest.TestCase):
                       self._result_path, self._subspace_generation, self._algorithms,
                       self.__metric_callback,
                       self._datapoint_count, self._final_zip_path, self._priority)
+        self._ex.run_before_on_main()
 
     def tearDown(self) -> None:
+        self._ex._execution_shms.unload_dataset(True)
         self._ex = None
 
     def test_properties(self):
@@ -205,7 +207,6 @@ class UnitTestExecution(unittest.TestCase):
         self.assertTrue(self._ex._has_failed_element)
 
     def test_on_execution_element_finished_finished_elements_logic(self):
-        self._ex._Execution__unload_dataset = Mock(return_value=None)
         self._ex._Execution__schedule_result_zipping = Mock(return_value=None)
 
         self.assertFalse(self._ex._metric_finished)
