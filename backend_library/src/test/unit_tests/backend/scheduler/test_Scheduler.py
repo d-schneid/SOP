@@ -19,6 +19,7 @@ class UnitTestScheduler(unittest.TestCase):
         self.assertEqual(dbg2, dbg)
         self.assertEqual(DebugScheduler, dbg.__class__)
         self.assertEqual(dbg, DebugScheduler.get_instance())
+        self.assertIsNone(dbg.log_debug_data())
 
     def tearDown(self) -> None:
         self.setUp()
