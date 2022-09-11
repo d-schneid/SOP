@@ -1,5 +1,4 @@
 import django.test
-from unittest import TestCase
 
 from backend.scheduler.Scheduler import Scheduler
 from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
