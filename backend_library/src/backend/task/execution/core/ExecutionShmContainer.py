@@ -38,13 +38,16 @@ class ExecutionShmContainer:
     def copy_rns_back(self) -> np.ndarray:
         """Copies the row numbers out of the shared memory and returns it"""
         result = np.copy(self._rownrs_on_main)
+        self.unload_rownrs()
+        return result
+
+    def unload_rownrs(self):
         if self._rownrs_shm_name is not None:
             self._rownrs_shm_on_main.close()
             self._rownrs_shm_on_main.unlink()
             self._rownrs_shm_name = None
             self._rownrs_on_main = None
             self._rownrs_shm_on_main = None
-        return result
 
     def unload_dataset(self, ignore_if_done: bool = False) -> None:
         """
@@ -57,6 +60,7 @@ class ExecutionShmContainer:
             self._shared_memory_on_main.unlink()
             self._shared_memory_on_main.close()
             self._shared_memory_name = None
+        self.unload_rownrs()
 
     def store_dataset(self, dataset: AnnotatedDataset):
         """Stores a dataset in the shared memory"""
