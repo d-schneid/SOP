@@ -1,10 +1,5 @@
 from typing import List
 
-from tests.systemtests.selenium_base_test_cases.SeleniumAlgorithm import (
-    SeleniumAlgorithm,
-)
-from tests.systemtests.selenium_base_test_cases.SeleniumTestCase import SeleniumTestCase
-
 
 class SeleniumExecution:
     def __init__(
