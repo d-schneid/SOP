@@ -1,14 +1,13 @@
 import django.test
+from django.urls import reverse
 
 from backend.scheduler.Scheduler import Scheduler
 from backend.scheduler.UserRoundRobinScheduler import UserRoundRobinScheduler
-from experiments.management.commands.dumpstatus import Command
 
 
 class DumpStatusTests(django.test.TestCase):
     def test_dump_status(self):
         Scheduler._instance = UserRoundRobinScheduler()
-        cmd = Command()
         with self.assertLogs(level="INFO") as cm:
-            cmd.handle()
+            self.client.get(reverse("request_scheduler_dump"))
             self.assertIn("tasks", cm.output[0])
