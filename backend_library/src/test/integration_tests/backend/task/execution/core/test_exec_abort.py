@@ -52,14 +52,14 @@ class IntegrationTestExecutionAbort(unittest.TestCase):
         urrs = UrrsWoWorkers()
         self._ex.schedule()
         urrs.abort_by_task(1)
-        self.assertIsNone(self._ex._shared_memory_name)
+        self.assertIsNone(self._ex._execution_shms.shared_memory_name)
 
     def test_execution_ss_abortion(self):
         urrs = UrrsWoWorkers()
         self._ex.schedule()
         urrs._run_single(self._ex)
         urrs.abort_by_task(1)
-        self.assertIsNone(self._ex._shared_memory_name)
+        self.assertIsNone(self._ex._execution_shms.shared_memory_name)
 
     def test_execution_element_abortion(self):
         urrs = UrrsWoWorkers()
@@ -67,7 +67,7 @@ class IntegrationTestExecutionAbort(unittest.TestCase):
         urrs._run_single(self._ex)
         urrs._run_single(self._ex._execution_subspaces[0])
         urrs.abort_by_task(1)
-        self.assertIsNone(self._ex._shared_memory_name)
+        self.assertIsNone(self._ex._execution_shms.shared_memory_name)
 
 
 if __name__ == '__main__':

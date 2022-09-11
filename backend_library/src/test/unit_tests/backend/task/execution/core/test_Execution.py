@@ -205,7 +205,7 @@ class UnitTestExecution(unittest.TestCase):
         self.assertTrue(self._ex._has_failed_element)
 
     def test_on_execution_element_finished_finished_elements_logic(self):
-        self._ex._Execution__unload_dataset = Mock(return_value=None)
+        self._ex._execution_shms.unload_dataset = Mock(return_value=None)
         self._ex._Execution__schedule_result_zipping = Mock(return_value=None)
 
         self.assertFalse(self._ex._metric_finished)
