@@ -6,6 +6,7 @@ import threading
 from collections import OrderedDict
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from datetime import datetime
 from logging import info, debug, critical
 from multiprocessing import Condition, Process, synchronize
 from threading import Thread
@@ -83,6 +84,16 @@ class UserRoundRobinScheduler(Scheduler):
 
     def abort_by_user(self, user_id: int) -> None:
         self.__abort(lambda x: x.user_id == user_id)
+
+    def log_debug_data(self):
+        info(f"[{datetime.now()}] Printing currently registered tasks:")
+        with self.__empty_queue:
+            for running in self.__running.items():
+                info(f"{running[0]} is registered as running on PID {running[1][0].pid}"
+                     f" is alive returns {running[1][0].is_alive()}")
+            for q in self.__user_queues.values():
+                for ps in q:
+                    info(f"{ps.schedulable} is waiting in queue")
 
     def __abort(self, selector: Callable[[Schedulable], bool]):
         """Aborts all Tasks matching the selector provided"""
@@ -232,7 +243,8 @@ class UserRoundRobinScheduler(Scheduler):
                 next_sched.run_later_on_main(None)
         else:
             next_sched.run_later_on_main(p.exitcode)
-        debug(f"done with {next_sched}, looking for new tasks")
+        self.__running.pop(next_sched)
+        debug(f"done with {next_sched}")
         return False
 
 

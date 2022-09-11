@@ -91,6 +91,7 @@ class UnitTestUrrs(unittest.TestCase):
                     TestSched(1, -1, 0, tbc, None, wait_for_sub, wait_for_main))
             wait_for_sub.wait(timeout)
             urrs.abort_by_user(1)
+        urrs.log_debug_data()
         self.assertTrue(ts.wait(timeout))
         self.assertFalse(tbc.value)
 

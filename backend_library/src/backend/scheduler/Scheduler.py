@@ -71,3 +71,7 @@ class Scheduler(ABC):
         """Returns whether a graceful shutdown is ongoing,
         false if that feature is not supported """
         raise NotImplementedError
+
+    def log_debug_data(self) -> None:
+        """Logs data implementation optional"""
+        return None

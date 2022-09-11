@@ -32,6 +32,7 @@ from experiments.views.experiment import (
     ExperimentDuplicateView,
     download_all_execution_results,
 )
+from experiments.views.request_scheduler_dump import request_scheduler_dump
 from experiments.views.uploadhandler import upload_progress
 
 urlpatterns = [
@@ -160,4 +161,6 @@ urlpatterns = [
     path("execution_progress/", get_execution_progress, name="execution_progress"),
     # upload progress
     path("upload_progress/", upload_progress, name="upload-progress"),
+    # Request scheduler dump
+    path("request_sched_dump/", request_scheduler_dump, name="request_scheduler_dump")
 ]
