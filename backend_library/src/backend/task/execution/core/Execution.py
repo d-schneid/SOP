@@ -100,11 +100,10 @@ class Execution(JsonSerializable, Task, Schedulable):
         self._finished_execution_element_count: int = 0
         self._metric_finished: bool = False
 
-        # generate subspaces
-        self._subspaces: list[Subspace] = self._subspace_generation.generate()
-        self._subspaces_count: int = len(self._subspaces)
-        self._total_execution_element_count: int = self._subspaces_count * len(
-            self._algorithms)
+        # Don't generate subspaces
+        self._subspaces: Optional[list[Subspace]] = None
+        self._subspaces_count: Optional[int] = None
+        self._total_execution_element_count: Optional[int] = None
 
         # generate execution_subspaces
         self._execution_subspaces: list[ExecutionSubspace] = list()
@@ -234,6 +233,12 @@ class Execution(JsonSerializable, Task, Schedulable):
         return progress
 
     def run_before_on_main(self) -> None:
+        # generate subspaces
+        self._subspaces = self._subspace_generation.generate()
+        self._subspaces_count = len(self._subspaces)
+        self._total_execution_element_count = self._subspaces_count * len(
+            self._algorithms)
+
         if self._datapoint_count is None:
             self._datapoint_count = DataIO.read_annotated(
                 self._dataset_path, True).data.shape[0]
@@ -381,4 +386,5 @@ class Execution(JsonSerializable, Task, Schedulable):
     def __str__(self) -> str:
         return f"Execution {self.task_id} of {self.user_id}" \
                f" with {len(self.algorithms)} algorithms" \
-               f" and {len(self._subspaces)} subspaces"
+               f" and {'unknown' if self._subspaces is None else len(self._subspaces)}"\
+               f" subspaces"
