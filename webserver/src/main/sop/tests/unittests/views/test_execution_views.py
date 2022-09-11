@@ -5,10 +5,9 @@ import django.test
 from django.http import HttpResponse
 from django.urls import reverse_lazy, reverse
 
-from backend.task.execution.core.Execution import Execution as BackendExecution
 from experiments.models import Experiment, Dataset, Algorithm, Execution
-from experiments.views.execution import schedule_backend
-from tests.generic import LoggedInMixin, MediaMixin, DebugSchedulerMixin, MaliciousMixin
+from tests.generic import LoggedInMixin, MediaMixin, DebugSchedulerMixin
+from tests.generic import MaliciousMixin
 
 
 class ExecutionCreateViewTests(
@@ -44,9 +43,17 @@ class ExecutionCreateViewTests(
             f"{cls.algo2.pk}_param2": "'was None'",
         }
 
-    def send_post(self) -> HttpResponse:
+    def send_post(self, schedule_error=False) -> HttpResponse:
+        schedule_backend_mock = MagicMock()
+        if schedule_error:
+            schedule_backend_mock.return_value = {
+                "test_error": ["This is a test error message"]
+            }
+        else:
+            schedule_backend_mock.return_value = None
+
         with patch(
-                "experiments.views.execution.schedule_backend", lambda execution: None
+            "experiments.views.execution.schedule_backend", schedule_backend_mock
         ):
             response = self.client.post(
                 reverse_lazy("execution_create", args=(self.exp.pk,)),
@@ -111,65 +118,37 @@ class ExecutionCreateViewTests(
         self.assertIsNone(Execution.objects.first())
 
     def test_execution_create_view_subspace_errors3(self) -> None:
-        """
-        Test that subspace min and max can't be smaller than 0, even if min < max.
-        """
-        self.data["subspaces_min"] = 2
-        self.data["subspaces_max"] = 1
+        self.data["subspaces_min"] = self.dataset.dimensions_total
+        self.data["subspaces_max"] = self.dataset.dimensions_total
+        self.data["subspace_amount"] = 2
+        # In this test, schedule_backend will return an error
+        response = self.send_post(schedule_error=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.redirect_chain)
+        self.assertIsNone(Execution.objects.first())
+
+    def test_execution_create_view_subspace_errors4(self) -> None:
+        self.data["subspaces_max"] = self.dataset.dimensions_total + 1
         response = self.send_post()
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.redirect_chain)
         self.assertIsNone(Execution.objects.first())
 
-    def test_schedule_backend(self) -> None:
-        algo1 = MagicMock()
-        algo1.path.path = "algorithm/path"
-        algo1.display_name = "Algo 1"
-        algo1.pk = 69
-        algo2 = MagicMock()
-        algo2.path.path = "algorithm/path/2"
-        algo2.display_name = "Algo 2"
-        algo2.pk = 42
-        execution = MagicMock()
-        execution.pk = 12
-        execution.subspaces_min = 2
-        execution.subspaces_max = 5
-        execution.subspace_amount = 3
-        execution.subspace_generation_seed = 123456789
-        execution.get_result_path.return_value = "another/cool/path"
-        execution.algorithm_parameters = {
-            f"{algo1.pk}": {"param1": 8, "param2": "World"},
-            f"{algo2.pk}": {"param1": 3.14, "param2": "was None"},
-        }
+    def test_execution_create_view_subspace_errors5(self) -> None:
+        self.data["subspace_amount"] = 0
+        response = self.send_post()
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.redirect_chain)
+        self.assertIsNone(Execution.objects.first())
 
-        execution.experiment.dataset.dimensions_total = 20
-        execution.experiment.dataset.path_cleaned.path = (
-            "cool/path/to/dataset_cleaned.csv"
-        )
-        execution.experiment.dataset.datapoints_total = 200
-
-        execution.experiment.user.pk = 3
-        execution.experiment.algorithms.all.return_value = [algo1, algo2]
-
-        with patch.object(BackendExecution, "schedule", lambda s: None):
-            errors = schedule_backend(execution)
-            self.assertIsNone(errors)
-
-    def test_schedule_backend_not_enough_subspaces(self) -> None:
-        execution = MagicMock()
-        execution.pk = 12
-        execution.subspaces_min = 2
-        execution.subspaces_max = 5
-        execution.subspace_amount = 1000
-
-        execution.experiment.dataset.dimensions_total = 20
-        execution.experiment.algorithms.all.return_value = []
-
-        with patch.object(BackendExecution, "schedule", lambda s: None):
-            errors = schedule_backend(execution)
-            assert errors is not None
-            self.assertEqual(len(errors.keys()), 1)
-            self.assertIsNotNone(errors.get("subspace_amount"))
+    def test_execution_create_view_subspace_errors6(self) -> None:
+        self.data["subspaces_min"] = -4
+        self.data["subspaces_max"] = -4
+        self.data["subspace_amount"] = -4
+        response = self.send_post()
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.redirect_chain)
+        self.assertIsNone(Execution.objects.first())
 
 
 class ExecutionDuplicateViewTests(LoggedInMixin, MaliciousMixin, django.test.TestCase):

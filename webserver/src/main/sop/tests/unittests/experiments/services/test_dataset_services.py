@@ -13,7 +13,6 @@ class DatasetServicesTests(MediaMixin, django.test.TestCase):
     def setUp(self) -> None:
         super().setUp()
         self.init_mocks()
-        os.makedirs(settings.MEDIA_ROOT)
 
     def init_mocks(self) -> None:
         self.user = MagicMock()
