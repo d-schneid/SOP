@@ -36,6 +36,7 @@ For further technical insight have a look at the respective readme files.
 SOP is meant to be deployed as a docker image, built with the included Dockerfile.
 Although the steps to get the app up and running are described in great detail, a basic
 knowledge of docker compose will come in handy.
+Make sure, that the docker daemon is enabled and running.
 
 The image is designed to be used in a microservice-environment
 to provide maximum flexibility to the deployer.  
@@ -55,7 +56,6 @@ To make the process of setting up the webserver, SOP and an external database ea
 we recommend using `docker compose` (preferably compose v2 to be able to apply resource limitations)
 (see [Installing Docker](https://docs.docker.com/engine/install/)
 and [Installing compose](https://docs.docker.com/compose/install/)).
-Make sure, that the docker daemon is enabled and running.
 To do this, clone the git repo and create a file `docker-compose.yaml`
 in the parent directory of the git repo and continue reading.
 
