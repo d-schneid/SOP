@@ -8,4 +8,5 @@ class SeleniumAlgoGropu(Enum):
     OUTLIER_ENSEMBLES: str = "Outlier Ensembles"
     NEURONAL_NETWORKS: str = "Neural Networks"
     COMBINATION: str = "Combination"
+    GRAPH_BASED: str = "Graph Based"
     OTHER: str = "Other"
