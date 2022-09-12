@@ -89,12 +89,10 @@ class SeleniumDataset:
         self._tc.assertEqual(dataset.has_error, self._failure_expected)
 
     def download_uncleaned(self):
-        # self._tc.driver.find_element(By.ID, f"model_{dataset_model.pk}").click()
         self._tc.driver.find_element(By.LINK_TEXT, "Uncleaned").click()
 
     def download_cleaned(self):
         dataset_model = self.get_from_db()
-        # self._tc.driver.find_element(By.ID, f"model_{dataset_model.pk}").click()
         cleaned_button = self._tc.driver.find_element(
             By.CSS_SELECTOR, f"#cleaned-download-{dataset_model.pk}"
         )

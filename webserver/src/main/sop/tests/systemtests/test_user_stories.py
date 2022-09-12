@@ -2,7 +2,7 @@ import os
 
 from tests.systemtests.selenium_base_test_cases.SeleniumAdmin import SeleniumAdmin
 from tests.systemtests.selenium_base_test_cases.SeleniumAlgoGroup import (
-    SeleniumAlgoGropu,
+    SeleniumAlgoGroup,
 )
 from tests.systemtests.selenium_base_test_cases.SeleniumAlgorithm import (
     SeleniumAlgorithm,
@@ -141,7 +141,7 @@ class UserStoriesTest(SeleniumTestCase):
             tc=self,
             name="Dr. Metas algorithm",
             description="Provided by Dr. Meta, for my friend Charlie",
-            group=SeleniumAlgoGropu.PROXIMITY_BASED,
+            group=SeleniumAlgoGroup.PROXIMITY_BASED,
             path=os.path.join("tests", "sample_algorithms", "SampleAlgoKnn.py"),
             user=user_charlie,
         )

@@ -43,9 +43,6 @@ class AlgorithmTests(LoggedInSeleniumTestCase):
         algorithm.upload()
         algorithm.delete()
 
-    def test_algorithm_edit(self):
-        pass  # TODO: implement
-
     def test_overview(self):
         algorithm1 = SeleniumAlgorithm(
             tc=self,

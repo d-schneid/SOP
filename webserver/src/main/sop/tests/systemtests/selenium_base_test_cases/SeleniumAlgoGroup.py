@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class SeleniumAlgoGropu(Enum):
+class SeleniumAlgoGroup(Enum):
     PROBABILISTIC: str = "Probabilistic"
     LINEAR_MODEL: str = "Linear Model"
     PROXIMITY_BASED: str = "Proximity Based"

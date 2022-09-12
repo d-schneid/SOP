@@ -10,27 +10,13 @@ class SeleniumAdmin(SeleniumUser):
         self._is_admin = True
 
     def create_user(self, user: SeleniumUser):
+        """
+        Only works for normal users (not admins)!
+        """
+        if user.is_admin:
+            raise ValueError("Only implemented for users!")
 
         self._create_standard_user(user)
-
-        # promote admin if user is admin
-        if user.is_admin:
-            self.promote_admin(user)
-
-    def promote_admin(self, user: SeleniumUser):
-        pass  # TODO implement
-
-    def denote_admin(self, user: SeleniumUser):
-        pass  # TODO implement
-
-    def delete_user(self, user):
-        self._navigate_to_admin_screen()
-
-        # TODO implement
-
-        self._navigate_to_home_screen()
-
-        # TODO check in the db
 
     def _navigate_to_admin_screen(self):
         self._tc.driver.find_element(By.LINK_TEXT, "Admin").click()

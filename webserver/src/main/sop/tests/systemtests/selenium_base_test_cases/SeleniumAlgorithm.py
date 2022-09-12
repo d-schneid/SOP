@@ -5,6 +5,9 @@ from selenium.webdriver.common.by import By
 from experiments.models import Algorithm
 from tests.systemtests.selenium_base_test_cases.SeleniumTestCase import SeleniumTestCase
 from tests.systemtests.selenium_base_test_cases.SeleniumUser import SeleniumUser
+from tests.systemtests.selenium_base_test_cases.SeleniumAlgoGroup import (
+    SeleniumAlgoGroup,
+)
 
 
 class SeleniumAlgorithm:
@@ -13,7 +16,7 @@ class SeleniumAlgorithm:
         tc: SeleniumTestCase,
         name: str,
         description: str,
-        group: Algorithm.AlgorithmGroup,
+        group: SeleniumAlgoGroup,
         path: str,
         user: SeleniumUser,
     ):

@@ -31,6 +31,10 @@ class SeleniumExperiment:
         self._executions = List[SeleniumExecution]
 
     def create(self):
+        """
+        Attention: Not safe if more than one experiment is existing!
+        """
+
         self._tc.driver.find_element(By.LINK_TEXT, "Experiments").click()
         self._tc.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXPERIMENT_OVERVIEW)
 
@@ -110,9 +114,13 @@ class SeleniumExperiment:
         )
 
     def add_execution(self, execution: SeleniumExecution):
+        """
+        Attention: Only works with a single experiment existing!
+        """
+
         self._tc.driver.find_element(
             By.LINK_TEXT, "New Execution"
-        ).click()  # TODO mehrere Excecutions safe
+        ).click()  # TODO make it work for more than one experiment
         self._tc.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXECUTION_CREATE)
 
         # add subspace options
@@ -171,10 +179,24 @@ class SeleniumExperiment:
         self._tc.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXPERIMENT_OVERVIEW)
 
     def download_execution_result(self, execution):
-        pass  # tODO implement
+        """
+        Attention: Not safe if more than one execution is existing!
+        """
+        # TODO: make safe for than one execution
+        self._tc.driver.find_element(By.XPATH, "//a[contains(text(),'Result')]").click()
 
     def wait_until_execution_finished(self, execution):
-        pass  # todo implement
+        """
+        Attention: Not safe if more than one execution is existing!
+        """
+        # TODO: make safe for than one execution and add db tests
+        while True:
+            sleep(1)
+            result_button = self._tc.driver.find_element(
+                By.XPATH, "//a[contains(text(),'Result')]"
+            )
+            if result_button.is_displayed():
+                break
 
     def get_from_db(self):
         experiment_list = Experiment.objects.filter(display_name=self._name)

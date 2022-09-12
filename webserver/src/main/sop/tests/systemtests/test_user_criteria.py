@@ -73,39 +73,3 @@ class TestUserCriteria(SeleniumTestCase):
         user_admin.login()
 
         user_admin.create_user(new_user)
-
-    def test_delete_user(self):
-        user = SeleniumUser(
-            tc=self,
-            name=SeleniumTestCase.STANDARD_USERNAME_USER,
-            password=SeleniumTestCase.STANDARD_PASSWORD_USER,
-        )
-
-        user_admin = SeleniumAdmin(
-            tc=self,
-            name=SeleniumTestCase.STANDARD_USERNAME_ADMIN,
-            password=SeleniumTestCase.STANDARD_PASSWORD_ADMIN,
-        )
-        user_admin.login()
-
-        user_admin.delete_user(user)
-
-    def test_promote_denote_admin(self):
-        user = SeleniumUser(
-            tc=self,
-            name=SeleniumTestCase.STANDARD_USERNAME_USER,
-            password=SeleniumTestCase.STANDARD_PASSWORD_USER,
-        )
-
-        user_admin = SeleniumAdmin(
-            tc=self,
-            name=SeleniumTestCase.STANDARD_USERNAME_ADMIN,
-            password=SeleniumTestCase.STANDARD_PASSWORD_ADMIN,
-        )
-        user_admin.login()
-
-        user_admin.promote_admin(user)
-        user_admin.denote_admin(user)
-
-    def test_user_overview(self):
-        pass  # TODO: implement
