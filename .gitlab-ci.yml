@@ -109,6 +109,7 @@ django-tests:
 
     - "echo '[run]\nplugins = django_coverage_plugin' > .coveragerc"
     - memcached -d -u root
+    - python3.9 -m pip install coverage pytype
     - pytype -P . --strict-parameter-checks --strict-primitive-comparisons --platform linux . -x tests/ media/
     # The MYSQL user only gets permissions for MYSQL_DB, so Django can't create a test database.
     - echo "GRANT ALL on *.* to '${MYSQL_USER}';"| mysql -u root --password="${MYSQL_ROOT_PASSWORD}" -h mysql
