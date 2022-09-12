@@ -26,7 +26,7 @@ Features include, but are not limited to:
 ---
 
 The project is split into the backend which does all the calculation and scheduling and the webserver.
-The backend library is designed to be well useable in other contexts than the webserver used in this project. 
+The backend library is designed to be well usable in other contexts than the webserver used in this project.
 For further technical insight have a look at the respective readme files.
 
 ---
@@ -36,6 +36,7 @@ For further technical insight have a look at the respective readme files.
 SOP is meant to be deployed as a docker image, built with the included Dockerfile.
 Although the steps to get the app up and running are described in great detail, a basic
 knowledge of docker compose will come in handy.
+Make sure, that the docker daemon is enabled and running.
 
 The image is designed to be used in a microservice-environment
 to provide maximum flexibility to the deployer.  
@@ -325,17 +326,21 @@ services:
 ```
 
 Run `docker compose up -d` and navigate to `http://127.0.0.1` or your custom domain to access
-the application.
+the application (You might have to wait a few moments as database tables and migrations have
+to be run on first startup).
 
 ---
 
 ## Implementing own algorithms
 
-SOP supports outlier detection on user-written outlier detection algorithms written in python. These algorithm files have to contain a class which has the same name as the python file (case-insensitive) and is a subclass of the `pyod.models.base.BaseDetector` class and implement the required methods
+SOP supports outlier detection on user-written outlier detection algorithms written in python. These algorithm files
+have to contain a class which has the same name as the python file (case-insensitive) and is a subclass of
+the `pyod.models.base.BaseDetector` class and implement the required methods
 (see [pyod BaseDetector documentation](https://pyod.readthedocs.io/en/latest/api_cc.html#pyod.models.base.BaseDetector))
 .
 
-For example, when you upload a python file where the class of the algorithm is called "CoolNewAlgorithm", the file needs to be named "coolnewalgorithm.py" or "cOoLnEwAlGoRiThM.py".
+For example, when you upload a python file where the class of the algorithm is called "CoolNewAlgorithm", the file needs
+to be named "coolnewalgorithm.py" or "cOoLnEwAlGoRiThM.py".
 
 You can upload your algorithms from inside the app in the "Algorithms" section.
 
