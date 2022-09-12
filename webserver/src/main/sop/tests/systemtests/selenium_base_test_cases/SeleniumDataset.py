@@ -89,7 +89,6 @@ class SeleniumDataset:
         self._tc.assertEqual(dataset.has_error, self._failure_expected)
 
     def download_uncleaned(self):
-        dataset_model = self.get_from_db()
         # self._tc.driver.find_element(By.ID, f"model_{dataset_model.pk}").click()
         self._tc.driver.find_element(By.LINK_TEXT, "Uncleaned").click()
 

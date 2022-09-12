@@ -8,10 +8,8 @@ import selenium
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.firefox.service import Service as FirefoxService
-from selenium.webdriver.remote.webelement import WebElement
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 
@@ -29,7 +27,6 @@ def add_pyod_algos_to_db():
 def add_users_to_db(
     username_user: str, password_user: str, username_admin: str, password_admin: str
 ):
-
     assert not User.objects.filter(username=username_user).exists()
     assert not User.objects.filter(username=username_admin).exists()
 
@@ -50,7 +47,6 @@ def add_users_to_db(
 def initialize_the_webdriver(
     browser_env_var_name: str, browser_value_firefox: str, browser_value_chrome: str
 ) -> Union[selenium.webdriver.Chrome | selenium.webdriver.Firefox]:
-
     # Set up the webdriver (for Chrome or Firefox)
     # (the standard browser used is the Firefox browser)
     if (
