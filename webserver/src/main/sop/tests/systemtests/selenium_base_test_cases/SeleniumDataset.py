@@ -3,6 +3,8 @@ from time import sleep
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
 
 from experiments.models.dataset import CleaningState, Dataset
 from tests.systemtests.selenium_base_test_cases.SeleniumTestCase import SeleniumTestCase
@@ -87,13 +89,26 @@ class SeleniumDataset:
         self._tc.assertEqual(dataset.has_error, self._failure_expected)
 
     def download_uncleaned(self):
-        pass  # TODO implement
+        dataset_model = self.get_from_db()
+        # self._tc.driver.find_element(By.ID, f"model_{dataset_model.pk}").click()
+        self._tc.driver.find_element(By.LINK_TEXT, "Uncleaned").click()
 
     def download_cleaned(self):
-        pass  # TODO: implement
+        dataset_model = self.get_from_db()
+        # self._tc.driver.find_element(By.ID, f"model_{dataset_model.pk}").click()
+        cleaned_button = self._tc.driver.find_element(By.CSS_SELECTOR, f"#cleaned-download-{dataset_model.pk}")
+        self._tc.driver.execute_script(
+            "arguments[0].scrollIntoView();", cleaned_button
+        )
+        cleaned_button.click()
 
     def delete(self):
-        pass  # TODO: implement
+        dataset_model = self.get_from_db()
+        pk = dataset_model.pk
+        self._tc.driver.find_element(By.CSS_SELECTOR, f"#collapse_{pk} .d-flex > .btn-danger > .bi").click()
+        self._tc.driver.find_element(By.CSS_SELECTOR, ".btn-danger:nth-child(2)").click()
+
+        self._tc.assertEqual(Dataset.objects.filter(pk=pk).count(), 0)
 
     def get_from_db(self):
         dataset_list = Dataset.objects.filter(display_name=self._name)
@@ -146,8 +161,26 @@ class SeleniumDataset:
             By.CLASS_NAME, "dataset-status"
         )
 
-    def rename(self, new_name, new_description):
-        pass  # TODO: implement
+    def rename(self, new_name, new_description, expected_failure=False):
+        dataset_model = self.get_from_db()
+        old_name = dataset_model.display_name
+        old_description = dataset_model.description
+        # self._tc.driver.find_element(By.ID, f"model_{dataset_model.pk}").click()
+        WebDriverWait(self._tc.driver, 50).until(EC.element_to_be_clickable((By.XPATH, f"//a[contains(@href, '/dataset/{dataset_model.pk}/edit/')]"))).click()
+        self._tc.driver.find_element(By.ID, "id_display_name").clear()
+        self._tc.driver.find_element(By.ID, "id_display_name").send_keys(new_name)
+        self._tc.driver.find_element(By.ID, "id_description").clear()
+        self._tc.driver.find_element(By.ID, "id_description").send_keys(new_description)
+        self._tc.driver.find_element(By.XPATH, "//input[@value='Update']").click()
+        self._name = new_name
+        self._description = new_description
+        dataset_model.refresh_from_db()
+        if expected_failure:
+            self._tc.assertEqual(old_name, dataset_model.display_name)
+            self._tc.assertEqual(old_description, dataset_model.description)
+        else:
+            self._tc.assertEqual(new_name, dataset_model.display_name)
+            self._tc.assertEqual(new_description, dataset_model.description)
 
     @property
     def name(self):
