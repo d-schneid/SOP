@@ -145,7 +145,9 @@ class DatasetUploadTests(LoggedInSeleniumTestCase):
         other_ds.upload()
         other_ds.wait_until_cleaned()
 
-        other_ds.rename(new_name=name, new_description=description, expected_failure=True)
+        other_ds.rename(
+            new_name=name, new_description=description, expected_failure=True
+        )
 
     def test_dataset_overview(self):
         dataset1 = SeleniumDataset(
@@ -154,7 +156,7 @@ class DatasetUploadTests(LoggedInSeleniumTestCase):
             name="Dataset1",
             description="Description for Dataset1",
             user=self.user,
-            failure_expected=False
+            failure_expected=False,
         )
         dataset2 = SeleniumDataset(
             tc=self,
@@ -162,7 +164,7 @@ class DatasetUploadTests(LoggedInSeleniumTestCase):
             name="Dataset2",
             description="Description for Dataset2",
             user=self.user,
-            failure_expected=False
+            failure_expected=False,
         )
         dataset3 = SeleniumDataset(
             tc=self,
@@ -170,7 +172,7 @@ class DatasetUploadTests(LoggedInSeleniumTestCase):
             name="Dataset3",
             description="Description for Dataset3",
             user=self.user,
-            failure_expected=False
+            failure_expected=False,
         )
 
         dataset1.upload()
@@ -185,8 +187,3 @@ class DatasetUploadTests(LoggedInSeleniumTestCase):
         self.check_if_visible_in_overview(dataset1.name)
         self.check_if_visible_in_overview(dataset2.name)
         self.check_if_visible_in_overview(dataset3.name)
-
-
-
-
-

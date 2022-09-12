@@ -25,7 +25,7 @@ class AlgorithmTests(LoggedInSeleniumTestCase):
             description="Description for Algorithm1",
             group=Algorithm.AlgorithmGroup.OTHER,
             path=os.path.join("tests", "sample_algorithms", "SampleAlgoKnn.py"),
-            user=self.user
+            user=self.user,
         )
         algorithm.upload()
         self.check_if_visible_in_overview(algorithm.name)
@@ -37,13 +37,13 @@ class AlgorithmTests(LoggedInSeleniumTestCase):
             description="Description for Algorithm1",
             group=Algorithm.AlgorithmGroup.OTHER,
             path=os.path.join("tests", "sample_algorithms", "SampleAlgoKnn.py"),
-            user=self.user
+            user=self.user,
         )
         algorithm.upload()
         algorithm.delete()
 
     def test_algorithm_edit(self):
-        pass # TODO: implement
+        pass  # TODO: implement
 
     def test_overview(self):
         algorithm1 = SeleniumAlgorithm(
@@ -52,7 +52,7 @@ class AlgorithmTests(LoggedInSeleniumTestCase):
             description="Description for Algorithm1",
             group=Algorithm.AlgorithmGroup.OTHER,
             path=os.path.join("tests", "sample_algorithms", "SampleAlgoKnn.py"),
-            user=self.user
+            user=self.user,
         )
         algorithm2 = SeleniumAlgorithm(
             tc=self,
@@ -60,7 +60,7 @@ class AlgorithmTests(LoggedInSeleniumTestCase):
             description="Description for Algorithm2",
             group=Algorithm.AlgorithmGroup.GRAPH_BASED,
             path=os.path.join("tests", "sample_algorithms", "SampleAlgoKnn.py"),
-            user=self.user
+            user=self.user,
         )
         algorithm3 = SeleniumAlgorithm(
             tc=self,
@@ -68,7 +68,7 @@ class AlgorithmTests(LoggedInSeleniumTestCase):
             description="Description for Algorithm3",
             group=Algorithm.AlgorithmGroup.GRAPH_BASED,
             path=os.path.join("tests", "sample_algorithms", "SampleAlgoKnn.py"),
-            user=self.user
+            user=self.user,
         )
         algorithm1.upload()
         algorithm2.upload()
@@ -80,4 +80,3 @@ class AlgorithmTests(LoggedInSeleniumTestCase):
         self.check_if_visible_in_overview(algorithm2._group)
         self.check_if_visible_in_overview(algorithm3.name)
         self.check_if_visible_in_overview(algorithm3._group)
-

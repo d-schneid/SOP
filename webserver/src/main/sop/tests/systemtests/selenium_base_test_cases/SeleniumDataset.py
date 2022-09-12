@@ -96,17 +96,21 @@ class SeleniumDataset:
     def download_cleaned(self):
         dataset_model = self.get_from_db()
         # self._tc.driver.find_element(By.ID, f"model_{dataset_model.pk}").click()
-        cleaned_button = self._tc.driver.find_element(By.CSS_SELECTOR, f"#cleaned-download-{dataset_model.pk}")
-        self._tc.driver.execute_script(
-            "arguments[0].scrollIntoView();", cleaned_button
+        cleaned_button = self._tc.driver.find_element(
+            By.CSS_SELECTOR, f"#cleaned-download-{dataset_model.pk}"
         )
+        self._tc.driver.execute_script("arguments[0].scrollIntoView();", cleaned_button)
         cleaned_button.click()
 
     def delete(self):
         dataset_model = self.get_from_db()
         pk = dataset_model.pk
-        self._tc.driver.find_element(By.CSS_SELECTOR, f"#collapse_{pk} .d-flex > .btn-danger > .bi").click()
-        self._tc.driver.find_element(By.CSS_SELECTOR, ".btn-danger:nth-child(2)").click()
+        self._tc.driver.find_element(
+            By.CSS_SELECTOR, f"#collapse_{pk} .d-flex > .btn-danger > .bi"
+        ).click()
+        self._tc.driver.find_element(
+            By.CSS_SELECTOR, ".btn-danger:nth-child(2)"
+        ).click()
 
         self._tc.assertEqual(Dataset.objects.filter(pk=pk).count(), 0)
 
@@ -166,7 +170,11 @@ class SeleniumDataset:
         old_name = dataset_model.display_name
         old_description = dataset_model.description
         # self._tc.driver.find_element(By.ID, f"model_{dataset_model.pk}").click()
-        WebDriverWait(self._tc.driver, 50).until(EC.element_to_be_clickable((By.XPATH, f"//a[contains(@href, '/dataset/{dataset_model.pk}/edit/')]"))).click()
+        WebDriverWait(self._tc.driver, 50).until(
+            EC.element_to_be_clickable(
+                (By.XPATH, f"//a[contains(@href, '/dataset/{dataset_model.pk}/edit/')]")
+            )
+        ).click()
         self._tc.driver.find_element(By.ID, "id_display_name").clear()
         self._tc.driver.find_element(By.ID, "id_display_name").send_keys(new_name)
         self._tc.driver.find_element(By.ID, "id_description").clear()
