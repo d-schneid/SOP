@@ -3,7 +3,6 @@ import os
 from selenium.webdriver.common.by import By
 
 from experiments.models import Algorithm
-from tests.systemtests.selenium_base_test_cases import SeleniumAlgoGroup
 from tests.systemtests.selenium_base_test_cases.SeleniumTestCase import SeleniumTestCase
 from tests.systemtests.selenium_base_test_cases.SeleniumUser import SeleniumUser
 
@@ -14,7 +13,7 @@ class SeleniumAlgorithm:
         tc: SeleniumTestCase,
         name: str,
         description: str,
-        group: SeleniumAlgoGroup,
+        group: Algorithm.AlgorithmGroup,
         path: str,
         user: SeleniumUser,
     ):
@@ -41,7 +40,10 @@ class SeleniumAlgorithm:
         self._tc.driver.find_element(By.ID, "id_group")
         dropdown = self._tc.driver.find_element(By.ID, "id_group")
         dropdown.find_element(
-            By.XPATH, "//option[normalize-space(text()) = '" + self._group.value + "']"
+            By.XPATH,
+            "//option[normalize-space(text()) = '"
+            + self._group.value.replace("-", " ")
+            + "']",
         ).click()
         absolute_path = os.path.join(os.getcwd(), self._path)
         self._tc.driver.find_element(By.ID, "id_path").send_keys(absolute_path)
@@ -71,6 +73,18 @@ class SeleniumAlgorithm:
         algos_in_db = Algorithm.objects.filter(display_name=self._name)
         self._tc.assertEqual(len(algos_in_db), 1)
         return algos_in_db.first()
+
+    def delete(self):
+        algo = self.get_from_db()
+        self._tc.driver.find_element(By.LINK_TEXT, "Algorithms").click()
+        self._tc.driver.find_element(
+            By.CSS_SELECTOR, f"#collapse_{algo.pk} .d-flex > .btn-danger > .bi"
+        ).click()
+        self._tc.driver.find_element(
+            By.CSS_SELECTOR, f"#deleteModal{algo.pk} form > .btn"
+        ).click()
+        self._tc.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.ALGORITHM_OVERVIEW)
+        self._tc.assertEqual(Algorithm.objects.filter(pk=algo.pk).count(), 0)
 
     @property
     def name(self):

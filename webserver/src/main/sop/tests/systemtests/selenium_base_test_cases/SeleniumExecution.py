@@ -10,7 +10,6 @@ class SeleniumExecution:
         subspace_gen_seed: str,
         algos: List[dict],
     ):
-
         # NOTE: the type of e.g. subspace_amount was purposefully chosen as integer,
         # so that wrong data entry can be simulated
 
