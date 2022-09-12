@@ -142,9 +142,6 @@ def _replace_occurrences(
     shutil.move(abs_path, path)
 
 
-MISSING = str()
-
-
 class Command(BaseCommand):
     help = "Adds all pyod algorithms as algorithm models into to database"
     quiet = False
@@ -197,14 +194,14 @@ class Command(BaseCommand):
         else:
             self._stdout_write(self.style.NOTICE("ALREADY EXISTS"))
 
-    def _stdout_write(self, message: str, ending: str = MISSING):
+    def _stdout_write(self, message: str, ending: Optional[str] = None):
         if self.quiet:
             return
 
-        if ending is not MISSING:
-            self.stdout.write(message, ending=ending)
-        else:
+        if ending is None:
             self.stdout.write(message)
+        else:
+            self.stdout.write(message, ending=ending)
 
     def handle(self, *args: Any, **options: Any) -> Optional[str]:
         global _PYOD_ALGORITHMS
