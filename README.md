@@ -329,6 +329,9 @@ Run `docker compose up -d` and navigate to `http://127.0.0.1` or your custom dom
 the application (You might have to wait a few moments as database tables and migrations have
 to be run on first startup).
 
+To update your app, just pull the changes into you local git repo, stop the compose stack with `docker compose down`
+and run `docker compose up --build`.
+
 ---
 
 ## Implementing own algorithms
