@@ -130,10 +130,8 @@ class DatasetUploadTests(LoggedInSeleniumTestCase):
         dataset.upload()
         dataset.wait_until_cleaned()
 
-        name = "Test Dataset: Canada"
-        description = (
-            "This is the Canada Dataset, used for automated tests with Selenium."
-        )
+        name = ""
+        description = "Sample description"
 
         other_ds = SeleniumDataset(
             tc=self,
@@ -147,7 +145,7 @@ class DatasetUploadTests(LoggedInSeleniumTestCase):
         other_ds.upload()
         other_ds.wait_until_cleaned()
 
-        other_ds.rename(new_name=name, new_description=description)
+        other_ds.rename(new_name=name, new_description=description, expected_failure=True)
 
     def test_dataset_overview(self):
         dataset1 = SeleniumDataset(
