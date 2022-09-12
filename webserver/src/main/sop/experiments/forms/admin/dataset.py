@@ -47,9 +47,10 @@ class AdminAddDatasetForm(forms.ModelForm[Dataset]):
         dataset_valid = DatasetInfo.is_dataset_valid(temp_file_path)
 
         # check the dataset
-        if not dataset_valid:
+        if dataset_valid is not None:
             os.remove(temp_file_path)
-            self.add_error("path_original", "Selected dataset is not valid.")
+            self.add_error("path_original", f"Selected dataset is not valid"
+                           f" csv-file: {dataset_valid}")
             assert not os.path.isfile(temp_file_path)
             return None
 

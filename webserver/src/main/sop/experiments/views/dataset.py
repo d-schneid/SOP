@@ -63,9 +63,10 @@ class DatasetUploadView(LoginRequiredMixin, CreateView[Dataset, DatasetUploadFor
 
         os.remove(temp_file_path)
 
-        if not dataset_valid:
+        if dataset_valid is not None:
             messages.error(
-                self.request, "Error in selected dataset, dataset is invalid."
+                self.request,
+                f"Error in selected dataset, dataset is invalid: {dataset_valid}"
             )
             return super(DatasetUploadView, self).form_invalid(form)
 
