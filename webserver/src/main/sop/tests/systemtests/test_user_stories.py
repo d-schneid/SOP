@@ -1,8 +1,21 @@
 import os
 
-from selenium.webdriver.common.by import By
-
+from tests.systemtests.selenium_base_test_cases.SeleniumAdmin import SeleniumAdmin
+from tests.systemtests.selenium_base_test_cases.SeleniumAlgoGroup import (
+    SeleniumAlgoGroup,
+)
+from tests.systemtests.selenium_base_test_cases.SeleniumAlgorithm import (
+    SeleniumAlgorithm,
+)
+from tests.systemtests.selenium_base_test_cases.SeleniumDataset import SeleniumDataset
+from tests.systemtests.selenium_base_test_cases.SeleniumExecution import (
+    SeleniumExecution,
+)
+from tests.systemtests.selenium_base_test_cases.SeleniumExperiment import (
+    SeleniumExperiment,
+)
 from tests.systemtests.selenium_base_test_cases.SeleniumTestCase import SeleniumTestCase
+from tests.systemtests.selenium_base_test_cases.SeleniumUser import SeleniumUser
 
 
 class UserStoriesTest(SeleniumTestCase):
@@ -21,43 +34,22 @@ class UserStoriesTest(SeleniumTestCase):
         super().tearDown()
 
     def test_user_story_bob(self):
-        # credentials for Bob
-        bob_username = "bob"
-        bob_password = "this_is_the_secure_password_of_bob"
+        user_bob = SeleniumUser(
+            tc=self, name="bob", password="this_is_the_secure_password_of_bob"
+        )
 
         # Alice (= Admin) creates a user account for Bob
-        self.login(
-            SeleniumTestCase.STANDARD_USERNAME_ADMIN,
-            SeleniumTestCase.STANDARD_PASSWORD_ADMIN,
+        user_admin = SeleniumAdmin(
+            tc=self,
+            name=SeleniumTestCase.STANDARD_USERNAME_ADMIN,
+            password=SeleniumTestCase.STANDARD_PASSWORD_ADMIN,
         )
+        user_admin.login()
 
-        self.driver.find_element(By.LINK_TEXT, "Admin").click()
-        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.ADMIN_BASE)
-
-        self.driver.find_element(By.LINK_TEXT, "Users").click()
-        self.assertUrlMatches(
-            SeleniumTestCase.UrlsSuffixRegex.ADMIN_AUTHENTICATION_USER
-        )
-
-        self.driver.find_element(By.CSS_SELECTOR, "li > .addlink").click()
-        self.assertUrlMatches(
-            SeleniumTestCase.UrlsSuffixRegex.ADMIN_AUTHENTICATION_USER_ADD
-        )
-
-        self.driver.find_element(By.ID, "id_username").send_keys(bob_username)
-        self.driver.find_element(By.ID, "id_password1").send_keys(bob_password)
-        self.driver.find_element(By.ID, "id_password2").send_keys(bob_password)
-        self.driver.find_element(By.NAME, "_save").click()
-        self.assertUrlMatches(
-            SeleniumTestCase.UrlsSuffixRegex.ADMIN_AUTHENTICATION_USER_CHANGE
-        )
-
-        # Alice logs herself out
-        self.driver.find_element(By.CSS_SELECTOR, "a:nth-child(4)").click()
-        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.LOGIN)
+        user_admin.create_user(user_bob)
 
         # now Bob can log in
-        self.login(bob_username, bob_password)
+        user_bob.login()
 
         # Bob uploads his dataset
         valid_dataset_path = os.path.join(
@@ -68,184 +60,120 @@ class UserStoriesTest(SeleniumTestCase):
             "This is the Canada Dataset, which Bob uses for testint SOP."
         )
 
-        self.upload_dataset(
-            dataset_path=valid_dataset_path,
-            dataset_name=dataset_name,
-            dataset_description=dataset_description,
-            username=bob_username,
+        dataset = SeleniumDataset(
+            tc=self,
+            path=valid_dataset_path,
+            name=dataset_name,
+            description=dataset_description,
+            user=user_bob,
+            failure_expected=False,
         )
 
+        dataset.upload()
+
         # wait for the dataset to be cleaned
-        self.wait_until_dataset_ready(dataset_name=dataset_name, failure_expected=False)
+        dataset.wait_until_cleaned()
 
         # Bob creates an Experiment with his new Dataset
         experiment_name = "Bobs Erstes Experiment"
         algo_name_kde = "[PYOD] KDE"
         algo_name_knn = "[PYOD] KNN"
 
-        self.create_experiment(
-            experiment_name=experiment_name,
-            dataset_name=dataset_name,
-            list_algos=[algo_name_kde, algo_name_knn],
-            username=bob_username,
+        experiment = SeleniumExperiment(
+            tc=self,
+            dataset=dataset,
+            name=experiment_name,
+            list_algo_names=[algo_name_kde, algo_name_knn],
+            user=user_bob,
         )
+
+        experiment.create()
 
         # Bob creates an execution within his new experiment
-        self.driver.find_element(By.LINK_TEXT, "New Execution").click()
-        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXECUTION_CREATE)
-
-        # add subspace options
-        self.driver.find_element(By.ID, "id_subspace_amount").send_keys("2")
-        self.driver.find_element(By.ID, "id_subspaces_min").send_keys("5")
-        self.driver.find_element(By.ID, "id_subspaces_max").send_keys("8")
-        self.driver.find_element(By.ID, "id_subspace_generation_seed").send_keys("1")
-
-        # change algorithm parameters
-        all_labels_kde = self.driver.find_elements(
-            By.XPATH,
-            "//div[text() = '"
-            + algo_name_kde
-            + "']/parent::*/parent::*/descendant::label",
-        )
-        all_labels_knn = self.driver.find_elements(
-            By.XPATH,
-            "//div[text() = '"
-            + algo_name_knn
-            + "']/parent::*/parent::*/descendant::label",
+        execution = SeleniumExecution(
+            subspace_amount="2",
+            subspaces_min="5",
+            subspaces_max="8",
+            subspace_gen_seed="1",
+            algos=[
+                {
+                    "key": algo_name_kde,
+                    "contamination": "0.2",
+                    "leaf_size": "10",
+                },
+                {
+                    "key": algo_name_knn,
+                    "contamination": "0.3",
+                    "n_neighbors": "3",
+                    "leaf_size": "20",
+                },
+            ],
         )
 
-        # kde options
-        for label in all_labels_kde:
-            if "contamination =" == label.text:
-                input_element = self.driver.find_element(
-                    By.ID, label.get_dom_attribute("for")
-                )
-                input_element.clear()
-                input_element.send_keys("0.2")
-            elif "leaf_size =" == label.text:
-                input_element = self.driver.find_element(
-                    By.ID, label.get_dom_attribute("for")
-                )
-                input_element.clear()
-                input_element.send_keys("10")
+        experiment.add_execution(execution)
 
-        # knn options
-        for label in all_labels_knn:
-            if "contamination =" == label.text:
-                input_element = self.driver.find_element(
-                    By.ID, label.get_dom_attribute("for")
-                )
-                input_element.clear()
-                input_element.send_keys("0.3")
-            elif "n_neighbors =" == label.text:
-                input_element = self.driver.find_element(
-                    By.ID, label.get_dom_attribute("for")
-                )
-                input_element.clear()
-                input_element.send_keys("3")
-            elif "leaf_size =" == label.text:
-                input_element = self.driver.find_element(
-                    By.ID, label.get_dom_attribute("for")
-                )
-                input_element.clear()
-                input_element.send_keys("20")
-
-        self.driver.find_element(By.XPATH, "//input[@type='submit']").click()
-        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXPERIMENT_OVERVIEW)
-
-        # TODO: create helper method for execution creation
-
-        # TODO: wait for finish & download result & check
-        #  (-> change parameters and dataset)
+        experiment.wait_until_execution_finished(execution)
+        experiment.download_execution_result(execution)
 
     def test_user_story_charlie(self):
-        # login
-        self.login(
-            SeleniumTestCase.STANDARD_USERNAME_USER,
-            SeleniumTestCase.STANDARD_PASSWORD_USER,
+        user_charlie = SeleniumUser(
+            tc=self,
+            name=SeleniumTestCase.STANDARD_USERNAME_USER,
+            password=SeleniumTestCase.STANDARD_PASSWORD_USER,
         )
+        user_charlie.login()
 
         # upload own dataset
-        valid_dataset_path = os.path.join(
-            "tests", "sample_datasets", "canada_testing.csv"
-        )
-        dataset_name = "Charlies Canada Dataset"
-        dataset_description = (
-            "This is the Canada Dataset, which Chralie uses for testint SOP."
-        )
-
-        self.upload_dataset(
-            dataset_path=valid_dataset_path,
-            dataset_name=dataset_name,
-            dataset_description=dataset_description,
-            username=SeleniumTestCase.STANDARD_USERNAME_USER,
+        dataset = SeleniumDataset(
+            tc=self,
+            path=os.path.join("tests", "sample_datasets", "canada_testing.csv"),
+            name="Charlies Canada Dataset",
+            description="This is the Canada Dataset, which Chralie uses for testint SOP.",
+            user=user_charlie,
+            failure_expected=False,
         )
 
-        # wait for the dataset to be cleaned
-        self.wait_until_dataset_ready(dataset_name=dataset_name, failure_expected=False)
+        dataset.upload()
+        dataset.wait_until_cleaned()
 
         # upload own algorithm
-        algo_name = "Dr. Metas algorithm"
-
-        self.upload_algorithm(
-            algo_name=algo_name,
-            algo_description="Provided by Dr. Meta, for my friend Charlie",
-            algo_group=SeleniumTestCase.AlgoGroup.PROXIMITY_BASED,
-            algo_path=os.path.join("tests", "sample_algorithms", "SampleAlgoKnn.py"),
-            username=SeleniumTestCase.STANDARD_USERNAME_USER,
+        algorithm = SeleniumAlgorithm(
+            tc=self,
+            name="Dr. Metas algorithm",
+            description="Provided by Dr. Meta, for my friend Charlie",
+            group=SeleniumAlgoGroup.PROXIMITY_BASED,
+            path=os.path.join("tests", "sample_algorithms", "SampleAlgoKnn.py"),
+            user=user_charlie,
         )
+
+        algorithm.upload()
 
         # create new experiment with own algorithm
-        experiment_name = "Charlies experiment"
-
-        self.create_experiment(
-            experiment_name=experiment_name,
-            dataset_name=dataset_name,
-            list_algos=[algo_name],
-            username=SeleniumTestCase.STANDARD_USERNAME_USER,
+        experiment = SeleniumExperiment(
+            tc=self,
+            name="Charlies experiment",
+            dataset=dataset,
+            list_algo_names=[algorithm.name],
+            user=user_charlie,
         )
+        experiment.create()
 
         # create new execution
-        # TODO: not safe for more than 1 experiment!
-        self.driver.find_element(By.LINK_TEXT, "New Execution").click()
-        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXECUTION_CREATE)
-
-        # enter subspace data
-        self.driver.find_element(By.ID, "id_subspace_amount").send_keys("2")
-        self.driver.find_element(By.ID, "id_subspaces_min").send_keys("5")
-        self.driver.find_element(By.ID, "id_subspaces_max").send_keys("8")
-        self.driver.find_element(By.ID, "id_subspace_generation_seed").send_keys("1")
-
-        # change option for the specific algorithm
-        all_labels = self.driver.find_elements(
-            By.XPATH,
-            "//div[text() = '" + algo_name + "']/parent::*/parent::*/descendant::label",
+        execution = SeleniumExecution(
+            subspace_amount="2",
+            subspaces_min="5",
+            subspaces_max="8",
+            subspace_gen_seed="1",
+            algos=[
+                {
+                    "key": algorithm.name,
+                    "contamination": "0.2",
+                    "n_neighbors": "7",
+                    "leaf_size": "20",
+                }
+            ],
         )
+        experiment.add_execution(execution)
 
-        for label in all_labels:
-            if "contamination =" == label.text:
-                input_element = self.driver.find_element(
-                    By.ID, label.get_dom_attribute("for")
-                )
-                input_element.clear()
-                input_element.send_keys("0.2")
-            elif "n_neighbors =" == label.text:
-                input_element = self.driver.find_element(
-                    By.ID, label.get_dom_attribute("for")
-                )
-                input_element.clear()
-                input_element.send_keys("7")
-            elif "leaf_size =" == label.text:
-                input_element = self.driver.find_element(
-                    By.ID, label.get_dom_attribute("for")
-                )
-                input_element.clear()
-                input_element.send_keys("20")
-
-        self.driver.find_element(By.XPATH, "//input[@type='submit']").click()
-        self.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXPERIMENT_OVERVIEW)
-
-        # TODO: create helper method for execution creation
-
-        # TODO: wait for finish & download result & check
-        #  (-> change parameters and dataset)
+        experiment.wait_until_execution_finished(execution)
+        experiment.download_execution_result(execution)
