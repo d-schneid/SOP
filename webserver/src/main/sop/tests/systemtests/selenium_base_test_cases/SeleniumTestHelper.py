@@ -8,51 +8,13 @@ import selenium
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.firefox.service import Service as FirefoxService
-from selenium.webdriver.remote.webelement import WebElement
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 
 from authentication.models import User
 from experiments.management.commands import pyodtodb
-
-
-# ----------- Extracting Data -----------
-
-
-def get_dataset_div(whole_page: WebElement, dataset_name: str) -> WebElement:
-    return whole_page.find_element(
-        By.XPATH,
-        "//a[normalize-space(text()) = '"
-        + dataset_name
-        + "']/parent::*/parent::*/parent::*",
-    )
-
-
-def get_dataset_status_element(whole_page: WebElement, dataset_name: str) -> WebElement:
-    return get_dataset_div(whole_page, dataset_name).find_element(
-        By.CLASS_NAME, "dataset-status"
-    )
-
-
-def get_dataset_button_download_cleaned(
-    whole_page: WebElement, dataset_name: str
-) -> WebElement:
-    return get_dataset_div(whole_page, dataset_name).find_element(
-        By.XPATH,
-        "//a[contains(text(),'Cleaned')]",
-    )
-
-
-def get_dataset_button_download_uncleaned(
-    whole_page: WebElement, dataset_name: str
-) -> WebElement:
-    return get_dataset_div(whole_page, dataset_name).find_element(
-        By.XPATH,
-        "//a[contains(text(),'Uncleaned')]",
-    )
 
 
 # --------- Setting Up / Tearing Down the Test Environment ----------
@@ -65,7 +27,6 @@ def add_pyod_algos_to_db():
 def add_users_to_db(
     username_user: str, password_user: str, username_admin: str, password_admin: str
 ):
-
     assert not User.objects.filter(username=username_user).exists()
     assert not User.objects.filter(username=username_admin).exists()
 
@@ -86,7 +47,6 @@ def add_users_to_db(
 def initialize_the_webdriver(
     browser_env_var_name: str, browser_value_firefox: str, browser_value_chrome: str
 ) -> Union[selenium.webdriver.Chrome | selenium.webdriver.Firefox]:
-
     # Set up the webdriver (for Chrome or Firefox)
     # (the standard browser used is the Firefox browser)
     if (
