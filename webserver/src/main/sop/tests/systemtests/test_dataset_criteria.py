@@ -3,11 +3,11 @@ import unittest
 
 from selenium.webdriver.common.by import By
 
-from systemtests.selenium_base_test_cases.SeleniumTestCase import SeleniumTestCase
 from tests.systemtests.selenium_base_test_cases.LoggedInSeleniumTestCase import (
     LoggedInSeleniumTestCase,
 )
 from tests.systemtests.selenium_base_test_cases.SeleniumDataset import SeleniumDataset
+from tests.systemtests.selenium_base_test_cases.SeleniumTestCase import SeleniumTestCase
 
 
 class DatasetUploadTests(LoggedInSeleniumTestCase):

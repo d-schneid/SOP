@@ -3,11 +3,12 @@ import os.path
 from selenium.webdriver.common.by import By
 
 from experiments.models import Algorithm
-from systemtests.selenium_base_test_cases.SeleniumAlgorithm import SeleniumAlgorithm
-from systemtests.selenium_base_test_cases.SeleniumTestCase import SeleniumTestCase
 from tests.systemtests.selenium_base_test_cases.LoggedInSeleniumTestCase import (
     LoggedInSeleniumTestCase,
 )
+from tests.systemtests.selenium_base_test_cases.SeleniumAlgorithm import \
+    SeleniumAlgorithm
+from tests.systemtests.selenium_base_test_cases.SeleniumTestCase import SeleniumTestCase
 
 
 class AlgorithmTests(LoggedInSeleniumTestCase):
