@@ -100,32 +100,32 @@ class UnitTestDatasetInfo(unittest.TestCase):
     )
 
     def test_validation_edge_case(self):
-        self.assertFalse(
+        self.assertIsNotNone(
             DatasetInfo.is_dataset_valid(self.csv_file_invalid_edge_case)
         )
 
     def test_validation_inconsistent_column_number(self):
-        self.assertFalse(
+        self.assertIsNotNone(
             DatasetInfo.is_dataset_valid(self.csv_file_inconsistent_col_nom)
         )
 
     def test_validation_quote_char(self):
-        self.assertFalse(
+        self.assertIsNotNone(
             DatasetInfo.is_dataset_valid(self.csv_file_not_rfc_quote_char)
         )
 
     def test_validation_linebreak(self):
-        self.assertTrue(
+        self.assertIsNone(
             DatasetInfo.is_dataset_valid(self.csv_file_rfc_linebreak)
         )
 
     def test_validation_valid_csv(self):
-        self.assertTrue(
+        self.assertIsNone(
             DatasetInfo.is_dataset_valid(self.csv_file_valid)
         )
 
     def test_validation_unicode_error(self):
-        self.assertFalse(
+        self.assertIsNotNone(
             DatasetInfo.is_dataset_valid(self.csv_file_cp1252)
         )
 
