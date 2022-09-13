@@ -5,7 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
-from experiments.models import Experiment, Algorithm
+from experiments.models import Experiment, Algorithm, Execution
 from tests.systemtests.selenium_base_test_cases.SeleniumDataset import SeleniumDataset
 from tests.systemtests.selenium_base_test_cases.SeleniumExecution import (
     SeleniumExecution,
@@ -131,7 +131,7 @@ class SeleniumExperiment:
             execution.subspaces_min
         )
         self._tc.driver.find_element(By.ID, "id_subspaces_max").send_keys(
-            execution.subspace_max
+            execution.subspaces_max
         )
         self._tc.driver.find_element(By.ID, "id_subspace_generation_seed").send_keys(
             execution.subspace_gen_seed
@@ -185,17 +185,21 @@ class SeleniumExperiment:
         # TODO: make safe for than one execution
         self._tc.driver.find_element(By.XPATH, "//a[contains(text(),'Result')]").click()
 
-    def wait_until_execution_finished(self, execution):
+    def wait_until_execution_finished(self, execution: SeleniumExecution):
         """
         Attention: Not safe if more than one execution is existing!
         """
         # TODO: make safe for than one execution and add db tests
         while True:
             sleep(1)
-            result_button = self._tc.driver.find_element(
-                By.XPATH, "//a[contains(text(),'Result')]"
-            )
-            if result_button.is_displayed():
+            model = Execution.objects.filter(
+                subspace_amount=execution.subspace_amount,
+                subspaces_min=execution.subspaces_min,
+                subspaces_max=execution.subspaces_max,
+                subspace_generation_seed=execution.subspace_gen_seed,
+            ).first()
+            assert model is not None
+            if model.has_result:
                 break
 
     def get_from_db(self):

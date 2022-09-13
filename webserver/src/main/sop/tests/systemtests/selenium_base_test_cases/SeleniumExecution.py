@@ -28,7 +28,7 @@ class SeleniumExecution:
         return self._subspaces_min
 
     @property
-    def subspace_max(self) -> str:
+    def subspaces_max(self) -> str:
         return self._subspaces_max
 
     @property
