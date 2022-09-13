@@ -91,7 +91,9 @@ class Execution(models.Model):
         """
         if not self.subspace_generation_seed:
             self.subspace_generation_seed = generate_random_seed()
-        super(Execution, self).save(*args, **kwargs)
+            print("-----DEBUG execution model: subspace seed was not set------")
+        super().save(*args, **kwargs)  #TODO: debug
+        print("----DEBUG execution model: save is called------")
 
     @property
     def has_result(self) -> bool:

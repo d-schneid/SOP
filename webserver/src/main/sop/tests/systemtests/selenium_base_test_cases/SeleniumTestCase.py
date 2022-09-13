@@ -129,6 +129,8 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         # get base url
         self.driver.get(self.get_base_url())
 
+        print(self.get_base_url())
+
     def tearDown(self) -> None:
 
         # if the test failed, take a screenshot and save the page source
@@ -147,8 +149,11 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         # delete old dirs (this includes the pyod algo directory)
 
         # cancel all still running tasks in the scheduler
-        if Scheduler._instance is not None:
-            Scheduler.get_instance().hard_shutdown()
+        scheduler = Scheduler._instance
+        if scheduler is not None:
+            scheduler.graceful_shutdown()
+            while scheduler.is_shutting_down():
+                sleep(0.2)
             Scheduler._instance = None
 
         if os.path.isdir(settings.MEDIA_ROOT):

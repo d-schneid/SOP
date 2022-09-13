@@ -50,6 +50,16 @@ def execution_callback(
 
     execution.save()
 
+    # TODO debug
+    test_exec_all = Execution.objects.all()
+    print("--DEBUG execution callback----")
+    print(test_exec_all)
+    test_exec = test_exec_all.first()
+    print(test_exec)
+    print(test_exec.status)
+    print(test_exec.progress)
+    print("--DEBUG execution callback END---")
+
 
 def generate_datapoints_metric(metric_dir: Path, be: BackendExecution):
     assert os.path.isdir(metric_dir)

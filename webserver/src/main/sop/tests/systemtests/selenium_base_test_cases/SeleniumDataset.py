@@ -86,6 +86,10 @@ class SeleniumDataset:
         self._tc.assertTrue(dataset.has_finished)
         self._tc.assertEqual(dataset.has_error, self._failure_expected)
 
+        print("-----DEBUG DATASET wait til cleaned:WAITING 30secs now-----")
+        sleep(30)
+        print("------DEBUG DATASET wait til cleaned: WAIT END-----")
+
     def download_uncleaned(self):
         pass  # TODO implement
 

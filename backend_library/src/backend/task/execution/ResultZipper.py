@@ -82,7 +82,7 @@ class ResultZipper(Schedulable):
         :return: None
         """
 
-        # Else, proceed with the normal operations
+        print("------\nResultZipper called\n-------")
 
         # if there are files existing at the paths zip_path_running
         # and zip_path_final, delete them
@@ -101,3 +101,5 @@ class ResultZipper(Schedulable):
                                          TaskState.FINISHED_WITH_ERROR, 1)
         else:
             self._task_progress_callback(self._task_id, TaskState.FINISHED, 1)
+
+        print("-----\nResultZipper finished\n------")

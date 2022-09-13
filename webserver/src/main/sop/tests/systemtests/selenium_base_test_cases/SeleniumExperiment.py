@@ -1,3 +1,4 @@
+import datetime
 from time import sleep
 from typing import List
 
@@ -5,7 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
-from experiments.models import Experiment, Algorithm
+from experiments.models import Experiment, Algorithm, Execution
 from tests.systemtests.selenium_base_test_cases.SeleniumDataset import SeleniumDataset
 from tests.systemtests.selenium_base_test_cases.SeleniumExecution import (
     SeleniumExecution,
@@ -171,10 +172,38 @@ class SeleniumExperiment:
         self._tc.assertUrlMatches(SeleniumTestCase.UrlsSuffixRegex.EXPERIMENT_OVERVIEW)
 
     def download_execution_result(self, execution):
-        pass  # tODO implement
+        # TODO: make safe for than one execution
+        self._tc.driver.find_element(By.XPATH, "//a[contains(text(),'Result')]").click()
 
-    def wait_until_execution_finished(self, execution):
-        pass  # todo implement
+    def wait_until_execution_finished(self, execution, timeout: int = 120):
+        # TODO make safe for more than one execution and include db checks
+        start_time = datetime.datetime.now()
+        while (datetime.datetime.now() - start_time) < datetime.timedelta(
+            seconds=timeout
+        ):
+            sleep(1)
+            dl_button = self._tc.driver.find_element(
+                By.XPATH, "//a[contains(text(),'Result')]"
+            )
+            if dl_button.is_displayed():
+                return
+
+        # if a timeout occurred, fail
+        db_executions = Execution.objects.all()
+        db_single_exec: Execution = db_executions.first()
+        print("-------DEBUG failed wait-----")
+        print(db_executions)
+        print(db_single_exec)
+        print(db_single_exec.pk)
+        print(db_single_exec.status)
+        print(db_single_exec.progress)
+        print("-------DEBUG END failed wait-----")
+
+        self._tc.fail(
+            "A timout occcured while waiting for the execution '"
+            + str(execution)
+            + "' to finish."
+        )
 
     def get_from_db(self):
         experiment_list = Experiment.objects.filter(display_name=self._name)

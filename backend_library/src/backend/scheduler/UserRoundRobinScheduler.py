@@ -127,6 +127,13 @@ class UserRoundRobinScheduler(Scheduler):
         return self.__shutdown_ongoing
 
     def schedule(self, to_schedule: Schedulable) -> None:
+        print("-----DEBUG URRS ------")
+        print(to_schedule)
+        print(to_schedule.user_id)
+        print(to_schedule.task_id)
+        print(to_schedule.__class__)
+        print("-----DEBUG URRS END-----")
+
         uid = to_schedule.user_id
         assert uid >= -1
         tid = to_schedule.task_id
@@ -213,7 +220,7 @@ class UserRoundRobinScheduler(Scheduler):
             p = Process(target=UserRoundRobinScheduler.__process_main,
                         args=(self, next_sched,), daemon=True)
             self.__running[next_sched] = (p, False)
-        debug(f"preparing to run {next_sched} (prio: {next_sched.priority})")
+        print(f"preparing to run {next_sched} (prio: {next_sched.priority})") # TODO debug
         next_sched.run_before_on_main()
         with self.__empty_queue:
             if self.__shutdown_ongoing:
@@ -223,16 +230,16 @@ class UserRoundRobinScheduler(Scheduler):
             if self.__running[next_sched][1]:
                 next_sched.run_later_on_main(None)
                 return False
-            info(f"{next_sched} will now be started")
+            print(f"{next_sched} will now be started")
             p.start()
         p.join()
-        debug(f"running cleanup for {next_sched}")
+        print(f"running cleanup for {next_sched}") # TODO debug
         if self.__running[next_sched][1]:
             with self.__empty_queue:
                 next_sched.run_later_on_main(None)
         else:
             next_sched.run_later_on_main(p.exitcode)
-        debug(f"done with {next_sched}, looking for new tasks")
+        print(f"done with {next_sched}, looking for new tasks") # TODO debug
         return False
 
 
