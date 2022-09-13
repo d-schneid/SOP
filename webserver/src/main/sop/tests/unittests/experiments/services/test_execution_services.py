@@ -1,9 +1,10 @@
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import django.test
 
-from experiments.services.execution import get_params_out_of_form
+from backend.task.execution.core.Execution import Execution as BackendExecution
+from experiments.services.execution import get_params_out_of_form, schedule_backend
 
 
 class ExecutionServiceTests(django.test.TestCase):
@@ -87,6 +88,56 @@ class ExecutionServiceTests(django.test.TestCase):
         self.assertEqual(len(return_dict.keys()), 2)
         self.assertIsNotNone(return_dict.get("8_param4"))
         self.assertIsNotNone(return_dict.get("8_param1"))
+
+    def test_schedule_backend(self) -> None:
+        algo1 = MagicMock()
+        algo1.path.path = "algorithm/path"
+        algo1.display_name = "Algo 1"
+        algo1.pk = 69
+        algo2 = MagicMock()
+        algo2.path.path = "algorithm/path/2"
+        algo2.display_name = "Algo 2"
+        algo2.pk = 42
+        execution = MagicMock()
+        execution.pk = 12
+        execution.subspaces_min = 2
+        execution.subspaces_max = 5
+        execution.subspace_amount = 3
+        execution.subspace_generation_seed = 123456789
+        execution.get_result_path.return_value = "another/cool/path"
+        execution.algorithm_parameters = {
+            f"{algo1.pk}": {"param1": 8, "param2": "World"},
+            f"{algo2.pk}": {"param1": 3.14, "param2": "was None"},
+        }
+
+        execution.experiment.dataset.dimensions_total = 20
+        execution.experiment.dataset.path_cleaned.path = (
+            "cool/path/to/dataset_cleaned.csv"
+        )
+        execution.experiment.dataset.datapoints_total = 200
+
+        execution.experiment.user.pk = 3
+        execution.experiment.algorithms.all.return_value = [algo1, algo2]
+
+        with patch.object(BackendExecution, "schedule", lambda s: None):
+            errors = schedule_backend(execution)
+            self.assertIsNone(errors)
+
+    def test_schedule_backend_not_enough_subspaces(self) -> None:
+        execution = MagicMock()
+        execution.pk = 12
+        execution.subspaces_min = 2
+        execution.subspaces_max = 5
+        execution.subspace_amount = 1000
+
+        execution.experiment.dataset.dimensions_total = 20
+        execution.experiment.algorithms.all.return_value = []
+
+        with patch.object(BackendExecution, "schedule", lambda s: None):
+            errors = schedule_backend(execution)
+            assert errors is not None
+            self.assertEqual(len(errors.keys()), 1)
+            self.assertIsNotNone(errors.get("subspace_amount"))
 
 
 if __name__ == "__main__":

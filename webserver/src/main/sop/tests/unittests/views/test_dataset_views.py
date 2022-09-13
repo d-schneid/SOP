@@ -3,8 +3,7 @@ import os
 import django.test
 from django.urls import reverse
 
-from backend.scheduler.Scheduler import Scheduler
-from experiments.models import Dataset
+from experiments.models import Dataset, Experiment
 from tests.generic import LoggedInMixin, MediaMixin, DebugSchedulerMixin, MaliciousMixin
 
 
@@ -70,7 +69,7 @@ class DatasetUploadViewTests(
         self.file_name = "valid_dataset.csv"
         super().setUp()
 
-    def upload_dataset(self, client: str, file_name: str):
+    def upload_dataset(self, client: django.test.Client, file_name: str):
         file_path = os.path.join("tests", "sample_datasets", file_name)
         with open(file_path, "r") as file:
             data = {
@@ -81,7 +80,6 @@ class DatasetUploadViewTests(
             return client.post(reverse("dataset_upload"), data=data, follow=True)
 
     def test_dataset_upload_view_valid_upload(self):
-        print(Scheduler.default_scheduler)
         file_name = "valid_dataset.csv"
         response = self.upload_dataset(self.client, file_name)
 
@@ -101,8 +99,28 @@ class DatasetUploadViewTests(
             str(dataset.path_original),
         )
 
+    def test_dataset_upload_view_empty_dataset(self):
+        file_name = "empty_dataset.csv"
+        response = self.upload_dataset(self.client, file_name)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.redirect_chain)
+        self.assertTemplateNotUsed(response, "dataset_overview.html")
+        self.assertTemplateUsed(response, "dataset_upload.html")
+
+    def test_dataset_upload_different_column_size(self):
+        file_name = "parser_error.csv"
+        response = self.upload_dataset(self.client, file_name)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.redirect_chain)
+        self.assertTemplateUsed(response, "dataset_upload.html")
+        messages = list(response.context["messages"])
+        self.assertEqual(len(messages), 1)
+        self.assertIsNone(Dataset.objects.first())
+
     def test_dataset_upload_view_invalid_file_type(self):
-        file_name = "invalid_dataset.txt"
+        file_name = "no_csv.txt"
         response = self.upload_dataset(self.client, file_name)
 
         self.assertEqual(response.status_code, 200)
@@ -259,3 +277,18 @@ class DatasetDeleteViewTests(LoggedInMixin, MaliciousMixin, django.test.TestCase
         self.assertIsNotNone(Dataset.objects.get(pk=dataset.pk))
         self.assertTemplateNotUsed(response, "dataset_overview.html")
         self.assertTemplateNotUsed(response, "dataset_delete.html")
+
+    def test_dataset_delete_view_used_in_experiment(self):
+        dataset = Dataset.objects.create(
+            datapoints_total=0, dimensions_total=0, user=self.user
+        )
+        Experiment.objects.create(
+            display_name="exp", user=self.user, dataset=dataset
+        )
+        response = self.client.post(
+            reverse("dataset_delete", args=(dataset.pk,)), follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.redirect_chain)
+        self.assertIsNotNone(Dataset.objects.first())
+        self.assertTemplateUsed(response, "dataset_overview.html")

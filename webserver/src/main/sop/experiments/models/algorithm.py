@@ -42,7 +42,6 @@ class Algorithm(models.Model):
         PROXIMITY_BASED = "Proximity-Based"
         OTHER = "Other"
 
-    # TODO: check max_length, blank, and null
     display_name = models.CharField(max_length=80)
     group = models.CharField(max_length=80, choices=AlgorithmGroup.choices)
     signature = models.JSONField()

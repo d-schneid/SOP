@@ -21,9 +21,12 @@
                         <div class="form-group col-md-2">
                             {{ form.subspaces_max }}
                         </div>
-                        <span style="font-size:20pt">]</span>
-                        <span class="ml-3 mt-1"
-                              style="font-size:15pt">of total {{ experiment.dataset.dimensions_total }} Dimensions.</span>
+                        <div>
+                            <span style="font-size:20pt">]</span>
+                            <span class="form-group col-md-2">
+                                of total {{ experiment.dataset.dimensions_total }} Dimensions.
+                            </span>
+                        </div>
                     </div>
                     <div class="form-row mt-3">
                         <div class="form-group col-md-6">

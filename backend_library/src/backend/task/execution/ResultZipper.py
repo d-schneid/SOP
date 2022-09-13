@@ -67,7 +67,7 @@ class ResultZipper(Schedulable):
     def do_work(self) -> None:
         """
         Zips the given directory and saves the created .zip-file
-         at the given final path.
+        at the given final path.
 
         The given directory is deleted after the zipping took place.
         After the zipping took place, the callback method is used to inform the
@@ -81,8 +81,6 @@ class ResultZipper(Schedulable):
 
         :return: None
         """
-
-        # Else, proceed with the normal operations
 
         # if there are files existing at the paths zip_path_running
         # and zip_path_final, delete them

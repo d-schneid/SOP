@@ -116,7 +116,7 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
             request: HttpRequest,
             object_id: str,
             extra_context: Optional[dict[str, object]] = None,
-    ) -> HttpResponse:
+    ) -> Optional[HttpResponse]:
         """
         The view for deleting a selected object. Also checks if the selected object can
         be deleted.
@@ -131,7 +131,7 @@ class AbstractModelAdmin(admin.ModelAdmin, metaclass=AbstractModelAdminMeta):
         """
         instance = self.get_object(request, object_id)
         if instance is None:
-            return
+            return None
 
         if instance.experiment_set.count() > 0:  # type: ignore
             messages.error(request,

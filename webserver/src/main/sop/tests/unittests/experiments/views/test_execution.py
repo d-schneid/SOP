@@ -10,6 +10,7 @@ from experiments.models.execution import ExecutionStatus
 from experiments.views.execution import (
     download_execution_result,
     get_execution_progress,
+    restart_execution,
 )
 
 
@@ -94,3 +95,29 @@ class ExecutionViewTests(django.test.TestCase):
         response = get_execution_progress(request)
         self.assertEqual(response.status_code, 500)
         self.assertIsInstance(response, HttpResponseServerError)
+
+    def test_restart_execution(self):
+        request = MagicMock()
+
+        execution = MagicMock()
+        execution.status = "before restart"
+        execution.progress = 0.65
+        execution.status = ExecutionStatus.CRASHED.name
+
+        objects_mock = MagicMock()
+        objects_mock.filter.return_value.first.return_value = execution
+
+        experiment_pk = 9
+
+        with patch("experiments.views.execution.schedule_backend") as schedule_mock:
+            with patch.object(Execution, "objects", objects_mock):
+                response = restart_execution(request, experiment_pk, execution)
+                self.assertTrue(schedule_mock.called)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response.url, reverse_lazy("experiment_overview")  # type: ignore
+        )
+        self.assertEqual(execution.progress, 0.0)
+        self.assertEqual(execution.status, ExecutionStatus.RUNNING.name)
+        self.assertTrue(execution.save.called)

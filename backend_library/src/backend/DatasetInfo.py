@@ -1,5 +1,6 @@
 import csv
 import os
+from typing import Optional
 
 import pandas as pd
 
@@ -52,11 +53,11 @@ class DatasetInfo:
         return datapoint_amount
 
     @staticmethod
-    def is_dataset_valid(path: str) -> bool:
+    def is_dataset_valid(path: str) -> Optional[str]:
         """
         Checks, whether the dataset saved at the given path is valid.
         :param path: The path where the dataset to check is saved at.
-        :return: True, if the dataset is valid; otherwise False
+        :return: None, if the dataset is valid; otherwise an error string
         """
 
         assert os.path.isfile(path)
@@ -71,13 +72,13 @@ class DatasetInfo:
                     if col_num is None:
                         col_num = len(row)
                     elif col_num != len(row):
-                        return False
+                        return "There are rows with different numbers of entries"
 
                 # if all rows have the same amount of columns, return True
-                return True
+                return None
 
-        except (csv.Error, UnicodeDecodeError):
-            return False
+        except (csv.Error, UnicodeDecodeError) as e:
+            return str(e)
 
     class RfcCsvDialect(csv.Dialect):
         delimiter = ","

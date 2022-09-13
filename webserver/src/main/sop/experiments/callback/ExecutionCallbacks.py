@@ -28,12 +28,17 @@ def execution_callback(
     @param progress: The progress of the backend execution.
     @return: None
     """
+
+    if not Execution.objects.filter(pk=task_id).exists():
+        return
+
     print("execution callback", task_id, task_state, progress)
     execution: Execution = Execution.objects.get(pk=task_id)
 
     if task_state.is_finished():
         zip_path = get_zip_result_path(execution)
         assert os.path.exists(zip_path)
+        execution.result_path.name = zip_path
         execution.result_path.name = get_zip_result_path(execution)
         execution.finished_date = timezone.now()
 
@@ -62,7 +67,7 @@ def generate_datapoints_metric(metric_dir: Path, be: BackendExecution):
 
 
 def generate_subspace_outlier_metric(metric_dir: Path, be: BackendExecution):
-    assert os.path.exists(metric_dir)
+    assert os.path.isdir(metric_dir)
     metric_result_path = metric_dir / "subspace_outliers.csv"
     metric = MetricSubspaceOutlierAmount()
     metric.compute_metric(
